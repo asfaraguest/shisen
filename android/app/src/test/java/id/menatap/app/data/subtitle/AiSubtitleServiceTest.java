@@ -140,4 +140,73 @@ public class AiSubtitleServiceTest {
         assertEquals("Bearer " + key, req.getHeader("Authorization"));
         assertTrue(req.getBody().readUtf8().contains("gpt-4o-mini"));
     }
+
+    @Test
+    public void testCustomPromptInjectionInGemini() throws Exception {
+        String mockResponse = "{\n" +
+                "  \"candidates\": [\n" +
+                "    {\n" +
+                "      \"content\": {\n" +
+                "        \"parts\": [\n" +
+                "          {\"text\": \"Gue cabut duluan ya bro!\"}\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(mockResponse));
+
+        String key = "AIzaSyGeminiCustomKey";
+        String customPrompt = "Terjemahkan dengan dialek gaul Jakarta anak muda.";
+        String translated = service.callGemini("I'm heading out now!", key, customPrompt);
+
+        assertEquals("Gue cabut duluan ya bro!", translated);
+
+        RecordedRequest req = server.takeRequest();
+        String body = req.getBody().readUtf8();
+        assertTrue(body.contains(customPrompt));
+        assertTrue(body.contains("I'm heading out now!"));
+    }
+
+    @Test
+    public void testCustomPromptInjectionInGroqAndOpenAi() throws Exception {
+        String mockResponse = "{\n" +
+                "  \"choices\": [\n" +
+                "    {\n" +
+                "      \"message\": {\n" +
+                "        \"role\": \"assistant\",\n" +
+                "        \"content\": \"Yang Mulia Putri, pasukan ksatria telah tiba.\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(mockResponse));
+
+        String key = "gsk_groq_custom_prompt_test";
+        String customPrompt = "Gunakan register bahasa sopan dan formal kerajaan kuno.";
+        String translated = service.callGroq("Princess, the knights have arrived.", key, customPrompt);
+
+        assertEquals("Yang Mulia Putri, pasukan ksatria telah tiba.", translated);
+
+        RecordedRequest req = server.takeRequest();
+        String body = req.getBody().readUtf8();
+        assertTrue(body.contains(customPrompt));
+        assertTrue(body.contains("Princess, the knights have arrived."));
+    }
+
+    @Test
+    public void testDefaultCustomPromptConstant() {
+        assertNotNull(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+        assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("Bahasa Indonesia"));
+        assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("fansub"));
+        assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("honorifik"));
+    }
 }

@@ -28,6 +28,13 @@ public class AiSubtitleService {
 
     public static final String KEY_PREF_LLM = "byok_llm_api_key";
     public static final String KEY_PREF_ENDPOINT = "byok_llm_custom_endpoint";
+    public static final String KEY_PREF_CUSTOM_PROMPT = "byok_llm_custom_prompt";
+
+    public static final String DEFAULT_CUSTOM_PROMPT =
+            "Terjemahkan subtitle anime ini ke Bahasa Indonesia yang alami, luwes, dan ekspresif selayaknya rilis fansub anime populer (bukan terjemahan kaku mesin). " +
+            "Pertahankan istilah khas anime, nama jurus, dan honorifik Jepang (-san, -kun, -chan, -sama, Senpai, Sensei). " +
+            "Keluarkan HANYA teks hasil terjemahan.";
+
     private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
 
     public enum Provider {
@@ -95,12 +102,38 @@ public class AiSubtitleService {
         return SecureStore.getInstance(context).remove(KEY_PREF_LLM);
     }
 
+    public static boolean saveCustomPrompt(Context context, String prompt) {
+        if (context == null) return false;
+        if (prompt == null || prompt.trim().isEmpty()) {
+            return SecureStore.getInstance(context).remove(KEY_PREF_CUSTOM_PROMPT);
+        }
+        return SecureStore.getInstance(context).putString(KEY_PREF_CUSTOM_PROMPT, prompt.trim());
+    }
+
+    public static String getCustomPrompt(Context context) {
+        if (context == null) return DEFAULT_CUSTOM_PROMPT;
+        String prompt = SecureStore.getInstance(context).getString(KEY_PREF_CUSTOM_PROMPT, "");
+        if (prompt == null || prompt.trim().isEmpty()) {
+            return DEFAULT_CUSTOM_PROMPT;
+        }
+        return prompt.trim();
+    }
+
+    public static boolean clearCustomPrompt(Context context) {
+        if (context == null) return false;
+        return SecureStore.getInstance(context).remove(KEY_PREF_CUSTOM_PROMPT);
+    }
+
     public static Provider getActiveProvider(Context context) {
         String key = getKey(context);
         return Provider.detect(key);
     }
 
     public void translate(String text, String apiKey, Callback callback) {
+        translate(text, apiKey, DEFAULT_CUSTOM_PROMPT, callback);
+    }
+
+    public void translate(String text, String apiKey, String customPrompt, Callback callback) {
         if (text == null || text.trim().isEmpty()) {
             callback.onSuccess("");
             return;
@@ -110,23 +143,26 @@ public class AiSubtitleService {
             return;
         }
 
+        final String activePrompt = (customPrompt != null && !customPrompt.trim().isEmpty())
+                ? customPrompt.trim() : DEFAULT_CUSTOM_PROMPT;
+
         Provider provider = Provider.detect(apiKey);
         new Thread(() -> {
             try {
                 String translated;
                 switch (provider) {
                     case GROQ:
-                        translated = callGroq(text, apiKey);
+                        translated = callGroq(text, apiKey, activePrompt);
                         break;
                     case OPENAI:
-                        translated = callOpenAi(text, apiKey);
+                        translated = callOpenAi(text, apiKey, activePrompt);
                         break;
                     case OLLAMA:
-                        translated = callOllama(text, apiKey);
+                        translated = callOllama(text, apiKey, activePrompt);
                         break;
                     case GEMINI:
                     default:
-                        translated = callGemini(text, apiKey);
+                        translated = callGemini(text, apiKey, activePrompt);
                         break;
                 }
                 callback.onSuccess(translated != null ? translated.trim() : text);
@@ -137,11 +173,18 @@ public class AiSubtitleService {
     }
 
     public String callGemini(String text, String apiKey) throws Exception {
+        return callGemini(text, apiKey, DEFAULT_CUSTOM_PROMPT);
+    }
+
+    public String callGemini(String text, String apiKey, String customPrompt) throws Exception {
         String base = customBaseUrl != null ? customBaseUrl : "https://generativelanguage.googleapis.com";
         String url = base + "/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
 
+        String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
+                ? customPrompt.trim() : DEFAULT_CUSTOM_PROMPT;
+
         JSONObject promptPart = new JSONObject();
-        promptPart.put("text", "Translate this anime subtitle cue to natural Indonesian. Output ONLY the translated text:\n" + text);
+        promptPart.put("text", instruction + "\n\n" + text);
 
         JSONArray parts = new JSONArray();
         parts.put(promptPart);
@@ -182,12 +225,19 @@ public class AiSubtitleService {
     }
 
     public String callGroq(String text, String apiKey) throws Exception {
+        return callGroq(text, apiKey, DEFAULT_CUSTOM_PROMPT);
+    }
+
+    public String callGroq(String text, String apiKey, String customPrompt) throws Exception {
         String base = customBaseUrl != null ? customBaseUrl : "https://api.groq.com/openai";
         String url = base + "/v1/chat/completions";
 
+        String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
+                ? customPrompt.trim() : DEFAULT_CUSTOM_PROMPT;
+
         JSONObject sysMsg = new JSONObject();
         sysMsg.put("role", "system");
-        sysMsg.put("content", "You are an expert anime subtitle translator to Indonesian. Return ONLY the translated line.");
+        sysMsg.put("content", instruction);
 
         JSONObject userMsg = new JSONObject();
         userMsg.put("role", "user");
@@ -226,12 +276,19 @@ public class AiSubtitleService {
     }
 
     public String callOpenAi(String text, String apiKey) throws Exception {
+        return callOpenAi(text, apiKey, DEFAULT_CUSTOM_PROMPT);
+    }
+
+    public String callOpenAi(String text, String apiKey, String customPrompt) throws Exception {
         String base = customBaseUrl != null ? customBaseUrl : "https://api.openai.com";
         String url = base + "/v1/chat/completions";
 
+        String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
+                ? customPrompt.trim() : DEFAULT_CUSTOM_PROMPT;
+
         JSONObject sysMsg = new JSONObject();
         sysMsg.put("role", "system");
-        sysMsg.put("content", "You are an anime subtitle translator to Indonesian. Return ONLY the translation.");
+        sysMsg.put("content", instruction);
 
         JSONObject userMsg = new JSONObject();
         userMsg.put("role", "user");
@@ -270,6 +327,10 @@ public class AiSubtitleService {
     }
 
     public String callOllama(String text, String endpointOrKey) throws Exception {
+        return callOllama(text, endpointOrKey, DEFAULT_CUSTOM_PROMPT);
+    }
+
+    public String callOllama(String text, String endpointOrKey, String customPrompt) throws Exception {
         String endpoint = endpointOrKey;
         if (endpoint.startsWith("ollama:")) {
             endpoint = endpoint.substring("ollama:".length());
@@ -283,9 +344,12 @@ public class AiSubtitleService {
         String base = customBaseUrl != null ? customBaseUrl : endpoint;
         String url = base + "/api/generate";
 
+        String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
+                ? customPrompt.trim() : DEFAULT_CUSTOM_PROMPT;
+
         JSONObject bodyObj = new JSONObject();
         bodyObj.put("model", "llama3");
-        bodyObj.put("prompt", "Translate the following anime subtitle cue to Indonesian. Return ONLY the translated line:\n" + text);
+        bodyObj.put("prompt", instruction + "\n\n" + text);
         bodyObj.put("stream", false);
 
         Request request = new Request.Builder()

@@ -29,6 +29,11 @@ public class AniListClient {
         void onError(Throwable t);
     }
 
+    public interface PagedCallback<T> {
+        void onSuccess(T result, boolean hasNextPage, int total);
+        void onError(Throwable t);
+    }
+
     private static final String MEDIA_FIELDS =
             "id idMal title { romaji english native } coverImage { extraLarge large } " +
             "bannerImage averageScore status format episodes duration season seasonYear " +
@@ -102,17 +107,18 @@ public class AniListClient {
      * Beranda: Anime yang tayang pada musim saat ini (Current Season Airing).
      * Mengecualikan serial panjang berkelanjutan agar Beranda murni anime musiman aktif.
      */
-    public static void getCurrentSeasonAiring(int page, int perPage, Callback<List<Anime>> callback) {
+    public static void getCurrentSeasonAiring(int page, int perPage, PagedCallback<List<Anime>> callback) {
         SeasonPair cur = getCurrentSeasonPair();
         String query = String.format(Locale.US,
                 "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
+                "pageInfo { hasNextPage total currentPage } " +
                 "media(season: %s, seasonYear: %d, status_in: [RELEASING, NOT_YET_RELEASED], sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }", cur.season, cur.year);
 
-        executePagedQuery(query, page, perPage, new Callback<List<Anime>>() {
+        executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
             @Override
-            public void onSuccess(List<Anime> result) {
+            public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
                 List<Anime> seasonalOnly = new ArrayList<>();
                 if (result != null) {
                     for (Anime a : result) {
@@ -121,126 +127,112 @@ public class AniListClient {
                         }
                     }
                 }
-                callback.onSuccess(seasonalOnly);
+                callback.onSuccess(seasonalOnly, hasNextPage, total);
             }
 
             @Override
             public void onError(Throwable t) {
                 // Fallback ke seasonal umum jika kueri spesifik gagal
-                getSeasonal(cur.season, cur.year, page, perPage, callback);
+                getSeasonal(cur.season, cur.year, page, perPage, new Callback<List<Anime>>() {
+                    @Override
+                    public void onSuccess(List<Anime> fallbackResult) {
+                        callback.onSuccess(fallbackResult, false, fallbackResult != null ? fallbackResult.size() : 0);
+                    }
+
+                    @Override
+                    public void onError(Throwable fallbackError) {
+                        callback.onError(fallbackError);
+                    }
+                });
+            }
+        });
+    }
+
+    public static void getCurrentSeasonAiring(int page, int perPage, Callback<List<Anime>> callback) {
+        getCurrentSeasonAiring(page, perPage, new PagedCallback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
             }
         });
     }
 
     /**
-     * Masih Tayang (Airing): List anime 2 musim sebelumnya (ongoing) dan serial panjang
-     * yang dipisahkan secara terstruktur dari anime musiman saat ini.
+     * Masih Tayang (Airing): List anime sedang tayang (releasing) kontinu yang dipisahkan
+     * secara terstruktur menjadi dua jalur: anime musiman berjalan dan serial panjang berkelanjutan.
      */
+    public static void getMasihTayangDualLane(int page, int perPage, String filterLane, PagedCallback<List<Anime>> callback) {
+        String query = "query ($page: Int, $perPage: Int) { " +
+                "Page(page: $page, perPage: $perPage) { " +
+                "pageInfo { hasNextPage total currentPage } " +
+                "media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                MEDIA_FIELDS + " } } }";
+
+        executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> list, boolean hasNextPage, int total) {
+                List<Anime> seasonalList = new ArrayList<>();
+                List<Anime> longRunningList = new ArrayList<>();
+                Set<Integer> seenIds = new HashSet<>();
+
+                if (list != null) {
+                    for (Anime a : list) {
+                        if (a == null || seenIds.contains(a.id)) continue;
+                        seenIds.add(a.id);
+                        if (isLongRunning(a)) {
+                            a.isLongRunning = true;
+                            longRunningList.add(a);
+                        } else {
+                            a.isLongRunning = false;
+                            seasonalList.add(a);
+                        }
+                    }
+                }
+
+                List<Anime> result = new ArrayList<>();
+                if ("PREV".equalsIgnoreCase(filterLane)) {
+                    result.addAll(seasonalList);
+                } else if ("LONG".equalsIgnoreCase(filterLane)) {
+                    result.addAll(longRunningList);
+                } else {
+                    // Tampilan Dual Lane dengan section header pembatas
+                    if (!seasonalList.isEmpty()) {
+                        result.add(Anime.createHeader("ANIME MUSIMAN BERJALAN", "ONGOING"));
+                        result.addAll(seasonalList);
+                    }
+                    if (!longRunningList.isEmpty()) {
+                        result.add(Anime.createHeader("SERIAL PANJANG BERKELANJUTAN (CONTINUOUS ON-GOING)", "SERIAL PANJANG"));
+                        result.addAll(longRunningList);
+                    }
+                }
+
+                callback.onSuccess(result, hasNextPage, total);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
     public static void getMasihTayangDualLane(int page, int perPage, String filterLane, Callback<List<Anime>> callback) {
-        SeasonPair s0 = getCurrentSeasonPair();
-        SeasonPair s1 = getPreviousSeasonPair(s0);
-        SeasonPair s2 = getPreviousSeasonPair(s1);
+        getMasihTayangDualLane(page, perPage, filterLane, new PagedCallback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
+                callback.onSuccess(result);
+            }
 
-        String query = String.format(Locale.US,
-                "query ($page: Int) { " +
-                "prev1: Page(page: $page, perPage: 25) { " +
-                "  media(season: %s, seasonYear: %d, status_in: [RELEASING], sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
-                MEDIA_FIELDS + " } } " +
-                "prev2: Page(page: $page, perPage: 25) { " +
-                "  media(season: %s, seasonYear: %d, status_in: [RELEASING], sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
-                MEDIA_FIELDS + " } } " +
-                "airingAll: Page(page: $page, perPage: 40) { " +
-                "  media(status_in: [RELEASING], sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
-                MEDIA_FIELDS + " } } " +
-                "}", s1.season, s1.year, s2.season, s2.year);
-
-        try {
-            JSONObject payload = new JSONObject();
-            payload.put("query", query);
-            JSONObject vars = new JSONObject();
-            vars.put("page", page);
-            payload.put("variables", vars);
-
-            executePostCustom(payload.toString(), new Callback<JSONObject>() {
-                @Override
-                public void onSuccess(JSONObject root) {
-                    JSONObject data = root != null ? root.optJSONObject("data") : null;
-                    if (data == null) {
-                        callback.onSuccess(new ArrayList<>());
-                        return;
-                    }
-
-                    List<Anime> listPrev1 = parseMediaArray(data.optJSONObject("prev1"));
-                    List<Anime> listPrev2 = parseMediaArray(data.optJSONObject("prev2"));
-                    List<Anime> listAiring = parseMediaArray(data.optJSONObject("airingAll"));
-
-                    List<Anime> seasonalPrev = new ArrayList<>();
-                    List<Anime> longRunning = new ArrayList<>();
-                    Set<Integer> seenIds = new HashSet<>();
-
-                    // 1. Ambil anime dari 2 musim sebelumnya
-                    for (Anime a : listPrev1) {
-                        if (a == null || seenIds.contains(a.id)) continue;
-                        if (isLongRunning(a)) {
-                            a.isLongRunning = true;
-                            seenIds.add(a.id);
-                            longRunning.add(a);
-                        } else {
-                            seenIds.add(a.id);
-                            seasonalPrev.add(a);
-                        }
-                    }
-                    for (Anime a : listPrev2) {
-                        if (a == null || seenIds.contains(a.id)) continue;
-                        if (isLongRunning(a)) {
-                            a.isLongRunning = true;
-                            seenIds.add(a.id);
-                            longRunning.add(a);
-                        } else {
-                            seenIds.add(a.id);
-                            seasonalPrev.add(a);
-                        }
-                    }
-
-                    // 2. Ambil serial panjang berkelanjutan dari global releasing
-                    for (Anime a : listAiring) {
-                        if (a == null || seenIds.contains(a.id)) continue;
-                        if (isLongRunning(a)) {
-                            a.isLongRunning = true;
-                            seenIds.add(a.id);
-                            longRunning.add(a);
-                        }
-                    }
-
-                    // 3. Rakit output sesuai opsi filterLane (Semua, Prev, atau Long)
-                    List<Anime> result = new ArrayList<>();
-                    if ("PREV".equalsIgnoreCase(filterLane)) {
-                        result.addAll(seasonalPrev);
-                    } else if ("LONG".equalsIgnoreCase(filterLane)) {
-                        result.addAll(longRunning);
-                    } else {
-                        // Tampilan Dual Lane dengan section header pembatas
-                        if (!seasonalPrev.isEmpty()) {
-                            result.add(Anime.createHeader("ANIME 2 MUSIM SEBELUMNYA (ONGOING)", "2 MUSIM LALU"));
-                            result.addAll(seasonalPrev);
-                        }
-                        if (!longRunning.isEmpty()) {
-                            result.add(Anime.createHeader("SERIAL PANJANG BERKELANJUTAN (CONTINUOUS ON-GOING)", "SERIAL PANJANG"));
-                            result.addAll(longRunning);
-                        }
-                    }
-
-                    callback.onSuccess(result);
-                }
-
-                @Override
-                public void onError(Throwable t) {
-                    callback.onError(t);
-                }
-            });
-        } catch (Exception e) {
-            callback.onError(e);
-        }
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
     }
 
     public static List<Anime> parseMediaArray(JSONObject pageObj) {
@@ -263,6 +255,7 @@ public class AniListClient {
     public static void getTrending(int page, int perPage, Callback<List<Anime>> callback) {
         String query = "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
+                "pageInfo { hasNextPage total currentPage } " +
                 "media(sort: TRENDING_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }";
         executePagedQuery(query, page, perPage, callback);
@@ -278,6 +271,7 @@ public class AniListClient {
         String query = String.format(Locale.US,
                 "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
+                "pageInfo { hasNextPage total currentPage } " +
                 "media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }", season.toUpperCase(), year);
         executePagedQuery(query, page, perPage, callback);
@@ -286,6 +280,7 @@ public class AniListClient {
     public static void getAiring(int page, int perPage, Callback<List<Anime>> callback) {
         String query = "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
+                "pageInfo { hasNextPage total currentPage } " +
                 "media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }";
         executePagedQuery(query, page, perPage, callback);
@@ -294,6 +289,7 @@ public class AniListClient {
     public static void getPopular(int page, int perPage, Callback<List<Anime>> callback) {
         String query = "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
+                "pageInfo { hasNextPage total currentPage } " +
                 "media(sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }";
         executePagedQuery(query, page, perPage, callback);
@@ -309,7 +305,7 @@ public class AniListClient {
         getCatalogCrossFiltered(sort, "", "", "", format, "", page, perPage, callback);
     }
 
-    public static void getCatalogCrossFiltered(String sort, String year, String season, String month, String type, String status, int page, int perPage, Callback<List<Anime>> callback) {
+    public static void getCatalogCrossFiltered(String sort, String year, String season, String month, String type, String status, int page, int perPage, PagedCallback<List<Anime>> callback) {
         String sortOrder = "POPULARITY_DESC";
         if ("score".equalsIgnoreCase(sort)) sortOrder = "SCORE_DESC";
         else if ("latest".equalsIgnoreCase(sort)) sortOrder = "START_DATE_DESC";
@@ -366,14 +362,39 @@ public class AniListClient {
         String query = String.format(Locale.US,
                 "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
+                "pageInfo { hasNextPage total currentPage } " +
                 "media(sort: %s, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]%s) { " +
                 MEDIA_FIELDS + " } } }", sortOrder, filters.toString());
         executePagedQuery(query, page, perPage, callback);
     }
 
-    public static void getByGenre(String genre, int page, int perPage, Callback<List<Anime>> callback) {
+    public static void getCatalogCrossFiltered(String sort, String year, String season, String month, String type, String status, int page, int perPage, Callback<List<Anime>> callback) {
+        getCatalogCrossFiltered(sort, year, season, month, type, status, page, perPage, new PagedCallback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
+    public static void getByGenre(String genre, int page, int perPage, PagedCallback<List<Anime>> callback) {
         if (genre == null || genre.trim().isEmpty()) {
-            getPopular(page, perPage, callback);
+            getPopular(page, perPage, new Callback<List<Anime>>() {
+                @Override
+                public void onSuccess(List<Anime> result) {
+                    callback.onSuccess(result, result != null && result.size() >= perPage, result != null ? result.size() : 0);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    callback.onError(t);
+                }
+            });
             return;
         }
         String clean = genre.trim();
@@ -383,11 +404,13 @@ public class AniListClient {
         if (isOfficialGenre) {
             query = "query ($page: Int, $perPage: Int, $genre: String) { " +
                     "Page(page: $page, perPage: $perPage) { " +
+                    "pageInfo { hasNextPage total currentPage } " +
                     "media(genre: $genre, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
                     MEDIA_FIELDS + " } } }";
         } else {
             query = "query ($page: Int, $perPage: Int, $tag: String) { " +
                     "Page(page: $page, perPage: $perPage) { " +
+                    "pageInfo { hasNextPage total currentPage } " +
                     "media(tag: $tag, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
                     MEDIA_FIELDS + " } } }";
         }
@@ -406,10 +429,24 @@ public class AniListClient {
             body.put("query", query);
             body.put("variables", variables);
 
-            executePost(body.toString(), callback);
+            executePostPaged(body.toString(), callback);
         } catch (Exception e) {
             callback.onError(e);
         }
+    }
+
+    public static void getByGenre(String genre, int page, int perPage, Callback<List<Anime>> callback) {
+        getByGenre(genre, page, perPage, new PagedCallback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
     }
 
     public static void getSchedule(int targetDayOfWeek, Callback<List<Anime>> callback) {
@@ -482,9 +519,10 @@ public class AniListClient {
         }).start();
     }
 
-    public static void search(String keyword, int page, int perPage, Callback<List<Anime>> callback) {
+    public static void search(String keyword, int page, int perPage, PagedCallback<List<Anime>> callback) {
         String query = "query ($page: Int, $perPage: Int, $search: String) { " +
                 "Page(page: $page, perPage: $perPage) { " +
+                "pageInfo { hasNextPage total currentPage } " +
                 "media(search: $search, sort: SEARCH_MATCH, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }";
 
@@ -498,13 +536,27 @@ public class AniListClient {
             body.put("query", query);
             body.put("variables", variables);
 
-            executePost(body.toString(), callback);
+            executePostPaged(body.toString(), callback);
         } catch (Exception e) {
             callback.onError(e);
         }
     }
 
-    private static void executePagedQuery(String query, int page, int perPage, Callback<List<Anime>> callback) {
+    public static void search(String keyword, int page, int perPage, Callback<List<Anime>> callback) {
+        search(keyword, page, perPage, new PagedCallback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
+    private static void executePagedQuery(String query, int page, int perPage, PagedCallback<List<Anime>> callback) {
         try {
             JSONObject variables = new JSONObject();
             variables.put("page", page);
@@ -514,28 +566,70 @@ public class AniListClient {
             body.put("query", query);
             body.put("variables", variables);
 
-            executePost(body.toString(), callback);
+            executePostPaged(body.toString(), callback);
         } catch (Exception e) {
             callback.onError(e);
         }
     }
 
-    private static void executePost(String jsonBody, Callback<List<Anime>> callback) {
+    private static void executePagedQuery(String query, int page, int perPage, Callback<List<Anime>> callback) {
+        executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
+    private static void executePostPaged(String jsonBody, PagedCallback<List<Anime>> callback) {
         executePostCustom(jsonBody, new Callback<JSONObject>() {
             @Override
             public void onSuccess(JSONObject root) {
                 try {
-                    JSONArray mediaArr = root.getJSONObject("data").getJSONObject("Page").getJSONArray("media");
-                    List<Anime> list = new ArrayList<>();
-                    for (int i = 0; i < mediaArr.length(); i++) {
-                        JSONObject m = mediaArr.getJSONObject(i);
-                        Anime anime = parseMediaNode(m);
-                        if (anime != null) list.add(anime);
+                    JSONObject data = root != null ? root.optJSONObject("data") : null;
+                    JSONObject pageObj = data != null ? data.optJSONObject("Page") : null;
+                    if (pageObj == null) {
+                        callback.onSuccess(new ArrayList<>(), false, 0);
+                        return;
                     }
-                    callback.onSuccess(list);
+                    JSONArray mediaArr = pageObj.optJSONArray("media");
+                    JSONObject pageInfo = pageObj.optJSONObject("pageInfo");
+                    boolean hasNextPage = pageInfo != null && pageInfo.optBoolean("hasNextPage", false);
+                    int total = pageInfo != null ? pageInfo.optInt("total", 0) : 0;
+
+                    List<Anime> list = new ArrayList<>();
+                    if (mediaArr != null) {
+                        for (int i = 0; i < mediaArr.length(); i++) {
+                            JSONObject m = mediaArr.optJSONObject(i);
+                            if (m != null) {
+                                Anime anime = parseMediaNode(m);
+                                if (anime != null) list.add(anime);
+                            }
+                        }
+                    }
+                    callback.onSuccess(list, hasNextPage, total);
                 } catch (Exception e) {
                     callback.onError(e);
                 }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
+    private static void executePost(String jsonBody, Callback<List<Anime>> callback) {
+        executePostPaged(jsonBody, new PagedCallback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
+                callback.onSuccess(result);
             }
 
             @Override

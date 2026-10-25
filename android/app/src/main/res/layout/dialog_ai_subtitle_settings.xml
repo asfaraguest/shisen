@@ -1,124 +1,186 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@drawable/bg_dialog_frost"
-    android:padding="20dp">
+    android:fillViewport="true"
+    android:scrollbars="none">
 
-    <!-- Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:background="@drawable/bg_dialog_frost"
+        android:padding="20dp">
 
-        <TextView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:text="✨"
-            android:textSize="22sp"
-            android:gravity="center" />
-
+        <!-- Header Section -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="12dp"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="AI Subtitle (BYOK)"
-                android:textColor="@color/text_frost_bright"
-                android:textSize="@dimen/text_title_large"
-                android:fontFamily="sans-serif-medium" />
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:text="✨"
+                android:textSize="22sp"
+                android:gravity="center" />
 
-            <TextView
-                android:id="@+id/tv_ai_provider_badge"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Provider: Gemini / Groq / OpenAI / Ollama"
-                android:textColor="@color/accent_glacial"
-                android:textSize="@dimen/text_body"
-                android:fontFamily="sans-serif-medium" />
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI Subtitle (BYOK)"
+                    android:textColor="@color/text_frost_bright"
+                    android:textSize="@dimen/text_title_large"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:id="@+id/tv_ai_provider_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Provider: Gemini / Groq / OpenAI / Ollama"
+                    android:textColor="@color/accent_glacial"
+                    android:textSize="@dimen/text_body"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btn_close_ai_dialog"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                app:tint="@color/text_frost_subtle"
+                android:contentDescription="Tutup" />
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/btn_close_ai_dialog"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_close"
-            app:tint="@color/text_frost_subtle"
-            android:contentDescription="Tutup" />
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Kunci API Anda disimpan aman di Android Hardware Keystore (AES-256-GCM) dan tidak pernah dicatat atau dibagikan."
-        android:textColor="@color/text_frost_subtle"
-        android:textSize="@dimen/text_caption" />
-
-    <!-- Input Section -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="API Key / Endpoint URL"
-        android:textColor="@color/text_frost_bright"
-        android:textSize="@dimen/text_body"
-        android:fontFamily="sans-serif-medium" />
-
-    <EditText
-        android:id="@+id/et_ai_api_key"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="6dp"
-        android:background="@drawable/bg_input_field"
-        android:hint="AIzaSy... / gsk_... / sk-... / ollama URL"
-        android:textColorHint="@color/text_frost_dim"
-        android:textColor="@color/text_frost_bright"
-        android:textSize="@dimen/text_body"
-        android:paddingHorizontal="14dp"
-        android:inputType="textPassword"
-        android:singleLine="true" />
-
-    <!-- Action Buttons -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btn_clear_ai_key"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:background="@drawable/bg_chip_frost_inactive"
-            android:text="Hapus Kunci"
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Kunci API Anda disimpan aman di Android Hardware Keystore (AES-256-GCM) dan tidak pernah dicatat atau dibagikan."
             android:textColor="@color/text_frost_subtle"
-            android:textSize="@dimen/text_body"
-            android:textAllCaps="false" />
+            android:textSize="@dimen/text_caption" />
 
-        <Button
-            android:id="@+id/btn_save_ai_key"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1.5"
-            android:background="@drawable/bg_chip_frost_active"
-            android:text="Simpan Kunci"
-            android:textColor="@color/frost_void"
+        <!-- API Key Input Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="API Key / Endpoint URL"
+            android:textColor="@color/text_frost_bright"
             android:textSize="@dimen/text_body"
-            android:textStyle="bold"
-            android:textAllCaps="false" />
+            android:fontFamily="sans-serif-medium" />
+
+        <EditText
+            android:id="@+id/et_ai_api_key"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_input_field"
+            android:hint="AIzaSy... / gsk_... / sk-... / ollama URL"
+            android:textColorHint="@color/text_frost_dim"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="@dimen/text_body"
+            android:paddingHorizontal="14dp"
+            android:inputType="textPassword"
+            android:singleLine="true" />
+
+        <!-- Custom Prompt Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Prompt Terjemahan Kustom (Fansub)"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="@dimen/text_body"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/btn_reset_ai_prompt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reset ke Default"
+                android:textColor="@color/accent_glacial"
+                android:textSize="@dimen/text_caption"
+                android:fontFamily="sans-serif-bold"
+                android:background="?attr/selectableItemBackground"
+                android:paddingVertical="4dp"
+                android:paddingHorizontal="6dp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Instruksikan gaya bahasa, persona terjemahan, atau aturan penulisan fansub. Kosongkan untuk menggunakan prompt default fansub."
+            android:textColor="@color/text_frost_dim"
+            android:textSize="11sp" />
+
+        <EditText
+            android:id="@+id/et_ai_custom_prompt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="3"
+            android:maxLines="6"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_input_field"
+            android:hint="Tulis prompt instruksi terjemahan LLM..."
+            android:textColorHint="@color/text_frost_dim"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="@dimen/text_body"
+            android:padding="12dp"
+            android:gravity="top|start"
+            android:inputType="textMultiLine|textCapSentences"
+            android:scrollbars="vertical" />
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_clear_ai_key"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_chip_frost_inactive"
+                android:text="Hapus Kunci"
+                android:textColor="@color/text_frost_subtle"
+                android:textSize="@dimen/text_body"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_save_ai_key"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1.5"
+                android:background="@drawable/bg_chip_frost_active"
+                android:text="Simpan Pengaturan"
+                android:textColor="@color/frost_void"
+                android:textSize="@dimen/text_body"
+                android:textStyle="bold"
+                android:textAllCaps="false" />
+        </LinearLayout>
+
     </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

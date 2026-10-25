@@ -551,7 +551,37 @@
                 android:fontFamily="sans-serif-medium" />
         </LinearLayout>
 
-        <!-- 9. Cek Pembaruan Aplikasi -->
+        <!-- 9. AI Subtitle & Prompt Setting -->
+        <LinearLayout
+            android:id="@+id/menu_item_ai_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:gravity="center"
+                android:text="✨"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tv_menu_ai_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="AI Subtitle • 字幕AI"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="12.5sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- 10. Cek Pembaruan Aplikasi -->
         <LinearLayout
             android:id="@+id/menu_item_update"
             android:layout_width="match_parent"

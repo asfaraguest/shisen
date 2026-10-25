@@ -5,6 +5,19 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 ## [0.1.0-beta.2] - 2026-10-25
 
 ### Ditambahkan
+- **Perbaikan Paginasi Musim Ini & Sedang Tayang (`AniListClient` & `MainActivity`)**:
+  - Menyertakan metadata resmi `pageInfo { hasNextPage total currentPage }` pada seluruh kueri GraphQL AniList (`PagedCallback`), membebaskan paginasi dari asumsi naif `currentCount >= pageSize`.
+  - Pengecualian anime berseri panjang (`isLongRunning`) pada Beranda Musim Ini tidak lagi mematikan tombol "Berikutnya ›" pada halaman 1 ketika jumlah item tersaring menjadi <35.
+  - Merestrukturisasi kueri "Sedang Tayang" (Airing) menjadi aliran kontinu anime berstatus `RELEASING` yang dipisahkan secara dinamis ke dalam jalur musiman dan serial panjang, memungkinkan paginasi antar-halaman berjalan mulus dan tanpa batas.
+- **Pemunculan Pengaturan AI Subtitle di Beranda & Player**:
+  - Menambahkan menu aksi langsung "✨ AI Subtitle • 字幕AI" pada *Folded Floating Menu* di Beranda (`menu_item_ai_subtitle`).
+  - Mempromosikan pintasan konfigurasi AI Subtitle ke baris teratas pemilih track subtitle di Pemutar Video (`PlayerActivity`).
+- **Fitur Kustomisasi Prompt Terjemahan Fansub (*Custom Translation Prompt*)**:
+  - Menambahkan input multiline pada `dialog_ai_subtitle_settings.xml` (`et_ai_custom_prompt`) untuk mengatur persona, register bahasa, dan aturan terjemahan LLM.
+  - Dilengkapi tombol reset instan ke default fansub anime populer (`DEFAULT_CUSTOM_PROMPT`).
+  - Menyuntikkan custom prompt ke payload Gemini, Groq (`system`), OpenAI (`system`), dan Ollama (`prompt`).
+  - Menyimpan preferensi prompt secara aman dan persisten via `SecureStore` (`KEY_PREF_CUSTOM_PROMPT`).
+  - Penambahan unit test verifikasi injeksi custom prompt pada `AiSubtitleServiceTest`.
 - **Paritas Fitur Inti & DPI-Bypass (Fase 2)**:
   - **TLS ClientHello Desync DPI-Bypass (`TlsDesyncHelper`, `DesyncSocketWrapper`, `DesyncSSLSocketFactory`)**:
     - Implementasi pemecahan TLS record ClientHello RFC-compliant (1 byte data + micro-pause 30ms) untuk meniadakan tanda tangan SNI utuh dari pemindaian firewall DPI ISP (Internet Positif / Sangfor).

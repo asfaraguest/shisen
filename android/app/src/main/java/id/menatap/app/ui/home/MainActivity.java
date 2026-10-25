@@ -42,6 +42,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import id.menatap.app.data.subtitle.AiSubtitleService;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -105,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isFoldedMenuOpen = false;
 
     // Menu Items in Folded Floating Menu
-    private View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre, menuItemTheme, menuItemUpdate;
+    private View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre, menuItemTheme, menuItemAiSubtitle, menuItemUpdate;
     private TextView tvMenuMusim, tvMenuAiring, tvMenuJadwal, tvMenuRiwayat, tvMenuFavorit, tvMenuKatalog, tvMenuGenre;
 
     private AnimeAdapter gridAdapter;
@@ -317,6 +319,7 @@ public class MainActivity extends AppCompatActivity {
         menuItemKatalog = findViewById(R.id.menu_item_katalog);
         menuItemGenre = findViewById(R.id.menu_item_genre);
         menuItemTheme = findViewById(R.id.menu_item_theme);
+        menuItemAiSubtitle = findViewById(R.id.menu_item_ai_subtitle);
         menuItemUpdate = findViewById(R.id.menu_item_update);
 
         tvMenuMusim = findViewById(R.id.tv_menu_musim);
@@ -451,6 +454,14 @@ public class MainActivity extends AppCompatActivity {
                 HapticHelper.performClick(v);
                 setFoldedMenuOpen(false);
                 AnimeThemeManager.showThemeSelectorDialog(this, this::applyCurrentTheme);
+            });
+        }
+
+        if (menuItemAiSubtitle != null) {
+            menuItemAiSubtitle.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                setFoldedMenuOpen(false);
+                showAiSubtitleSettingsDialog();
             });
         }
 
@@ -1304,6 +1315,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updatePaginationUI(int currentCount, int pageSize) {
+        updatePaginationUI(currentCount, pageSize, currentCount >= pageSize);
+    }
+
+    private void updatePaginationUI(int currentCount, int pageSize, boolean hasNextPage) {
         if (layoutPagination == null) return;
         mainHandler.removeCallbacks(expandPaginationRunnable);
         isPaginationFolded = false;
@@ -1320,7 +1335,7 @@ public class MainActivity extends AppCompatActivity {
         }
         if (btnNextPage != null) {
             btnNextPage.setVisibility(View.VISIBLE);
-            boolean canNext = (currentCount >= pageSize);
+            boolean canNext = hasNextPage;
             btnNextPage.setEnabled(canNext);
             btnNextPage.setAlpha(canNext ? 1.0f : 0.4f);
         }
@@ -1338,9 +1353,9 @@ public class MainActivity extends AppCompatActivity {
         if (currentTab == MainTab.MUSIM) {
             layoutContextualBar.setVisibility(View.GONE);
             // BERANDA: Anime yang tayang pada musim saat ini (Current Season Airing)
-            AniListClient.getCurrentSeasonAiring(currentPage, 35, new AniListClient.Callback<List<Anime>>() {
+            AniListClient.getCurrentSeasonAiring(currentPage, 35, new AniListClient.PagedCallback<List<Anime>>() {
                 @Override
-                public void onSuccess(List<Anime> result) {
+                public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
                     mainHandler.post(() -> {
                         setLoading(false);
                         if (result != null && !result.isEmpty()) {
@@ -1357,12 +1372,12 @@ public class MainActivity extends AppCompatActivity {
                                 gridAdapter.setData(result);
                             }
                             rvGrid.scrollToPosition(0);
-                            updatePaginationUI(result.size(), 35);
+                            updatePaginationUI(result.size(), 35, hasNextPage);
                         } else {
                             if (currentPage > 1) {
                                 currentPage--;
                                 Toast.makeText(MainActivity.this, "Halaman terakhir", Toast.LENGTH_SHORT).show();
-                                updatePaginationUI(0, 35);
+                                updatePaginationUI(0, 35, false);
                             } else {
                                 gridAdapter.setHeroAnime(null);
                                 gridAdapter.setData(new ArrayList<>());
@@ -1388,8 +1403,8 @@ public class MainActivity extends AppCompatActivity {
             switch (currentTab) {
                 case AIRING:
                     layoutContextualBar.setVisibility(View.GONE);
-                    // MASIH TAYANG: Dual-Lane (Anime 2 musim sebelumnya ongoing + serial panjang berkelanjutan)
-                    AniListClient.getMasihTayangDualLane(currentPage, 40, selectedAiringLane, createCallback("Gagal Memuat Masih Tayang", 40));
+                    // MASIH TAYANG: Dual-Lane (Anime musiman berjalan + serial panjang berkelanjutan)
+                    AniListClient.getMasihTayangDualLane(currentPage, 35, selectedAiringLane, createPagedCallback("Gagal Memuat Masih Tayang", 35));
                     break;
                 case JADWAL:
                     layoutContextualBar.setVisibility(View.GONE);
@@ -1413,7 +1428,8 @@ public class MainActivity extends AppCompatActivity {
                             tvContextualTitle.setText("RIWAYAT TONTONAN (" + total + ")");
                             btnClearHistoryAll.setVisibility(history.isEmpty() ? View.GONE : View.VISIBLE);
                         });
-                        displayResults(finalPagedList, "Riwayat Tontonan Kosong", "Anime yang kamu putar akan tersimpan otomatis di sini.", pageSize);
+                        boolean hasNextPage = (fromIndex + pageSize) < total;
+                        displayResults(finalPagedList, "Riwayat Tontonan Kosong", "Anime yang kamu putar akan tersimpan otomatis di sini.", pageSize, hasNextPage);
                         if (total <= pageSize) {
                             mainHandler.post(() -> {
                                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
@@ -1438,7 +1454,8 @@ public class MainActivity extends AppCompatActivity {
                             tvContextualTitle.setText("ANIME FAVORIT (" + total + ")");
                             btnClearHistoryAll.setVisibility(View.GONE);
                         });
-                        displayResults(finalPagedList, "Belum Ada Favorit", "Tekan ikon bintang di halaman detail anime untuk menyimpannya.", pageSize);
+                        boolean hasNextPage = (fromIndex + pageSize) < total;
+                        displayResults(finalPagedList, "Belum Ada Favorit", "Tekan ikon bintang di halaman detail anime untuk menyimpannya.", pageSize, hasNextPage);
                         if (total <= pageSize) {
                             mainHandler.post(() -> {
                                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
@@ -1454,7 +1471,7 @@ public class MainActivity extends AppCompatActivity {
                     AniListClient.getCatalogCrossFiltered(
                             filterCatalogSort, filterCatalogYear, filterCatalogSeason, filterCatalogMonth,
                             filterCatalogType, filterCatalogStatus, currentPage, 40,
-                            createCallback("Gagal Memuat Katalog", 40)
+                            createPagedCallback("Gagal Memuat Katalog", 40)
                     );
                     break;
                 case GENRE:
@@ -1462,7 +1479,7 @@ public class MainActivity extends AppCompatActivity {
                     tvContextualTitle.setText("GENRE: " + selectedGenre.toUpperCase(Locale.US));
                     btnClearHistoryAll.setText("Pilih Genre...");
                     btnClearHistoryAll.setVisibility(View.VISIBLE);
-                    AniListClient.getByGenre(selectedGenre, currentPage, 40, createCallback("Gagal Memuat Genre " + selectedGenre, 40));
+                    AniListClient.getByGenre(selectedGenre, currentPage, 40, createPagedCallback("Gagal Memuat Genre " + selectedGenre, 40));
                     break;
                 default:
                     break;
@@ -1483,20 +1500,24 @@ public class MainActivity extends AppCompatActivity {
         tvContextualTitle.setText("HASIL PENCARIAN: \"" + query + "\"" + (page > 1 ? " (Hal " + page + ")" : ""));
         btnClearHistoryAll.setVisibility(View.GONE);
 
-        AniListClient.search(query, page, 40, new AniListClient.Callback<List<Anime>>() {
+        AniListClient.search(query, page, 40, createPagedCallback("Pencarian gagal", 40));
+    }
+
+    private AniListClient.PagedCallback<List<Anime>> createPagedCallback(String errorPrefix, int pageSize) {
+        return new AniListClient.PagedCallback<List<Anime>>() {
             @Override
-            public void onSuccess(List<Anime> result) {
-                displayResults(result, "Pencarian Tidak Ditemukan", "Coba gunakan kata kunci lain atau judul bahasa Inggris.", 40);
+            public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
+                displayResults(result, "Tidak Ada Data", "Konten belum tersedia untuk kategori ini.", pageSize, hasNextPage);
             }
 
             @Override
             public void onError(Throwable t) {
                 mainHandler.post(() -> {
                     setLoading(false);
-                    Toast.makeText(MainActivity.this, "Pencarian gagal: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, errorPrefix + ": " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 });
             }
-        });
+        };
     }
 
     private AniListClient.Callback<List<Anime>> createCallback(String errorPrefix, int pageSize) {
@@ -1517,13 +1538,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void displayResults(List<Anime> list, String emptyTitle, String emptyDesc, int pageSize) {
+        displayResults(list, emptyTitle, emptyDesc, pageSize, list != null && list.size() >= pageSize);
+    }
+
+    private void displayResults(List<Anime> list, String emptyTitle, String emptyDesc, int pageSize, boolean hasNextPage) {
         mainHandler.post(() -> {
             setLoading(false);
             if (list == null || list.isEmpty()) {
                 if (currentPage > 1) {
                     currentPage--;
                     Toast.makeText(MainActivity.this, "Halaman terakhir", Toast.LENGTH_SHORT).show();
-                    updatePaginationUI(0, pageSize);
+                    updatePaginationUI(0, pageSize, false);
                 } else {
                     gridAdapter.setHeroAnime(null);
                     gridAdapter.setData(new ArrayList<>());
@@ -1539,12 +1564,96 @@ public class MainActivity extends AppCompatActivity {
                 gridAdapter.setData(list);
                 rvGrid.scrollToPosition(0);
                 if (currentTab != MainTab.JADWAL) {
-                    updatePaginationUI(list.size(), pageSize);
+                    updatePaginationUI(list.size(), pageSize, hasNextPage);
                 } else {
                     if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
                 }
             }
         });
+    }
+
+    private void showAiSubtitleSettingsDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_ai_subtitle_settings, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        TextView tvBadge = dialogView.findViewById(R.id.tv_ai_provider_badge);
+        EditText etKey = dialogView.findViewById(R.id.et_ai_api_key);
+        EditText etCustomPrompt = dialogView.findViewById(R.id.et_ai_custom_prompt);
+        TextView btnResetPrompt = dialogView.findViewById(R.id.btn_reset_ai_prompt);
+        Button btnSave = dialogView.findViewById(R.id.btn_save_ai_key);
+        Button btnClear = dialogView.findViewById(R.id.btn_clear_ai_key);
+        ImageButton btnClose = dialogView.findViewById(R.id.btn_close_ai_dialog);
+
+        String currentKey = AiSubtitleService.getKey(this);
+        if (currentKey != null && !currentKey.isEmpty()) {
+            etKey.setText(currentKey);
+            AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(currentKey);
+            tvBadge.setText("Provider Aktif: " + p.displayName);
+        }
+
+        if (etCustomPrompt != null) {
+            etCustomPrompt.setText(AiSubtitleService.getCustomPrompt(this));
+        }
+
+        if (btnResetPrompt != null && etCustomPrompt != null) {
+            btnResetPrompt.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+                Toast.makeText(this, "Prompt direset ke default fansub anime", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        etKey.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                String input = s != null ? s.toString().trim() : "";
+                if (!input.isEmpty()) {
+                    AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(input);
+                    tvBadge.setText("Terdeteksi: " + p.displayName);
+                } else {
+                    tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
+                }
+            }
+        });
+
+        btnSave.setOnClickListener(v -> {
+            String newKey = etKey.getText().toString().trim();
+            if (newKey.isEmpty()) {
+                Toast.makeText(this, "Kunci API tidak boleh kosong", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            AiSubtitleService.saveKey(this, newKey);
+            if (etCustomPrompt != null) {
+                String promptText = etCustomPrompt.getText().toString().trim();
+                AiSubtitleService.saveCustomPrompt(this, promptText);
+            }
+            AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(newKey);
+            Toast.makeText(this, "Pengaturan " + p.displayName + " & Custom Prompt berhasil disimpan", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        btnClear.setOnClickListener(v -> {
+            AiSubtitleService.clearKey(this);
+            AiSubtitleService.clearCustomPrompt(this);
+            etKey.setText("");
+            if (etCustomPrompt != null) {
+                etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+            }
+            tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
+            Toast.makeText(this, "Kunci API dan custom prompt telah dihapus", Toast.LENGTH_SHORT).show();
+        });
+
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> dialog.dismiss());
+        }
+        dialog.show();
     }
 
     @Override

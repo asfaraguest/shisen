@@ -1582,6 +1582,14 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
 
+        // 3. AI Subtitle BYOK & Custom Prompt Quick Configuration
+        String aiKey = AiSubtitleService.getKey(this);
+        String aiLabel = (aiKey != null && !aiKey.isEmpty())
+                ? "✨ Pengaturan AI Subtitle & Prompt [" + AiSubtitleService.Provider.detect(aiKey).displayName + "]"
+                : "✨ Pengaturan AI Subtitle (Gemini / Groq / OpenAI)...";
+        options.add(aiLabel);
+        actions.add(this::showAiSubtitleSettingsDialog);
+
         // 3. [EN] English (Original)
         boolean isEnSelected = isSubOn && "en".equals(curLang) && "raw".equals(curEngine);
         options.add("[EN] English (Original / Asli)" + (isEnSelected ? " [Aktif]" : ""));
@@ -1640,11 +1648,7 @@ public class PlayerActivity extends AppCompatActivity {
         options.add("Pengaturan Tampilan (Posisi, Latar Belakang & Ukuran)...");
         actions.add(this::showSubtitleStyleDialog);
 
-        // 11. AI Subtitle BYOK Configuration
-        options.add("✨ Konfigurasi AI Subtitle BYOK (Gemini / Groq / OpenAI)...");
-        actions.add(this::showAiSubtitleSettingsDialog);
-
-        // 12. Disable Subtitles
+        // 11. Disable Subtitles
         options.add("Matikan Subtitle" + (!isSubOn ? " [Aktif]" : ""));
         actions.add(() -> {
             subtitleManager.setSubEnabled(false);
@@ -1936,6 +1940,8 @@ public class PlayerActivity extends AppCompatActivity {
 
         TextView tvBadge = dialogView.findViewById(R.id.tv_ai_provider_badge);
         EditText etKey = dialogView.findViewById(R.id.et_ai_api_key);
+        EditText etCustomPrompt = dialogView.findViewById(R.id.et_ai_custom_prompt);
+        TextView btnResetPrompt = dialogView.findViewById(R.id.btn_reset_ai_prompt);
         Button btnSave = dialogView.findViewById(R.id.btn_save_ai_key);
         Button btnClear = dialogView.findViewById(R.id.btn_clear_ai_key);
         ImageButton btnClose = dialogView.findViewById(R.id.btn_close_ai_dialog);
@@ -1945,6 +1951,18 @@ public class PlayerActivity extends AppCompatActivity {
             etKey.setText(currentKey);
             AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(currentKey);
             tvBadge.setText("Provider Aktif: " + p.displayName);
+        }
+
+        if (etCustomPrompt != null) {
+            etCustomPrompt.setText(AiSubtitleService.getCustomPrompt(this));
+        }
+
+        if (btnResetPrompt != null && etCustomPrompt != null) {
+            btnResetPrompt.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+                Toast.makeText(this, "Prompt direset ke default fansub anime", Toast.LENGTH_SHORT).show();
+            });
         }
 
         etKey.addTextChangedListener(new TextWatcher() {
@@ -1969,16 +1987,24 @@ public class PlayerActivity extends AppCompatActivity {
                 return;
             }
             AiSubtitleService.saveKey(this, newKey);
+            if (etCustomPrompt != null) {
+                String promptText = etCustomPrompt.getText().toString().trim();
+                AiSubtitleService.saveCustomPrompt(this, promptText);
+            }
             AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(newKey);
-            Toast.makeText(this, "Kunci " + p.displayName + " berhasil disimpan di SecureStore", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Pengaturan " + p.displayName + " & Custom Prompt berhasil disimpan", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
         });
 
         btnClear.setOnClickListener(v -> {
             AiSubtitleService.clearKey(this);
+            AiSubtitleService.clearCustomPrompt(this);
             etKey.setText("");
+            if (etCustomPrompt != null) {
+                etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+            }
             tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
-            Toast.makeText(this, "Kunci API telah dihapus dari SecureStore", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Kunci API dan custom prompt telah dihapus", Toast.LENGTH_SHORT).show();
         });
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
