@@ -780,8 +780,8 @@ public class MainActivity extends AppCompatActivity {
             layoutContextualBar.setVisibility(View.GONE);
             scrollSubFilters.setVisibility(View.VISIBLE);
 
-            String[] lanes = {"ALL", "PREV", "LONG"};
-            String[] laneLabels = {"Semua (Dual-Lane)", "2 Musim Sebelumnya", "Serial Panjang"};
+            String[] lanes = {"ALL", "CUR", "PREV", "LONG"};
+            String[] laneLabels = {"Semua (3 Jalur)", "Musim Berjalan", "Musim Sebelumnya", "Serial Panjang"};
             for (int i = 0; i < lanes.length; i++) {
                 final String l = lanes[i];
                 boolean isSelected = l.equalsIgnoreCase(selectedAiringLane);

@@ -227,8 +227,19 @@ public class DetailActivity extends AppCompatActivity {
 
         meta.append(anime.format != null ? anime.format : "TV");
 
+        boolean isNotYet = "NOT_YET_RELEASED".equalsIgnoreCase(anime.status) ||
+                (("RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status)) && anime.nextAiringEpisode == 1 && anime.airedEpisodesCount == 0);
+
         if (anime.airedEpisodesCount > 0) {
-            meta.append(" · ").append(anime.airedEpisodesCount).append(" Episode Tayang");
+            meta.append(" · ").append(anime.airedEpisodesCount).append(" Ep Tayang");
+            if (anime.episodesCount > 0) {
+                meta.append(" (Total ").append(anime.episodesCount).append(")");
+            }
+        } else if (isNotYet) {
+            meta.append(" · Belum Tayang");
+            if (anime.episodesCount > 0) {
+                meta.append(" (Rencana ").append(anime.episodesCount).append(" Ep)");
+            }
         } else if (anime.episodesCount > 0) {
             meta.append(" · ").append(anime.episodesCount).append(" Episode");
         } else if (anime.epsCounter != null && !anime.epsCounter.isEmpty() && !"null".equalsIgnoreCase(anime.epsCounter)) {
@@ -293,18 +304,42 @@ public class DetailActivity extends AppCompatActivity {
         }
         episodeAdapter.notifyDataSetChanged();
 
-        if (lastWatchedEp > 0) {
-            btnPlayPrimary.setText("▶ Lanjut Episode " + lastWatchedEp);
+        if (episodeList.isEmpty()) {
+            boolean isNotYet = "NOT_YET_RELEASED".equalsIgnoreCase(anime.status) ||
+                    (("RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status)) && anime.nextAiringEpisode == 1 && anime.airedEpisodesCount == 0);
+            if (isNotYet) {
+                btnPlayPrimary.setText("Belum Tayang");
+            } else {
+                btnPlayPrimary.setText("Episode Belum Tersedia");
+            }
+            btnPlayPrimary.setEnabled(false);
+            btnPlayPrimary.setAlpha(0.5f);
         } else {
-            btnPlayPrimary.setText("▶ Putar Episode 1");
+            btnPlayPrimary.setEnabled(true);
+            btnPlayPrimary.setAlpha(1.0f);
+            if (lastWatchedEp > 0) {
+                btnPlayPrimary.setText("▶ Lanjut Episode " + lastWatchedEp);
+            } else {
+                btnPlayPrimary.setText("▶ Putar Episode 1");
+            }
         }
     }
 
     private void loadAccurateEpisodes() {
+        boolean isReleasing = "RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status);
+        boolean isNotYetReleased = "NOT_YET_RELEASED".equalsIgnoreCase(anime.status) ||
+                (isReleasing && anime.nextAiringEpisode == 1 && anime.airedEpisodesCount == 0);
+
+        if (isNotYetReleased) {
+            episodeList.clear();
+            episodeAdapter.setData(episodeList);
+            if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
+            refreshWatchedStates();
+            return;
+        }
+
         // Safe airing count (anti-overflow on on-going anime)
         int safeAiredCount = 1;
-        boolean isReleasing = "RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status);
-
         if (isReleasing) {
             if (anime.nextAiringEpisode > 1) {
                 safeAiredCount = anime.nextAiringEpisode - 1;
@@ -351,12 +386,13 @@ public class DetailActivity extends AppCompatActivity {
                     HiAnimeClient.getEpisodes(matchedSlug, new HiAnimeClient.Callback<List<Episode>>() {
                         @Override
                         public void onSuccess(List<Episode> hiEpisodes) {
-                            if (hiEpisodes != null && !hiEpisodes.isEmpty()) {
+                            List<Episode> filtered = filterAccurateEpisodes(hiEpisodes);
+                            if (!filtered.isEmpty()) {
                                 mainHandler.post(() -> {
                                     if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
                                     episodeList.clear();
-                                    episodeList.addAll(hiEpisodes);
-                                    anime.airedEpisodesCount = hiEpisodes.size();
+                                    episodeList.addAll(filtered);
+                                    anime.airedEpisodesCount = filtered.size();
                                     refreshWatchedStates();
                                     episodeAdapter.setData(episodeList);
                                 });
@@ -379,12 +415,13 @@ public class DetailActivity extends AppCompatActivity {
                                 HiAnimeClient.getEpisodes(matched2, new HiAnimeClient.Callback<List<Episode>>() {
                                     @Override
                                     public void onSuccess(List<Episode> hiEps) {
-                                        if (hiEps != null && !hiEps.isEmpty()) {
+                                        List<Episode> filtered = filterAccurateEpisodes(hiEps);
+                                        if (!filtered.isEmpty()) {
                                             mainHandler.post(() -> {
                                                 if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
                                                 episodeList.clear();
-                                                episodeList.addAll(hiEps);
-                                                anime.airedEpisodesCount = hiEps.size();
+                                                episodeList.addAll(filtered);
+                                                anime.airedEpisodesCount = filtered.size();
                                                 refreshWatchedStates();
                                                 episodeAdapter.setData(episodeList);
                                             });
@@ -420,6 +457,29 @@ public class DetailActivity extends AppCompatActivity {
         });
     }
 
+    private List<Episode> filterAccurateEpisodes(List<Episode> rawList) {
+        if (rawList == null || rawList.isEmpty()) return new ArrayList<>();
+        boolean isReleasing = "RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status);
+        int maxAired = Integer.MAX_VALUE;
+        if (isReleasing) {
+            if (anime.nextAiringEpisode > 1) {
+                maxAired = anime.nextAiringEpisode - 1;
+            } else if (anime.airedEpisodesCount > 0) {
+                maxAired = anime.airedEpisodesCount;
+            }
+        }
+
+        List<Episode> result = new ArrayList<>();
+        for (Episode ep : rawList) {
+            if (isReleasing && maxAired < Integer.MAX_VALUE && ep.number > maxAired) {
+                // Skip episodes that have not aired yet
+                continue;
+            }
+            result.add(ep);
+        }
+        return result;
+    }
+
     private String pickBestSlug(List<Anime> list, String target, String alt) {
         if (list == null || list.isEmpty()) return null;
         for (Anime a : list) {
@@ -437,13 +497,16 @@ public class DetailActivity extends AppCompatActivity {
         }
         // Season-consistent match
         int sTarget = TitleMatcher.extractSeasonNumber(target);
+        if (sTarget <= 1 && !alt.isEmpty()) {
+            sTarget = TitleMatcher.extractSeasonNumber(alt);
+        }
         for (Anime a : list) {
             int sCandidate = TitleMatcher.extractSeasonNumber(a.title);
-            if (sTarget == sCandidate) {
+            if (sTarget == sCandidate && (TitleMatcher.isTitleMatch(target, a.title) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, a.title)))) {
                 return a.slug;
             }
         }
-        return list.get(0).slug;
+        return null;
     }
 
     // TIER 2 Fallback: AniChan
@@ -456,12 +519,13 @@ public class DetailActivity extends AppCompatActivity {
         AniChanClient.getEpisodes(anime.id, new AniChanClient.Callback<List<Episode>>() {
             @Override
             public void onSuccess(List<Episode> aniChanEps) {
-                if (aniChanEps != null && !aniChanEps.isEmpty()) {
+                List<Episode> filtered = filterAccurateEpisodes(aniChanEps);
+                if (!filtered.isEmpty()) {
                     mainHandler.post(() -> {
                         if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
                         episodeList.clear();
-                        episodeList.addAll(aniChanEps);
-                        anime.airedEpisodesCount = aniChanEps.size();
+                        episodeList.addAll(filtered);
+                        anime.airedEpisodesCount = filtered.size();
                         refreshWatchedStates();
                         episodeAdapter.setData(episodeList);
                     });
@@ -494,11 +558,12 @@ public class DetailActivity extends AppCompatActivity {
                     OtakudesuScraper.getEpisodes(matchedSlug, new OtakudesuScraper.Callback<List<Episode>>() {
                         @Override
                         public void onSuccess(List<Episode> otakuEpisodes) {
-                            if (otakuEpisodes != null && !otakuEpisodes.isEmpty()) {
+                            List<Episode> filtered = filterAccurateEpisodes(otakuEpisodes);
+                            if (!filtered.isEmpty()) {
                                 mainHandler.post(() -> {
                                     episodeList.clear();
-                                    episodeList.addAll(otakuEpisodes);
-                                    anime.airedEpisodesCount = otakuEpisodes.size();
+                                    episodeList.addAll(filtered);
+                                    anime.airedEpisodesCount = filtered.size();
                                     refreshWatchedStates();
                                     episodeAdapter.setData(episodeList);
                                 });

@@ -88,6 +88,13 @@ public class AniListClient {
 
     public static boolean isLongRunning(Anime anime) {
         if (anime == null) return false;
+        // If an anime has a defined seasonal episode count (1-30 eps), it is a seasonal anime, not infinite
+        if (anime.episodesCount > 0 && anime.episodesCount <= 30) {
+            return false;
+        }
+        if (anime.episodesCount > 30 || anime.airedEpisodesCount > 30) {
+            return true;
+        }
         String t = (anime.title != null ? anime.title : "").toLowerCase(Locale.US);
         String r = (anime.romajiTitle != null ? anime.romajiTitle : "").toLowerCase(Locale.US);
         String s = (anime.slug != null ? anime.slug : "").toLowerCase(Locale.US);
@@ -95,16 +102,12 @@ public class AniListClient {
         String[] known = {
             "one-piece", "one piece", "detective conan", "case closed", "pokemon",
             "crayon shin-chan", "shin-chan", "doraemon", "chibi maruko-chan", "chibi-maruko",
-            "boruto", "sazae-san", "sazae", "dragon ball", "naruto", "bleach", "gintama",
-            "yu-gi-oh", "black clover"
+            "boruto", "sazae-san", "sazae", "yu-gi-oh"
         };
         for (String k : known) {
             if (t.contains(k) || r.contains(k) || s.contains(k)) {
                 return true;
             }
-        }
-        if (anime.episodesCount > 30 || anime.airedEpisodesCount > 30) {
-            return true;
         }
         if (anime.episodesCount == 0 && anime.year > 0 && anime.year < Calendar.getInstance().get(Calendar.YEAR) - 1) {
             return true;
@@ -114,7 +117,7 @@ public class AniListClient {
 
     /**
      * Beranda: Anime yang tayang pada musim saat ini (Current Season Airing).
-     * Mengecualikan serial panjang berkelanjutan agar Beranda murni anime musiman aktif.
+     * Mengecualikan serial panjang berkelanjutan dan anime dari musim sebelumnya/mendatang agar Beranda murni anime musiman aktif.
      */
     public static void getCurrentSeasonAiring(int page, int perPage, PagedCallback<List<Anime>> callback) {
         SeasonPair cur = getCurrentSeasonPair();
@@ -122,7 +125,7 @@ public class AniListClient {
                 "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
                 "pageInfo { hasNextPage total currentPage } " +
-                "media(season: %s, seasonYear: %d, status_in: [RELEASING, NOT_YET_RELEASED], sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                "media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }", cur.season, cur.year);
 
         executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
@@ -131,7 +134,10 @@ public class AniListClient {
                 List<Anime> seasonalOnly = new ArrayList<>();
                 if (result != null) {
                     for (Anime a : result) {
-                        if (!isLongRunning(a)) {
+                        if (a == null) continue;
+                        // Strict season isolation: must strictly belong to current season & year
+                        boolean isStrictCurrentSeason = cur.season.equalsIgnoreCase(a.season) && cur.year == a.year;
+                        if (isStrictCurrentSeason && !isLongRunning(a)) {
                             seasonalOnly.add(a);
                         }
                     }
@@ -145,7 +151,17 @@ public class AniListClient {
                 getSeasonal(cur.season, cur.year, page, perPage, new Callback<List<Anime>>() {
                     @Override
                     public void onSuccess(List<Anime> fallbackResult) {
-                        callback.onSuccess(fallbackResult, false, fallbackResult != null ? fallbackResult.size() : 0);
+                        List<Anime> seasonalOnly = new ArrayList<>();
+                        if (fallbackResult != null) {
+                            for (Anime a : fallbackResult) {
+                                if (a == null) continue;
+                                boolean isStrictCurrentSeason = cur.season.equalsIgnoreCase(a.season) && cur.year == a.year;
+                                if (isStrictCurrentSeason && !isLongRunning(a)) {
+                                    seasonalOnly.add(a);
+                                }
+                            }
+                        }
+                        callback.onSuccess(seasonalOnly, false, seasonalOnly.size());
                     }
 
                     @Override
@@ -173,9 +189,13 @@ public class AniListClient {
 
     /**
      * Masih Tayang (Airing): List anime sedang tayang (releasing) kontinu yang dipisahkan
-     * secara terstruktur menjadi dua jalur: anime musiman berjalan dan serial panjang berkelanjutan.
+     * secara terstruktur menjadi 3 jalur yang saling terisolasi:
+     * 1. Musim Berjalan (Current Season Ongoing)
+     * 2. Lanjutan Musim Sebelumnya (Previous Season Carry-over)
+     * 3. Serial Panjang Berkelanjutan (Continuous On-Going)
      */
     public static void getMasihTayangDualLane(int page, int perPage, String filterLane, PagedCallback<List<Anime>> callback) {
+        SeasonPair cur = getCurrentSeasonPair();
         String query = "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
                 "pageInfo { hasNextPage total currentPage } " +
@@ -185,7 +205,8 @@ public class AniListClient {
         executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> list, boolean hasNextPage, int total) {
-                List<Anime> seasonalList = new ArrayList<>();
+                List<Anime> currentSeasonList = new ArrayList<>();
+                List<Anime> prevSeasonList = new ArrayList<>();
                 List<Anime> longRunningList = new ArrayList<>();
                 Set<Integer> seenIds = new HashSet<>();
 
@@ -198,21 +219,33 @@ public class AniListClient {
                             longRunningList.add(a);
                         } else {
                             a.isLongRunning = false;
-                            seasonalList.add(a);
+                            boolean isCurrentSeason = a.season != null && cur.season.equalsIgnoreCase(a.season) && a.year == cur.year;
+                            if (isCurrentSeason) {
+                                currentSeasonList.add(a);
+                            } else {
+                                // Started in previous seasons / years but still airing
+                                prevSeasonList.add(a);
+                            }
                         }
                     }
                 }
 
                 List<Anime> result = new ArrayList<>();
-                if ("PREV".equalsIgnoreCase(filterLane)) {
-                    result.addAll(seasonalList);
+                if ("CUR".equalsIgnoreCase(filterLane) || "CURRENT".equalsIgnoreCase(filterLane)) {
+                    result.addAll(currentSeasonList);
+                } else if ("PREV".equalsIgnoreCase(filterLane) || "PREVIOUS".equalsIgnoreCase(filterLane)) {
+                    result.addAll(prevSeasonList);
                 } else if ("LONG".equalsIgnoreCase(filterLane)) {
                     result.addAll(longRunningList);
                 } else {
-                    // Tampilan Dual Lane dengan section header pembatas
-                    if (!seasonalList.isEmpty()) {
-                        result.add(Anime.createHeader("ANIME MUSIMAN BERJALAN", "ONGOING"));
-                        result.addAll(seasonalList);
+                    // Tampilan 3-Lane Terstruktur dengan section header pembatas
+                    if (!currentSeasonList.isEmpty()) {
+                        result.add(Anime.createHeader("ANIME MUSIM BERJALAN (" + cur.season + " " + cur.year + ")", "SEDANG TAYANG"));
+                        result.addAll(currentSeasonList);
+                    }
+                    if (!prevSeasonList.isEmpty()) {
+                        result.add(Anime.createHeader("LANJUTAN MUSIM SEBELUMNYA (CARRY-OVER)", "LANJUTAN TAYANG"));
+                        result.addAll(prevSeasonList);
                     }
                     if (!longRunningList.isEmpty()) {
                         result.add(Anime.createHeader("SERIAL PANJANG BERKELANJUTAN (CONTINUOUS ON-GOING)", "SERIAL PANJANG"));
@@ -1209,22 +1242,41 @@ public class AniListClient {
             a.nextAiringTime = nextEpObj.optInt("timeUntilAiring", 0);
             if (a.nextAiringEpisode > 1) {
                 a.airedEpisodesCount = a.nextAiringEpisode - 1;
+            } else if (a.nextAiringEpisode == 1) {
+                a.airedEpisodesCount = 0;
             }
+        } else if ("FINISHED".equalsIgnoreCase(a.status) && a.episodesCount > 0) {
+            a.airedEpisodesCount = a.episodesCount;
         }
 
         boolean isOngoing = "RELEASING".equalsIgnoreCase(a.status) || "AIRING".equalsIgnoreCase(a.status);
-        if (a.airedEpisodesCount > 0) {
-            if (a.episodesCount > 0) {
-                a.epsCounter = a.airedEpisodesCount + "/" + a.episodesCount + " Ep";
-            } else {
-                a.epsCounter = a.airedEpisodesCount + " Ep";
-            }
+        boolean isNotYetAired = "NOT_YET_RELEASED".equalsIgnoreCase(a.status) ||
+                (isOngoing && a.nextAiringEpisode == 1 && a.airedEpisodesCount == 0);
+
+        if (isNotYetAired) {
+            a.epsCounter = "Belum Tayang";
         } else if (isOngoing) {
-            a.epsCounter = a.episodesCount > 0 ? ("1/" + a.episodesCount + " Ep") : "Ongoing";
+            if (a.airedEpisodesCount > 0) {
+                if (a.episodesCount > 0) {
+                    a.epsCounter = "Ep " + a.airedEpisodesCount + "/" + a.episodesCount;
+                } else {
+                    a.epsCounter = "Ep " + a.airedEpisodesCount;
+                }
+            } else {
+                a.epsCounter = "Ongoing";
+            }
+        } else if ("FINISHED".equalsIgnoreCase(a.status)) {
+            if (a.episodesCount > 0) {
+                a.epsCounter = a.episodesCount + " Ep (Tamat)";
+            } else if (a.airedEpisodesCount > 0) {
+                a.epsCounter = a.airedEpisodesCount + " Ep (Tamat)";
+            } else {
+                a.epsCounter = "Tamat";
+            }
         } else if (a.episodesCount > 0) {
             a.epsCounter = a.episodesCount + " Ep";
         } else {
-            a.epsCounter = a.format;
+            a.epsCounter = a.format != null ? a.format : "TV";
         }
 
         JSONArray gArr = m.optJSONArray("genres");
