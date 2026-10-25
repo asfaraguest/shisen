@@ -5,6 +5,21 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 ## [0.1.0-beta.1] - 2026-10-25
 
 ### Ditambahkan
+- **Adopsi Penuh Filter Katalog Tatap (Cross-Filter Modal)**:
+  - Mengadopsi dialog modal cross-filter resmi Tatap (`dialog_catalog_filter.xml`) dengan 6 kategori penyaringan lengkap:
+    1. *Urutan (Sort)*: Terpopuler, Skor Tertinggi, Terbaru, Trending, A-Z, Favorit.
+    2. *Tahun Rilis*: Semua Tahun, 2026, 2025, 2024, 2023, 2022, 2021, 2020, rentang dekade 2015-2019, 2010-2014, 2000-2009, dan klasik &lt;2000.
+    3. *Musim Penayangan*: Semua Musim, Musim Semi (Spring), Musim Panas (Summer), Musim Gugur (Fall), dan Musim Dingin (Winter).
+    4. *Bulan Rilis*: Semua Bulan, Januari (1) hingga Desember (12).
+    5. *Format / Tipe*: Semua Format, TV Series, Movie, OVA, ONA, dan Special.
+    6. *Status Penayangan*: Semua Status, Sedang Tayang (Releasing), dan Sudah Tamat (Finished).
+  - Tombol aksi terpadu *Hapus Filter* dan *Terapkan Filter*.
+  - Indikator ringkasan filter aktif di bilah kontekstual (`KATALOG: TERPOPULER · 2024 · TV SERIES`) dengan tombol pintasan reset/filter ulang.
+- **Adopsi Alur & Daftar Genre Lengkap Tatap (90+ Kategori)**:
+  - Mengadopsi dialog pemilih genre interaktif (`dialog_genre_selector.xml`) yang langsung terbuka otomatis saat tab/menu Genre dipilih.
+  - Kolom pencarian genre instan (*real-time filter*) untuk mencari kategori secara cepat (misal: *isekai*, *romance*, *cyberpunk*, *sports*).
+  - Menyertakan daftar 90+ genre resmi Tatap (Action, Adventure, Animation, Boys Love, Cars, CGDCT, Childcare, Combat Sports, Comedy, Crossdressing, Delinquents, Dementia, Demons, Detective, Drama, Educational, Fantasy, Gag Humor, Game, Girls Love, Gore, Gourmet, Harem, High Stakes Game, Historical, Horror, Idols, Isekai, Iyashikei, Josei, Kids, Magic, Mahou Shoujo, Martial Arts, Mecha, Military, Music, Mystery, Mythology, Parody, Pets, Police, Psychological, Racing, Reincarnation, Romance, Samurai, School, Sci-Fi, Seinen, Shoujo, Shounen, Slice of Life, Space, Sports, Supernatural, Super Power, Survival, Suspense, Thriller, Time Travel, Vampire, Video Game, Workplace, dll.).
+  - Penanganan multi-sumber di backend: otomatis memetakan genre resmi AniList (`genre: $genre`) dan tags tematik AniList (`tag: $tag`) dengan zero hentai blacklist policy.
 - **Paritas Katalog Musiman Beranda & Masih Tayang (Dual-Lane)**:
   - **Beranda (Musim Ini)**: Menampilkan daftar anime yang tayang pada musim saat ini (`getCurrentSeasonAiring`) dengan Spotlight Hero anime terpopuler di halaman 1, mengecualikan serial panjang agar Beranda murni anime musiman aktif.
   - **Masih Tayang (Airing)**: Mengadopsi arsitektur Dual-Lane Tatap OG yang memisahkan anime ongoing dari 2 musim sebelumnya (`ANIME 2 MUSIM SEBELUMNYA (ONGOING)`) dan serial panjang berkelanjutan (`SERIAL PANJANG BERKELANJUTAN`) via header pemisah jalur (`item_lane_header`). Dilengkapi sub-filter chip (*Semua Dual-Lane*, *2 Musim Sebelumnya*, *Serial Panjang*).

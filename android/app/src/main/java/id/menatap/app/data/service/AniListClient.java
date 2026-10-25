@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
@@ -298,31 +299,108 @@ public class AniListClient {
         executePagedQuery(query, page, perPage, callback);
     }
 
+    private static final Set<String> ANILIST_OFFICIAL_GENRES = new HashSet<>(Arrays.asList(
+            "action", "adventure", "comedy", "drama", "ecchi", "fantasy", "horror",
+            "mahou shoujo", "mecha", "music", "mystery", "psychological", "romance",
+            "sci-fi", "slice of life", "sports", "supernatural", "thriller"
+    ));
+
     public static void getCatalog(String format, String sort, int page, int perPage, Callback<List<Anime>> callback) {
-        if (sort == null || sort.isEmpty()) sort = "POPULARITY_DESC";
-        String formatFilter = (format != null && !format.isEmpty() && !"ALL".equalsIgnoreCase(format))
-                ? String.format(Locale.US, ", format: %s", format.toUpperCase())
-                : "";
+        getCatalogCrossFiltered(sort, "", "", "", format, "", page, perPage, callback);
+    }
+
+    public static void getCatalogCrossFiltered(String sort, String year, String season, String month, String type, String status, int page, int perPage, Callback<List<Anime>> callback) {
+        String sortOrder = "POPULARITY_DESC";
+        if ("score".equalsIgnoreCase(sort)) sortOrder = "SCORE_DESC";
+        else if ("latest".equalsIgnoreCase(sort)) sortOrder = "START_DATE_DESC";
+        else if ("trending".equalsIgnoreCase(sort)) sortOrder = "TRENDING_DESC";
+        else if ("az".equalsIgnoreCase(sort)) sortOrder = "TITLE_ROMAJI";
+        else if ("most_favorite".equalsIgnoreCase(sort)) sortOrder = "FAVOURITES_DESC";
+
+        StringBuilder filters = new StringBuilder();
+        if (type != null && !type.trim().isEmpty() && !"ALL".equalsIgnoreCase(type.trim())) {
+            filters.append(", format: ").append(type.trim().toUpperCase(Locale.US));
+        }
+        if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status.trim())) {
+            if ("releasing".equalsIgnoreCase(status) || "airing".equalsIgnoreCase(status)) {
+                filters.append(", status: RELEASING");
+            } else if ("completed".equalsIgnoreCase(status)) {
+                filters.append(", status: FINISHED");
+            }
+        }
+        if (season != null && !season.trim().isEmpty() && !"ALL".equalsIgnoreCase(season.trim())) {
+            filters.append(", season: ").append(season.trim().toUpperCase(Locale.US));
+        }
+
+        if (year != null && !year.trim().isEmpty()) {
+            String y = year.trim();
+            if (y.matches("\\d{4}")) {
+                if (month != null && !month.trim().isEmpty()) {
+                    try {
+                        int m = Integer.parseInt(month.trim());
+                        if (m >= 1 && m <= 12) {
+                            int yInt = Integer.parseInt(y);
+                            int start = yInt * 10000 + m * 100 + 1;
+                            int end = yInt * 10000 + m * 100 + 31;
+                            filters.append(", startDate_greater: ").append(start).append(", startDate_lesser: ").append(end);
+                        } else {
+                            filters.append(", seasonYear: ").append(y);
+                        }
+                    } catch (Exception e) {
+                        filters.append(", seasonYear: ").append(y);
+                    }
+                } else {
+                    filters.append(", seasonYear: ").append(y);
+                }
+            } else if ("2015-2019".equals(y)) {
+                filters.append(", startDate_greater: 20150101, startDate_lesser: 20191231");
+            } else if ("2010-2014".equals(y)) {
+                filters.append(", startDate_greater: 20100101, startDate_lesser: 20141231");
+            } else if ("2000-2009".equals(y)) {
+                filters.append(", startDate_greater: 20000101, startDate_lesser: 20091231");
+            } else if (y.startsWith("<") || y.contains("2000")) {
+                filters.append(", startDate_lesser: 20000101");
+            }
+        }
 
         String query = String.format(Locale.US,
                 "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
                 "media(sort: %s, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]%s) { " +
-                MEDIA_FIELDS + " } } }", sort, formatFilter);
+                MEDIA_FIELDS + " } } }", sortOrder, filters.toString());
         executePagedQuery(query, page, perPage, callback);
     }
 
     public static void getByGenre(String genre, int page, int perPage, Callback<List<Anime>> callback) {
-        String query = "query ($page: Int, $perPage: Int, $genre: String) { " +
-                "Page(page: $page, perPage: $perPage) { " +
-                "media(genre: $genre, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
-                MEDIA_FIELDS + " } } }";
+        if (genre == null || genre.trim().isEmpty()) {
+            getPopular(page, perPage, callback);
+            return;
+        }
+        String clean = genre.trim();
+        boolean isOfficialGenre = ANILIST_OFFICIAL_GENRES.contains(clean.toLowerCase(Locale.US));
+
+        String query;
+        if (isOfficialGenre) {
+            query = "query ($page: Int, $perPage: Int, $genre: String) { " +
+                    "Page(page: $page, perPage: $perPage) { " +
+                    "media(genre: $genre, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                    MEDIA_FIELDS + " } } }";
+        } else {
+            query = "query ($page: Int, $perPage: Int, $tag: String) { " +
+                    "Page(page: $page, perPage: $perPage) { " +
+                    "media(tag: $tag, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                    MEDIA_FIELDS + " } } }";
+        }
 
         try {
             JSONObject variables = new JSONObject();
             variables.put("page", page);
             variables.put("perPage", perPage);
-            variables.put("genre", genre);
+            if (isOfficialGenre) {
+                variables.put("genre", clean);
+            } else {
+                variables.put("tag", clean);
+            }
 
             JSONObject body = new JSONObject();
             body.put("query", query);

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_genre_chip"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="3dp"
+    android:background="@drawable/bg_genre_chip"
+    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:paddingHorizontal="10dp"
+    android:paddingVertical="9dp">
+
+    <TextView
+        android:id="@+id/tv_genre_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Action"
+        android:textColor="@color/text_secondary"
+        android:textSize="@dimen/text_body_large"
+        android:fontFamily="sans-serif-medium"
+        android:singleLine="true"
+        android:ellipsize="end" />
+</LinearLayout>

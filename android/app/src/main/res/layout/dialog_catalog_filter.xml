@@ -1,0 +1,990 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_frost"
+    android:padding="16dp">
+
+    <!-- Header Dialog -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_filter"
+                android:drawablePadding="7dp"
+                android:drawableTint="@color/accent_glacial"
+                android:text="Filter Katalog Anime"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_title_large"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cross Filter: Urutan, Tahun, Musim, Bulan, Tipe &amp; Status"
+                android:textColor="@color/text_muted"
+                android:textSize="@dimen/text_caption"
+                android:fontFamily="sans-serif"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_close_catalog_dialog"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:drawableStart="@drawable/ic_close"
+            android:drawableTint="#8892B0"
+            android:padding="8dp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/frost_border"
+        android:layout_marginBottom="10dp" />
+
+    <!-- Scrollable Filter Sections -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="4dp">
+
+            <!-- Seksi 1: Urutan / Sort -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="URUTAN KATALOG (SORT)"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04"
+                android:layout_marginBottom="6dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:layout_marginBottom="14dp">
+
+                <LinearLayout
+                    android:id="@+id/group_filter_sort"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chip_sort_pop"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_chip_selected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Terpopuler"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_sort_score"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Skor Tertinggi"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_sort_latest"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Terbaru"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_sort_trending"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Trending"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_sort_az"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="A-Z"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_sort_fav"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Favorit"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- Seksi 2: Tahun Rilis (Year) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TAHUN RILIS"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04"
+                android:layout_marginBottom="6dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:layout_marginBottom="14dp">
+
+                <LinearLayout
+                    android:id="@+id/group_filter_year"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chip_year_all"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_chip_selected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Semua Tahun"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_2026"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="2026"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_2025"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="2025"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_2024"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="2024"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_2023"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="2023"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_2022"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="2022"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_2021"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="2021"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_2020"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="2020"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_2015_2019"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="2015-2019"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_2010_2014"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="2010-2014"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_2000_2009"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="2000-2009"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_year_classic"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="&lt;2000"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- Seksi 3: Musim Penayangan (Season) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MUSIM PENAYANGAN (SEASON)"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04"
+                android:layout_marginBottom="6dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:layout_marginBottom="14dp">
+
+                <LinearLayout
+                    android:id="@+id/group_filter_season"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chip_season_all"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_chip_selected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Semua Musim"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_season_spring"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:drawableStart="@drawable/ic_tab_season"
+                        android:drawablePadding="5dp"
+                        android:drawableTint="#8892B0"
+                        android:text="Musim Semi (Spring)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_season_summer"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:drawableStart="@drawable/ic_tab_season"
+                        android:drawablePadding="5dp"
+                        android:drawableTint="#8892B0"
+                        android:text="Musim Panas (Summer)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_season_fall"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:drawableStart="@drawable/ic_tab_season"
+                        android:drawablePadding="5dp"
+                        android:drawableTint="#8892B0"
+                        android:text="Musim Gugur (Fall)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_season_winter"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:drawableStart="@drawable/ic_tab_season"
+                        android:drawablePadding="5dp"
+                        android:drawableTint="#8892B0"
+                        android:text="Musim Dingin (Winter)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- Seksi 4: Bulan Rilis (Month) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BULAN RILIS"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04"
+                android:layout_marginBottom="6dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:layout_marginBottom="14dp">
+
+                <LinearLayout
+                    android:id="@+id/group_filter_month"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chip_month_all"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_chip_selected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Semua Bulan"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_1"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Jan (1)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_2"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Feb (2)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_3"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Mar (3)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_4"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Apr (4)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_5"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Mei (5)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_6"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Jun (6)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_7"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Jul (7)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_8"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Agu (8)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_9"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Sep (9)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_10"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Okt (10)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_11"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Nov (11)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_month_12"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Des (12)"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- Seksi 5: Format / Tipe -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FORMAT / TIPE"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04"
+                android:layout_marginBottom="6dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:layout_marginBottom="14dp">
+
+                <LinearLayout
+                    android:id="@+id/group_filter_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chip_type_all"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_chip_selected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Semua Format"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_type_tv"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="TV Series"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_type_movie"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Movie"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_type_ova"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="OVA"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_type_ona"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="ONA"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_type_special"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Special"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- Seksi 6: Status Penayangan -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="STATUS PENAYANGAN"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04"
+                android:layout_marginBottom="6dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:layout_marginBottom="8dp">
+
+                <LinearLayout
+                    android:id="@+id/group_filter_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chip_status_all"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_chip_selected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Semua Status"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_status_airing"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Sedang Tayang"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/chip_status_completed"
+                        style="@style/Widget.AppCompat.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="Sudah Tamat"
+                        android:textColor="#8892B0"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Action Bar (Hapus & Terapkan Filter) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btn_reset_catalog_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Hapus Filter"
+            android:textColor="@color/text_danger"
+            android:backgroundTint="@color/frost_elevated"
+            android:textSize="@dimen/text_subhead"
+            android:fontFamily="sans-serif-medium" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btn_apply_catalog_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Terapkan Filter"
+            android:textColor="#090D16"
+            android:backgroundTint="@color/accent_glacial"
+            android:textSize="@dimen/text_subhead"
+            android:fontFamily="sans-serif-medium"
+            android:paddingHorizontal="16dp" />
+    </LinearLayout>
+</LinearLayout>

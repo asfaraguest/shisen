@@ -1,18 +1,25 @@
 package id.menatap.app.ui.home;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.view.animation.OvershootInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
@@ -24,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -31,6 +39,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -106,16 +115,115 @@ public class MainActivity extends AppCompatActivity {
 
     // Contextual Sub-Filter States
     private int selectedDayOfWeek = Calendar.MONDAY;
-    private String selectedCatalogFormat = "ALL";
-    private String selectedCatalogSort = "POPULARITY_DESC";
     private String selectedGenre = "Action";
     private String selectedAiringLane = "ALL";
 
-    private final String[] GENRES = {
-            "Action", "Adventure", "Comedy", "Drama", "Fantasy",
-            "Romance", "Sci-Fi", "Slice of Life", "Sports", "Supernatural",
-            "Mystery", "Psychological", "Horror", "Thriller"
-    };
+    // Full Tatap Catalog Cross-Filter States
+    private String filterCatalogSort = "popularity";
+    private String filterCatalogYear = "";
+    private String filterCatalogSeason = "";
+    private String filterCatalogMonth = "";
+    private String filterCatalogType = "";
+    private String filterCatalogStatus = "";
+
+    public static class GenreItem {
+        public final String title;
+        public final String slug;
+        public GenreItem(String title, String slug) {
+            this.title = title;
+            this.slug = slug;
+        }
+    }
+
+    // Complete 90+ Genre List (Full Tatap Parity, Zero-Tolerance Hentai)
+    public static final List<GenreItem> TATAP_GENRES = Arrays.asList(
+            new GenreItem("Action", "action"),
+            new GenreItem("Action & Adventure", "action-adventure"),
+            new GenreItem("Adult Cast", "adult-cast"),
+            new GenreItem("Adventure", "adventure"),
+            new GenreItem("Animation", "animation"),
+            new GenreItem("Anthropomorphic", "anthropomorphic"),
+            new GenreItem("Avant Garde", "avant-garde"),
+            new GenreItem("Award Winning", "award-winning"),
+            new GenreItem("Boys Love", "boys-love"),
+            new GenreItem("Cars", "cars"),
+            new GenreItem("CGDCT", "cgdct"),
+            new GenreItem("Childcare", "childcare"),
+            new GenreItem("Combat Sports", "combat-sports"),
+            new GenreItem("Comedy", "comedy"),
+            new GenreItem("Crossdressing", "crossdressing"),
+            new GenreItem("Delinquents", "delinquents"),
+            new GenreItem("Dementia", "dementia"),
+            new GenreItem("Demons", "demons"),
+            new GenreItem("Detective", "detective"),
+            new GenreItem("Drama", "drama"),
+            new GenreItem("Educational", "educational"),
+            new GenreItem("Fantasy", "fantasy"),
+            new GenreItem("Gag Humor", "gag-humor"),
+            new GenreItem("Game", "game"),
+            new GenreItem("Girls Love", "girls-love"),
+            new GenreItem("Gore", "gore"),
+            new GenreItem("Gourmet", "gourmet"),
+            new GenreItem("Harem", "harem"),
+            new GenreItem("High Stakes Game", "high-stakes-game"),
+            new GenreItem("Historical", "historical"),
+            new GenreItem("Horror", "horror"),
+            new GenreItem("Idols (Female)", "idols-female"),
+            new GenreItem("Idols (Male)", "idols-male"),
+            new GenreItem("Isekai", "isekai"),
+            new GenreItem("Iyashikei", "iyashikei"),
+            new GenreItem("Josei", "josei"),
+            new GenreItem("Kids", "kids"),
+            new GenreItem("Love Polygon", "love-polygon"),
+            new GenreItem("Love Status Quo", "love-status-quo"),
+            new GenreItem("Magic", "magic"),
+            new GenreItem("Mahou Shoujo", "mahou-shoujo"),
+            new GenreItem("Martial Arts", "martial-arts"),
+            new GenreItem("Mecha", "mecha"),
+            new GenreItem("Medical", "medical"),
+            new GenreItem("Military", "military"),
+            new GenreItem("Music", "music"),
+            new GenreItem("Mystery", "mystery"),
+            new GenreItem("Mythology", "mythology"),
+            new GenreItem("Organized Crime", "organized-crime"),
+            new GenreItem("Otaku Culture", "otaku-culture"),
+            new GenreItem("Parody", "parody"),
+            new GenreItem("Performing Arts", "performing-arts"),
+            new GenreItem("Pets", "pets"),
+            new GenreItem("Police", "police"),
+            new GenreItem("Psychological", "psychological"),
+            new GenreItem("Racing", "racing"),
+            new GenreItem("Reincarnation", "reincarnation"),
+            new GenreItem("Reverse Harem", "reverse-harem"),
+            new GenreItem("Romance", "romance"),
+            new GenreItem("Samurai", "samurai"),
+            new GenreItem("School", "school"),
+            new GenreItem("Sci-Fi", "sci-fi"),
+            new GenreItem("Sci-Fi & Fantasy", "sci-fi-fantasy"),
+            new GenreItem("Seinen", "seinen"),
+            new GenreItem("Shoujo", "shoujo"),
+            new GenreItem("Shoujo Ai", "shoujo-ai"),
+            new GenreItem("Shounen", "shounen"),
+            new GenreItem("Shounen Ai", "shounen-ai"),
+            new GenreItem("Showbiz", "showbiz"),
+            new GenreItem("Slice of Life", "slice-of-life"),
+            new GenreItem("Space", "space"),
+            new GenreItem("Sports", "sports"),
+            new GenreItem("Strategy Game", "strategy-game"),
+            new GenreItem("Supernatural", "supernatural"),
+            new GenreItem("Super Power", "super-power"),
+            new GenreItem("Survival", "survival"),
+            new GenreItem("Suspense", "suspense"),
+            new GenreItem("Team Sports", "team-sports"),
+            new GenreItem("Thriller", "thriller"),
+            new GenreItem("Time Travel", "time-travel"),
+            new GenreItem("Urban Fantasy", "urban-fantasy"),
+            new GenreItem("Vampire", "vampire"),
+            new GenreItem("Video Game", "video-game"),
+            new GenreItem("Villainess", "villainess"),
+            new GenreItem("Visual Arts", "visual-arts"),
+            new GenreItem("Workplace", "workplace")
+    );
 
     private final String[] DAYS_NAMES = {"Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"};
     private final int[] DAYS_CALENDAR = {
@@ -341,24 +449,45 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        // 3. Contextual Clear All History Button
+        // 3. Contextual Action Button (Riwayat: Hapus Semua, Katalog: Reset Filter, Genre: Pilih Genre)
         btnClearHistoryAll.setOnClickListener(v -> {
             HapticHelper.performClick(v);
-            new AlertDialog.Builder(this)
-                    .setTitle("Hapus Riwayat Tontonan")
-                    .setMessage("Apakah kamu yakin ingin menghapus seluruh riwayat tontonan?")
-                    .setPositiveButton("Hapus Semua", (dialog, which) -> {
-                        new Thread(() -> {
-                            MenatapDatabase.getInstance(this).clearAllHistory();
-                            mainHandler.post(() -> {
-                                Toast.makeText(this, "Riwayat tontonan berhasil dibersihkan", Toast.LENGTH_SHORT).show();
-                                loadCurrentFeed();
-                            });
-                        }).start();
-                    })
-                    .setNegativeButton("Batal", null)
-                    .show();
+            if (currentTab == MainTab.RIWAYAT) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Hapus Riwayat Tontonan")
+                        .setMessage("Apakah kamu yakin ingin menghapus seluruh riwayat tontonan?")
+                        .setPositiveButton("Hapus Semua", (dialog, which) -> {
+                            new Thread(() -> {
+                                MenatapDatabase.getInstance(this).clearAllHistory();
+                                mainHandler.post(() -> {
+                                    Toast.makeText(this, "Riwayat tontonan berhasil dibersihkan", Toast.LENGTH_SHORT).show();
+                                    loadCurrentFeed();
+                                });
+                            }).start();
+                        })
+                        .setNegativeButton("Batal", null)
+                        .show();
+            } else if (currentTab == MainTab.KATALOG) {
+                resetCatalogFilterState();
+                updateTabsUI();
+                updateSubFilterUI();
+                loadCurrentFeed();
+            } else if (currentTab == MainTab.GENRE) {
+                showGenreSelectorDialog();
+            }
         });
+
+        if (tvContextualTitle != null) {
+            tvContextualTitle.setOnClickListener(v -> {
+                if (currentTab == MainTab.KATALOG) {
+                    HapticHelper.performClick(v);
+                    showCatalogFilterDialog();
+                } else if (currentTab == MainTab.GENRE) {
+                    HapticHelper.performClick(v);
+                    showGenreSelectorDialog();
+                }
+            });
+        }
     }
 
     private void setupBackHandler() {
@@ -424,6 +553,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void selectMenuItem(MainTab tab) {
         setFoldedMenuOpen(false);
+        if (tab == MainTab.GENRE) {
+            showGenreSelectorDialog();
+            return;
+        }
+        if (tab == MainTab.KATALOG && currentTab == MainTab.KATALOG) {
+            showCatalogFilterDialog();
+            return;
+        }
         selectTab(tab);
     }
 
@@ -565,27 +702,21 @@ public class MainActivity extends AppCompatActivity {
                 layoutSubChips.addView(chip);
             }
         } else if (currentTab == MainTab.KATALOG) {
-            layoutContextualBar.setVisibility(View.GONE);
+            layoutContextualBar.setVisibility(View.VISIBLE);
+            tvContextualTitle.setText(getCatalogFilterSummary());
+            btnClearHistoryAll.setText(isCatalogFilterActive() ? "Reset Filter" : "Filter...");
+            btnClearHistoryAll.setVisibility(View.VISIBLE);
             scrollSubFilters.setVisibility(View.VISIBLE);
 
-            String[] formats = {"ALL", "TV", "MOVIE", "OVA", "SPECIAL"};
-            String[] formatLabels = {"Semua Format", "Serial TV", "Film / Movie", "OVA", "Spesial"};
-            for (int i = 0; i < formats.length; i++) {
-                final String f = formats[i];
-                boolean isSelected = f.equalsIgnoreCase(selectedCatalogFormat);
+            // 1. Primary Action Chip: Open Full Cross-Filter Dialog
+            TextView btnFilterDialog = createSubFilterChip("⚙ Filter Katalog", isCatalogFilterActive());
+            btnFilterDialog.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                showCatalogFilterDialog();
+            });
+            layoutSubChips.addView(btnFilterDialog);
 
-                TextView chip = createSubFilterChip(formatLabels[i], isSelected);
-                chip.setOnClickListener(v -> {
-                    HapticHelper.performClick(v);
-                    selectedCatalogFormat = f;
-                    currentPage = 1;
-                    updateSubFilterUI();
-                    loadCurrentFeed();
-                });
-                layoutSubChips.addView(chip);
-            }
-
-            // Separator line
+            // Separator
             View div = new View(this);
             LinearLayout.LayoutParams dLp = new LinearLayout.LayoutParams(
                     (int) (1.5 * getResources().getDisplayMetrics().density),
@@ -596,16 +727,17 @@ public class MainActivity extends AppCompatActivity {
             div.setBackgroundColor(Color.parseColor("#243859"));
             layoutSubChips.addView(div);
 
-            String[] sorts = {"POPULARITY_DESC", "SCORE_DESC", "TRENDING_DESC", "FAVOURITES_DESC"};
-            String[] sortLabels = {"Terpopuler", "Skor Tertinggi", "Sedang Tren", "Favorit"};
+            // Quick Sort Chips
+            String[] sorts = {"popularity", "score", "latest", "trending", "az", "most_favorite"};
+            String[] sortLabels = {"Terpopuler", "Skor Tertinggi", "Terbaru", "Trending", "A-Z", "Favorit"};
             for (int i = 0; i < sorts.length; i++) {
                 final String s = sorts[i];
-                boolean isSelected = s.equalsIgnoreCase(selectedCatalogSort);
+                boolean isSelected = s.equalsIgnoreCase(filterCatalogSort);
 
                 TextView chip = createSubFilterChip(sortLabels[i], isSelected);
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
-                    selectedCatalogSort = s;
+                    filterCatalogSort = s;
                     currentPage = 1;
                     updateSubFilterUI();
                     loadCurrentFeed();
@@ -613,9 +745,38 @@ public class MainActivity extends AppCompatActivity {
                 layoutSubChips.addView(chip);
             }
         } else if (currentTab == MainTab.GENRE) {
-            layoutContextualBar.setVisibility(View.GONE);
+            layoutContextualBar.setVisibility(View.VISIBLE);
+            tvContextualTitle.setText("GENRE: " + selectedGenre.toUpperCase(Locale.US));
+            btnClearHistoryAll.setText("Pilih Genre...");
+            btnClearHistoryAll.setVisibility(View.VISIBLE);
             scrollSubFilters.setVisibility(View.VISIBLE);
-            for (String genre : GENRES) {
+
+            // 1. Primary Action Chip: Open Genre Selector Dialog
+            TextView btnPickGenre = createSubFilterChip("🔍 Pilih Genre", true);
+            btnPickGenre.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                showGenreSelectorDialog();
+            });
+            layoutSubChips.addView(btnPickGenre);
+
+            // Separator
+            View div = new View(this);
+            LinearLayout.LayoutParams dLp = new LinearLayout.LayoutParams(
+                    (int) (1.5 * getResources().getDisplayMetrics().density),
+                    (int) (18 * getResources().getDisplayMetrics().density)
+            );
+            dLp.setMargins((int) (4 * getResources().getDisplayMetrics().density), 0, (int) (8 * getResources().getDisplayMetrics().density), 0);
+            div.setLayoutParams(dLp);
+            div.setBackgroundColor(Color.parseColor("#243859"));
+            layoutSubChips.addView(div);
+
+            // Top Quick Genres for Instant Access
+            String[] quickGenres = {
+                    "Action", "Adventure", "Comedy", "Drama", "Fantasy", "Isekai",
+                    "Magic", "Mecha", "Romance", "Sci-Fi", "Slice of Life", "Sports",
+                    "Supernatural", "Thriller", "Psychological", "Horror", "Mystery"
+            };
+            for (String genre : quickGenres) {
                 boolean isSelected = genre.equalsIgnoreCase(selectedGenre);
 
                 TextView chip = createSubFilterChip(genre, isSelected);
@@ -630,6 +791,349 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             scrollSubFilters.setVisibility(View.GONE);
+        }
+    }
+
+    private boolean isCatalogFilterActive() {
+        return !"popularity".equals(filterCatalogSort) ||
+                !filterCatalogYear.isEmpty() ||
+                !filterCatalogSeason.isEmpty() ||
+                !filterCatalogMonth.isEmpty() ||
+                !filterCatalogType.isEmpty() ||
+                !filterCatalogStatus.isEmpty();
+    }
+
+    private String getCatalogFilterSummary() {
+        List<String> parts = new ArrayList<>();
+        if ("score".equals(filterCatalogSort)) parts.add("SKOR TERTINGGI");
+        else if ("latest".equals(filterCatalogSort)) parts.add("TERBARU");
+        else if ("trending".equals(filterCatalogSort)) parts.add("TRENDING");
+        else if ("az".equals(filterCatalogSort)) parts.add("A-Z");
+        else if ("most_favorite".equals(filterCatalogSort)) parts.add("FAVORIT");
+        else parts.add("TERPOPULER");
+
+        if (!filterCatalogYear.isEmpty()) parts.add(filterCatalogYear.toUpperCase(Locale.US));
+        if (!filterCatalogSeason.isEmpty()) {
+            if ("spring".equals(filterCatalogSeason)) parts.add("SEMI");
+            else if ("summer".equals(filterCatalogSeason)) parts.add("PANAS");
+            else if ("fall".equals(filterCatalogSeason)) parts.add("GUGUR");
+            else if ("winter".equals(filterCatalogSeason)) parts.add("DINGIN");
+            else parts.add(filterCatalogSeason.toUpperCase(Locale.US));
+        }
+        if (!filterCatalogMonth.isEmpty()) {
+            String[] mNames = {"", "JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"};
+            try {
+                int mi = Integer.parseInt(filterCatalogMonth);
+                if (mi >= 1 && mi <= 12) parts.add(mNames[mi]);
+            } catch (Exception ignored) {}
+        }
+        if (!filterCatalogType.isEmpty()) parts.add(filterCatalogType.toUpperCase(Locale.US));
+        if (!filterCatalogStatus.isEmpty()) {
+            parts.add("releasing".equals(filterCatalogStatus) ? "AIRING" : "TAMAT");
+        }
+        return "KATALOG: " + TextUtils.join(" · ", parts);
+    }
+
+    private void resetCatalogFilterState() {
+        filterCatalogSort = "popularity";
+        filterCatalogYear = "";
+        filterCatalogSeason = "";
+        filterCatalogMonth = "";
+        filterCatalogType = "";
+        filterCatalogStatus = "";
+        currentPage = 1;
+    }
+
+    private void setupDialogWindowBounds(Dialog dialog) {
+        if (dialog == null || dialog.getWindow() == null) return;
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.94f);
+        dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+    }
+
+    private void showCatalogFilterDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_catalog_filter);
+        setupDialogWindowBounds(dialog);
+
+        final String[] tempSort = new String[]{filterCatalogSort};
+        final String[] tempYear = new String[]{filterCatalogYear};
+        final String[] tempSeason = new String[]{filterCatalogSeason};
+        final String[] tempMonth = new String[]{filterCatalogMonth};
+        final String[] tempType = new String[]{filterCatalogType};
+        final String[] tempStatus = new String[]{filterCatalogStatus};
+
+        interface ChipSelectAction {
+            void onSelect(String val);
+        }
+
+        class ChipGroupHelper {
+            void bind(int[] ids, String[] values, String current, ChipSelectAction action) {
+                for (int i = 0; i < ids.length; i++) {
+                    final int idx = i;
+                    TextView chip = dialog.findViewById(ids[i]);
+                    if (chip == null) continue;
+                    boolean selected = values[i].equals(current);
+                    chip.setBackgroundResource(selected ? R.drawable.bg_chip_selected : R.drawable.bg_tab_inactive);
+                    chip.setTextColor(selected ? 0xFF090D16 : 0xFF94A3B8);
+                    if (chip.getCompoundDrawables()[0] != null) {
+                        chip.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(selected ? 0xFF090D16 : 0xFF94A3B8));
+                    }
+                    chip.setOnClickListener(v -> {
+                        HapticHelper.performClick(v);
+                        for (int j = 0; j < ids.length; j++) {
+                            TextView c = dialog.findViewById(ids[j]);
+                            if (c != null) {
+                                boolean nowSel = (j == idx);
+                                c.setBackgroundResource(nowSel ? R.drawable.bg_chip_selected : R.drawable.bg_tab_inactive);
+                                c.setTextColor(nowSel ? 0xFF090D16 : 0xFF94A3B8);
+                                if (c.getCompoundDrawables()[0] != null) {
+                                    c.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(nowSel ? 0xFF090D16 : 0xFF94A3B8));
+                                }
+                            }
+                        }
+                        action.onSelect(values[idx]);
+                    });
+                }
+            }
+        }
+        ChipGroupHelper helper = new ChipGroupHelper();
+
+        // 1. Sort
+        int[] sortIds = new int[]{
+                R.id.chip_sort_pop, R.id.chip_sort_score, R.id.chip_sort_latest,
+                R.id.chip_sort_trending, R.id.chip_sort_az, R.id.chip_sort_fav
+        };
+        String[] sortVals = new String[]{"popularity", "score", "latest", "trending", "az", "most_favorite"};
+        helper.bind(sortIds, sortVals, tempSort[0], val -> tempSort[0] = val);
+
+        // 2. Year
+        int[] yearIds = new int[]{
+                R.id.chip_year_all, R.id.chip_year_2026, R.id.chip_year_2025, R.id.chip_year_2024,
+                R.id.chip_year_2023, R.id.chip_year_2022, R.id.chip_year_2021, R.id.chip_year_2020,
+                R.id.chip_year_2015_2019, R.id.chip_year_2010_2014, R.id.chip_year_2000_2009, R.id.chip_year_classic
+        };
+        String[] yearVals = new String[]{
+                "", "2026", "2025", "2024", "2023", "2022", "2021", "2020",
+                "2015-2019", "2010-2014", "2000-2009", "<2000"
+        };
+        helper.bind(yearIds, yearVals, tempYear[0], val -> tempYear[0] = val);
+
+        // 3. Season
+        int[] seasonIds = new int[]{
+                R.id.chip_season_all, R.id.chip_season_spring, R.id.chip_season_summer,
+                R.id.chip_season_fall, R.id.chip_season_winter
+        };
+        String[] seasonVals = new String[]{"", "spring", "summer", "fall", "winter"};
+        helper.bind(seasonIds, seasonVals, tempSeason[0], val -> tempSeason[0] = val);
+
+        // 4. Month
+        int[] monthIds = new int[]{
+                R.id.chip_month_all, R.id.chip_month_1, R.id.chip_month_2, R.id.chip_month_3,
+                R.id.chip_month_4, R.id.chip_month_5, R.id.chip_month_6, R.id.chip_month_7,
+                R.id.chip_month_8, R.id.chip_month_9, R.id.chip_month_10, R.id.chip_month_11, R.id.chip_month_12
+        };
+        String[] monthVals = new String[]{"", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
+        helper.bind(monthIds, monthVals, tempMonth[0], val -> tempMonth[0] = val);
+
+        // 5. Type
+        int[] typeIds = new int[]{
+                R.id.chip_type_all, R.id.chip_type_tv, R.id.chip_type_movie,
+                R.id.chip_type_ova, R.id.chip_type_ona, R.id.chip_type_special
+        };
+        String[] typeVals = new String[]{"", "tv", "movie", "ova", "ona", "special"};
+        helper.bind(typeIds, typeVals, tempType[0], val -> tempType[0] = val);
+
+        // 6. Status
+        int[] statusIds = new int[]{
+                R.id.chip_status_all, R.id.chip_status_airing, R.id.chip_status_completed
+        };
+        String[] statusVals = new String[]{"", "releasing", "completed"};
+        helper.bind(statusIds, statusVals, tempStatus[0], val -> tempStatus[0] = val);
+
+        // Action Buttons
+        View btnClose = dialog.findViewById(R.id.btn_close_catalog_dialog);
+        View btnReset = dialog.findViewById(R.id.btn_reset_catalog_filter);
+        View btnApply = dialog.findViewById(R.id.btn_apply_catalog_filter);
+
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                dialog.dismiss();
+            });
+        }
+
+        if (btnReset != null) {
+            btnReset.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                dialog.dismiss();
+                resetCatalogFilterState();
+                currentTab = MainTab.KATALOG;
+                currentPage = 1;
+                updateTabsUI();
+                updateSubFilterUI();
+                loadCurrentFeed();
+            });
+        }
+
+        if (btnApply != null) {
+            btnApply.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                dialog.dismiss();
+                filterCatalogSort = tempSort[0];
+                filterCatalogYear = tempYear[0];
+                filterCatalogSeason = tempSeason[0];
+                filterCatalogMonth = tempMonth[0];
+                filterCatalogType = tempType[0];
+                filterCatalogStatus = tempStatus[0];
+                currentTab = MainTab.KATALOG;
+                currentPage = 1;
+                updateTabsUI();
+                updateSubFilterUI();
+                loadCurrentFeed();
+            });
+        }
+
+        dialog.show();
+    }
+
+    private void showGenreSelectorDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_genre_selector);
+        setupDialogWindowBounds(dialog);
+
+        EditText etFilter = dialog.findViewById(R.id.et_filter_genre);
+        RecyclerView rvGenres = dialog.findViewById(R.id.rv_genres);
+        Button btnClose = dialog.findViewById(R.id.btn_close_genre_dialog);
+        Button btnDismiss = dialog.findViewById(R.id.btn_dismiss_genre);
+        Button btnReset = dialog.findViewById(R.id.btn_reset_genre_filter);
+
+        rvGenres.setLayoutManager(new GridLayoutManager(this, 2));
+        GenreChipAdapter genreAdapter = new GenreChipAdapter((slug, title) -> {
+            dialog.dismiss();
+            setGenreFilter(title);
+        });
+        rvGenres.setAdapter(genreAdapter);
+        genreAdapter.setData(TATAP_GENRES);
+
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                dialog.dismiss();
+            });
+        }
+        if (btnDismiss != null) {
+            btnDismiss.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                dialog.dismiss();
+            });
+        }
+        if (btnReset != null) {
+            btnReset.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                dialog.dismiss();
+                selectedGenre = "Action";
+                currentTab = MainTab.GENRE;
+                currentPage = 1;
+                updateTabsUI();
+                updateSubFilterUI();
+                loadCurrentFeed();
+            });
+        }
+
+        if (etFilter != null) {
+            etFilter.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    genreAdapter.filter(s != null ? s.toString() : "");
+                }
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
+
+        dialog.show();
+    }
+
+    private void setGenreFilter(String title) {
+        selectedGenre = title;
+        currentTab = MainTab.GENRE;
+        currentPage = 1;
+        updateTabsUI();
+        updateSubFilterUI();
+        loadCurrentFeed();
+    }
+
+    public static class GenreChipAdapter extends RecyclerView.Adapter<GenreChipAdapter.ViewHolder> {
+        private final List<GenreItem> allGenres = new ArrayList<>();
+        private final List<GenreItem> filteredList = new ArrayList<>();
+        private final OnGenreClickListener listener;
+
+        public interface OnGenreClickListener {
+            void onGenreClick(String slug, String title);
+        }
+
+        public GenreChipAdapter(OnGenreClickListener listener) {
+            this.listener = listener;
+        }
+
+        public void setData(List<GenreItem> data) {
+            allGenres.clear();
+            filteredList.clear();
+            if (data != null) {
+                allGenres.addAll(data);
+                filteredList.addAll(data);
+            }
+            notifyDataSetChanged();
+        }
+
+        public void filter(String query) {
+            filteredList.clear();
+            if (query == null || query.trim().isEmpty()) {
+                filteredList.addAll(allGenres);
+            } else {
+                String q = query.toLowerCase(Locale.US).trim();
+                for (GenreItem item : allGenres) {
+                    if (item.title.toLowerCase(Locale.US).contains(q) || item.slug.toLowerCase(Locale.US).contains(q)) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+            notifyDataSetChanged();
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_genre_chip, parent, false);
+            return new ViewHolder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            GenreItem item = filteredList.get(position);
+            holder.tvName.setText(item.title);
+            holder.itemView.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                if (listener != null) listener.onGenreClick(item.slug, item.title);
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return filteredList.size();
+        }
+
+        static class ViewHolder extends RecyclerView.ViewHolder {
+            TextView tvName;
+            ViewHolder(@NonNull View itemView) {
+                super(itemView);
+                tvName = itemView.findViewById(R.id.tv_genre_name);
+            }
         }
     }
 
@@ -807,11 +1311,21 @@ public class MainActivity extends AppCompatActivity {
                     }).start();
                     break;
                 case KATALOG:
-                    layoutContextualBar.setVisibility(View.GONE);
-                    AniListClient.getCatalog(selectedCatalogFormat, selectedCatalogSort, currentPage, 40, createCallback("Gagal Memuat Katalog", 40));
+                    layoutContextualBar.setVisibility(View.VISIBLE);
+                    tvContextualTitle.setText(getCatalogFilterSummary());
+                    btnClearHistoryAll.setText(isCatalogFilterActive() ? "Reset Filter" : "Filter...");
+                    btnClearHistoryAll.setVisibility(View.VISIBLE);
+                    AniListClient.getCatalogCrossFiltered(
+                            filterCatalogSort, filterCatalogYear, filterCatalogSeason, filterCatalogMonth,
+                            filterCatalogType, filterCatalogStatus, currentPage, 40,
+                            createCallback("Gagal Memuat Katalog", 40)
+                    );
                     break;
                 case GENRE:
-                    layoutContextualBar.setVisibility(View.GONE);
+                    layoutContextualBar.setVisibility(View.VISIBLE);
+                    tvContextualTitle.setText("GENRE: " + selectedGenre.toUpperCase(Locale.US));
+                    btnClearHistoryAll.setText("Pilih Genre...");
+                    btnClearHistoryAll.setVisibility(View.VISIBLE);
                     AniListClient.getByGenre(selectedGenre, currentPage, 40, createCallback("Gagal Memuat Genre " + selectedGenre, 40));
                     break;
                 default:
