@@ -94,6 +94,13 @@ public class MainActivity extends AppCompatActivity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private Runnable searchDebounceRunnable;
 
+    // Floating Transparent Pagination Bar Components
+    private LinearLayout layoutPagination;
+    private TextView btnPrevPage;
+    private TextView tvPageIndicator;
+    private TextView btnNextPage;
+    private int currentPage = 1;
+
     private MainTab currentTab = MainTab.MUSIM;
     private boolean isSearchExpanded = false;
 
@@ -190,6 +197,11 @@ public class MainActivity extends AppCompatActivity {
         tvMenuKatalog = findViewById(R.id.tv_menu_katalog);
         tvMenuGenre = findViewById(R.id.tv_menu_genre);
 
+        layoutPagination = findViewById(R.id.layout_pagination);
+        btnPrevPage = findViewById(R.id.btn_prev_page);
+        tvPageIndicator = findViewById(R.id.tv_page_indicator);
+        btnNextPage = findViewById(R.id.btn_next_page);
+
         swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.accent_glacial));
         swipeRefresh.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.frost_surface));
     }
@@ -211,7 +223,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        swipeRefresh.setOnRefreshListener(this::loadCurrentFeed);
+        swipeRefresh.setOnRefreshListener(() -> {
+            currentPage = 1;
+            loadCurrentFeed();
+        });
+
+        // Pagination buttons
+        if (btnPrevPage != null) {
+            btnPrevPage.setOnClickListener(v -> {
+                if (currentPage > 1) {
+                    HapticHelper.performClick(v);
+                    currentPage--;
+                    loadCurrentFeed();
+                    rvGrid.scrollToPosition(0);
+                }
+            });
+        }
+
+        if (btnNextPage != null) {
+            btnNextPage.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                currentPage++;
+                loadCurrentFeed();
+                rvGrid.scrollToPosition(0);
+            });
+        }
 
         // 1. Folded Floating Menu Triggers (Bottom-Right FAB + Scrim)
         fabMenuTrigger.setOnClickListener(v -> {
@@ -391,6 +427,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void selectTab(MainTab tab) {
         currentTab = tab;
+        currentPage = 1;
         updateTabsUI();
         updateSubFilterUI();
         loadCurrentFeed();
@@ -499,6 +536,7 @@ public class MainActivity extends AppCompatActivity {
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     selectedDayOfWeek = calDay;
+                    currentPage = 1;
                     updateSubFilterUI();
                     loadCurrentFeed();
                 });
@@ -518,6 +556,7 @@ public class MainActivity extends AppCompatActivity {
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     selectedCatalogFormat = f;
+                    currentPage = 1;
                     updateSubFilterUI();
                     loadCurrentFeed();
                 });
@@ -545,6 +584,7 @@ public class MainActivity extends AppCompatActivity {
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     selectedCatalogSort = s;
+                    currentPage = 1;
                     updateSubFilterUI();
                     loadCurrentFeed();
                 });
@@ -560,6 +600,7 @@ public class MainActivity extends AppCompatActivity {
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     selectedGenre = genre;
+                    currentPage = 1;
                     updateSubFilterUI();
                     loadCurrentFeed();
                 });
@@ -605,10 +646,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void updatePaginationUI(int currentCount, int pageSize) {
+        if (layoutPagination == null) return;
+        layoutPagination.setVisibility(View.VISIBLE);
+        if (tvPageIndicator != null) {
+            tvPageIndicator.setText("Hal " + currentPage);
+        }
+        if (btnPrevPage != null) {
+            boolean canPrev = currentPage > 1;
+            btnPrevPage.setEnabled(canPrev);
+            btnPrevPage.setAlpha(canPrev ? 1.0f : 0.4f);
+        }
+        if (btnNextPage != null) {
+            boolean canNext = (currentCount >= pageSize);
+            btnNextPage.setEnabled(canNext);
+            btnNextPage.setAlpha(canNext ? 1.0f : 0.4f);
+        }
+    }
+
     private void loadCurrentFeed() {
         String searchQuery = etSearch.getText().toString().trim();
         if (!searchQuery.isEmpty()) {
-            performSearch(searchQuery);
+            performSearch(searchQuery, currentPage);
             return;
         }
 
@@ -617,7 +676,7 @@ public class MainActivity extends AppCompatActivity {
         if (currentTab == MainTab.MUSIM) {
             layoutContextualBar.setVisibility(View.GONE);
             // BERANDA: 1 Featured Spotlight Hero + 2-Column Grid
-            AniListClient.getTrending(1, 35, new AniListClient.Callback<List<Anime>>() {
+            AniListClient.getTrending(currentPage, 35, new AniListClient.Callback<List<Anime>>() {
                 @Override
                 public void onSuccess(List<Anime> result) {
                     mainHandler.post(() -> {
@@ -626,15 +685,28 @@ public class MainActivity extends AppCompatActivity {
                             layoutEmpty.setVisibility(View.GONE);
                             rvGrid.setVisibility(View.VISIBLE);
 
-                            Anime hero = result.get(0);
-                            List<Anime> gridList = (result.size() > 1) ? result.subList(1, result.size()) : new ArrayList<>();
-                            gridAdapter.setHeroAnime(hero);
-                            gridAdapter.setData(gridList);
+                            if (currentPage == 1) {
+                                Anime hero = result.get(0);
+                                List<Anime> gridList = (result.size() > 1) ? result.subList(1, result.size()) : new ArrayList<>();
+                                gridAdapter.setHeroAnime(hero);
+                                gridAdapter.setData(gridList);
+                            } else {
+                                gridAdapter.setHeroAnime(null);
+                                gridAdapter.setData(result);
+                            }
                             rvGrid.scrollToPosition(0);
+                            updatePaginationUI(result.size(), 35);
                         } else {
-                            gridAdapter.setHeroAnime(null);
-                            gridAdapter.setData(new ArrayList<>());
-                            layoutEmpty.setVisibility(View.VISIBLE);
+                            if (currentPage > 1) {
+                                currentPage--;
+                                Toast.makeText(MainActivity.this, "Halaman terakhir", Toast.LENGTH_SHORT).show();
+                                updatePaginationUI(0, 35);
+                            } else {
+                                gridAdapter.setHeroAnime(null);
+                                gridAdapter.setData(new ArrayList<>());
+                                layoutEmpty.setVisibility(View.VISIBLE);
+                                if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+                            }
                         }
                     });
                 }
@@ -654,43 +726,72 @@ public class MainActivity extends AppCompatActivity {
             switch (currentTab) {
                 case AIRING:
                     layoutContextualBar.setVisibility(View.VISIBLE);
-                    tvContextualTitle.setText("SEDANG TAYANG (AIRING LIVE)");
+                    tvContextualTitle.setText("SEDANG TAYANG (AIRING LIVE)" + (currentPage > 1 ? " - Hal " + currentPage : ""));
                     btnClearHistoryAll.setVisibility(View.GONE);
-                    AniListClient.getAiring(1, 40, createCallback("Gagal Memuat Sedang Tayang"));
+                    AniListClient.getAiring(currentPage, 40, createCallback("Gagal Memuat Sedang Tayang", 40));
                     break;
                 case JADWAL:
                     layoutContextualBar.setVisibility(View.GONE);
-                    AniListClient.getSchedule(selectedDayOfWeek, createCallback("Gagal Memuat Jadwal"));
+                    if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+                    AniListClient.getSchedule(selectedDayOfWeek, createCallback("Gagal Memuat Jadwal", 100));
                     break;
                 case RIWAYAT:
                     new Thread(() -> {
                         List<Anime> history = MenatapDatabase.getInstance(this).getHistoryList();
+                        int total = history.size();
+                        int pageSize = 40;
+                        int fromIndex = (currentPage - 1) * pageSize;
+                        List<Anime> pagedList = new ArrayList<>();
+                        if (fromIndex < total) {
+                            int toIndex = Math.min(fromIndex + pageSize, total);
+                            pagedList = history.subList(fromIndex, toIndex);
+                        }
+                        final List<Anime> finalPagedList = pagedList;
                         mainHandler.post(() -> {
                             layoutContextualBar.setVisibility(View.VISIBLE);
-                            tvContextualTitle.setText("RIWAYAT TONTONAN (" + history.size() + ")");
+                            tvContextualTitle.setText("RIWAYAT TONTONAN (" + total + ")");
                             btnClearHistoryAll.setVisibility(history.isEmpty() ? View.GONE : View.VISIBLE);
                         });
-                        displayResults(history, "Riwayat Tontonan Kosong", "Anime yang kamu putar akan tersimpan otomatis di sini.");
+                        displayResults(finalPagedList, "Riwayat Tontonan Kosong", "Anime yang kamu putar akan tersimpan otomatis di sini.", pageSize);
+                        if (total <= pageSize) {
+                            mainHandler.post(() -> {
+                                if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+                            });
+                        }
                     }).start();
                     break;
                 case FAVORIT:
                     new Thread(() -> {
                         List<Anime> bookmarks = MenatapDatabase.getInstance(this).getBookmarkList();
+                        int total = bookmarks.size();
+                        int pageSize = 40;
+                        int fromIndex = (currentPage - 1) * pageSize;
+                        List<Anime> pagedList = new ArrayList<>();
+                        if (fromIndex < total) {
+                            int toIndex = Math.min(fromIndex + pageSize, total);
+                            pagedList = bookmarks.subList(fromIndex, toIndex);
+                        }
+                        final List<Anime> finalPagedList = pagedList;
                         mainHandler.post(() -> {
                             layoutContextualBar.setVisibility(View.VISIBLE);
-                            tvContextualTitle.setText("ANIME FAVORIT (" + bookmarks.size() + ")");
+                            tvContextualTitle.setText("ANIME FAVORIT (" + total + ")");
                             btnClearHistoryAll.setVisibility(View.GONE);
                         });
-                        displayResults(bookmarks, "Belum Ada Favorit", "Tekan ikon bintang di halaman detail anime untuk menyimpannya.");
+                        displayResults(finalPagedList, "Belum Ada Favorit", "Tekan ikon bintang di halaman detail anime untuk menyimpannya.", pageSize);
+                        if (total <= pageSize) {
+                            mainHandler.post(() -> {
+                                if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+                            });
+                        }
                     }).start();
                     break;
                 case KATALOG:
                     layoutContextualBar.setVisibility(View.GONE);
-                    AniListClient.getCatalog(selectedCatalogFormat, selectedCatalogSort, 1, 40, createCallback("Gagal Memuat Katalog"));
+                    AniListClient.getCatalog(selectedCatalogFormat, selectedCatalogSort, currentPage, 40, createCallback("Gagal Memuat Katalog", 40));
                     break;
                 case GENRE:
                     layoutContextualBar.setVisibility(View.GONE);
-                    AniListClient.getByGenre(selectedGenre, 1, 40, createCallback("Gagal Memuat Genre " + selectedGenre));
+                    AniListClient.getByGenre(selectedGenre, currentPage, 40, createCallback("Gagal Memuat Genre " + selectedGenre, 40));
                     break;
                 default:
                     break;
@@ -699,17 +800,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void performSearch(String query) {
+        currentPage = 1;
+        performSearch(query, currentPage);
+    }
+
+    private void performSearch(String query, int page) {
         setLoading(true);
         gridAdapter.setHeroAnime(null);
         tvCurrentMenuBadge.setText("PENCARIAN");
         layoutContextualBar.setVisibility(View.VISIBLE);
-        tvContextualTitle.setText("HASIL PENCARIAN: \"" + query + "\"");
+        tvContextualTitle.setText("HASIL PENCARIAN: \"" + query + "\"" + (page > 1 ? " (Hal " + page + ")" : ""));
         btnClearHistoryAll.setVisibility(View.GONE);
 
-        AniListClient.search(query, 1, 40, new AniListClient.Callback<List<Anime>>() {
+        AniListClient.search(query, page, 40, new AniListClient.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> result) {
-                displayResults(result, "Pencarian Tidak Ditemukan", "Coba gunakan kata kunci lain atau judul bahasa Inggris.");
+                displayResults(result, "Pencarian Tidak Ditemukan", "Coba gunakan kata kunci lain atau judul bahasa Inggris.", 40);
             }
 
             @Override
@@ -722,11 +828,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private AniListClient.Callback<List<Anime>> createCallback(String errorPrefix) {
+    private AniListClient.Callback<List<Anime>> createCallback(String errorPrefix, int pageSize) {
         return new AniListClient.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> result) {
-                displayResults(result, "Tidak Ada Data", "Konten belum tersedia untuk kategori ini.");
+                displayResults(result, "Tidak Ada Data", "Konten belum tersedia untuk kategori ini.", pageSize);
             }
 
             @Override
@@ -739,21 +845,33 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private void displayResults(List<Anime> list, String emptyTitle, String emptyDesc) {
+    private void displayResults(List<Anime> list, String emptyTitle, String emptyDesc, int pageSize) {
         mainHandler.post(() -> {
             setLoading(false);
             if (list == null || list.isEmpty()) {
-                gridAdapter.setHeroAnime(null);
-                gridAdapter.setData(new ArrayList<>());
-                layoutEmpty.setVisibility(View.VISIBLE);
-                tvEmptyTitle.setText(emptyTitle);
-                tvEmptyDesc.setText(emptyDesc);
+                if (currentPage > 1) {
+                    currentPage--;
+                    Toast.makeText(MainActivity.this, "Halaman terakhir", Toast.LENGTH_SHORT).show();
+                    updatePaginationUI(0, pageSize);
+                } else {
+                    gridAdapter.setHeroAnime(null);
+                    gridAdapter.setData(new ArrayList<>());
+                    layoutEmpty.setVisibility(View.VISIBLE);
+                    tvEmptyTitle.setText(emptyTitle);
+                    tvEmptyDesc.setText(emptyDesc);
+                    if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+                }
             } else {
                 layoutEmpty.setVisibility(View.GONE);
                 rvGrid.setVisibility(View.VISIBLE);
                 gridAdapter.setHeroAnime(null);
                 gridAdapter.setData(list);
                 rvGrid.scrollToPosition(0);
+                if (currentTab != MainTab.JADWAL) {
+                    updatePaginationUI(list.size(), pageSize);
+                } else {
+                    if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+                }
             }
         });
     }

@@ -284,7 +284,7 @@
     <!-- FOLDED FLOATING MENU (Unfolds UPWARDS from bottom-right trigger) -->
     <LinearLayout
         android:id="@+id/layout_folded_menu"
-        android:layout_width="wrap_content"
+        android:layout_width="230dp"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
@@ -297,7 +297,7 @@
         <!-- 1. Musim Ini / Beranda -->
         <LinearLayout
             android:id="@+id/menu_item_musim"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -326,7 +326,7 @@
         <!-- 2. Masih Tayang (Airing) -->
         <LinearLayout
             android:id="@+id/menu_item_airing"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -355,7 +355,7 @@
         <!-- 3. Jadwal Rilis 7 Hari WIB -->
         <LinearLayout
             android:id="@+id/menu_item_jadwal"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -384,7 +384,7 @@
         <!-- 4. Riwayat Tontonan -->
         <LinearLayout
             android:id="@+id/menu_item_riwayat"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -413,7 +413,7 @@
         <!-- 5. Favorit Saya -->
         <LinearLayout
             android:id="@+id/menu_item_favorit"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -442,7 +442,7 @@
         <!-- 6. Katalog Lengkap -->
         <LinearLayout
             android:id="@+id/menu_item_katalog"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -471,7 +471,7 @@
         <!-- 7. Kategori Genre -->
         <LinearLayout
             android:id="@+id/menu_item_genre"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -500,7 +500,7 @@
         <!-- 8. Cek Pembaruan Aplikasi -->
         <LinearLayout
             android:id="@+id/menu_item_update"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_folded_menu_pill"
             android:orientation="horizontal"
@@ -524,6 +524,65 @@
                 android:textSize="13sp"
                 android:fontFamily="sans-serif-bold" />
         </LinearLayout>
+    </LinearLayout>
+
+    <!-- FLOATING TRANSPARENT PAGINATION BAR (Tatap Official Signature) -->
+    <LinearLayout
+        android:id="@+id/layout_pagination"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="22dp"
+        android:background="@drawable/bg_floating_pagination"
+        android:elevation="8dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="3dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/btn_prev_page"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_floating_page_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:paddingHorizontal="14dp"
+            android:text="‹ Sebelumnya"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="11.5sp"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/tv_page_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="6dp"
+            android:background="@drawable/bg_floating_page_indicator"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:text="Hal 1"
+            android:textColor="@color/accent_glacial"
+            android:textSize="11.5sp"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/btn_next_page"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_floating_page_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:paddingHorizontal="14dp"
+            android:text="Berikutnya ›"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="11.5sp"
+            android:fontFamily="sans-serif-medium" />
     </LinearLayout>
 
     <!-- FLOATING MENU TRIGGER BUTTON (Bottom-Right FAB) -->

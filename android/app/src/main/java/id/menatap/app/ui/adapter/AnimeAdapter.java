@@ -47,6 +47,13 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         notifyDataSetChanged();
     }
 
+    public void appendData(List<Anime> newItems) {
+        if (newItems == null || newItems.isEmpty()) return;
+        int startPos = items.size() + (heroAnime != null ? 1 : 0);
+        items.addAll(newItems);
+        notifyItemRangeInserted(startPos, newItems.size());
+    }
+
     @Override
     public int getItemViewType(int position) {
         if (heroAnime != null && position == 0) {

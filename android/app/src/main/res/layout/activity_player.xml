@@ -284,65 +284,37 @@
                     android:fontFamily="sans-serif" />
             </LinearLayout>
 
-            <!-- Landscape Action Buttons -->
-            <Button
-                android:id="@+id/btn_aspect"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:layout_marginEnd="6dp"
-                android:paddingHorizontal="11dp"
-                android:text="Fit"
-                android:textSize="11sp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="@color/text_frost_bright"
-                app:strokeColor="@color/frost_border"
-                app:strokeWidth="1dp"
-                app:cornerRadius="17dp"
-                android:backgroundTint="#CC0F1726" />
+            <!-- Legacy Action Buttons (Hidden to keep player header clean like Tatap OG) -->
+            <LinearLayout
+                android:id="@+id/layout_legacy_top_pills"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone">
 
-            <Button
-                android:id="@+id/btn_quality"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:layout_marginEnd="6dp"
-                android:paddingHorizontal="11dp"
-                android:text="HD"
-                android:textSize="11sp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="@color/text_frost_bright"
-                app:strokeColor="@color/frost_border"
-                app:strokeWidth="1dp"
-                app:cornerRadius="17dp"
-                android:backgroundTint="#CC0F1726" />
+                <Button
+                    android:id="@+id/btn_aspect"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:visibility="gone" />
 
-            <Button
-                android:id="@+id/btn_speed"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:layout_marginEnd="6dp"
-                android:paddingHorizontal="11dp"
-                android:text="1.0x"
-                android:textSize="11sp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="@color/text_frost_bright"
-                app:strokeColor="@color/frost_border"
-                app:strokeWidth="1dp"
-                app:cornerRadius="17dp"
-                android:backgroundTint="#CC0F1726" />
+                <Button
+                    android:id="@+id/btn_quality"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:visibility="gone" />
 
-            <Button
-                android:id="@+id/btn_sub_selector"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:paddingHorizontal="11dp"
-                android:text="Sub"
-                android:textSize="11sp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="@color/text_frost_bright"
-                app:strokeColor="@color/frost_border"
-                app:strokeWidth="1dp"
-                app:cornerRadius="17dp"
-                android:backgroundTint="#CC0F1726" />
+                <Button
+                    android:id="@+id/btn_speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btn_sub_selector"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:visibility="gone" />
+            </LinearLayout>
         </LinearLayout>
     </FrameLayout>
 
@@ -456,6 +428,23 @@
                     android:textSize="11.5sp"
                     android:textColor="@color/text_frost_bright"
                     android:backgroundTint="@color/frost_elevated"
+                    app:cornerRadius="17dp"
+                    app:strokeColor="@color/frost_border"
+                    app:strokeWidth="1dp" />
+
+                <Button
+                    android:id="@+id/btn_portrait_pip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginEnd="6dp"
+                    android:paddingHorizontal="11dp"
+                    android:text="PiP"
+                    android:textSize="11.5sp"
+                    android:textColor="@color/text_frost_bright"
+                    android:backgroundTint="@color/frost_elevated"
+                    app:icon="@drawable/ic_pip"
+                    app:iconTint="@color/accent_glacial"
+                    app:iconSize="13dp"
                     app:cornerRadius="17dp"
                     app:strokeColor="@color/frost_border"
                     app:strokeWidth="1dp" />
