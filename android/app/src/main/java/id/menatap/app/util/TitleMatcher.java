@@ -13,7 +13,7 @@ public class TitleMatcher {
 
     private static final Set<String> STOPWORDS = new HashSet<>(Arrays.asList(
             "the", "a", "an", "of", "in", "to", "and", "und", "der", "die", "das",
-            "no", "wa", "ga", "ni", "de", "series", "season"
+            "no", "wa", "ga", "ni", "de", "series", "season", "s"
     ));
 
     private static final Set<String> MOVIE_KEYWORDS = new HashSet<>(Arrays.asList(
@@ -57,6 +57,16 @@ public class TitleMatcher {
         Matcher m4 = p4.matcher(t);
         if (m4.find()) {
             try { return Integer.parseInt(m4.group(1)); } catch (Exception ignored) {}
+        }
+
+        Pattern pRoman = Pattern.compile("\\bseason\\s*(ii|iii|iv|v)\\b");
+        Matcher mRoman = pRoman.matcher(t);
+        if (mRoman.find()) {
+            String rom = mRoman.group(1);
+            if ("ii".equals(rom)) return 2;
+            if ("iii".equals(rom)) return 3;
+            if ("iv".equals(rom)) return 4;
+            if ("v".equals(rom)) return 5;
         }
 
         if (t.contains("2nd season") || t.contains("season 2") || t.contains("part 2")) return 2;

@@ -22,10 +22,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Rational;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -48,11 +51,13 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
 import androidx.media3.datasource.okhttp.OkHttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
+import androidx.media3.session.MediaSession;
 import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.DefaultTimeBar;
 import androidx.media3.ui.PlayerView;
@@ -80,6 +85,7 @@ import id.menatap.app.data.model.SubtitleTrack;
 import id.menatap.app.data.service.AniSkipClient;
 import id.menatap.app.data.service.HttpClientProvider;
 import id.menatap.app.data.service.StreamResolver;
+import id.menatap.app.data.subtitle.AiSubtitleService;
 import id.menatap.app.data.subtitle.AnimeToshoClient;
 import id.menatap.app.data.subtitle.OpenSubtitlesClient;
 import id.menatap.app.data.subtitle.SubtitleCue;
@@ -121,6 +127,7 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean isHoldingRewind = false;
     private float currentBrightness = -1f;
     private int lastHapticStep = -1;
+    private MediaSession mediaSession;
     private final Handler gestureHandler = new Handler(Looper.getMainLooper());
     private final Runnable holdRewindRunnable = new Runnable() {
         @Override
@@ -445,6 +452,24 @@ public class PlayerActivity extends AppCompatActivity {
         playerView.setShowPreviousButton(true);
         playerView.setShowSubtitleButton(true);
         playerView.setShowVrButton(isPipSupported());
+
+        // Initialize Media3 MediaSession & background PlaybackService
+        try {
+            Intent sessionIntent = new Intent(this, PlayerActivity.class);
+            PendingIntent pi = PendingIntent.getActivity(this, 0, sessionIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
+            mediaSession = new MediaSession.Builder(this, player)
+                    .setSessionActivity(pi)
+                    .build();
+            PlaybackService.setActiveSession(mediaSession);
+
+            Intent serviceIntent = new Intent(this, PlaybackService.class);
+            if (Build.VERSION.SDK_INT >= 26) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+        } catch (Throwable ignored) {}
 
         // Hide default ExoPlayer subtitle view since we use seamless custom overlay
         androidx.media3.ui.SubtitleView subView = playerView.getSubtitleView();
@@ -1218,6 +1243,18 @@ public class PlayerActivity extends AppCompatActivity {
         DefaultMediaSourceFactory msFactory = new DefaultMediaSourceFactory(okHttpFactory);
         MediaItem.Builder mediaItemBuilder = new MediaItem.Builder().setUri(Uri.parse(source.url));
 
+        MediaMetadata.Builder metaBuilder = new MediaMetadata.Builder();
+        if (ep != null) {
+            metaBuilder.setTitle(ep.title != null && !ep.title.isEmpty() ? ep.title : "Episode " + ep.number);
+        }
+        if (anime != null) {
+            metaBuilder.setArtist(anime.title);
+            if (anime.poster != null && !anime.poster.isEmpty()) {
+                metaBuilder.setArtworkUri(Uri.parse(anime.poster));
+            }
+        }
+        mediaItemBuilder.setMediaMetadata(metaBuilder.build());
+
         MediaItem mediaItem = mediaItemBuilder.build();
         player.setMediaSource(msFactory.createMediaSource(mediaItem));
         player.setPlaybackParameters(new PlaybackParameters(currentSpeed));
@@ -1578,7 +1615,11 @@ public class PlayerActivity extends AppCompatActivity {
         options.add("Pengaturan Tampilan (Posisi, Latar Belakang & Ukuran)...");
         actions.add(this::showSubtitleStyleDialog);
 
-        // 11. Disable Subtitles
+        // 11. AI Subtitle BYOK Configuration
+        options.add("✨ Konfigurasi AI Subtitle BYOK (Gemini / Groq / OpenAI)...");
+        actions.add(this::showAiSubtitleSettingsDialog);
+
+        // 12. Disable Subtitles
         options.add("Matikan Subtitle" + (!isSubOn ? " [Aktif]" : ""));
         actions.add(() -> {
             subtitleManager.setSubEnabled(false);
@@ -1859,6 +1900,66 @@ public class PlayerActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void showAiSubtitleSettingsDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_ai_subtitle_settings, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        TextView tvBadge = dialogView.findViewById(R.id.tv_ai_provider_badge);
+        EditText etKey = dialogView.findViewById(R.id.et_ai_api_key);
+        Button btnSave = dialogView.findViewById(R.id.btn_save_ai_key);
+        Button btnClear = dialogView.findViewById(R.id.btn_clear_ai_key);
+        ImageButton btnClose = dialogView.findViewById(R.id.btn_close_ai_dialog);
+
+        String currentKey = AiSubtitleService.getKey(this);
+        if (currentKey != null && !currentKey.isEmpty()) {
+            etKey.setText(currentKey);
+            AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(currentKey);
+            tvBadge.setText("Provider Aktif: " + p.displayName);
+        }
+
+        etKey.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                String input = s != null ? s.toString().trim() : "";
+                if (!input.isEmpty()) {
+                    AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(input);
+                    tvBadge.setText("Terdeteksi: " + p.displayName);
+                } else {
+                    tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
+                }
+            }
+        });
+
+        btnSave.setOnClickListener(v -> {
+            String newKey = etKey.getText().toString().trim();
+            if (newKey.isEmpty()) {
+                Toast.makeText(this, "Kunci API tidak boleh kosong", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            AiSubtitleService.saveKey(this, newKey);
+            AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(newKey);
+            Toast.makeText(this, "Kunci " + p.displayName + " berhasil disimpan di SecureStore", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        btnClear.setOnClickListener(v -> {
+            AiSubtitleService.clearKey(this);
+            etKey.setText("");
+            tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
+            Toast.makeText(this, "Kunci API telah dihapus dari SecureStore", Toast.LENGTH_SHORT).show();
+        });
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
     private void showSubtitleOffsetPicker() {
         final long[] offsets = {-2000L, -1000L, -500L, -250L, 0L, 250L, 500L, 1000L, 2000L};
         final String[] labels = {
@@ -2133,6 +2234,13 @@ public class PlayerActivity extends AppCompatActivity {
         isActivityRunning = false;
         subtitleHandler.removeCallbacks(subtitleSyncRunnable);
         stopProgressTracker();
+        if (mediaSession != null) {
+            PlaybackService.setActiveSession(null);
+            try {
+                mediaSession.release();
+            } catch (Throwable ignored) {}
+            mediaSession = null;
+        }
         if (player != null) {
             player.release();
             player = null;

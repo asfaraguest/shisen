@@ -1,35 +1,28 @@
 package id.menatap.app.data.service;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.security.KeyStore;
+import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
+import id.menatap.app.util.DesyncSSLSocketFactory;
+import id.menatap.app.util.DnsFallbackResolver;
+import id.menatap.app.util.DynamicBlockedHosts;
 import okhttp3.ConnectionPool;
-import okhttp3.Dns;
-import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.dnsoverhttps.DnsOverHttps;
 
 public class HttpClientProvider {
     private static volatile OkHttpClient client;
     public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-
-    // Known fallback CDN IP mappings (Tatap OG parity)
-    private static final Map<String, String> KNOWN_IPS = new HashMap<String, String>() {{
-        put("hls.dramahot.top", "93.123.109.210");
-        put("dramahot.top", "93.123.109.210");
-    }};
 
     public static OkHttpClient getClient() {
         if (client == null) {
@@ -51,7 +44,23 @@ public class HttpClientProvider {
                 .followRedirects(true)
                 .followSslRedirects(true);
 
-        // Anti-403 & Header Normalization Interceptor
+        // 1. Dynamic DPI-Blocked Host Learner Interceptor
+        builder.addInterceptor(chain -> {
+            Request request = chain.request();
+            try {
+                return chain.proceed(request);
+            } catch (IOException e) {
+                String host = request.url().host();
+                if (e instanceof java.net.SocketTimeoutException
+                        || e instanceof java.net.ConnectException
+                        || e instanceof javax.net.ssl.SSLHandshakeException) {
+                    DynamicBlockedHosts.markBlocked(host);
+                }
+                throw e;
+            }
+        });
+
+        // 2. Anti-403 & Header Normalization Interceptor
         builder.addInterceptor(new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
@@ -72,6 +81,13 @@ public class HttpClientProvider {
                     }
                     if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
                         rb.header("Origin", "https://megaplay.buzz");
+                    }
+                } else if (host.contains("dramahot") || host.contains("zokoanime")) {
+                    if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
+                        rb.header("Referer", "https://zokoanime.video/");
+                    }
+                    if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
+                        rb.header("Origin", "https://zokoanime.video");
                     }
                 } else if (host.contains("hianime")) {
                     if (original.header("Referer") == null) {
@@ -95,84 +111,29 @@ public class HttpClientProvider {
             }
         });
 
-        // Robust Anti-ISP DNS Blocking (Bypass via DoH Cloudflare & Google with Raw IP Bootstrap)
-        final Map<String, List<InetAddress>> dnsMemoryCache = new ConcurrentHashMap<>();
+        // 3. Multi-tier DNS Fallback Chain (Cache -> System anti-poison -> DoH Cloudflare -> DoH Google -> Known CDN IPs)
+        builder.dns(new DnsFallbackResolver());
 
+        // 4. DPI-Bypass TLS ClientHello Desync Socket / SSLSocketFactory
         try {
-            List<InetAddress> bootstrapHosts = new ArrayList<>();
-            bootstrapHosts.add(InetAddress.getByName("1.1.1.1"));
-            bootstrapHosts.add(InetAddress.getByName("1.0.0.1"));
-            bootstrapHosts.add(InetAddress.getByName("8.8.8.8"));
-            bootstrapHosts.add(InetAddress.getByName("8.8.4.4"));
-
-            OkHttpClient dohBootstrapClient = new OkHttpClient.Builder()
-                    .connectTimeout(5, TimeUnit.SECONDS)
-                    .readTimeout(5, TimeUnit.SECONDS)
-                    .build();
-
-            DnsOverHttps dohCloudflare = new DnsOverHttps.Builder()
-                    .client(dohBootstrapClient)
-                    .url(HttpUrl.get("https://cloudflare-dns.com/dns-query"))
-                    .bootstrapDnsHosts(bootstrapHosts)
-                    .includeIPv6(false)
-                    .build();
-
-            builder.dns(hostname -> {
-                if (dnsMemoryCache.containsKey(hostname)) {
-                    return dnsMemoryCache.get(hostname);
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init((KeyStore) null);
+            X509TrustManager trustManager = null;
+            for (TrustManager tm : tmf.getTrustManagers()) {
+                if (tm instanceof X509TrustManager) {
+                    trustManager = (X509TrustManager) tm;
+                    break;
                 }
-
-                // Check Known IPs first
-                if (KNOWN_IPS.containsKey(hostname)) {
-                    try {
-                        List<InetAddress> known = Collections.singletonList(InetAddress.getByName(KNOWN_IPS.get(hostname)));
-                        dnsMemoryCache.put(hostname, known);
-                        return known;
-                    } catch (Exception ignored) {}
-                }
-
-                // 1. Try DoH Cloudflare with Raw IP bootstrap
-                try {
-                    List<InetAddress> res = dohCloudflare.lookup(hostname);
-                    List<InetAddress> safe = filterPoisonedIps(res);
-                    if (!safe.isEmpty()) {
-                        dnsMemoryCache.put(hostname, safe);
-                        return safe;
-                    }
-                } catch (Exception ignored) {}
-
-                // 2. Try System DNS with anti-poison filter
-                try {
-                    List<InetAddress> sysRes = Dns.SYSTEM.lookup(hostname);
-                    List<InetAddress> safe = filterPoisonedIps(sysRes);
-                    if (!safe.isEmpty()) {
-                        dnsMemoryCache.put(hostname, safe);
-                        return safe;
-                    }
-                } catch (Exception ignored) {}
-
-                // Fallback to System lookup
-                return Dns.SYSTEM.lookup(hostname);
-            });
-        } catch (Exception ignored) {
-            builder.dns(Dns.SYSTEM);
-        }
+            }
+            if (trustManager != null) {
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, new TrustManager[]{ trustManager }, new SecureRandom());
+                SSLSocketFactory defaultFactory = sslContext.getSocketFactory();
+                DesyncSSLSocketFactory desyncFactory = new DesyncSSLSocketFactory(defaultFactory);
+                builder.sslSocketFactory(desyncFactory, trustManager);
+            }
+        } catch (Exception ignored) {}
 
         return builder.build();
-    }
-
-    private static List<InetAddress> filterPoisonedIps(List<InetAddress> list) {
-        if (list == null || list.isEmpty()) return Collections.emptyList();
-        List<InetAddress> clean = new ArrayList<>();
-        for (InetAddress addr : list) {
-            String ip = addr.getHostAddress();
-            if (ip == null) continue;
-            // Filter Indonesian ISP poisoned DNS addresses (10.x, 127.x, 192.168.x, 118.98.x Mercusuar/Internet Positif)
-            if (ip.startsWith("127.") || ip.startsWith("10.") || ip.startsWith("192.168.") || ip.startsWith("118.98.") || ip.equals("0.0.0.0")) {
-                continue;
-            }
-            clean.add(addr);
-        }
-        return clean;
     }
 }

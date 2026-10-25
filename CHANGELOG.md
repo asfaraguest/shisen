@@ -5,6 +5,25 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 ## [0.1.0-beta.2] - 2026-10-25
 
 ### Ditambahkan
+- **Paritas Fitur Inti & DPI-Bypass (Fase 2)**:
+  - **TLS ClientHello Desync DPI-Bypass (`TlsDesyncHelper`, `DesyncSocketWrapper`, `DesyncSSLSocketFactory`)**:
+    - Implementasi pemecahan TLS record ClientHello RFC-compliant (1 byte data + micro-pause 30ms) untuk meniadakan tanda tangan SNI utuh dari pemindaian firewall DPI ISP (Internet Positif / Sangfor).
+    - Mekanisme pembelajaran dinamis (`DynamicBlockedHosts`) yang secara otomatis menandai dan meng-cache domain saat koneksi mengalami reset, timeout, atau handshake error.
+    - Dilengkapi pemecah segmen TCP untuk segmentasi di tingkat soket transport.
+  - **Multi-Tier DNS Fallback Chain (`DnsFallbackResolver`)**:
+    - Rantai resolusi domain komprehensif: In-Memory Cache ➔ System DNS (dengan filter penyaringan sinkhole/poisoning ISP: 10.x, 127.x, 192.168.x, 118.98.x) ➔ Cloudflare DoH (1.1.1.1) ➔ Google DoH (8.8.8.8) ➔ Hardcoded CDN IP (`hls.dramahot.top`).
+  - **MediaSession & Background Playback Service (`media3-session`)**:
+    - Integrasi `androidx.media3:media3-session` dan implementasi `PlaybackService` sebagai foreground service `mediaPlayback`.
+    - Kontrol pemutaran sistem pada notifikasi dan lockscreen Android lengkap dengan metadata (judul episode, anime, artwork).
+  - **Porting Provider ZokoAnime & Demuxed Audio (`ZokoAnimeParser`)**:
+    - Mengadopsi parser ZokoAnime (`zokoanime.video` dan CDN `dramahot.top`) dari Tatap OG dengan deobfuskasi XOR `otaku-embed-v1`, deteksi halaman 404, ekstraksi subtitle multi-track, dan penanganan demuxed audio tracks `#EXT-X-MEDIA:TYPE=AUDIO`.
+  - **AI Subtitle BYOK LLM Engine (`AiSubtitleService`)**:
+    - Dukungan penerjemahan subtitle berbasis LLM mandiri (BYOK) untuk Google Gemini, Groq Cloud, OpenAI-compatible, dan Ollama (lokal/remote).
+    - Deteksi otomatis provider berdasarkan format kunci (`AIzaSy...`, `gsk_...`, `sk-...`, `http://...`).
+    - Penyimpanan kunci aman via `SecureStore` dengan jaminan zero-logging (tidak pernah dicatat ke logcat).
+    - Antarmuka dialog pengaturan terpadu `dialog_ai_subtitle_settings.xml`.
+  - **Rangkaian Tes Emas TitleMatcher (`TitleMatcherTest`)**:
+    - Rangkaian pengujian unit test tanpa regresi untuk kasus multi-season (`Re:Zero`, `Jujutsu Kaisen`, `Oshi no Ko`), apostrof (`Frieren: Beyond Journey's End`), token penomoran romawi (`Season II/III/IV`), dan isolasi Movie/OVA.
 - **Hardware-Backed Secret Storage (`SecureStore`)**:
   - Implementasi penyimpanan rahasia terenkripsi berbasis Android Keystore dengan algoritma authenticated encryption AES-256-GCM (`AES/GCM/NoPadding`, 12-byte random IV, 128-bit authentication tag).
   - Integrasi penyimpanan privat `SharedPreferences` terenkripsi dengan proteksi anti-tampering (menolak ciphertext yang diubah).

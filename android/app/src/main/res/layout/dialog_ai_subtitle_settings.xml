@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_frost"
+    android:padding="20dp">
+
+    <!-- Header Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:text="✨"
+            android:textSize="22sp"
+            android:gravity="center" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AI Subtitle (BYOK)"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="@dimen/text_title_large"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/tv_ai_provider_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Provider: Gemini / Groq / OpenAI / Ollama"
+                android:textColor="@color/accent_glacial"
+                android:textSize="@dimen/text_body"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btn_close_ai_dialog"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            app:tint="@color/text_frost_subtle"
+            android:contentDescription="Tutup" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Kunci API Anda disimpan aman di Android Hardware Keystore (AES-256-GCM) dan tidak pernah dicatat atau dibagikan."
+        android:textColor="@color/text_frost_subtle"
+        android:textSize="@dimen/text_caption" />
+
+    <!-- Input Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="API Key / Endpoint URL"
+        android:textColor="@color/text_frost_bright"
+        android:textSize="@dimen/text_body"
+        android:fontFamily="sans-serif-medium" />
+
+    <EditText
+        android:id="@+id/et_ai_api_key"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/bg_input_field"
+        android:hint="AIzaSy... / gsk_... / sk-... / ollama URL"
+        android:textColorHint="@color/text_frost_dim"
+        android:textColor="@color/text_frost_bright"
+        android:textSize="@dimen/text_body"
+        android:paddingHorizontal="14dp"
+        android:inputType="textPassword"
+        android:singleLine="true" />
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_clear_ai_key"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_chip_frost_inactive"
+            android:text="Hapus Kunci"
+            android:textColor="@color/text_frost_subtle"
+            android:textSize="@dimen/text_body"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/btn_save_ai_key"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1.5"
+            android:background="@drawable/bg_chip_frost_active"
+            android:text="Simpan Kunci"
+            android:textColor="@color/frost_void"
+            android:textSize="@dimen/text_body"
+            android:textStyle="bold"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -28,13 +28,15 @@
 -keep public class org.jsoup.** { public *; }
 -dontwarn org.jsoup.**
 
-# AndroidX Media3 (ExoPlayer, HLS, OkHttp DataSource, UI)
+# AndroidX Media3 (ExoPlayer, HLS, OkHttp DataSource, UI, Session)
 -keep class androidx.media3.exoplayer.** { *; }
 -keep interface androidx.media3.exoplayer.** { *; }
 -keep class androidx.media3.datasource.** { *; }
 -keep interface androidx.media3.datasource.** { *; }
 -keep class androidx.media3.ui.** { *; }
 -keep class androidx.media3.common.** { *; }
+-keep class androidx.media3.session.** { *; }
+-keep interface androidx.media3.session.** { *; }
 -dontwarn androidx.media3.**
 
 # Kotlin Coroutines

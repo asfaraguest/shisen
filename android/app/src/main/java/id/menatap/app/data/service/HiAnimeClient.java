@@ -208,7 +208,13 @@ public class HiAnimeClient {
                 Exception lastErr = null;
                 for (String embedUrl : embedCandidates) {
                     try {
-                        StreamSource source = resolveMegaplay(embedUrl);
+                        StreamSource source;
+                        if (embedUrl.contains("zokoanime") || embedUrl.contains("dramahot")) {
+                            String pageHtml = fetchString(embedUrl, HI_BASE + "/");
+                            source = ZokoAnimeParser.parseEmbed(pageHtml, embedUrl);
+                        } else {
+                            source = resolveMegaplay(embedUrl);
+                        }
                         if (source != null && !source.url.isEmpty()) {
                             callback.onSuccess(source);
                             return;
@@ -218,7 +224,7 @@ public class HiAnimeClient {
                     }
                 }
 
-                callback.onError(lastErr != null ? lastErr : new IOException("Gagal menyelesaikan stream Megaplay"));
+                callback.onError(lastErr != null ? lastErr : new IOException("Gagal menyelesaikan stream Megaplay / ZokoAnime"));
             } catch (Exception e) {
                 callback.onError(e);
             }
