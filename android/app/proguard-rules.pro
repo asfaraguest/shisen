@@ -1,0 +1,3 @@
+-keep class id.menatap.app.** { *; }
+-keep class okhttp3.** { *; }
+-keep class org.jsoup.** { *; }

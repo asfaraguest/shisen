@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Menatap" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/frost_void</item>
+        <item name="android:statusBarColor">@color/frost_void</item>
+        <item name="android:navigationBarColor">@color/frost_void</item>
+        <item name="colorPrimary">@color/accent_glacial</item>
+        <item name="colorPrimaryVariant">@color/accent_azure</item>
+        <item name="colorSecondary">@color/accent_frost_iris</item>
+        <item name="android:textColorPrimary">@color/text_frost_bright</item>
+        <item name="android:textColorSecondary">@color/text_frost_subtle</item>
+    </style>
+</resources>

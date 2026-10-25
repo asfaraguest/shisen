@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout_player_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/frost_void">
+
+    <!-- Video Stage -->
+    <FrameLayout
+        android:id="@+id/fl_player_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:background="#000000">
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/player_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:surface_type="surface_view"
+            app:resize_mode="fit" />
+
+        <!-- Floating Skip Intro / Outro Button -->
+        <Button
+            android:id="@+id/btn_skip_op_ed"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="@color/hud_background"
+            app:strokeColor="@color/accent_glacial"
+            app:strokeWidth="1dp"
+            app:cornerRadius="19dp"
+            app:icon="@drawable/ic_skip_next"
+            app:iconTint="@color/accent_glacial"
+            app:iconPadding="4dp"
+            app:iconSize="14dp"
+            android:text="Lewati Intro"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="@dimen/text_caption"
+            android:fontFamily="sans-serif-medium"
+            android:visibility="gone" />
+
+        <!-- Screen Lock Button -->
+        <ImageButton
+            android:id="@+id/btn_screen_lock"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/bg_badge_frost"
+            android:src="@drawable/ic_lock_open"
+            app:tint="@color/text_frost_bright"
+            android:visibility="gone"
+            android:contentDescription="Kunci Layar" />
+
+        <ProgressBar
+            android:id="@+id/pb_video_buffering"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/accent_glacial"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Watch Portrait View Bottom Panel -->
+    <LinearLayout
+        android:id="@+id/layout_portrait_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:background="@color/frost_void">
+
+        <!-- Title & Quick Control Action Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="14dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="10dp"
+            android:background="@color/frost_surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageButton
+                    android:id="@+id/btn_portrait_back"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/text_frost_bright"
+                    android:contentDescription="Kembali" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_portrait_anime_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Judul Anime"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="@dimen/text_title"
+                        android:fontFamily="sans-serif-bold"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+
+                    <TextView
+                        android:id="@+id/tv_portrait_current_ep"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Memutar Episode 1"
+                        android:textColor="@color/accent_glacial"
+                        android:textSize="@dimen/text_caption"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Quick Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <Button
+                    android:id="@+id/btn_portrait_sub"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Subtitle"
+                    android:textSize="@dimen/text_badge"
+                    android:textColor="@color/text_frost_bright"
+                    android:backgroundTint="@color/frost_elevated"
+                    app:cornerRadius="18dp"
+                    app:strokeColor="@color/frost_border"
+                    app:strokeWidth="1dp" />
+
+                <Button
+                    android:id="@+id/btn_portrait_speed"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="1.0x"
+                    android:textSize="@dimen/text_badge"
+                    android:textColor="@color/text_frost_bright"
+                    android:backgroundTint="@color/frost_elevated"
+                    app:cornerRadius="18dp"
+                    app:strokeColor="@color/frost_border"
+                    app:strokeWidth="1dp" />
+
+                <Button
+                    android:id="@+id/btn_portrait_fullscreen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:paddingHorizontal="14dp"
+                    android:text="Fullscreen"
+                    android:textSize="@dimen/text_caption"
+                    android:textColor="@color/text_frost_bright"
+                    android:backgroundTint="@color/frost_elevated"
+                    app:cornerRadius="18dp"
+                    app:strokeColor="@color/frost_border"
+                    app:strokeWidth="1dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Episode Grid in Portrait View -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="6dp"
+            android:text="PILIH EPISODE"
+            android:textColor="@color/accent_glacial"
+            android:textSize="@dimen/text_badge"
+            android:fontFamily="sans-serif-bold"
+            android:letterSpacing="0.05" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_portrait_episodes"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingHorizontal="10dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical" />
+    </LinearLayout>
+</LinearLayout>

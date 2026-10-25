@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/card_margin"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/frost_surface"
+    app:strokeColor="@color/frost_border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Poster Container -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/card_poster_height"
+            android:background="@android:color/transparent">
+
+            <ImageView
+                android:id="@+id/iv_poster"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="Poster Anime" />
+
+            <!-- Cold Frost Vignette Gradient Scrim -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/bg_poster_frost_scrim" />
+
+            <!-- Format/Type Badge -->
+            <TextView
+                android:id="@+id/tv_badge_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="7dp"
+                android:background="@drawable/bg_badge_frost"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="3dp"
+                android:text="TV"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="@dimen/text_badge"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.03" />
+
+            <!-- Score Badge -->
+            <TextView
+                android:id="@+id/tv_badge_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="7dp"
+                android:background="@drawable/bg_badge_frost"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="3dp"
+                android:gravity="center_vertical"
+                app:drawableStartCompat="@drawable/ic_star_filled"
+                app:drawableTint="@color/star_gold"
+                android:drawablePadding="2.5dp"
+                android:text="8.5"
+                android:textColor="@color/star_gold"
+                android:textSize="@dimen/text_badge"
+                android:fontFamily="sans-serif-bold"
+                android:visibility="gone" />
+
+            <!-- Subtitle / Episode Status Badge -->
+            <TextView
+                android:id="@+id/tv_badge_ep"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|start"
+                android:layout_margin="7dp"
+                android:background="@drawable/bg_badge_frost"
+                android:paddingHorizontal="7dp"
+                android:paddingVertical="3dp"
+                android:text="12 Ep"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="@dimen/text_badge"
+                android:fontFamily="sans-serif-medium" />
+        </FrameLayout>
+
+        <!-- Card Body -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingTop="9dp"
+            android:paddingBottom="11dp">
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:text="Judul Anime"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13.5sp"
+                android:fontFamily="sans-serif-medium"
+                android:lineSpacingExtra="1.5dp" />
+
+            <TextView
+                android:id="@+id/tv_meta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:text="Spring 2026 · TV"
+                android:textColor="@color/text_frost_subtle"
+                android:textSize="@dimen/text_caption"
+                android:fontFamily="sans-serif" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

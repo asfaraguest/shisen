@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/frost_void">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="40dp">
+
+            <!-- Hero Backdrop with Gradient Scrim -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="240dp">
+
+                <ImageView
+                    android:id="@+id/iv_detail_backdrop"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Backdrop" />
+
+                <!-- Bottom Fade Scrim -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:layout_gravity="bottom"
+                    android:background="@drawable/bg_poster_frost_scrim" />
+
+                <!-- Back Button -->
+                <ImageButton
+                    android:id="@+id/btn_detail_back"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/bg_badge_frost"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/text_frost_bright"
+                    android:contentDescription="Kembali" />
+            </FrameLayout>
+
+            <!-- Anime Info Card Body -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:layout_marginTop="-30dp">
+
+                <TextView
+                    android:id="@+id/tv_detail_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Judul Anime"
+                    android:textColor="@color/text_frost_bright"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif-black"
+                    android:lineSpacingExtra="2dp" />
+
+                <TextView
+                    android:id="@+id/tv_detail_meta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Spring 2026 · TV · 12 Episode · 8.5 ★"
+                    android:textColor="@color/accent_glacial"
+                    android:textSize="@dimen/text_body"
+                    android:fontFamily="sans-serif-medium" />
+
+                <!-- Dual Action Row: Play & Favorite -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="16dp">
+
+                    <Button
+                        android:id="@+id/btn_play_primary"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:text="▶ Putar Episode 1"
+                        android:textColor="#080C14"
+                        android:backgroundTint="@color/accent_glacial"
+                        android:textSize="@dimen/text_body"
+                        android:fontFamily="sans-serif-bold"
+                        app:cornerRadius="22dp" />
+
+                    <Button
+                        android:id="@+id/btn_toggle_bookmark"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="10dp"
+                        android:text="+ Favorit"
+                        android:textColor="@color/text_frost_bright"
+                        android:backgroundTint="@color/frost_elevated"
+                        android:textSize="@dimen/text_body"
+                        android:fontFamily="sans-serif-medium"
+                        app:strokeColor="@color/frost_border"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="22dp"
+                        android:paddingHorizontal="16dp" />
+                </LinearLayout>
+
+                <!-- Synopsis -->
+                <TextView
+                    android:id="@+id/tv_detail_synopsis"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:textColor="@color/text_frost_subtle"
+                    android:textSize="@dimen/text_body"
+                    android:lineSpacingExtra="3.5dp"
+                    android:fontFamily="sans-serif"
+                    android:text="Memuat sinopsis anime..." />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/frost_border"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Episode Header -->
+                <TextView
+                    android:id="@+id/tv_episode_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DAFTAR EPISODE"
+                    android:textColor="@color/accent_glacial"
+                    android:textSize="@dimen/text_caption"
+                    android:fontFamily="sans-serif-bold"
+                    android:letterSpacing="0.06" />
+
+                <!-- Episode Grid (4 Columns) -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_detail_episodes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:nestedScrollingEnabled="false" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_episode"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="3.5dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/frost_surface"
+    app:strokeColor="@color/frost_border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:id="@+id/layout_ep_body"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingHorizontal="4dp">
+
+        <TextView
+            android:id="@+id/tv_ep_status_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="8.5sp"
+            android:fontFamily="sans-serif-bold"
+            android:letterSpacing="0.06"
+            android:textAllCaps="true"
+            android:includeFontPadding="false"
+            android:layout_marginBottom="1.5dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_ep_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="16sp"
+            android:includeFontPadding="false"
+            android:fontFamily="sans-serif-bold" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

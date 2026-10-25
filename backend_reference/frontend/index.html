@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#07080a">
+<title>Tatap — nonton santai di lokal</title>
+<script>
+  (function(){
+    var t = localStorage.getItem("tatap_theme") || "dark";
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png">
+<link rel="apple-touch-icon" href="/assets/icon-512.png">
+</head>
+<body class="no-crt">
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" id="tatap-icons">
+  <defs>
+    <!-- Brand Mark: Sleek Geometric Viewfinder Eye (Tatap) -->
+    <symbol id="icon-brand-mark" viewBox="0 0 24 24">
+      <path d="M2 12C4.5 6.5 8 4 12 4s7.5 2.5 10 8c-2.5 5.5-6 8-10 8s-7.5-2.5-10-8z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="12" cy="12" r="3.5" fill="currentColor"/>
+    </symbol>
+    <!-- Menu: 3 sleek horizontal bars -->
+    <symbol id="icon-menu" viewBox="0 0 24 24">
+      <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <!-- Gear / Settings (Apple Flat UI) -->
+    <symbol id="icon-gear" viewBox="0 0 24 24">
+      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Moon / Dark Mode -->
+    <symbol id="icon-moon" viewBox="0 0 24 24">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Close: clean X -->
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <!-- More Options / Ellipsis Horizontal -->
+    <symbol id="icon-more-options" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
+      <circle cx="19" cy="12" r="2.2" fill="currentColor"/>
+      <circle cx="5" cy="12" r="2.2" fill="currentColor"/>
+    </symbol>
+    <!-- Search: magnifying glass -->
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <!-- Season: cherry blossom / calendar flower -->
+    <symbol id="icon-season" viewBox="0 0 24 24">
+      <path d="M12 2C9.5 5 9.5 8 12 10c2.5-2 2.5-5 0-8zm-2 10c-3-2.5-6-2.5-8 .5 3 2.5 6 2.5 8-.5zm4 0c2 3 5 3 8 0-2-3-5-3-8 0zm-5 2c-1 3 0 6 3 8 1-3 0-6-3-8zm6 0c-3 2-4 5-3 8 3-2 4-5 3-8z" fill="currentColor"/>
+    </symbol>
+    <!-- Clock / Schedule -->
+    <symbol id="icon-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+      <polyline points="12 7 12 12 15 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- TV / Screen -->
+    <symbol id="icon-tv" viewBox="0 0 24 24">
+      <rect x="2" y="7" width="20" height="13" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+      <polyline points="17 3 12 7 7 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Star (Outline) -->
+    <symbol id="icon-star" viewBox="0 0 24 24">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Star (Filled) -->
+    <symbol id="icon-star-filled" viewBox="0 0 24 24">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"/>
+    </symbol>
+    <!-- Catalog / Books -->
+    <symbol id="icon-catalog" viewBox="0 0 24 24">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <!-- Filter: tuning sliders -->
+    <symbol id="icon-filter" viewBox="0 0 24 24">
+      <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <!-- Tag / Genre -->
+    <symbol id="icon-tag" viewBox="0 0 24 24">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+      <circle cx="7" cy="7" r="1.5" fill="currentColor"/>
+    </symbol>
+    <!-- Switch / Arrows -->
+    <symbol id="icon-switch" viewBox="0 0 24 24">
+      <path d="M17 4l4 4-4 4M21 8H3M7 20l-4-4 4-4M3 16h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Help / Terminal -->
+    <symbol id="icon-help" viewBox="0 0 24 24">
+      <polyline points="4 17 10 11 4 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <line x1="12" y1="19" x2="20" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <!-- Update / Rocket -->
+    <symbol id="icon-update" viewBox="0 0 24 24">
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3m5-7a6 6 0 0 1 7 7c-.5 2.5-3 5-6 6l-3-3c1-3 3.5-5.5 6-6a6 6 0 0 0-4-4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Prev / Chevron left -->
+    <symbol id="icon-prev" viewBox="0 0 24 24">
+      <polyline points="15 18 9 12 15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Next / Chevron right -->
+    <symbol id="icon-next" viewBox="0 0 24 24">
+      <polyline points="9 18 15 12 9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Step Prev (Bar + Triangle) -->
+    <symbol id="icon-step-prev" viewBox="0 0 24 24">
+      <path d="M6 5v14M18 5L8 12l10 7V5z" fill="currentColor"/>
+    </symbol>
+    <!-- Step Next (Triangle + Bar) -->
+    <symbol id="icon-step-next" viewBox="0 0 24 24">
+      <path d="M18 5v14M6 5l10 7-10 7V5z" fill="currentColor"/>
+    </symbol>
+    <!-- Skip (Double Triangle + Bar) -->
+    <symbol id="icon-skip" viewBox="0 0 24 24">
+      <path d="M5 4l8 8-8 8V4zm8 0l8 8-8 8V4zm8 0h2v16h-2V4z" fill="currentColor"/>
+    </symbol>
+    <!-- Fullscreen -->
+    <symbol id="icon-fullscreen" viewBox="0 0 24 24">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Play -->
+    <symbol id="icon-play" viewBox="0 0 24 24">
+      <polygon points="6 4 19 12 6 20 6 4" fill="currentColor"/>
+    </symbol>
+    <!-- Subtitles / CC -->
+    <symbol id="icon-subtitles" viewBox="0 0 24 24">
+      <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M7 15h3M14 15h3M7 11h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <!-- Globe / Language -->
+    <symbol id="icon-globe" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+      <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 3a15.3 15.3 0 0 1 4 9 15.3 15.3 0 0 1-4 9 15.3 15.3 0 0 1-4-9 15.3 15.3 0 0 1 4-9z" stroke="currentColor" stroke-width="2" fill="none"/>
+    </symbol>
+    <!-- Fire / Popularity -->
+    <symbol id="icon-fire" viewBox="0 0 24 24">
+      <path d="M12 2c1 3 4 5 4 9a6 6 0 0 1-12 0c0-4 3-7 4-9 1 2 2 3 4 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Trending / Arrow up-right -->
+    <symbol id="icon-trending" viewBox="0 0 24 24">
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <polyline points="17 6 23 6 23 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <!-- Sort A-Z -->
+    <symbol id="icon-sort-az" viewBox="0 0 24 24">
+      <path d="M3 6h4l-4 6h4M3 18l2-6 2 6M3.7 16h2.6M15 6v12M19 14l-4 4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Heart / Favorite -->
+    <symbol id="icon-heart" viewBox="0 0 24 24">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Film / Movie -->
+    <symbol id="icon-film" viewBox="0 0 24 24">
+      <rect x="2" y="2" width="20" height="20" rx="2.18" stroke="currentColor" stroke-width="2" fill="none"/>
+      <line x1="7" y1="2" x2="7" y2="22" stroke="currentColor" stroke-width="2"/>
+      <line x1="17" y1="2" x2="17" y2="22" stroke="currentColor" stroke-width="2"/>
+      <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/>
+      <line x1="2" y1="7" x2="7" y2="7" stroke="currentColor" stroke-width="2"/>
+      <line x1="2" y1="17" x2="7" y2="17" stroke="currentColor" stroke-width="2"/>
+      <line x1="17" y1="17" x2="22" y2="17" stroke="currentColor" stroke-width="2"/>
+      <line x1="17" y1="7" x2="22" y2="7" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+    <!-- Disc / OVA -->
+    <symbol id="icon-disc" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+    </symbol>
+    <!-- Sparkles / Special -->
+    <symbol id="icon-sparkles" viewBox="0 0 24 24">
+      <path d="M12 2l2.4 5.6L20 10l-5.6 2.4L12 18l-2.4-5.6L4 10l5.6-2.4L12 2zM19 17l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z" fill="currentColor"/>
+    </symbol>
+    <!-- Circle Dot / Sedang Tayang -->
+    <symbol id="icon-circle-dot" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+      <circle cx="12" cy="12" r="3" fill="currentColor"/>
+    </symbol>
+    <!-- Flag / Sudah Tamat -->
+    <symbol id="icon-flag" viewBox="0 0 24 24">
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Volume High -->
+    <symbol id="icon-volume-high" viewBox="0 0 24 24">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <!-- Volume Mid -->
+    <symbol id="icon-volume-mid" viewBox="0 0 24 24">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <!-- Volume Mute -->
+    <symbol id="icon-volume-mute" viewBox="0 0 24 24">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" fill="none"/>
+      <line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <!-- Sun / Brightness -->
+    <symbol id="icon-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <!-- Double Chevron Left (Rewind 10s) -->
+    <symbol id="icon-rewind" viewBox="0 0 24 24">
+      <polygon points="11 19 2 12 11 5 11 19" fill="currentColor"/>
+      <polygon points="22 19 13 12 22 5 22 19" fill="currentColor"/>
+    </symbol>
+    <!-- Double Chevron Right (Forward 10s) -->
+    <symbol id="icon-forward" viewBox="0 0 24 24">
+      <polygon points="13 19 22 12 13 5 13 19" fill="currentColor"/>
+      <polygon points="2 19 11 12 2 5 2 19" fill="currentColor"/>
+    </symbol>
+    <!-- Server Alert / Offline -->
+    <symbol id="icon-server-alert" viewBox="0 0 24 24">
+      <rect x="2" y="3" width="20" height="7" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+      <rect x="2" y="14" width="20" height="7" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+      <line x1="6" y1="6.5" x2="6.01" y2="6.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="6" y1="17.5" x2="6.01" y2="17.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="16" y1="5.5" x2="19" y2="7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="19" y1="5.5" x2="16" y2="7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="16" y1="16.5" x2="19" y2="18.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="19" y1="16.5" x2="16" y2="18.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+<div id="crt" aria-hidden="true"></div>
+<div id="bg-glow" aria-hidden="true">
+  <svg class="mac-wallpaper-svg" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="macWaveGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="var(--mac-wave-1)" />
+        <stop offset="100%" stop-color="var(--mac-wave-1-end)" />
+      </linearGradient>
+      <linearGradient id="macWaveGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="var(--mac-wave-2)" />
+        <stop offset="100%" stop-color="var(--mac-wave-2-end)" />
+      </linearGradient>
+      <linearGradient id="macWaveGrad3" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="var(--mac-wave-3)" />
+        <stop offset="100%" stop-color="transparent" />
+      </linearGradient>
+    </defs>
+    <!-- macOS Fluid Ribbon Waves -->
+    <path d="M0 340 C 380 180, 720 540, 1160 360 C 1520 220, 1740 380, 1920 290 L 1920 1080 L 0 1080 Z" fill="url(#macWaveGrad1)" />
+    <path d="M0 720 C 460 580, 840 920, 1340 680 C 1680 520, 1820 640, 1920 560 L 1920 1080 L 0 1080 Z" fill="url(#macWaveGrad2)" />
+    <path d="M0 0 L 1920 0 L 1920 180 C 1580 320, 1260 140, 880 260 C 480 380, 220 120, 0 200 Z" fill="url(#macWaveGrad3)" />
+    <!-- Topographic Contour Lines -->
+    <path d="M0 320 C 380 160, 720 520, 1160 340 C 1520 200, 1740 360, 1920 270" stroke="var(--mac-contour-1)" stroke-width="1.2" stroke-linecap="round" />
+    <path d="M0 360 C 380 200, 720 560, 1160 380 C 1520 240, 1740 400, 1920 310" stroke="var(--mac-contour-1)" stroke-width="1" stroke-dasharray="5 5" opacity="0.6" />
+    <path d="M0 700 C 460 560, 840 900, 1340 660 C 1680 500, 1820 620, 1920 540" stroke="var(--mac-contour-2)" stroke-width="1.2" stroke-linecap="round" />
+    <path d="M0 740 C 460 600, 840 940, 1340 700 C 1680 540, 1820 660, 1920 580" stroke="var(--mac-contour-2)" stroke-width="1" stroke-dasharray="5 5" opacity="0.6" />
+    <path d="M0 220 C 220 140, 480 400, 880 280 C 1260 160, 1580 340, 1920 200" stroke="var(--mac-contour-3)" stroke-width="1" stroke-linecap="round" />
+  </svg>
+</div>
+
+<header class="tui-head">
+  <div class="head-brand" id="head-brand" title="Kembali ke Beranda (Katalog Anime)" role="button" tabindex="0" aria-label="Tatap Beranda">
+    <svg class="brand-logo-mark" viewBox="0 0 24 24" aria-hidden="true">
+      <use href="#icon-brand-mark"/>
+    </svg>
+    <span class="brand-name">TATAP</span>
+    <span class="brand-ver" id="brand-ver">v2.12.4</span>
+  </div>
+  <nav class="nav-tabs-bar" id="nav-tabs-bar" role="navigation" aria-label="Navigasi Utama">
+    <button class="nav-tab-btn active" data-view="katalog" id="tab-nav-katalog" tabindex="0">Katalog</button>
+    <button class="nav-tab-btn" data-view="musim" id="tab-nav-musim" tabindex="0">Musim Ini</button>
+    <button class="nav-tab-btn" data-view="terbaru" id="tab-nav-terbaru" tabindex="0">Terbaru</button>
+    <button class="nav-tab-btn" data-view="lanjutan" id="tab-nav-lanjutan" tabindex="0">Masih Tayang</button>
+    <button class="nav-tab-btn" data-view="riwayat" id="tab-nav-riwayat" tabindex="0">Riwayat</button>
+    <button class="nav-tab-btn" data-view="favorit" id="tab-nav-favorit" tabindex="0">Favorit</button>
+  </nav>
+  <div class="head-actions">
+    <button id="btn-drawer-head" class="icon-btn header-drawer-btn" title="Pengaturan &amp; Menu" aria-label="Pengaturan" tabindex="0">
+      <span class="drawer-btn-icon"><svg class="ui-icon"><use href="#icon-gear"/></svg></span>
+    </button>
+  </div>
+</header>
+
+<!-- APPLE OPTIONS POPOVER (Desktop Utility Menu, Anti-Menu Ganda) -->
+<div id="apple-options-popover" class="apple-popover hidden" role="menu" aria-label="Menu Opsi Tatap">
+  <div class="popover-section">
+    <div class="popover-section-label">PENYARINGAN</div>
+    <button class="popover-item" id="pop-catalog-filter" role="menuitem" tabindex="0">
+      <svg class="ui-icon"><use href="#icon-filter"/></svg>
+      <span class="popover-item-label">Cross Filter Katalog</span>
+      <span class="popover-shortcut">⌘F</span>
+    </button>
+    <button class="popover-item" id="pop-genre-filter" role="menuitem" tabindex="0">
+      <svg class="ui-icon"><use href="#icon-tag"/></svg>
+      <span class="popover-item-label">Filter Genre</span>
+      <span class="popover-shortcut">⌘G</span>
+    </button>
+  </div>
+  <div class="popover-divider"></div>
+  <div class="popover-section">
+    <div class="popover-section-label">PEMUTARAN &amp; SUMBER</div>
+    <button class="popover-item" id="pop-switch-source" role="menuitem" tabindex="0">
+      <svg class="ui-icon"><use href="#icon-switch"/></svg>
+      <span class="popover-item-label">Sumber Video</span>
+      <span class="popover-value" id="pop-src-badge">HiAnime</span>
+    </button>
+  </div>
+  <div class="popover-divider"></div>
+  <div class="popover-section">
+    <div class="popover-section-label">TAMPILAN</div>
+    <button class="popover-item" id="pop-toggle-theme" role="menuitem" tabindex="0">
+      <svg class="ui-icon" id="pop-theme-icon"><use href="#icon-sun"/></svg>
+      <span class="popover-item-label" id="pop-theme-label">Mode Terang</span>
+      <span class="popover-shortcut">⌘T</span>
+    </button>
+  </div>
+  <div class="popover-divider"></div>
+  <div class="popover-section">
+    <div class="popover-section-label">APLIKASI</div>
+    <button class="popover-item highlight" id="pop-update" role="menuitem" tabindex="0">
+      <svg class="ui-icon"><use href="#icon-update"/></svg>
+      <span class="popover-item-label">Periksa Pembaruan</span>
+    </button>
+    <button class="popover-item" id="pop-help" role="menuitem" tabindex="0">
+      <svg class="ui-icon"><use href="#icon-help"/></svg>
+      <span class="popover-item-label">Bantuan &amp; Perintah</span>
+      <span class="popover-shortcut">?</span>
+    </button>
+  </div>
+</div>
+
+<main>
+  <section id="continue-sec" class="hidden" style="display:none">
+    <div class="sec-head"><h2>Lanjutkan menonton</h2><button class="link-btn" id="clear-hist">hapus</button></div>
+    <div id="continue-row" class="hscroll"></div>
+  </section>
+
+  <section id="search-sec">
+    <div id="log" class="log hidden"></div>
+    <div class="sec-head">
+      <div class="sec-title-wrap">
+        <h2 id="results-title">siap</h2>
+        <span id="results-meta" class="dim small"></span>
+        <button id="btn-catalog-filter" class="icon-btn catalog-filter-btn hidden" title="Filter Katalog (Cross Filter Urutan + Tahun + Bulan)" tabindex="0"><svg class="ui-icon"><use href="#icon-filter"/></svg> Filter</button>
+      </div>
+      <div id="schedule-days-bar" class="seg schedule-days-bar hidden" role="group" aria-label="Filter Hari Rilis">
+        <button class="ep-range-chip" data-day="monday" tabindex="0">Senin</button>
+        <button class="ep-range-chip" data-day="tuesday" tabindex="0">Selasa</button>
+        <button class="ep-range-chip" data-day="wednesday" tabindex="0">Rabu</button>
+        <button class="ep-range-chip" data-day="thursday" tabindex="0">Kamis</button>
+        <button class="ep-range-chip" data-day="friday" tabindex="0">Jumat</button>
+        <button class="ep-range-chip" data-day="saturday" tabindex="0">Sabtu</button>
+        <button class="ep-range-chip" data-day="sunday" tabindex="0">Minggu</button>
+      </div>
+    </div>
+    <div id="results"></div>
+    <div id="pager" class="pager hidden" role="navigation" aria-label="Navigasi Halaman">
+      <button id="pg-prev" class="pager-btn" title="Halaman sebelumnya ([)"><svg class="ui-icon"><use href="#icon-prev"/></svg> Sebelumnya</button>
+      <span id="pg-info" class="pager-info"></span>
+      <button id="pg-next" class="pager-btn" title="Halaman berikutnya (])">Berikutnya <svg class="ui-icon"><use href="#icon-next"/></svg></button>
+    </div>
+    <div id="empty-state" class="empty">
+      <div class="empty-art"><svg class="ui-icon empty-icon" viewBox="0 0 24 24" style="width:36px;height:36px;color:var(--accent);opacity:0.85;"><use href="#icon-brand-mark"/></svg></div>
+      <p>Ketik judul anime lalu tekan <b>Enter</b> atau <b>/</b> untuk mencari. <span class="dim">(:bantuan untuk daftar perintah)</span></p>
+    </div>
+  </section>
+</main>
+
+<!-- DRAWER NAVIGATION PANEL -->
+<div id="drawer-panel" class="drawer-overlay hidden" role="dialog" aria-modal="true">
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="drawer-content">
+    <div class="drawer-head">
+      <div class="drawer-title">
+        <span class="brand-name">TATAP</span>
+        <span class="dim small">v2.12.4</span>
+      </div>
+      <button class="icon-btn big" id="drawer-close" title="Tutup Menu (Esc)"><svg class="ui-icon"><use href="#icon-close"/></svg></button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="drawer-group drawer-group-nav">
+        <div class="drawer-group-label">NAVIGASI TAMPILAN</div>
+        <button class="drawer-item" data-view="cari">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-search"/></svg></span>
+          <span class="drawer-item-label">Cari Anime</span>
+          <span class="drawer-item-badge">:cari</span>
+        </button>
+        <button class="drawer-item" data-view="musim">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-season"/></svg></span>
+          <span class="drawer-item-label">Tayang Musim Ini</span>
+          <span class="drawer-item-badge">:musim</span>
+        </button>
+        <button class="drawer-item" data-view="terbaru">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-clock"/></svg></span>
+          <span class="drawer-item-label">Sedang Rilis / Terbaru</span>
+          <span class="drawer-item-badge">:terbaru</span>
+        </button>
+        <button class="drawer-item" data-view="lanjutan">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-tv"/></svg></span>
+          <span class="drawer-item-label">Masih Tayang (Lanjut)</span>
+          <span class="drawer-item-badge">:lanjutan</span>
+        </button>
+        <button class="drawer-item" data-view="riwayat">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-clock"/></svg></span>
+          <span class="drawer-item-label">Riwayat Menonton</span>
+          <span class="drawer-item-badge">:riwayat</span>
+        </button>
+        <button class="drawer-item" data-view="favorit">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-star"/></svg></span>
+          <span class="drawer-item-label">Anime Favorit</span>
+          <span class="drawer-item-badge">:favorit</span>
+        </button>
+        <button class="drawer-item" data-view="katalog">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-catalog"/></svg></span>
+          <span class="drawer-item-label">Katalog Lengkap</span>
+          <span class="drawer-item-badge">:katalog</span>
+        </button>
+      </div>
+
+      <div class="drawer-group">
+        <div class="drawer-group-label">KONTROL & FILTER</div>
+        <button class="drawer-item" id="drawer-catalog-filter">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-filter"/></svg></span>
+          <span class="drawer-item-label">Filter Katalog (Urutan+Tahun+Bulan)</span>
+          <span class="drawer-item-badge">:filter</span>
+        </button>
+        <button class="drawer-item" id="drawer-genre">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-tag"/></svg></span>
+          <span class="drawer-item-label">Filter Genre</span>
+          <span class="drawer-item-badge">:genre</span>
+        </button>
+        <button class="drawer-item" id="drawer-switch-source">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-switch"/></svg></span>
+          <span class="drawer-item-label">Sumber Video Stream</span>
+          <span class="drawer-item-badge" id="drawer-src-badge">HiAnime</span>
+        </button>
+        <button class="drawer-item" id="drawer-help">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-help"/></svg></span>
+          <span class="drawer-item-label">Daftar Perintah Terminal</span>
+          <span class="drawer-item-badge">:bantuan</span>
+        </button>
+      </div>
+
+      <div class="drawer-group">
+        <div class="drawer-group-label">TAMPILAN &amp; TEMA</div>
+        <button class="drawer-item" id="drawer-toggle-theme">
+          <span class="drawer-item-icon"><svg class="ui-icon" id="drawer-theme-icon"><use href="#icon-sun"/></svg></span>
+          <span class="drawer-item-label" id="drawer-theme-label">Mode Terang</span>
+          <span class="drawer-item-badge" id="drawer-theme-badge">Gelap</span>
+        </button>
+      </div>
+
+      <div class="drawer-group">
+        <div class="drawer-group-label">SISTEM & PEMBARUAN</div>
+        <button class="drawer-item highlight" id="drawer-update">
+          <span class="drawer-item-icon"><svg class="ui-icon"><use href="#icon-update"/></svg></span>
+          <span class="drawer-item-label">Periksa Pembaruan</span>
+          <span class="drawer-item-badge">:update</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="drawer-foot">
+      <div class="drawer-foot-row">
+        <span>Status Scraper:</span>
+        <span id="drawer-health-text" class="dim">Memeriksa…</span>
+      </div>
+      <div class="dim small" style="margin-top:4px;">Zero-bloat & standalone anime stream aggregator</div>
+    </div>
+  </aside>
+</div>
+
+<!-- UPDATE MODAL DIALOG -->
+<div id="update-modal" class="overlay hidden" role="dialog" aria-modal="true">
+  <div class="sheet update-sheet">
+    <div class="sheet-head">
+      <div>
+        <div class="eyebrow" id="um-eyebrow">PEMBARUAN APLIKASI</div>
+        <h2 id="um-title">Tatap Update</h2>
+        <div class="dim small" id="um-sub">Versi rilis resmi</div>
+      </div>
+      <button class="icon-btn big" id="um-close" title="Tutup (Esc)"><svg class="ui-icon"><use href="#icon-close"/></svg></button>
+    </div>
+    <div class="update-body">
+      <div id="um-content" class="update-notes"></div>
+      <div class="update-actions" id="um-actions"></div>
+    </div>
+  </div>
+</div>
+
+<div id="resume-modal" class="overlay hidden" role="dialog" aria-modal="true">
+  <div class="sheet resume-sheet">
+    <div class="sheet-head">
+      <div style="min-width:0;flex:1">
+        <div class="eyebrow" id="rm-eyebrow">LANJUTKAN TONTONAN</div>
+        <h2 id="rm-title" class="rm-anime-title">Lanjutkan Menonton?</h2>
+        <div class="dim small" id="rm-sub">Episode tersimpan pada posisi terakhir</div>
+      </div>
+      <button class="icon-btn big" id="rm-close" title="Batal (Esc)"><svg class="ui-icon"><use href="#icon-close"/></svg></button>
+    </div>
+    <div class="resume-body">
+      <div class="rm-progress-wrap" id="rm-progress-wrap">
+        <div class="rm-progress-track">
+          <div id="rm-progress-fill" class="rm-progress-fill" style="width: 0%"></div>
+        </div>
+        <div class="rm-progress-labels">
+          <span id="rm-time-current" class="rm-time-val">00:00</span>
+          <span id="rm-percent-badge" class="rm-percent-badge">0% selesai</span>
+          <span id="rm-time-total" class="rm-time-total dim small">00:00</span>
+        </div>
+      </div>
+      <p id="rm-desc" class="dim">Episode ini sebelumnya ditonton hingga menit <b id="rm-time" style="color:var(--txt)">00:00</b>. Pilih lanjutkan dari posisi terakhir atau putar ulang dari awal.</p>
+      <div class="resume-actions">
+        <button id="rm-btn-resume" class="btn-resume-primary" tabindex="1" autofocus>
+          <svg class="ui-icon"><use href="#icon-play"/></svg> <span id="rm-resume-label">Lanjutkan (00:00)</span>
+        </button>
+        <button id="rm-btn-restart" class="btn-resume-secondary" tabindex="2">
+          <svg class="ui-icon"><use href="#icon-rewind"/></svg> <span>Mulai dari Awal (00:00)</span>
+        </button>
+        <button id="rm-btn-cancel" class="btn-resume-cancel" tabindex="3" title="Kembali ke Daftar Episode (Esc)">
+          <svg class="ui-icon"><use href="#icon-close"/></svg> <span>Batal</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="help-overlay" class="overlay hidden" role="dialog" aria-modal="true">
+  <div class="help-sheet">
+    <div class="sec-head"><h2>perintah</h2><button class="link-btn" id="help-close">tutup</button></div>
+    <pre id="help-body" class="help-body"></pre>
+  </div>
+</div>
+
+<div id="genre-modal" class="overlay hidden" role="dialog" aria-modal="true">
+  <div class="genre-sheet">
+    <div class="sec-head">
+      <div>
+        <div class="eyebrow">FILTER GENRE ANIME</div>
+        <h2>Pilih Genre</h2>
+      </div>
+      <button class="icon-btn" id="genre-close" title="Tutup (Esc)"><svg class="ui-icon"><use href="#icon-close"/></svg></button>
+    </div>
+    <div class="genre-search-row">
+      <input id="genre-search" placeholder="Cari genre… (cth: isekai, action, romance)" autocapitalize="off" autocomplete="off" spellcheck="false">
+      <button class="btn btn-muted btn-genre-reset" id="genre-reset-btn" title="Hapus filter genre aktif">Reset Genre</button>
+    </div>
+    <div class="genre-status-bar">
+      <span id="genre-active-status" class="dim small">Tidak ada genre aktif (semua anime)</span>
+    </div>
+    <div id="genre-list" class="genre-list"></div>
+  </div>
+</div>
+
+<!-- CATALOG CROSS-FILTER MODAL -->
+<div id="catalog-filter-modal" class="overlay hidden" role="dialog" aria-modal="true">
+  <div class="sheet catalog-filter-sheet">
+    <div class="sheet-head">
+      <div>
+        <div class="eyebrow">FILTER KATALOG ANIME</div>
+        <h2>Cross Filter: Urutan, Tahun, Musim, Bulan, Tipe &amp; Status</h2>
+        <div class="dim small">Kombinasikan kriteria untuk menemukan anime spesifik</div>
+      </div>
+      <button class="icon-btn big" id="cf-close" title="Tutup (Esc)"><svg class="ui-icon"><use href="#icon-close"/></svg></button>
+    </div>
+
+    <div class="cf-body">
+      <!-- 1. Urutan (Sort) -->
+      <div class="cf-group">
+        <label class="cf-label">URUTAN (SORT)</label>
+        <div class="cf-chips" id="cf-chips-sort">
+          <button class="cf-chip active" data-val="popularity"><svg class="ui-icon"><use href="#icon-fire"/></svg> Terpopuler</button>
+          <button class="cf-chip" data-val="score"><svg class="ui-icon"><use href="#icon-star"/></svg> Skor Tertinggi</button>
+          <button class="cf-chip" data-val="latest"><svg class="ui-icon"><use href="#icon-clock"/></svg> Terbaru</button>
+          <button class="cf-chip" data-val="trending"><svg class="ui-icon"><use href="#icon-trending"/></svg> Trending</button>
+          <button class="cf-chip" data-val="az"><svg class="ui-icon"><use href="#icon-sort-az"/></svg> A-Z</button>
+          <button class="cf-chip" data-val="most_favorite"><svg class="ui-icon"><use href="#icon-heart"/></svg> Favorit</button>
+        </div>
+      </div>
+
+      <!-- 2. Tahun (Year) -->
+      <div class="cf-group">
+        <label class="cf-label">TAHUN RILIS</label>
+        <div class="cf-chips" id="cf-chips-year">
+          <button class="cf-chip active" data-val="">Semua Tahun</button>
+          <button class="cf-chip" data-val="2026">2026</button>
+          <button class="cf-chip" data-val="2025">2025</button>
+          <button class="cf-chip" data-val="2024">2024</button>
+          <button class="cf-chip" data-val="2023">2023</button>
+          <button class="cf-chip" data-val="2022">2022</button>
+          <button class="cf-chip" data-val="2021">2021</button>
+          <button class="cf-chip" data-val="2020">2020</button>
+          <button class="cf-chip" data-val="2015-2019">2015-2019</button>
+          <button class="cf-chip" data-val="2010-2014">2010-2014</button>
+          <button class="cf-chip" data-val="2000-2009">2000-2009</button>
+          <button class="cf-chip" data-val="<2000">&lt;2000</button>
+        </div>
+      </div>
+
+      <!-- 3. Musim (Season) -->
+      <div class="cf-group">
+        <label class="cf-label">MUSIM PENAYANGAN (SEASON)</label>
+        <div class="cf-chips" id="cf-chips-season">
+          <button class="cf-chip active" data-val="">Semua Musim</button>
+          <button class="cf-chip" data-val="spring"><svg class="ui-icon"><use href="#icon-season"/></svg> Musim Semi (Spring)</button>
+          <button class="cf-chip" data-val="summer"><svg class="ui-icon"><use href="#icon-sun"/></svg> Musim Panas (Summer)</button>
+          <button class="cf-chip" data-val="fall"><svg class="ui-icon"><use href="#icon-season"/></svg> Musim Gugur (Fall)</button>
+          <button class="cf-chip" data-val="winter"><svg class="ui-icon"><use href="#icon-sparkles"/></svg> Musim Dingin (Winter)</button>
+        </div>
+      </div>
+
+      <!-- 4. Bulan (Month) -->
+      <div class="cf-group">
+        <label class="cf-label">BULAN RILIS</label>
+        <div class="cf-chips" id="cf-chips-month">
+          <button class="cf-chip active" data-val="">Semua Bulan</button>
+          <button class="cf-chip" data-val="1">Jan (1)</button>
+          <button class="cf-chip" data-val="2">Feb (2)</button>
+          <button class="cf-chip" data-val="3">Mar (3)</button>
+          <button class="cf-chip" data-val="4">Apr (4)</button>
+          <button class="cf-chip" data-val="5">Mei (5)</button>
+          <button class="cf-chip" data-val="6">Jun (6)</button>
+          <button class="cf-chip" data-val="7">Jul (7)</button>
+          <button class="cf-chip" data-val="8">Agu (8)</button>
+          <button class="cf-chip" data-val="9">Sep (9)</button>
+          <button class="cf-chip" data-val="10">Okt (10)</button>
+          <button class="cf-chip" data-val="11">Nov (11)</button>
+          <button class="cf-chip" data-val="12">Des (12)</button>
+        </div>
+      </div>
+
+      <!-- 5. Format / Tipe -->
+      <div class="cf-group">
+        <label class="cf-label">FORMAT / TIPE</label>
+        <div class="cf-chips" id="cf-chips-type">
+          <button class="cf-chip active" data-val="">Semua Format</button>
+          <button class="cf-chip" data-val="tv"><svg class="ui-icon"><use href="#icon-tv"/></svg> TV Series</button>
+          <button class="cf-chip" data-val="movie"><svg class="ui-icon"><use href="#icon-film"/></svg> Movie</button>
+          <button class="cf-chip" data-val="ova"><svg class="ui-icon"><use href="#icon-disc"/></svg> OVA</button>
+          <button class="cf-chip" data-val="ona"><svg class="ui-icon"><use href="#icon-globe"/></svg> ONA</button>
+          <button class="cf-chip" data-val="special"><svg class="ui-icon"><use href="#icon-sparkles"/></svg> Special</button>
+        </div>
+      </div>
+
+      <!-- 6. Status -->
+      <div class="cf-group">
+        <label class="cf-label">STATUS PENAYANGAN</label>
+        <div class="cf-chips" id="cf-chips-status">
+          <button class="cf-chip active" data-val="">Semua Status</button>
+          <button class="cf-chip" data-val="releasing"><svg class="ui-icon"><use href="#icon-circle-dot"/></svg> Sedang Tayang</button>
+          <button class="cf-chip" data-val="completed"><svg class="ui-icon"><use href="#icon-flag"/></svg> Sudah Tamat</button>
+        </div>
+      </div>
+
+      <!-- 7. Genre -->
+      <div class="cf-group">
+        <label class="cf-label">GENRE ANIME</label>
+        <div class="cf-genre-bar">
+          <button type="button" class="btn-cf-genre" id="cf-btn-pick-genre">
+            <svg class="ui-icon"><use href="#icon-tag"/></svg> <span id="cf-btn-genre-label">Semua Genre (Pilih...)</span>
+          </button>
+          <button type="button" class="btn-cf-genre-clear hidden" id="cf-btn-genre-clear" title="Reset Pilihan Genre">
+            <svg class="ui-icon"><use href="#icon-close"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-foot cf-foot">
+      <button class="btn btn-muted" id="cf-reset-btn">Hapus Filter</button>
+      <button class="btn btn-primary" id="cf-apply-btn">Terapkan Filter</button>
+    </div>
+  </div>
+</div>
+
+<footer class="bottom-bar">
+  <div class="bottom-search-row">
+    <div class="search-input-wrap" id="search-input-wrap" role="search" aria-label="Cari anime">
+      <svg class="ui-icon search-lead-icon" aria-hidden="true"><use href="#icon-search"/></svg>
+      <input id="cmd" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="Cari anime, genre, atau tekan ⌘K untuk perintah..." readonly>
+      <button type="button" id="search-clear-btn" class="search-clear-btn hidden" title="Hapus pencarian (Esc)" aria-label="Hapus teks">
+        <svg class="ui-icon"><use href="#icon-close"/></svg>
+      </button>
+      <kbd class="search-kbd-hint" title="Pintasan keyboard: ⌘K atau /">⌘K</kbd>
+    </div>
+  </div>
+  <div class="statusbar">
+    <div class="sb-shortcuts">
+      <span><b>⌘K</b> cari</span>
+      <span><b>↑↓←→</b> pilih</span>
+      <span><b>enter</b> buka</span>
+      <span><b>[ ]</b> halaman</span>
+      <span><b>esc</b> reset</span>
+    </div>
+    <div class="sb-meta">
+      <button id="sb-source" class="sb-source" title="Sumber streaming aktif. Klik atau ketik :switch untuk beralih">src: hianime <svg class="ui-icon" style="margin-left:3px;"><use href="#icon-switch"/></svg></button>
+      <span id="sb-view" class="sb-view"></span>
+    </div>
+  </div>
+</footer>
+
+<!-- TITLE / EPISODE MODAL -->
+<div id="title-modal" class="overlay hidden" role="dialog" aria-modal="true">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div>
+        <div class="eyebrow"><span id="tm-eyebrow">DETAIL ANIME</span> <button id="tm-source-btn" class="tm-source-badge" title="Klik untuk beralih sumber stream">SRC: HIANIME <svg class="ui-icon" style="margin-left:3px;"><use href="#icon-switch"/></svg></button></div>
+        <h2 id="tm-title">–</h2>
+        <div class="dim small" id="tm-sub">–</div>
+      </div>
+      <div class="sheet-head-actions">
+        <button id="tm-bookmark-btn" class="tm-bookmark-btn" title="Simpan ke Favorit"><svg class="ui-icon"><use href="#icon-star"/></svg> <span id="tm-bookmark-label">+ FAVORIT</span></button>
+        <button class="icon-btn big" id="tm-close" title="Tutup (Esc)"><svg class="ui-icon"><use href="#icon-close"/></svg></button>
+      </div>
+    </div>
+    <div id="tm-detail-meta" class="detail-meta-box hidden">
+      <div class="detail-badges-row">
+        <span id="tm-score" class="badge-score hidden">⭐ <b id="tm-score-val">8.4</b></span>
+        <span id="tm-status" class="badge-status hidden">TAMAT</span>
+        <span id="tm-info-line" class="detail-info-line dim small"></span>
+      </div>
+      <div id="tm-genres" class="detail-genres-row hidden"></div>
+      <div id="tm-synopsis-box" class="tm-synopsis-box hidden">
+        <div class="tm-synopsis-header">
+          <span class="tm-synopsis-label">SINOPSIS</span>
+        </div>
+        <p id="tm-synopsis" class="tm-synopsis-text clamped"></p>
+        <button id="tm-synopsis-toggle" class="tm-synopsis-toggle">Selengkapnya ▼</button>
+      </div>
+    </div>
+    <div id="tm-seasons" class="seasons-bar hidden">
+      <span class="seasons-label">SEASON / TERKAIT:</span>
+      <div id="tm-seasons-chips" class="seasons-chips"></div>
+    </div>
+    <div class="sheet-controls">
+      <div class="seg" id="mode-seg">
+        <button data-mode="sub" class="active">SUB</button><button data-mode="dub">DUB</button>
+      </div>
+      <div class="seg" id="quality-seg">
+        <button data-q="best" class="active">BEST</button><button data-q="1080p">1080p</button><button data-q="720p">720p</button><button data-q="480p">480p</button>
+      </div>
+      <input id="ep-filter" placeholder="Filter ep… cth: 12" inputmode="numeric">
+      <span id="tm-count" class="dim small"></span>
+    </div>
+    <div id="tm-ep-ranges" class="ep-ranges hidden"></div>
+    <div id="tm-eps" class="ep-grid"></div>
+  </div>
+</div>
+
+<!-- PLAYER MODAL -->
+<div id="player-modal" class="overlay hidden" role="dialog" aria-modal="true">
+  <div class="player-shell">
+    <div class="player-head">
+      <div class="player-title"><span id="pm-title">–</span><span id="pm-meta" class="dim"></span></div>
+      <div class="player-head-btns">
+        <select id="pm-speed-select" class="speed-select" title="Kecepatan Putar Video ([ / ])" aria-label="Kecepatan">
+          <option value="0.5">0.5x</option>
+          <option value="0.75">0.75x</option>
+          <option value="1" selected>1.0x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="1.75">1.75x</option>
+          <option value="2">2.0x</option>
+        </select>
+        <select id="pm-quality-select" class="quality-select hidden" title="Pilih Resolusi Video" aria-label="Resolusi"></select>
+        <button id="pm-mpv" title="Putar di MPV (lokal)"><svg class="ui-icon"><use href="#icon-play"/></svg> MPV</button>
+        <button id="pm-fs" title="Layar Penuh / Fullscreen (f)"><svg class="ui-icon"><use href="#icon-fullscreen"/></svg> FULL</button>
+        <button id="pm-close" class="icon-btn big" title="Tutup (Esc)"><svg class="ui-icon"><use href="#icon-close"/></svg></button>
+      </div>
+    </div>
+    <div class="ambient-stage">
+      <div id="ambient-fallback" aria-hidden="true"></div>
+      <canvas id="ambient" width="96" height="54" aria-hidden="true"></canvas>
+      <video id="vid" controls controlsList="nodownload nofullscreen noremoteplayback" disablePictureInPicture playsinline preload="auto"></video>
+      <div id="pm-gesture-stage" class="gesture-stage" aria-hidden="true">
+        <div id="pm-ripple-left" class="gesture-ripple left"><span class="ripple-icon"><svg class="ui-icon"><use href="#icon-rewind"/></svg></span><span class="ripple-text">-10s</span></div>
+        <div id="pm-ripple-right" class="gesture-ripple right"><span class="ripple-icon"><svg class="ui-icon"><use href="#icon-forward"/></svg></span><span class="ripple-text">+10s</span></div>
+        <div id="pm-gesture-osd" class="gesture-osd hidden">
+          <span id="pm-osd-icon" class="osd-icon"><svg class="ui-icon"><use href="#icon-volume-high"/></svg></span>
+          <div class="osd-bar-wrap"><div id="pm-osd-bar" class="osd-bar" style="width:50%"></div></div>
+          <span id="pm-osd-val" class="osd-val">50%</span>
+        </div>
+      </div>
+      <div id="pm-subs-overlay" class="subs-overlay sz-m" aria-hidden="true"><span></span></div>
+      <!-- Floating Skip Opening / Ending Button -->
+      <button id="pm-skip-btn" class="pm-skip-btn hidden" title="Lewati (Tekan S)">
+        <svg class="ui-icon"><use href="#icon-skip"/></svg>
+        <span id="pm-skip-label">Lewati Opening</span>
+      </button>
+      <div id="pm-spinner" class="spinner hidden"><div class="ring"></div><p id="pm-status">resolving…</p></div>
+    </div>
+    <div class="player-foot">
+      <button id="pm-prev" title="Episode sebelumnya (p)"><svg class="ui-icon"><use href="#icon-step-prev"/></svg> PREV</button>
+      <div id="pm-variants" class="variants"></div>
+      <div id="pm-subs-wrap" class="sub-picker hidden" title="Pilih Subtitle">
+        <span class="sub-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-subtitles"/></svg></span>
+        <select id="pm-subs" aria-label="Subtitle"></select>
+        <input type="file" id="pm-custom-sub-file" accept=".vtt,.srt,.ass,.ssa" style="display:none">
+        <div class="sub-size" role="group" aria-label="Ukuran subtitle">
+          <button data-subsize="s" title="Subtitle kecil">S</button><button data-subsize="m" title="Subtitle sedang">M</button><button data-subsize="l" title="Subtitle besar">L</button>
+        </div>
+        <div class="sub-delay-ctrl" role="group" aria-label="Sinkronisasi waktu subtitle">
+          <button type="button" id="pm-sub-delay-minus" title="Mundurkan subtitle -0.25s (Pintasan: ,)">-</button>
+          <span id="pm-sub-delay-val" class="sub-delay-val" title="Klik untuk reset offset subtitle ke 0.0s">0.0s</span>
+          <button type="button" id="pm-sub-delay-plus" title="Majukan subtitle +0.25s (Pintasan: .)">+</button>
+        </div>
+        <button id="pm-translate" class="sub-translate" data-on="0" aria-label="Toggle translate ID">
+          <svg class="ui-icon"><use href="#icon-globe"/></svg><span class="tr-label">ID</span>
+        </button>
+      </div>
+      <button id="pm-next" title="Episode berikutnya (n)">NEXT <svg class="ui-icon"><use href="#icon-step-next"/></svg></button>
+    </div>
+    <div class="player-hint dim small">Space play/pause · ←/→ seek 5 dtk · , / . sinkronisasi sub · f fullscreen · [ / ] kecepatan · n/p ganti episode · m mute · Esc tutup</div>
+  </div>
+</div>
+
+<!-- BACKEND STARTUP ERROR / RECONNECT OVERLAY -->
+<div id="backend-error-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="be-title">
+  <div class="backend-error-sheet">
+    <div class="be-head">
+      <div class="be-icon-wrap">
+        <svg class="ui-icon be-alert-icon"><use href="#icon-server-alert"/></svg>
+      </div>
+      <div>
+        <h2 id="be-title" class="be-title">Backend Tatap Belum Terhubung</h2>
+        <span class="dim small">Server Lokal http://127.0.0.1:8767</span>
+      </div>
+    </div>
+    <div class="be-body">
+      <p>Tidak dapat terhubung ke server backend lokal Tatap. Hal ini biasanya terjadi jika:</p>
+      <ul>
+        <li>Proses backend Python masih dalam tahap inisialisasi / <i>warming up</i>.</li>
+        <li>Port <code>8767</code> terblokir firewall atau sedang digunakan oleh aplikasi lain.</li>
+        <li>Proses backend terhenti saat awal mulai dibuka.</li>
+      </ul>
+      <div id="be-status-box" class="be-status-box">
+        <span id="be-status-text" class="dim">Mencoba menghubungkan kembali secara otomatis...</span>
+      </div>
+    </div>
+    <div class="be-actions">
+      <button id="be-retry-btn" class="btn btn-primary be-btn">
+        <svg class="ui-icon"><use href="#icon-switch"/></svg> Coba Hubungkan Ulang
+      </button>
+      <button id="be-copy-debug-btn" class="btn btn-secondary be-btn">
+        Salin Info Diagnostik
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"><span id="toast-msg"></span></div>
+
+<script src="/js/vendor/hls.min.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/term.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
