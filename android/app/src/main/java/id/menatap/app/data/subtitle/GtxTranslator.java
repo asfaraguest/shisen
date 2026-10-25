@@ -83,9 +83,7 @@ public class GtxTranslator {
                         String trText = (j < translatedBatchTexts.size() && !translatedBatchTexts.get(j).isEmpty())
                                 ? translatedBatchTexts.get(j)
                                 : orig.text;
-                        // Terapkan Smart Lexicon & Sanitizer
-                        String sanitized = SmartLexicon.sanitizeGtxPlusId(trText, false);
-                        translated.add(new SubtitleCue(orig.startMs, orig.endMs, sanitized));
+                        translated.add(new SubtitleCue(orig.startMs, orig.endMs, trText));
                     }
 
                     if (callback != null) {
@@ -93,14 +91,17 @@ public class GtxTranslator {
                     }
                 }
 
+                // Terapkan Sliding Window Scene Context Sanitizer (Kamus Leksikon Universal, Overgeared Satisfy, & Scene Context)
+                List<SubtitleCue> sanitizedCues = SmartLexicon.sanitizeCuesWithContext(translated, "gtx+", 3, 15.0);
+
                 // 2. Simpan Hasil ke Disk Cache
                 try {
-                    String jsonOut = serializeCues(translated);
+                    String jsonOut = serializeCues(sanitizedCues);
                     writeFile(cacheFile, jsonOut);
                 } catch (Exception ignored) {}
 
                 if (callback != null) {
-                    callback.onSuccess(translated);
+                    callback.onSuccess(sanitizedCues);
                 }
             } catch (Exception e) {
                 if (callback != null) {

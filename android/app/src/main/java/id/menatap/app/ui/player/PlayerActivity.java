@@ -18,6 +18,7 @@ import android.os.Looper;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -95,12 +96,36 @@ public class PlayerActivity extends AppCompatActivity {
 
     // HUD & Gestures
     private LinearLayout hudHoldSpeed;
+    private TextView tvHoldSpeedIcon;
+    private TextView tvHoldSpeedText;
     private LinearLayout hudOsd;
     private TextView tvOsdIcon;
     private ProgressBar pbOsdBar;
     private TextView tvOsdVal;
     private TextView tvRippleLeft;
     private TextView tvRippleRight;
+
+    private ScaleGestureDetector scaleGestureDetector;
+    private GestureDetector gestureDetector;
+    private int activeGestureZone = 0; // 0 = none, 1 = brightness, 2 = volume
+    private boolean isHoldingSpeed = false;
+    private boolean isHoldingRewind = false;
+    private float currentBrightness = -1f;
+    private int lastHapticStep = -1;
+    private final Handler gestureHandler = new Handler(Looper.getMainLooper());
+    private final Runnable holdRewindRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!isHoldingRewind || player == null) return;
+            long curPos = player.getCurrentPosition();
+            long newPos = Math.max(0, curPos - 2000);
+            player.seekTo(newPos);
+            HapticHelper.performTick(playerView);
+            if (isHoldingRewind) {
+                gestureHandler.postDelayed(this, 250);
+            }
+        }
+    };
 
     // Landscape Top Bar
     private LinearLayout layoutTopBar;
@@ -236,6 +261,8 @@ public class PlayerActivity extends AppCompatActivity {
         tvSubtitles = findViewById(R.id.tv_subtitles);
 
         hudHoldSpeed = findViewById(R.id.hud_hold_speed);
+        tvHoldSpeedIcon = findViewById(R.id.tv_hold_speed_icon);
+        tvHoldSpeedText = findViewById(R.id.tv_hold_speed_text);
         hudOsd = findViewById(R.id.hud_osd);
         tvOsdIcon = findViewById(R.id.tv_osd_icon);
         pbOsdBar = findViewById(R.id.pb_osd_bar);
@@ -659,44 +686,161 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
+    private float dpToPx(float dp) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
+    }
+
+    private void startHoldingSpeed() {
+        if (player == null || isHoldingSpeed || isHoldingRewind) return;
+        isHoldingSpeed = true;
+        player.setPlaybackParameters(new PlaybackParameters(2.0f));
+        if (tvHoldSpeedIcon != null) tvHoldSpeedIcon.setText("⚡");
+        if (tvHoldSpeedText != null) tvHoldSpeedText.setText("2X Cepat >>");
+        hudHoldSpeed.setVisibility(View.VISIBLE);
+        HapticHelper.performTick(playerView);
+    }
+
+    private void stopHoldingSpeed() {
+        if (!isHoldingSpeed) return;
+        isHoldingSpeed = false;
+        if (player != null) {
+            player.setPlaybackParameters(new PlaybackParameters(currentSpeed));
+        }
+        hudHoldSpeed.setVisibility(View.GONE);
+    }
+
+    private void startHoldingRewind() {
+        if (player == null || isHoldingRewind || isHoldingSpeed) return;
+        isHoldingRewind = true;
+        if (tvHoldSpeedIcon != null) tvHoldSpeedIcon.setText("⏪");
+        if (tvHoldSpeedText != null) tvHoldSpeedText.setText("<< Putar Mundur");
+        hudHoldSpeed.setVisibility(View.VISIBLE);
+        HapticHelper.performTick(playerView);
+        gestureHandler.post(holdRewindRunnable);
+    }
+
+    private void stopHoldingRewind() {
+        if (!isHoldingRewind) return;
+        isHoldingRewind = false;
+        gestureHandler.removeCallbacks(holdRewindRunnable);
+        hudHoldSpeed.setVisibility(View.GONE);
+    }
+
     private void setupGestureControls() {
-        GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                if (isScreenLocked) return false;
+                if (playerView != null) {
+                    if (playerView.isControllerFullyVisible()) {
+                        playerView.hideController();
+                    } else {
+                        playerView.showController();
+                    }
+                }
+                return true;
+            }
+
             @Override
             public boolean onDoubleTap(@NonNull MotionEvent e) {
                 if (player == null || isScreenLocked) return false;
                 int width = flPlayerWrapper.getWidth();
+                if (width <= 0) return false;
                 float x = e.getX();
-                if (x < width * 0.4f) {
+
+                if (x < width * 0.35f) {
                     seekRelative(-10000);
                     showRippleFeedback(tvRippleLeft);
-                    return true;
-                } else if (x > width * 0.6f) {
+                } else if (x > width * 0.65f) {
                     seekRelative(10000);
                     showRippleFeedback(tvRippleRight);
-                    return true;
+                } else {
+                    if (player.isPlaying()) {
+                        player.pause();
+                    } else {
+                        player.play();
+                    }
                 }
-                return false;
+                HapticHelper.performTick(playerView);
+                return true;
             }
 
             @Override
             public void onLongPress(@NonNull MotionEvent e) {
-                if (player == null || isScreenLocked) return;
-                player.setPlaybackParameters(new PlaybackParameters(2.0f));
-                hudHoldSpeed.setVisibility(View.VISIBLE);
-                HapticHelper.performTick();
+                if (player == null || isScreenLocked || activeGestureZone != 0) return;
+                int width = flPlayerWrapper.getWidth();
+                if (width <= 0) return;
+                float x = e.getX();
+
+                if (x >= width * 0.5f) {
+                    startHoldingSpeed();
+                } else {
+                    startHoldingRewind();
+                }
             }
 
             @Override
             public boolean onScroll(MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
-                if (isScreenLocked || e1 == null || e2 == null) return false;
-                int width = flPlayerWrapper.getWidth();
-                float x = e1.getX();
+                if (isScreenLocked || isHoldingSpeed || isHoldingRewind || e1 == null || e2 == null) return false;
 
-                if (x < width * 0.45f) {
-                    handleBrightnessSwipe(distanceY);
+                float viewHeight = flPlayerWrapper.getHeight();
+                float viewWidth = flPlayerWrapper.getWidth();
+                if (viewHeight <= 0 || viewWidth <= 0) return false;
+
+                // Exclusion zones: cegah swipe saat menyentuh status bar atau navigation bar
+                float topExclusion = Math.max(dpToPx(56), viewHeight * 0.16f);
+                float bottomExclusion = viewHeight - Math.max(dpToPx(44), viewHeight * 0.12f);
+                if (e1.getY() < topExclusion || e1.getY() > bottomExclusion) {
+                    return false;
+                }
+
+                // Disambiguasi awal dan penguncian zona (Edge zoning: kiri 35% kecerahan, kanan 35% volume, tengah 30% deadzone)
+                if (activeGestureZone == 0) {
+                    float totalDeltaY = Math.abs(e1.getY() - e2.getY());
+                    float totalDeltaX = Math.abs(e1.getX() - e2.getX());
+                    if (totalDeltaY < dpToPx(14) || totalDeltaY <= totalDeltaX * 1.25f) {
+                        return false;
+                    }
+                    if (e1.getX() <= viewWidth * 0.35f) {
+                        activeGestureZone = 1;
+                    } else if (e1.getX() >= viewWidth * 0.65f) {
+                        activeGestureZone = 2;
+                    } else {
+                        return false; // Deadzone di tengah layar
+                    }
+                }
+
+                if (activeGestureZone == 1) {
+                    handleBrightnessSwipe(distanceY / viewHeight);
                     return true;
-                } else if (x > width * 0.55f) {
-                    handleVolumeSwipe(distanceY);
+                } else if (activeGestureZone == 2) {
+                    handleVolumeSwipe(distanceY / viewHeight);
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                if (isScreenLocked || playerView == null) return false;
+                float factor = detector.getScaleFactor();
+                if (factor > 1.08f && currentResizeMode != AspectRatioFrameLayout.RESIZE_MODE_ZOOM) {
+                    currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
+                    playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
+                    btnAspect.setText("ZOOM");
+                    btnPortraitFullscreen.setText("ZOOM");
+                    showOsd("⛶", 100);
+                    HapticHelper.performClick(playerView);
+                    return true;
+                } else if (factor < 0.92f && currentResizeMode != AspectRatioFrameLayout.RESIZE_MODE_FIT) {
+                    currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+                    playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+                    btnAspect.setText("FIT");
+                    btnPortraitFullscreen.setText("FIT");
+                    showOsd("⛶", 0);
+                    HapticHelper.performClick(playerView);
                     return true;
                 }
                 return false;
@@ -704,41 +848,74 @@ public class PlayerActivity extends AppCompatActivity {
         });
 
         flPlayerWrapper.setOnTouchListener((v, event) -> {
-            gestureDetector.onTouchEvent(event);
-            if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                if (hudHoldSpeed.getVisibility() == View.VISIBLE) {
-                    hudHoldSpeed.setVisibility(View.GONE);
-                    if (player != null) {
-                        player.setPlaybackParameters(new PlaybackParameters(currentSpeed));
-                    }
+            if (isScreenLocked) return false;
+
+            if (scaleGestureDetector != null && event.getPointerCount() > 1) {
+                scaleGestureDetector.onTouchEvent(event);
+                activeGestureZone = 0;
+                return true;
+            }
+
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                activeGestureZone = 0;
+                if (audioManager != null) {
+                    int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                    int curVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                    currentVolumeFraction = maxVol > 0 ? ((float) curVol / (float) maxVol) : 0f;
+                }
+                WindowManager.LayoutParams lp = getWindow().getAttributes();
+                currentBrightness = lp.screenBrightness < 0 ? 0.5f : lp.screenBrightness;
+            } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                activeGestureZone = 0;
+                if (isHoldingSpeed) {
+                    stopHoldingSpeed();
+                }
+                if (isHoldingRewind) {
+                    stopHoldingRewind();
                 }
             }
-            return false;
+
+            boolean handled = gestureDetector.onTouchEvent(event);
+            return handled || activeGestureZone != 0 || isHoldingSpeed || isHoldingRewind;
         });
     }
 
-    private void handleBrightnessSwipe(float distanceY) {
-        float delta = distanceY / flPlayerWrapper.getHeight();
+    private void handleBrightnessSwipe(float deltaFraction) {
+        if (currentBrightness < 0) {
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            currentBrightness = lp.screenBrightness < 0 ? 0.5f : lp.screenBrightness;
+        }
+        currentBrightness = Math.max(0.01f, Math.min(1.0f, currentBrightness + deltaFraction * 1.5f));
         WindowManager.LayoutParams lp = getWindow().getAttributes();
-        float current = lp.screenBrightness < 0 ? 0.5f : lp.screenBrightness;
-        float newBrightness = Math.max(0.01f, Math.min(1.0f, current + delta * 1.5f));
-        lp.screenBrightness = newBrightness;
+        lp.screenBrightness = currentBrightness;
         getWindow().setAttributes(lp);
 
-        showOsd("BRI", (int) (newBrightness * 100));
+        int percent = Math.round(currentBrightness * 100);
+        int step = percent / 5;
+        if (step != lastHapticStep) {
+            lastHapticStep = step;
+            HapticHelper.performTick(playerView);
+        }
+        showOsd("☀", percent);
     }
 
-    private void handleVolumeSwipe(float distanceY) {
+    private void handleVolumeSwipe(float deltaFraction) {
         if (audioManager == null) return;
         int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         if (maxVol <= 0) return;
 
-        float deltaFraction = (distanceY / flPlayerWrapper.getHeight()) * 1.5f;
-        currentVolumeFraction = Math.max(0f, Math.min(1.0f, currentVolumeFraction + deltaFraction));
+        currentVolumeFraction = Math.max(0f, Math.min(1.0f, currentVolumeFraction + deltaFraction * 1.5f));
         int targetVol = Math.round(currentVolumeFraction * maxVol);
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0);
 
-        showOsd("VOL", (int) (currentVolumeFraction * 100));
+        int percent = Math.round(currentVolumeFraction * 100);
+        int step = percent / 5;
+        if (step != lastHapticStep) {
+            lastHapticStep = step;
+            HapticHelper.performTick(playerView);
+        }
+        String icon = percent == 0 ? "🔇" : (percent < 50 ? "🔉" : "🔊");
+        showOsd(icon, percent);
     }
 
     private void showOsd(String icon, int percent) {

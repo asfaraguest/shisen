@@ -146,7 +146,7 @@ public class SubtitleManager {
                     }
                 }
 
-                // Coba cari rilis subtitle Indonesia dari AnimeTosho
+                // Coba cari rilis subtitle Indonesia dari AnimeTosho (Tier 1)
                 AnimeToshoClient.searchIndonesianAsync(title, episode, new AnimeToshoClient.SearchCallback() {
                     @Override
                     public void onSuccess(List<AnimeToshoClient.SubtitleSearchResult> results) {
@@ -159,8 +159,15 @@ public class SubtitleManager {
                                     if (loadId != currentLoadId) return;
                                     long offset = SubtitleMergeEngine.estimateOptimalOffset(enCues, atCues);
                                     SubtitleMergeEngine.MergeResult mr = SubtitleMergeEngine.merge(enCues, atCues, offset);
+
+                                    // Terapkan Universal Lexicon (Koreksi istilah RPG, Game Satisfy Overgeared, dll.)
+                                    List<SubtitleCue> cleanedCues = new ArrayList<>(mr.mergedCues.size());
+                                    for (SubtitleCue c : mr.mergedCues) {
+                                        cleanedCues.add(new SubtitleCue(c.startMs, c.endMs, SmartLexicon.applyUniversalLexicon(c.text)));
+                                    }
+
                                     synchronized (SubtitleManager.this) {
-                                        activeCues = mr.mergedCues;
+                                        activeCues = cleanedCues;
                                         activeLabel = "Bahasa Indonesia [Fansub & Merge]";
                                         activeLanguage = "id";
                                         activeEngine = "smart_merge";
@@ -170,19 +177,20 @@ public class SubtitleManager {
 
                                 @Override
                                 public void onError(String error) {
-                                    // Fallback ke GTX Translator
-                                    runGtxFallback(enCues, sourceEn.url, loadId, forceRefresh);
+                                    // Fallback ke OpenSubtitles (Tier 2)
+                                    runOpenSubtitlesFallback(enCues, title, episode, sourceEn.url, loadId, forceRefresh);
                                 }
                             });
                         } else {
-                            // Tidak ada di AnimeTosho -> jalankan Google Translate GTX + Smart Lexicon
-                            runGtxFallback(enCues, sourceEn.url, loadId, forceRefresh);
+                            // Tidak ada di AnimeTosho -> fallback ke OpenSubtitles (Tier 2)
+                            runOpenSubtitlesFallback(enCues, title, episode, sourceEn.url, loadId, forceRefresh);
                         }
                     }
 
                     @Override
                     public void onError(String error) {
-                        runGtxFallback(enCues, sourceEn.url, loadId, forceRefresh);
+                        // Fallback ke OpenSubtitles (Tier 2)
+                        runOpenSubtitlesFallback(enCues, title, episode, sourceEn.url, loadId, forceRefresh);
                     }
                 });
 
@@ -192,6 +200,55 @@ public class SubtitleManager {
                 }
             }
         }).start();
+    }
+
+    private void runOpenSubtitlesFallback(List<SubtitleCue> enCues, String title, int episode, String sourceUrl, int loadId, boolean forceRefresh) {
+        if (listener != null) listener.onSubtitleLoading("Mencari di OpenSubtitles...");
+        OpenSubtitlesClient.searchIndonesianAsync(title, episode, new OpenSubtitlesClient.SearchCallback() {
+            @Override
+            public void onSuccess(List<OpenSubtitlesClient.SubtitleSearchResult> results) {
+                if (loadId != currentLoadId) return;
+                if (!results.isEmpty()) {
+                    OpenSubtitlesClient.downloadAndParseAsync(results.get(0).downloadUrl, new OpenSubtitlesClient.DownloadCallback() {
+                        @Override
+                        public void onSuccess(List<SubtitleCue> osCues) {
+                            if (loadId != currentLoadId) return;
+                            long offset = SubtitleMergeEngine.estimateOptimalOffset(enCues, osCues);
+                            SubtitleMergeEngine.MergeResult mr = SubtitleMergeEngine.merge(enCues, osCues, offset);
+
+                            // Otomasi kata ganti OpenSubtitles berdasarkan konteks adegan
+                            List<SubtitleCue> pronounAdjusted = SmartLexicon.automateOpenSubtitlesPronouns(mr.mergedCues, "id", 2, 10.0);
+                            List<SubtitleCue> cleanedCues = new ArrayList<>(pronounAdjusted.size());
+                            for (SubtitleCue c : pronounAdjusted) {
+                                cleanedCues.add(new SubtitleCue(c.startMs, c.endMs, SmartLexicon.applyUniversalLexicon(c.text)));
+                            }
+
+                            synchronized (SubtitleManager.this) {
+                                activeCues = cleanedCues;
+                                activeLabel = "Bahasa Indonesia [OpenSubtitles & Merge]";
+                                activeLanguage = "id";
+                                activeEngine = "smart_merge";
+                                if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
+                            }
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            // Fallback ke Google Translate GTX (Tier 3)
+                            runGtxFallback(enCues, sourceUrl, loadId, forceRefresh);
+                        }
+                    });
+                } else {
+                    // Fallback ke Google Translate GTX (Tier 3)
+                    runGtxFallback(enCues, sourceUrl, loadId, forceRefresh);
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                runGtxFallback(enCues, sourceUrl, loadId, forceRefresh);
+            }
+        });
     }
 
     private void runGtxFallback(List<SubtitleCue> enCues, String sourceUrl, int loadId, boolean forceRefresh) {
@@ -233,6 +290,14 @@ public class SubtitleManager {
                 List<SubtitleCue> cues = fetchCuesFromUrl(url);
                 if (loadId != currentLoadId) return;
 
+                if (lang != null && (lang.toLowerCase().contains("id") || lang.toLowerCase().contains("ind"))) {
+                    List<SubtitleCue> lexCues = new ArrayList<>(cues.size());
+                    for (SubtitleCue c : cues) {
+                        lexCues.add(new SubtitleCue(c.startMs, c.endMs, SmartLexicon.applyUniversalLexicon(c.text)));
+                    }
+                    cues = lexCues;
+                }
+
                 synchronized (SubtitleManager.this) {
                     activeCues = cues;
                     activeLabel = label;
@@ -250,7 +315,15 @@ public class SubtitleManager {
 
     public void setCustomCues(List<SubtitleCue> cues, String label) {
         synchronized (this) {
-            activeCues = cues != null ? cues : new ArrayList<>();
+            List<SubtitleCue> target = cues != null ? cues : new ArrayList<>();
+            if (label != null && label.toLowerCase().contains("indo")) {
+                List<SubtitleCue> lexCues = new ArrayList<>(target.size());
+                for (SubtitleCue c : target) {
+                    lexCues.add(new SubtitleCue(c.startMs, c.endMs, SmartLexicon.applyUniversalLexicon(c.text)));
+                }
+                target = lexCues;
+            }
+            activeCues = target;
             activeLabel = label;
             activeLanguage = "custom";
             activeEngine = "custom";
