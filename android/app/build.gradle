@@ -3,18 +3,34 @@ plugins {
 }
 
 def versionFile = rootProject.file('../VERSION')
-def currentVersionName = versionFile.exists() ? versionFile.text.trim() : "1.0.0"
+def currentVersionName = versionFile.exists() ? versionFile.text.trim() : "0.1.0-beta.1"
+
+def semverMatcher = (currentVersionName =~ /^(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+))?$/)
+int computedVersionCode = 10001
+if (semverMatcher.matches()) {
+    int major = semverMatcher[0][1].toInteger()
+    int minor = semverMatcher[0][2].toInteger()
+    int patch = semverMatcher[0][3].toInteger()
+    def betaGroup = semverMatcher[0][4]
+    int beta = betaGroup != null ? betaGroup.toInteger() : 99
+    computedVersionCode = (major * 1000000) + (minor * 10000) + (patch * 100) + beta
+}
 
 android {
     namespace 'id.menatap.app'
     compileSdk 34
 
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         applicationId "id.menatap.app"
         minSdk 24
         targetSdk 34
-        versionCode 10000
+        versionCode computedVersionCode
         versionName currentVersionName
+        buildConfigField "String", "APP_VERSION_NAME", "\"${currentVersionName}\""
 
         ndk {
             abiFilters "arm64-v8a", "armeabi-v7a", "x86_64"

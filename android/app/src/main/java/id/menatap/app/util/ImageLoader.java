@@ -112,7 +112,7 @@ public class ImageLoader {
             conn.setConnectTimeout(10000);
             conn.setReadTimeout(10000);
             conn.setInstanceFollowRedirects(true);
-            conn.setRequestProperty("User-Agent", "Menatap-Android/1.0.0");
+            conn.setRequestProperty("User-Agent", id.menatap.app.data.service.HttpClientProvider.USER_AGENT);
             conn.connect();
 
             if (conn.getResponseCode() == 200) {

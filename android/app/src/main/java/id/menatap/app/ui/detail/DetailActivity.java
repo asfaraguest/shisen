@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +28,7 @@ import id.menatap.app.R;
 import id.menatap.app.data.db.MenatapDatabase;
 import id.menatap.app.data.model.Anime;
 import id.menatap.app.data.model.Episode;
+import id.menatap.app.data.service.HiAnimeClient;
 import id.menatap.app.data.service.OtakudesuScraper;
 import id.menatap.app.ui.adapter.EpisodeAdapter;
 import id.menatap.app.ui.player.PlayerActivity;
@@ -64,7 +66,7 @@ public class DetailActivity extends AppCompatActivity {
         initViews();
         bindAnimeData();
         setupEpisodeRecycler();
-        loadEpisodes();
+        loadAccurateEpisodes();
     }
 
     @Override
@@ -117,7 +119,9 @@ public class DetailActivity extends AppCompatActivity {
 
         meta.append(anime.format != null ? anime.format : "TV");
 
-        if (anime.episodesCount > 0) {
+        if (anime.airedEpisodesCount > 0) {
+            meta.append(" · ").append(anime.airedEpisodesCount).append(" Episode Tayang");
+        } else if (anime.episodesCount > 0) {
             meta.append(" · ").append(anime.episodesCount).append(" Episode");
         } else if (anime.epsCounter != null && !anime.epsCounter.isEmpty()) {
             meta.append(" · ").append(anime.epsCounter);
@@ -175,17 +179,33 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
-    private void loadEpisodes() {
-        // Pre-populate with synthetic episodes immediately
-        int total = anime.episodesCount;
-        if ("MOVIE".equalsIgnoreCase(anime.format)) {
-            total = 1;
-        } else if (total <= 0) {
-            total = 12;
+    private void loadAccurateEpisodes() {
+        // Calculate strict safe maximum aired episodes
+        int safeAiredCount = 1;
+        boolean isReleasing = "RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status);
+
+        if (isReleasing) {
+            if (anime.nextAiringEpisode > 1) {
+                safeAiredCount = anime.nextAiringEpisode - 1;
+            } else if (anime.airedEpisodesCount > 0) {
+                safeAiredCount = anime.airedEpisodesCount;
+            } else {
+                safeAiredCount = 1; // Only start with episode 1 until provider reports more
+            }
+        } else {
+            if ("MOVIE".equalsIgnoreCase(anime.format)) {
+                safeAiredCount = 1;
+            } else if (anime.episodesCount > 0) {
+                safeAiredCount = anime.episodesCount;
+            } else if (anime.airedEpisodesCount > 0) {
+                safeAiredCount = anime.airedEpisodesCount;
+            } else {
+                safeAiredCount = 12;
+            }
         }
 
         episodeList.clear();
-        for (int i = 1; i <= total; i++) {
+        for (int i = 1; i <= safeAiredCount; i++) {
             Episode ep = new Episode(i);
             ep.slug = anime.slug + "-episode-" + i;
             episodeList.add(ep);
@@ -193,19 +213,64 @@ public class DetailActivity extends AppCompatActivity {
         refreshWatchedStates();
         episodeAdapter.setData(episodeList);
 
-        // Fetch real Otakudesu episodes in background
-        OtakudesuScraper.searchAnime(anime.title, new OtakudesuScraper.Callback<List<Anime>>() {
+        // Fetch real episodes from HiAnime (Primary provider)
+        String query = (anime.title != null && !anime.title.isEmpty()) ? anime.title : anime.romajiTitle;
+        HiAnimeClient.searchAnime(query, new HiAnimeClient.Callback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> results) {
+                if (results != null && !results.isEmpty()) {
+                    String matchedSlug = results.get(0).slug;
+                    HiAnimeClient.getEpisodes(matchedSlug, new HiAnimeClient.Callback<List<Episode>>() {
+                        @Override
+                        public void onSuccess(List<Episode> hiEpisodes) {
+                            if (hiEpisodes != null && !hiEpisodes.isEmpty()) {
+                                mainHandler.post(() -> {
+                                    episodeList.clear();
+                                    episodeList.addAll(hiEpisodes);
+                                    anime.airedEpisodesCount = hiEpisodes.size();
+                                    refreshWatchedStates();
+                                    episodeAdapter.setData(episodeList);
+                                });
+                                return;
+                            }
+                            // Fallback to Otakudesu if HiAnime has empty episodes
+                            fetchOtakudesuFallback();
+                        }
+
+                        @Override
+                        public void onError(Throwable t) {
+                            fetchOtakudesuFallback();
+                        }
+                    });
+                } else {
+                    fetchOtakudesuFallback();
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                fetchOtakudesuFallback();
+            }
+        });
+    }
+
+    private void fetchOtakudesuFallback() {
+        String cleanTitle = (anime.romajiTitle != null && !anime.romajiTitle.isEmpty()) ? anime.romajiTitle : anime.title;
+        cleanTitle = cleanTitle.replaceAll("(?i)(season|part|s\\d+|2nd|3rd|4th)\\b", "").trim();
+
+        OtakudesuScraper.searchAnime(cleanTitle, new OtakudesuScraper.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> results) {
                 if (results != null && !results.isEmpty()) {
                     String matchedSlug = results.get(0).slug;
                     OtakudesuScraper.getEpisodes(matchedSlug, new OtakudesuScraper.Callback<List<Episode>>() {
                         @Override
-                        public void onSuccess(List<Episode> fetchedEpisodes) {
-                            if (fetchedEpisodes != null && !fetchedEpisodes.isEmpty()) {
+                        public void onSuccess(List<Episode> otakuEpisodes) {
+                            if (otakuEpisodes != null && !otakuEpisodes.isEmpty()) {
                                 mainHandler.post(() -> {
                                     episodeList.clear();
-                                    episodeList.addAll(fetchedEpisodes);
+                                    episodeList.addAll(otakuEpisodes);
+                                    anime.airedEpisodesCount = otakuEpisodes.size();
                                     refreshWatchedStates();
                                     episodeAdapter.setData(episodeList);
                                 });

@@ -9,6 +9,8 @@ public class StreamSource implements Serializable {
     public String quality = "Auto";
     public String server = "";
     public boolean isHls = true;
+    public String provider = "";
+    public java.util.List<SubtitleTrack> subtitles = new java.util.ArrayList<>();
     public Map<String, String> headers = new HashMap<>();
 
     public StreamSource(String url, String quality, String server, boolean isHls) {

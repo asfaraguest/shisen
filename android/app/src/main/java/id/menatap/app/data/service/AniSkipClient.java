@@ -45,7 +45,7 @@ public class AniSkipClient {
                 OkHttpClient client = HttpClientProvider.getClient();
                 Request request = new Request.Builder()
                         .url(url)
-                        .header("User-Agent", "Menatap-Android/1.0.0")
+                        .header("User-Agent", HttpClientProvider.USER_AGENT)
                         .build();
 
                 try (Response response = client.newCall(request).execute()) {

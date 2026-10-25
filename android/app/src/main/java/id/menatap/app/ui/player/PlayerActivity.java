@@ -46,6 +46,7 @@ import id.menatap.app.data.model.Episode;
 import id.menatap.app.data.model.StreamSource;
 import id.menatap.app.data.service.AniSkipClient;
 import id.menatap.app.data.service.HttpClientProvider;
+import id.menatap.app.data.service.StreamResolver;
 import id.menatap.app.data.service.OtakudesuScraper;
 import id.menatap.app.ui.adapter.EpisodeAdapter;
 import id.menatap.app.util.HapticHelper;
@@ -237,12 +238,12 @@ public class PlayerActivity extends AppCompatActivity {
             player.stop();
         }
 
-        // Resolve stream
-        String targetSlug = (ep.slug != null && !ep.slug.isEmpty()) ? ep.slug : (anime.slug + "-episode-" + ep.number);
-        OtakudesuScraper.resolveStream(targetSlug, new OtakudesuScraper.Callback<StreamSource>() {
+        // Resolve stream via unified 3-tier StreamResolver (HiAnime -> AniChan -> Otakudesu)
+        StreamResolver.resolve(anime, ep, new StreamResolver.Callback() {
             @Override
             public void onSuccess(StreamSource source) {
                 runOnUiThread(() -> {
+                    tvPortraitCurrentEp.setText("Memutar Episode " + ep.number + " · " + source.server);
                     startExoPlayback(source, ep);
                 });
             }
@@ -250,38 +251,8 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onError(Throwable t) {
                 runOnUiThread(() -> {
-                    // Try fallback search resolution
-                    OtakudesuScraper.searchAnime(anime.title, new OtakudesuScraper.Callback<List<Anime>>() {
-                        @Override
-                        public void onSuccess(List<Anime> results) {
-                            if (results != null && !results.isEmpty()) {
-                                String matchedSlug = results.get(0).slug;
-                                String fallbackEpSlug = matchedSlug + "-episode-" + ep.number;
-                                OtakudesuScraper.resolveStream(fallbackEpSlug, new OtakudesuScraper.Callback<StreamSource>() {
-                                    @Override
-                                    public void onSuccess(StreamSource source) {
-                                        runOnUiThread(() -> startExoPlayback(source, ep));
-                                    }
-
-                                    @Override
-                                    public void onError(Throwable t2) {
-                                        runOnUiThread(() -> {
-                                            pbBuffering.setVisibility(View.GONE);
-                                            Toast.makeText(PlayerActivity.this, "Gagal memuat stream episode: " + t2.getMessage(), Toast.LENGTH_LONG).show();
-                                        });
-                                    }
-                                });
-                            }
-                        }
-
-                        @Override
-                        public void onError(Throwable t2) {
-                            runOnUiThread(() -> {
-                                pbBuffering.setVisibility(View.GONE);
-                                Toast.makeText(PlayerActivity.this, "Stream tidak tersedia", Toast.LENGTH_SHORT).show();
-                            });
-                        }
-                    });
+                    pbBuffering.setVisibility(View.GONE);
+                    Toast.makeText(PlayerActivity.this, "Gagal memuat stream:\n" + t.getMessage(), Toast.LENGTH_LONG).show();
                 });
             }
         });
@@ -304,7 +275,23 @@ public class PlayerActivity extends AppCompatActivity {
         DefaultDataSource.Factory dsFactory = new DefaultDataSource.Factory(this, httpFactory);
         DefaultMediaSourceFactory msFactory = new DefaultMediaSourceFactory(dsFactory);
 
-        MediaItem mediaItem = MediaItem.fromUri(Uri.parse(source.url));
+        MediaItem.Builder mediaItemBuilder = new MediaItem.Builder().setUri(Uri.parse(source.url));
+
+        if (source.subtitles != null && !source.subtitles.isEmpty()) {
+            List<MediaItem.SubtitleConfiguration> subConfigs = new ArrayList<>();
+            for (id.menatap.app.data.model.SubtitleTrack track : source.subtitles) {
+                MediaItem.SubtitleConfiguration subConfig = new MediaItem.SubtitleConfiguration.Builder(Uri.parse(track.url))
+                        .setMimeType(androidx.media3.common.MimeTypes.TEXT_VTT)
+                        .setLanguage(track.language)
+                        .setLabel(track.label)
+                        .setSelectionFlags(track.isDefault ? androidx.media3.common.C.SELECTION_FLAG_DEFAULT : 0)
+                        .build();
+                subConfigs.add(subConfig);
+            }
+            mediaItemBuilder.setSubtitleConfigurations(subConfigs);
+        }
+
+        MediaItem mediaItem = mediaItemBuilder.build();
         player.setMediaSource(msFactory.createMediaSource(mediaItem));
         player.setPlaybackParameters(new PlaybackParameters(currentSpeed));
         player.prepare();

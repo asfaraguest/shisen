@@ -19,6 +19,10 @@ public class Anime implements Serializable {
     public String status = "";
     public String format = "TV";
     public int episodesCount = 0;
+    public int airedEpisodesCount = 0;
+    public int nextAiringEpisode = 0;
+    public int nextAiringTime = 0;
+    public String airingDay = "";
     public String epsCounter = "";
     public String season = "";
     public int year = 0;
