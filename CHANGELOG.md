@@ -5,6 +5,31 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 ## [0.1.0-beta.2] - 2026-10-25
 
 ### Ditambahkan
+- **Fitur Haptic Feedback & Getaran Ergonomis (`AppSettings`, `HapticHelper`, `AndroidManifest.xml`)**:
+  - Penambahan izin sistem Android `<uses-permission android:name="android.permission.VIBRATE" />` pada `AndroidManifest.xml`.
+  - Preferensi toggle getaran haptic terintegrasi (`AppSettings.isHapticEnabled`, default `true`) yang tersimpan aman secara persisten di `SharedPreferences`.
+  - Pembungkusan seluruh pemanggilan getaran sentuhan di `HapticHelper` (`performClick`, `performTick`, `performHeavy`, `performSelection`) dengan validasi preferensi pengguna, memberikan fleksibilitas penuh untuk mematikan getaran tanpa kompromi performa.
+- **Fitur Safe Mode Tatap & Proteksi Konten Dewasa (`AppSettings`, `MainActivity`)**:
+  - Porting logika proteksi konten Safe Mode dari Tatap OG ke Menatap (`AppSettings.isSafeMode`, default `true` aktif).
+  - Mode Aman Aktif (*Default*): Menyaring anime dengan konten dewasa non-hardcore (`ecchi`, `erotica`, `magical-sex-shift`, `sexual-violence`, `nudity`) dari feed beranda (Musim Ini & Sedang Tayang) serta kueri pencarian instan.
+  - Mode Aman Nonaktif: Menampilkan kembali konten bernuansa ecchi/erotica bagi pengguna yang menginginkannya.
+  - **Zero-Tolerance Blacklist Hentai 100% Permanen**: Konten, genre, slug, maupun kueri pencarian bertema `hentai` diblokir permanen dan mutlak di semua level tanpa memandang status Safe Mode aktif maupun nonaktif.
+- **Fitur Pemilih Model AI Subtitle Dinamis (*AI Model Selector*) (`AiSubtitleService`, `SettingsDialog`, `PlayerActivity`)**:
+  - Menyediakan opsi model selector adaptif berbasis provider BYOK:
+    - *Google Gemini*: `gemini-2.5-flash` (default), `gemini-2.0-flash`, `gemini-1.5-flash`, `gemini-1.5-pro`.
+    - *Groq Cloud*: `llama-3.3-70b-versatile` (default), `llama-3.1-8b-instant`, `mixtral-8x7b-32768`, `gemma2-9b-it`.
+    - *OpenAI*: `gpt-4o-mini` (default), `gpt-4o`, `gpt-3.5-turbo`.
+    - *Ollama*: `llama3.2` (default), `qwen2.5:7b`, `gemma2:9b`, serta input model kustom lokal.
+  - Chip pilihan model interaktif dan input model kustom tersimpan aman via hardware-backed `SecureStore` (`KEY_PREF_MODEL`).
+  - Unit test komprehensif pada `AiSubtitleServiceTest` menguji default fallback dan injeksi model kustom pada URL Gemini serta body request Groq/OpenAI.
+- **Konsolidasi Menu Pengaturan Terpadu (*Unified Settings Dialog*) (`SettingsDialog`, `dialog_settings.xml`)**:
+  - Merapikan menu floating nav yang sebelumnya terpisah-pisah (Tema, AI Subtitle, Update) menjadi **1 Menu Terpadu: "Pengaturan • 設定" (`menu_item_settings`)**.
+  - Desain modal cyber-anime 5-in-1:
+    1. *Tampilan & Tema*: Pemilihan interaktif 4 kanvas atmosferik anime (Shinkai, Sakura, Cyber, Ghibli).
+    2. *Proteksi Konten*: Toggle Safe Mode Tatap untuk penyaringan konten dewasa.
+    3. *Haptic & Getaran*: Toggle getaran haptic dengan live tactile preview.
+    4. *AI Subtitle Fansub BYOK*: Konfigurasi API Key AES-256-GCM, chip model selector dinamis, dan kustomisasi prompt fansub.
+    5. *Sistem & Pembaruan*: Informasi versi rilis Menatap, status zero-server standalone runtime, dan tombol "Periksa Pembaruan Rilis" seamless.
 - **Fitur Musim & Film Terkait di Detail Anime (`Related Seasons & Movies`)**:
   - **Single GraphQL 2-Hop Traversal Query (`AniListClient.getRelations`)**: Mengambil seluruh relasi franchise (prekuel, sekuel, seri utama, spin-off, alternative, film/movie) hingga kedalaman relasi tingkat 2 dalam 1 kali request efisien tanpa memicu rate-limit HTTP 429 AniList.
   - **Pemisahan Kategori Otomatis (`seasons` & `movies`)**:

@@ -95,6 +95,51 @@
             android:inputType="textPassword"
             android:singleLine="true" />
 
+        <!-- Model Selector Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Pilihan Model AI (Model Selector)"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="@dimen/text_body"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Pilih model rekomendasi atau ketikkan nama model kustom:"
+            android:textColor="@color/text_frost_subtle"
+            android:textSize="@dimen/text_caption" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/layout_model_chips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <EditText
+            android:id="@+id/et_ai_model"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_input_field"
+            android:hint="Nama model (misal: gemini-2.5-flash)"
+            android:textColorHint="@color/text_frost_dim"
+            android:textColor="@color/accent_glacial"
+            android:textSize="@dimen/text_body"
+            android:fontFamily="sans-serif-medium"
+            android:paddingHorizontal="14dp"
+            android:singleLine="true" />
+
         <!-- Custom Prompt Section -->
         <LinearLayout
             android:layout_width="match_parent"

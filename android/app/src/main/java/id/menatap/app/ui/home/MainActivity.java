@@ -53,6 +53,8 @@ import java.util.TimeZone;
 
 import id.menatap.app.R;
 import id.menatap.app.data.db.MenatapDatabase;
+import id.menatap.app.ui.dialog.SettingsDialog;
+import id.menatap.app.util.AppSettings;
 import id.menatap.app.data.model.Anime;
 import id.menatap.app.data.service.AniListClient;
 import id.menatap.app.util.AnimeThemeManager;
@@ -107,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isFoldedMenuOpen = false;
 
     // Menu Items in Folded Floating Menu
-    private View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre, menuItemTheme, menuItemAiSubtitle, menuItemUpdate;
+    private View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre, menuItemSettings;
     private TextView tvMenuMusim, tvMenuAiring, tvMenuJadwal, tvMenuRiwayat, tvMenuFavorit, tvMenuKatalog, tvMenuGenre;
 
     private AnimeAdapter gridAdapter;
@@ -318,9 +320,7 @@ public class MainActivity extends AppCompatActivity {
         menuItemFavorit = findViewById(R.id.menu_item_favorit);
         menuItemKatalog = findViewById(R.id.menu_item_katalog);
         menuItemGenre = findViewById(R.id.menu_item_genre);
-        menuItemTheme = findViewById(R.id.menu_item_theme);
-        menuItemAiSubtitle = findViewById(R.id.menu_item_ai_subtitle);
-        menuItemUpdate = findViewById(R.id.menu_item_update);
+        menuItemSettings = findViewById(R.id.menu_item_settings);
 
         tvMenuMusim = findViewById(R.id.tv_menu_musim);
         tvMenuAiring = findViewById(R.id.tv_menu_airing);
@@ -445,31 +445,15 @@ public class MainActivity extends AppCompatActivity {
         if (btnThemeTrigger != null) {
             btnThemeTrigger.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
-                AnimeThemeManager.showThemeSelectorDialog(this, this::applyCurrentTheme);
+                openSettingsDialog(true);
             });
         }
 
-        if (menuItemTheme != null) {
-            menuItemTheme.setOnClickListener(v -> {
+        if (menuItemSettings != null) {
+            menuItemSettings.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 setFoldedMenuOpen(false);
-                AnimeThemeManager.showThemeSelectorDialog(this, this::applyCurrentTheme);
-            });
-        }
-
-        if (menuItemAiSubtitle != null) {
-            menuItemAiSubtitle.setOnClickListener(v -> {
-                HapticHelper.performClick(v);
-                setFoldedMenuOpen(false);
-                showAiSubtitleSettingsDialog();
-            });
-        }
-
-        if (menuItemUpdate != null) {
-            menuItemUpdate.setOnClickListener(v -> {
-                HapticHelper.performClick(v);
-                setFoldedMenuOpen(false);
-                AppUpdateManager.getInstance().checkUpdate(this, true);
+                openSettingsDialog(false);
             });
         }
 
@@ -1355,7 +1339,8 @@ public class MainActivity extends AppCompatActivity {
             // BERANDA: Anime yang tayang pada musim saat ini (Current Season Airing)
             AniListClient.getCurrentSeasonAiring(currentPage, 35, new AniListClient.PagedCallback<List<Anime>>() {
                 @Override
-                public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
+                public void onSuccess(List<Anime> rawResult, boolean hasNextPage, int total) {
+                    final List<Anime> result = AppSettings.filterSafe(MainActivity.this, rawResult);
                     mainHandler.post(() -> {
                         setLoading(false);
                         if (result != null && !result.isEmpty()) {
@@ -1500,6 +1485,16 @@ public class MainActivity extends AppCompatActivity {
         tvContextualTitle.setText("HASIL PENCARIAN: \"" + query + "\"" + (page > 1 ? " (Hal " + page + ")" : ""));
         btnClearHistoryAll.setVisibility(View.GONE);
 
+        if (!AppSettings.isSafeQuery(this, query)) {
+            setLoading(false);
+            if (query.toLowerCase().contains("hentai")) {
+                displayResults(new ArrayList<>(), "Konten Diblokir", "Genre Hentai diblokir secara permanen oleh kebijakan aplikasi.", 40, false);
+            } else {
+                displayResults(new ArrayList<>(), "Safe Mode Aktif", "Pencarian konten dewasa dibatasi oleh Safe Mode. Anda dapat menyesuaikannya di Pengaturan.", 40, false);
+            }
+            return;
+        }
+
         AniListClient.search(query, page, 40, createPagedCallback("Pencarian gagal", 40));
     }
 
@@ -1541,7 +1536,8 @@ public class MainActivity extends AppCompatActivity {
         displayResults(list, emptyTitle, emptyDesc, pageSize, list != null && list.size() >= pageSize);
     }
 
-    private void displayResults(List<Anime> list, String emptyTitle, String emptyDesc, int pageSize, boolean hasNextPage) {
+    private void displayResults(List<Anime> rawList, String emptyTitle, String emptyDesc, int pageSize, boolean hasNextPage) {
+        final List<Anime> list = AppSettings.filterSafe(this, rawList);
         mainHandler.post(() -> {
             setLoading(false);
             if (list == null || list.isEmpty()) {
@@ -1572,88 +1568,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void showAiSubtitleSettingsDialog() {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_ai_subtitle_settings, null);
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setView(dialogView)
-                .create();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-
-        TextView tvBadge = dialogView.findViewById(R.id.tv_ai_provider_badge);
-        EditText etKey = dialogView.findViewById(R.id.et_ai_api_key);
-        EditText etCustomPrompt = dialogView.findViewById(R.id.et_ai_custom_prompt);
-        TextView btnResetPrompt = dialogView.findViewById(R.id.btn_reset_ai_prompt);
-        Button btnSave = dialogView.findViewById(R.id.btn_save_ai_key);
-        Button btnClear = dialogView.findViewById(R.id.btn_clear_ai_key);
-        ImageButton btnClose = dialogView.findViewById(R.id.btn_close_ai_dialog);
-
-        String currentKey = AiSubtitleService.getKey(this);
-        if (currentKey != null && !currentKey.isEmpty()) {
-            etKey.setText(currentKey);
-            AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(currentKey);
-            tvBadge.setText("Provider Aktif: " + p.displayName);
-        }
-
-        if (etCustomPrompt != null) {
-            etCustomPrompt.setText(AiSubtitleService.getCustomPrompt(this));
-        }
-
-        if (btnResetPrompt != null && etCustomPrompt != null) {
-            btnResetPrompt.setOnClickListener(v -> {
-                HapticHelper.performClick(v);
-                etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
-                Toast.makeText(this, "Prompt direset ke default fansub anime", Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        etKey.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+    private void openSettingsDialog(boolean focusTheme) {
+        SettingsDialog.show(this, focusTheme, new SettingsDialog.OnSettingsChangeListener() {
             @Override
-            public void afterTextChanged(Editable s) {
-                String input = s != null ? s.toString().trim() : "";
-                if (!input.isEmpty()) {
-                    AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(input);
-                    tvBadge.setText("Terdeteksi: " + p.displayName);
-                } else {
-                    tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
-                }
+            public void onThemeChanged() {
+                applyCurrentTheme();
+                if (gridAdapter != null) gridAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onSafeModeChanged(boolean isSafeMode) {
+                loadCurrentFeed();
             }
         });
-
-        btnSave.setOnClickListener(v -> {
-            String newKey = etKey.getText().toString().trim();
-            if (newKey.isEmpty()) {
-                Toast.makeText(this, "Kunci API tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            AiSubtitleService.saveKey(this, newKey);
-            if (etCustomPrompt != null) {
-                String promptText = etCustomPrompt.getText().toString().trim();
-                AiSubtitleService.saveCustomPrompt(this, promptText);
-            }
-            AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(newKey);
-            Toast.makeText(this, "Pengaturan " + p.displayName + " & Custom Prompt berhasil disimpan", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-
-        btnClear.setOnClickListener(v -> {
-            AiSubtitleService.clearKey(this);
-            AiSubtitleService.clearCustomPrompt(this);
-            etKey.setText("");
-            if (etCustomPrompt != null) {
-                etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
-            }
-            tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
-            Toast.makeText(this, "Kunci API dan custom prompt telah dihapus", Toast.LENGTH_SHORT).show();
-        });
-
-        if (btnClose != null) {
-            btnClose.setOnClickListener(v -> dialog.dismiss());
-        }
-        dialog.show();
     }
 
     @Override

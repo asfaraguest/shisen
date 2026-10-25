@@ -93,6 +93,7 @@ import id.menatap.app.data.subtitle.SubtitleManager;
 import id.menatap.app.data.subtitle.SubtitleMergeEngine;
 import id.menatap.app.data.subtitle.SubtitleParser;
 import id.menatap.app.ui.adapter.EpisodeAdapter;
+import id.menatap.app.ui.dialog.SettingsDialog;
 import id.menatap.app.util.HapticHelper;
 import okhttp3.OkHttpClient;
 
@@ -1940,6 +1941,8 @@ public class PlayerActivity extends AppCompatActivity {
 
         TextView tvBadge = dialogView.findViewById(R.id.tv_ai_provider_badge);
         EditText etKey = dialogView.findViewById(R.id.et_ai_api_key);
+        LinearLayout layoutChips = dialogView.findViewById(R.id.layout_model_chips);
+        EditText etModel = dialogView.findViewById(R.id.et_ai_model);
         EditText etCustomPrompt = dialogView.findViewById(R.id.et_ai_custom_prompt);
         TextView btnResetPrompt = dialogView.findViewById(R.id.btn_reset_ai_prompt);
         Button btnSave = dialogView.findViewById(R.id.btn_save_ai_key);
@@ -1952,6 +1955,16 @@ public class PlayerActivity extends AppCompatActivity {
             AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(currentKey);
             tvBadge.setText("Provider Aktif: " + p.displayName);
         }
+
+        String savedModel = AiSubtitleService.getModel(this);
+        if (savedModel != null && !savedModel.isEmpty()) {
+            if (etModel != null) etModel.setText(savedModel);
+        } else {
+            AiSubtitleService.Provider p = AiSubtitleService.getActiveProvider(this);
+            if (etModel != null) etModel.setText(AiSubtitleService.getDefaultModel(p));
+        }
+
+        SettingsDialog.populateModelChips(layoutChips, this, AiSubtitleService.getActiveProvider(this), etModel);
 
         if (etCustomPrompt != null) {
             etCustomPrompt.setText(AiSubtitleService.getCustomPrompt(this));
@@ -1971,11 +1984,15 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 String input = s != null ? s.toString().trim() : "";
+                AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(input);
                 if (!input.isEmpty()) {
-                    AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(input);
                     tvBadge.setText("Terdeteksi: " + p.displayName);
                 } else {
                     tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
+                }
+                SettingsDialog.populateModelChips(layoutChips, PlayerActivity.this, p, etModel);
+                if (etModel != null && etModel.getText().toString().trim().isEmpty()) {
+                    etModel.setText(AiSubtitleService.getDefaultModel(p));
                 }
             }
         });
@@ -1991,20 +2008,28 @@ public class PlayerActivity extends AppCompatActivity {
                 String promptText = etCustomPrompt.getText().toString().trim();
                 AiSubtitleService.saveCustomPrompt(this, promptText);
             }
+            if (etModel != null) {
+                AiSubtitleService.saveModel(this, etModel.getText().toString().trim());
+            }
             AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(newKey);
-            Toast.makeText(this, "Pengaturan " + p.displayName + " & Custom Prompt berhasil disimpan", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Pengaturan " + p.displayName + " & Model Selector berhasil disimpan", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
         });
 
         btnClear.setOnClickListener(v -> {
             AiSubtitleService.clearKey(this);
             AiSubtitleService.clearCustomPrompt(this);
+            AiSubtitleService.clearModel(this);
             etKey.setText("");
+            if (etModel != null) {
+                etModel.setText(AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GEMINI));
+            }
+            SettingsDialog.populateModelChips(layoutChips, this, AiSubtitleService.Provider.GEMINI, etModel);
             if (etCustomPrompt != null) {
                 etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
             }
             tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
-            Toast.makeText(this, "Kunci API dan custom prompt telah dihapus", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Kunci API dan pengaturan telah dihapus", Toast.LENGTH_SHORT).show();
         });
 
         btnClose.setOnClickListener(v -> dialog.dismiss());

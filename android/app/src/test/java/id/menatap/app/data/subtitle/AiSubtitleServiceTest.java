@@ -108,7 +108,7 @@ public class AiSubtitleServiceTest {
         assertEquals("POST", req.getMethod());
         assertEquals("Bearer " + key, req.getHeader("Authorization"));
         String body = req.getBody().readUtf8();
-        assertTrue(body.contains("llama-3.1-8b-instant"));
+        assertTrue(body.contains("llama-3.3-70b-versatile"));
         assertTrue(body.contains("Zoltraak magic has been unleashed."));
     }
 
@@ -208,5 +208,83 @@ public class AiSubtitleServiceTest {
         assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("Bahasa Indonesia"));
         assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("fansub"));
         assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("honorifik"));
+    }
+
+    @Test
+    public void testModelSelectorDefaultsAndAvailableList() {
+        assertEquals("gemini-2.5-flash", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GEMINI));
+        assertEquals("llama-3.3-70b-versatile", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GROQ));
+        assertEquals("gpt-4o-mini", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENAI));
+        assertEquals("llama3.2", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OLLAMA));
+
+        java.util.List<String> geminiModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.GEMINI);
+        assertTrue(geminiModels.size() >= 3);
+        assertEquals("gemini-2.5-flash", geminiModels.get(0));
+
+        java.util.List<String> groqModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.GROQ);
+        assertTrue(groqModels.size() >= 4);
+        assertEquals("llama-3.3-70b-versatile", groqModels.get(0));
+
+        // Effective model fallback when custom model is null or empty
+        assertEquals("gemini-2.5-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, ""));
+        assertEquals("custom-gemini-model", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "custom-gemini-model"));
+    }
+
+    @Test
+    public void testCustomModelInGeminiRequestPath() throws Exception {
+        String mockResponse = "{\n" +
+                "  \"candidates\": [\n" +
+                "    {\n" +
+                "      \"content\": {\n" +
+                "        \"parts\": [\n" +
+                "          {\"text\": \"Terjemahan model kustom.\"}\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(mockResponse));
+
+        String key = "AIzaSyTestKey";
+        String customModel = "gemini-1.5-pro";
+        String translated = service.callGemini("Custom model test", key, null, customModel);
+
+        assertEquals("Terjemahan model kustom.", translated);
+
+        RecordedRequest req = server.takeRequest();
+        assertTrue(req.getPath().contains("/models/gemini-1.5-pro:generateContent"));
+    }
+
+    @Test
+    public void testCustomModelInGroqRequestBody() throws Exception {
+        String mockResponse = "{\n" +
+                "  \"choices\": [\n" +
+                "    {\n" +
+                "      \"message\": {\n" +
+                "        \"role\": \"assistant\",\n" +
+                "        \"content\": \"Hasil terjemahan mixtral.\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(mockResponse));
+
+        String key = "gsk_test_key";
+        String customModel = "mixtral-8x7b-32768";
+        String translated = service.callGroq("Test phrase", key, null, customModel);
+
+        assertEquals("Hasil terjemahan mixtral.", translated);
+
+        RecordedRequest req = server.takeRequest();
+        String body = req.getBody().readUtf8();
+        assertTrue(body.contains("\"model\":\"mixtral-8x7b-32768\""));
     }
 }

@@ -6,6 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import id.menatap.app.data.service.HttpClientProvider;
@@ -29,6 +31,7 @@ public class AiSubtitleService {
     public static final String KEY_PREF_LLM = "byok_llm_api_key";
     public static final String KEY_PREF_ENDPOINT = "byok_llm_custom_endpoint";
     public static final String KEY_PREF_CUSTOM_PROMPT = "byok_llm_custom_prompt";
+    public static final String KEY_PREF_MODEL = "byok_llm_custom_model";
 
     public static final String DEFAULT_CUSTOM_PROMPT =
             "Terjemahkan subtitle anime ini ke Bahasa Indonesia yang alami, luwes, dan ekspresif selayaknya rilis fansub anime populer (bukan terjemahan kaku mesin). " +
@@ -124,16 +127,95 @@ public class AiSubtitleService {
         return SecureStore.getInstance(context).remove(KEY_PREF_CUSTOM_PROMPT);
     }
 
+    public static boolean saveModel(Context context, String model) {
+        if (context == null) return false;
+        if (model == null || model.trim().isEmpty()) {
+            return SecureStore.getInstance(context).remove(KEY_PREF_MODEL);
+        }
+        return SecureStore.getInstance(context).putString(KEY_PREF_MODEL, model.trim());
+    }
+
+    public static String getModel(Context context) {
+        if (context == null) return "";
+        return SecureStore.getInstance(context).getString(KEY_PREF_MODEL, "");
+    }
+
+    public static boolean clearModel(Context context) {
+        if (context == null) return false;
+        return SecureStore.getInstance(context).remove(KEY_PREF_MODEL);
+    }
+
+    public static String getDefaultModel(Provider provider) {
+        if (provider == null) return "gemini-2.5-flash";
+        switch (provider) {
+            case GROQ:
+                return "llama-3.3-70b-versatile";
+            case OPENAI:
+                return "gpt-4o-mini";
+            case OLLAMA:
+                return "llama3.2";
+            case GEMINI:
+            default:
+                return "gemini-2.5-flash";
+        }
+    }
+
+    public static List<String> getAvailableModels(Provider provider) {
+        List<String> list = new ArrayList<>();
+        if (provider == null) return list;
+        switch (provider) {
+            case GEMINI:
+                list.add("gemini-2.5-flash");
+                list.add("gemini-2.0-flash");
+                list.add("gemini-1.5-flash");
+                list.add("gemini-1.5-pro");
+                break;
+            case GROQ:
+                list.add("llama-3.3-70b-versatile");
+                list.add("llama-3.1-8b-instant");
+                list.add("mixtral-8x7b-32768");
+                list.add("gemma2-9b-it");
+                break;
+            case OPENAI:
+                list.add("gpt-4o-mini");
+                list.add("gpt-4o");
+                list.add("gpt-3.5-turbo");
+                break;
+            case OLLAMA:
+                list.add("llama3.2");
+                list.add("qwen2.5:7b");
+                list.add("gemma2:9b");
+                break;
+        }
+        return list;
+    }
+
+    public static String getEffectiveModel(Provider provider, String customModel) {
+        if (customModel != null && !customModel.trim().isEmpty()) {
+            return customModel.trim();
+        }
+        return getDefaultModel(provider);
+    }
+
+    public static String getEffectiveModel(Context context, Provider provider) {
+        String saved = getModel(context);
+        return getEffectiveModel(provider, saved);
+    }
+
     public static Provider getActiveProvider(Context context) {
         String key = getKey(context);
         return Provider.detect(key);
     }
 
     public void translate(String text, String apiKey, Callback callback) {
-        translate(text, apiKey, DEFAULT_CUSTOM_PROMPT, callback);
+        translate(text, apiKey, DEFAULT_CUSTOM_PROMPT, null, callback);
     }
 
     public void translate(String text, String apiKey, String customPrompt, Callback callback) {
+        translate(text, apiKey, customPrompt, null, callback);
+    }
+
+    public void translate(String text, String apiKey, String customPrompt, String model, Callback callback) {
         if (text == null || text.trim().isEmpty()) {
             callback.onSuccess("");
             return;
@@ -147,22 +229,25 @@ public class AiSubtitleService {
                 ? customPrompt.trim() : DEFAULT_CUSTOM_PROMPT;
 
         Provider provider = Provider.detect(apiKey);
+        final String activeModel = (model != null && !model.trim().isEmpty())
+                ? model.trim() : getDefaultModel(provider);
+
         new Thread(() -> {
             try {
                 String translated;
                 switch (provider) {
                     case GROQ:
-                        translated = callGroq(text, apiKey, activePrompt);
+                        translated = callGroq(text, apiKey, activePrompt, activeModel);
                         break;
                     case OPENAI:
-                        translated = callOpenAi(text, apiKey, activePrompt);
+                        translated = callOpenAi(text, apiKey, activePrompt, activeModel);
                         break;
                     case OLLAMA:
-                        translated = callOllama(text, apiKey, activePrompt);
+                        translated = callOllama(text, apiKey, activePrompt, activeModel);
                         break;
                     case GEMINI:
                     default:
-                        translated = callGemini(text, apiKey, activePrompt);
+                        translated = callGemini(text, apiKey, activePrompt, activeModel);
                         break;
                 }
                 callback.onSuccess(translated != null ? translated.trim() : text);
@@ -173,12 +258,17 @@ public class AiSubtitleService {
     }
 
     public String callGemini(String text, String apiKey) throws Exception {
-        return callGemini(text, apiKey, DEFAULT_CUSTOM_PROMPT);
+        return callGemini(text, apiKey, DEFAULT_CUSTOM_PROMPT, "gemini-2.5-flash");
     }
 
     public String callGemini(String text, String apiKey, String customPrompt) throws Exception {
+        return callGemini(text, apiKey, customPrompt, "gemini-2.5-flash");
+    }
+
+    public String callGemini(String text, String apiKey, String customPrompt, String model) throws Exception {
         String base = customBaseUrl != null ? customBaseUrl : "https://generativelanguage.googleapis.com";
-        String url = base + "/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
+        String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "gemini-2.5-flash";
+        String url = base + "/v1beta/models/" + effectiveModel + ":generateContent?key=" + apiKey;
 
         String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
                 ? customPrompt.trim() : DEFAULT_CUSTOM_PROMPT;
@@ -225,10 +315,14 @@ public class AiSubtitleService {
     }
 
     public String callGroq(String text, String apiKey) throws Exception {
-        return callGroq(text, apiKey, DEFAULT_CUSTOM_PROMPT);
+        return callGroq(text, apiKey, DEFAULT_CUSTOM_PROMPT, "llama-3.3-70b-versatile");
     }
 
     public String callGroq(String text, String apiKey, String customPrompt) throws Exception {
+        return callGroq(text, apiKey, customPrompt, "llama-3.3-70b-versatile");
+    }
+
+    public String callGroq(String text, String apiKey, String customPrompt, String model) throws Exception {
         String base = customBaseUrl != null ? customBaseUrl : "https://api.groq.com/openai";
         String url = base + "/v1/chat/completions";
 
@@ -247,8 +341,9 @@ public class AiSubtitleService {
         messages.put(sysMsg);
         messages.put(userMsg);
 
+        String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "llama-3.3-70b-versatile";
         JSONObject bodyObj = new JSONObject();
-        bodyObj.put("model", "llama-3.1-8b-instant");
+        bodyObj.put("model", effectiveModel);
         bodyObj.put("messages", messages);
         bodyObj.put("temperature", 0.3);
 
@@ -276,10 +371,14 @@ public class AiSubtitleService {
     }
 
     public String callOpenAi(String text, String apiKey) throws Exception {
-        return callOpenAi(text, apiKey, DEFAULT_CUSTOM_PROMPT);
+        return callOpenAi(text, apiKey, DEFAULT_CUSTOM_PROMPT, "gpt-4o-mini");
     }
 
     public String callOpenAi(String text, String apiKey, String customPrompt) throws Exception {
+        return callOpenAi(text, apiKey, customPrompt, "gpt-4o-mini");
+    }
+
+    public String callOpenAi(String text, String apiKey, String customPrompt, String model) throws Exception {
         String base = customBaseUrl != null ? customBaseUrl : "https://api.openai.com";
         String url = base + "/v1/chat/completions";
 
@@ -298,8 +397,9 @@ public class AiSubtitleService {
         messages.put(sysMsg);
         messages.put(userMsg);
 
+        String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "gpt-4o-mini";
         JSONObject bodyObj = new JSONObject();
-        bodyObj.put("model", "gpt-4o-mini");
+        bodyObj.put("model", effectiveModel);
         bodyObj.put("messages", messages);
         bodyObj.put("temperature", 0.3);
 
@@ -327,10 +427,14 @@ public class AiSubtitleService {
     }
 
     public String callOllama(String text, String endpointOrKey) throws Exception {
-        return callOllama(text, endpointOrKey, DEFAULT_CUSTOM_PROMPT);
+        return callOllama(text, endpointOrKey, DEFAULT_CUSTOM_PROMPT, "llama3.2");
     }
 
     public String callOllama(String text, String endpointOrKey, String customPrompt) throws Exception {
+        return callOllama(text, endpointOrKey, customPrompt, "llama3.2");
+    }
+
+    public String callOllama(String text, String endpointOrKey, String customPrompt, String model) throws Exception {
         String endpoint = endpointOrKey;
         if (endpoint.startsWith("ollama:")) {
             endpoint = endpoint.substring("ollama:".length());
@@ -347,8 +451,9 @@ public class AiSubtitleService {
         String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
                 ? customPrompt.trim() : DEFAULT_CUSTOM_PROMPT;
 
+        String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "llama3.2";
         JSONObject bodyObj = new JSONObject();
-        bodyObj.put("model", "llama3");
+        bodyObj.put("model", effectiveModel);
         bodyObj.put("prompt", instruction + "\n\n" + text);
         bodyObj.put("stream", false);
 
