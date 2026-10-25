@@ -132,7 +132,23 @@ public class AnimeToshoClient {
                         return;
                     }
 
-                    String rawContent = resp.body().string();
+                    byte[] rawBytes = resp.body().bytes();
+                    String rawContent;
+                    if (rawBytes.length >= 6 && rawBytes[0] == (byte) 0xFD && rawBytes[1] == '7' && rawBytes[2] == 'z' && rawBytes[3] == 'X' && rawBytes[4] == 'Z' && rawBytes[5] == 0x00) {
+                        try (java.io.ByteArrayInputStream bais = new java.io.ByteArrayInputStream(rawBytes);
+                             org.tukaani.xz.XZInputStream xzIn = new org.tukaani.xz.XZInputStream(bais);
+                             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream()) {
+                            byte[] buf = new byte[8192];
+                            int read;
+                            while ((read = xzIn.read(buf)) != -1) {
+                                baos.write(buf, 0, read);
+                            }
+                            rawContent = baos.toString("UTF-8");
+                        }
+                    } else {
+                        rawContent = new String(rawBytes, java.nio.charset.StandardCharsets.UTF_8);
+                    }
+
                     List<SubtitleCue> cues = SubtitleParser.parse(rawContent);
                     if (cues.isEmpty()) {
                         if (callback != null) callback.onError("Subtitle kosong atau format tidak didukung");

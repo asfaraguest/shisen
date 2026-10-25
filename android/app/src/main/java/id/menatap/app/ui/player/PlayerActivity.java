@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.TypedValue;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -420,6 +421,30 @@ public class PlayerActivity extends AppCompatActivity {
             subView.setUserDefaultStyle();
         }
 
+        // Reparent tvSubtitles ke playerView.getOverlayFrameLayout() agar berada di panggung overlay resmi Media3 di atas SurfaceView
+        FrameLayout overlayFrame = playerView.getOverlayFrameLayout();
+        if (overlayFrame != null && tvSubtitles != null) {
+            ViewGroup oldParent = (ViewGroup) tvSubtitles.getParent();
+            if (oldParent != null && oldParent != overlayFrame) {
+                oldParent.removeView(tvSubtitles);
+                FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
+                );
+                int marginH = (int) dpToPx(24);
+                flp.leftMargin = marginH;
+                flp.rightMargin = marginH;
+                int marginB = (int) dpToPx(22);
+                flp.bottomMargin = marginB;
+                overlayFrame.addView(tvSubtitles, flp);
+            }
+            tvSubtitles.setElevation(25f);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                tvSubtitles.setZ(25f);
+            }
+        }
+
         bindExoControlButtons();
 
         player.addListener(new Player.Listener() {
@@ -729,6 +754,11 @@ public class PlayerActivity extends AppCompatActivity {
     private void setupGestureControls() {
         gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
+            public boolean onDown(@NonNull MotionEvent e) {
+                return true;
+            }
+
+            @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
                 if (isScreenLocked) return false;
                 if (playerView != null) {
@@ -743,8 +773,8 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override
             public boolean onDoubleTap(@NonNull MotionEvent e) {
-                if (player == null || isScreenLocked) return false;
-                int width = flPlayerWrapper.getWidth();
+                if (player == null || isScreenLocked || playerView == null) return false;
+                int width = playerView.getWidth();
                 if (width <= 0) return false;
                 float x = e.getX();
 
@@ -767,8 +797,8 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override
             public void onLongPress(@NonNull MotionEvent e) {
-                if (player == null || isScreenLocked || activeGestureZone != 0) return;
-                int width = flPlayerWrapper.getWidth();
+                if (player == null || isScreenLocked || activeGestureZone != 0 || playerView == null) return;
+                int width = playerView.getWidth();
                 if (width <= 0) return;
                 float x = e.getX();
 
@@ -781,15 +811,16 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override
             public boolean onScroll(MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
-                if (isScreenLocked || isHoldingSpeed || isHoldingRewind || e1 == null || e2 == null) return false;
+                if (isScreenLocked || isHoldingSpeed || isHoldingRewind || e1 == null || e2 == null || playerView == null) return false;
 
-                float viewHeight = flPlayerWrapper.getHeight();
-                float viewWidth = flPlayerWrapper.getWidth();
+                float viewHeight = playerView.getHeight();
+                float viewWidth = playerView.getWidth();
                 if (viewHeight <= 0 || viewWidth <= 0) return false;
 
                 // Exclusion zones: cegah swipe saat menyentuh status bar atau navigation bar
-                float topExclusion = Math.max(dpToPx(56), viewHeight * 0.16f);
-                float bottomExclusion = viewHeight - Math.max(dpToPx(44), viewHeight * 0.12f);
+                boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+                float topExclusion = isLandscape ? Math.max(dpToPx(50), viewHeight * 0.12f) : dpToPx(24);
+                float bottomExclusion = viewHeight - (isLandscape ? Math.max(dpToPx(40), viewHeight * 0.10f) : dpToPx(24));
                 if (e1.getY() < topExclusion || e1.getY() > bottomExclusion) {
                     return false;
                 }
@@ -798,7 +829,7 @@ public class PlayerActivity extends AppCompatActivity {
                 if (activeGestureZone == 0) {
                     float totalDeltaY = Math.abs(e1.getY() - e2.getY());
                     float totalDeltaX = Math.abs(e1.getX() - e2.getX());
-                    if (totalDeltaY < dpToPx(14) || totalDeltaY <= totalDeltaX * 1.25f) {
+                    if (totalDeltaY < dpToPx(12) || totalDeltaY <= totalDeltaX * 1.2f) {
                         return false;
                     }
                     if (e1.getX() <= viewWidth * 0.35f) {
@@ -847,7 +878,7 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
-        flPlayerWrapper.setOnTouchListener((v, event) -> {
+        playerView.setOnTouchListener((v, event) -> {
             if (isScreenLocked) return false;
 
             if (scaleGestureDetector != null && event.getPointerCount() > 1) {
@@ -865,7 +896,9 @@ public class PlayerActivity extends AppCompatActivity {
                 }
                 WindowManager.LayoutParams lp = getWindow().getAttributes();
                 currentBrightness = lp.screenBrightness < 0 ? 0.5f : lp.screenBrightness;
+                lastHapticStep = (int) (currentBrightness * 100) / 5;
             } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                currentVolumeFraction = -1f;
                 activeGestureZone = 0;
                 if (isHoldingSpeed) {
                     stopHoldingSpeed();
@@ -904,9 +937,18 @@ public class PlayerActivity extends AppCompatActivity {
         int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         if (maxVol <= 0) return;
 
+        if (currentVolumeFraction < 0) {
+            int curVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            currentVolumeFraction = (float) curVol / (float) maxVol;
+        }
+
         currentVolumeFraction = Math.max(0f, Math.min(1.0f, currentVolumeFraction + deltaFraction * 1.5f));
         int targetVol = Math.round(currentVolumeFraction * maxVol);
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0);
+        int curVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        if (targetVol != curVol) {
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0);
+            HapticHelper.performTick(playerView);
+        }
 
         int percent = Math.round(currentVolumeFraction * 100);
         int step = percent / 5;
@@ -914,7 +956,7 @@ public class PlayerActivity extends AppCompatActivity {
             lastHapticStep = step;
             HapticHelper.performTick(playerView);
         }
-        String icon = percent == 0 ? "🔇" : (percent < 50 ? "🔉" : "🔊");
+        String icon = targetVol == 0 ? "🔇" : (percent < 50 ? "🔉" : "🔊");
         showOsd(icon, percent);
     }
 
@@ -922,10 +964,22 @@ public class PlayerActivity extends AppCompatActivity {
         tvOsdIcon.setText(icon);
         pbOsdBar.setProgress(percent);
         tvOsdVal.setText(percent + "%");
-        hudOsd.setVisibility(View.VISIBLE);
+        hudOsd.bringToFront();
+        if (hudOsd.getVisibility() != View.VISIBLE) {
+            hudOsd.setAlpha(0f);
+            hudOsd.setVisibility(View.VISIBLE);
+            hudOsd.animate().alpha(1f).setDuration(120).start();
+        } else {
+            hudOsd.animate().cancel();
+            hudOsd.setAlpha(1f);
+        }
 
         autoHideHandler.removeCallbacksAndMessages(null);
-        autoHideHandler.postDelayed(() -> hudOsd.setVisibility(View.GONE), 1200);
+        autoHideHandler.postDelayed(() -> {
+            if (hudOsd != null && hudOsd.getVisibility() == View.VISIBLE) {
+                hudOsd.animate().alpha(0f).setDuration(180).withEndAction(() -> hudOsd.setVisibility(View.GONE)).start();
+            }
+        }, 1200);
     }
 
     private void showRippleFeedback(View rippleView) {

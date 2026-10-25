@@ -118,6 +118,7 @@
             android:textSize="18sp"
             android:fontFamily="sans-serif-bold"
             android:background="@drawable/bg_ripple_seek_left"
+            android:clickable="false"
             android:visibility="gone" />
 
         <TextView
@@ -131,6 +132,7 @@
             android:textSize="18sp"
             android:fontFamily="sans-serif-bold"
             android:background="@drawable/bg_ripple_seek_right"
+            android:clickable="false"
             android:visibility="gone" />
 
         <!-- Minimalist Buffering & Stream Preparation HUD -->
@@ -175,6 +177,7 @@
             android:layout_marginHorizontal="20dp"
             android:maxWidth="560dp"
             android:elevation="20dp"
+            android:clickable="false"
             android:background="@drawable/bg_subtitle_pill"
             android:paddingHorizontal="14dp"
             android:paddingVertical="6dp"
