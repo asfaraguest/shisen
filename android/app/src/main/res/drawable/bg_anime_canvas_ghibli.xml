@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- Atmospheric Ghibli Forest Night Gradient -->
+    <gradient
+        android:angle="270"
+        android:startColor="#102522"
+        android:centerColor="#0B1A18"
+        android:endColor="#06100E"
+        android:type="linear" />
+</shape>

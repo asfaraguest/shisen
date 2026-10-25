@@ -39,6 +39,21 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
   - Kembali melebar (*expand*) mulus ke ukuran normal beserta tombol navigasi ("‹ Sebelumnya" dan "Berikutnya ›") saat pengguliran berhenti (`SCROLL_STATE_IDLE`).
   - Ketukan langsung pada pill dalam kondisi folded langsung mengembalikan status expanded.
   - Ikon FAB menu mengambang berganti secara dinamis menjadi ikon pedang bersilang (`ic_sword_cross`) dengan animasi rotasi & scaling halus saat menu aktif/terbuka, dan kembali ke hamburger (`ic_menu`) saat ditutup.
+- **Tema UI Anime & Pemilihan Background Atmosferik (`AnimeThemeManager`)**:
+  - Penambahan 4 preset kanvas atmosferik anime: 🌌 *Twilight Shinkai (Default)*, 🌸 *Sakura Blossom*, ⚡ *Cyber Neo-Tokyo*, dan 🍃 *Ghibli Forest Night* yang dapat dipilih interaktif via dialog modal `dialog_anime_theme_selector.xml`.
+  - Palet warna anime autentik: Glacial Cyan (`#38BDF8`), Electric Neon (`#00F0FF`), Sakura Blossom Pink (`#FB7185`), Twilight Iris (`#818CF8`), Miku Mint (`#10B981`), dan Star Gold (`#FBBF24`).
+  - Tipografi anime: logo topbar dengan aksen kanji `見つめる` dan tag `[ アニメ ]`, serta Floating Folded Menu dengan sub-label kanji/katakana (`ホーム`, `放送中`, `目録`, `ジャンル`, dll.).
+- **Cover Detail Anime Berfokus Karakter Utama**:
+  - Redesain Hero Section pada Detail Anime dengan menghadirkan `card_detail_poster` (105x155dp, rasio 2:3, border hairline glow) yang memfokuskan visual pada karakter utama anime secara utuh tanpa terpotong `centerCrop` horizontal.
+  - Menampilkan judul asli Jepang (`title.native` dari AniList, misal `Sousou no Frieren • 葬送のフリーレン`) mendampingi judul Romaji.
+  - Ambient backdrop sinematik di latar belakang (`bg_hero_gradient_scrim`).
+- **Safety Screen Lock Fullscreen Landscape (Anti-PiP)**:
+  - Proteksi penguncian layar ergonomis yang HANYA dapat diaktifkan pada mode Fullscreen Landscape (`ORIENTATION_LANDSCAPE`).
+  - Seluruh sentuhan gesture (volume, brightness, seek, double-tap zoom) dan kontrol player diblokir saat terkunci.
+  - Sentuhan saat terkunci memunculkan tombol melayang `[ 🔒 Buka Kunci Layar ]` selama 3.5 detik dengan animasi fade-in dan auto-fadeout.
+  - **Bypass Mutlak Mode PiP**: Otomatis membuka kunci layar seketika (`unlockScreen(false)`) jika beralih ke Picture-in-Picture, menjamin zero-lock di mode PiP.
+  - Otomatis membuka kunci layar seketika jika perangkat diputar kembali ke posisi Portrait.
+  - Tombol fisik Back saat terkunci menampilkan tombol buka kunci tanpa menutup video.
 
 ### Diubah & Dioptimalkan
 - **Build Release Hardening & R8 Shrinking**:

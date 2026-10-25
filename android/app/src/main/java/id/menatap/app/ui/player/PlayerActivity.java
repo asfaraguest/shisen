@@ -104,6 +104,8 @@ public class PlayerActivity extends AppCompatActivity {
     private PlayerView playerView;
     private Button btnSkipOpEd;
     private ImageButton btnScreenLock;
+    private View layoutSafetyUnlock;
+    private final Runnable hideSafetyUnlockRunnable = this::hideSafetyUnlockPill;
     private LinearLayout layoutBuffering;
     private ProgressBar pbBuffering;
     private TextView tvBufferingText;
@@ -198,6 +200,7 @@ public class PlayerActivity extends AppCompatActivity {
     private Runnable progressRunnable;
     private final Handler autoHideHandler = new Handler(Looper.getMainLooper());
     private final Handler subtitleHandler = new Handler(Looper.getMainLooper());
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private float currentSpeed = 1.0f;
     private boolean isScreenLocked = false;
@@ -278,10 +281,15 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        View layoutPlayerRoot = findViewById(R.id.layout_player_root);
+        if (layoutPlayerRoot != null) {
+            layoutPlayerRoot.setBackgroundResource(id.menatap.app.util.AnimeThemeManager.getCanvasBackgroundResId(this));
+        }
         flPlayerWrapper = findViewById(R.id.fl_player_wrapper);
         playerView = findViewById(R.id.player_view);
         btnSkipOpEd = findViewById(R.id.btn_skip_op_ed);
         btnScreenLock = findViewById(R.id.btn_screen_lock);
+        layoutSafetyUnlock = findViewById(R.id.layout_safety_unlock);
         layoutBuffering = findViewById(R.id.layout_buffering);
         pbBuffering = findViewById(R.id.pb_video_buffering);
         tvBufferingText = findViewById(R.id.tv_buffering_text);
@@ -422,6 +430,10 @@ public class PlayerActivity extends AppCompatActivity {
             HapticHelper.performClick(v);
             toggleScreenLock();
         });
+
+        if (layoutSafetyUnlock != null) {
+            layoutSafetyUnlock.setOnClickListener(v -> unlockScreen(true));
+        }
 
         btnSkipOpEd.setOnClickListener(v -> {
             HapticHelper.performClick(v);
@@ -843,6 +855,14 @@ public class PlayerActivity extends AppCompatActivity {
     private void enterPipMode() {
         if (!isPipSupported() || player == null) return;
 
+        // Safety Screen Lock MUTLAK TIDAK DIBERLAKUKAN di PiP!
+        if (isScreenLocked) {
+            unlockScreen(false);
+        }
+        if (layoutSafetyUnlock != null) {
+            layoutSafetyUnlock.setVisibility(View.GONE);
+        }
+
         if (playerView != null) {
             playerView.hideController();
         }
@@ -1058,7 +1078,12 @@ public class PlayerActivity extends AppCompatActivity {
         });
 
         playerView.setOnTouchListener((v, event) -> {
-            if (isScreenLocked) return false;
+            if (isScreenLocked) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    showSafetyUnlockPill();
+                }
+                return true;
+            }
 
             if (scaleGestureDetector != null && event.getPointerCount() > 1) {
                 scaleGestureDetector.onTouchEvent(event);
@@ -2082,12 +2107,95 @@ public class PlayerActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void showSafetyUnlockPill() {
+        if (layoutSafetyUnlock == null) return;
+        mainHandler.removeCallbacks(hideSafetyUnlockRunnable);
+        layoutSafetyUnlock.setVisibility(View.VISIBLE);
+        layoutSafetyUnlock.setAlpha(1.0f);
+        mainHandler.postDelayed(hideSafetyUnlockRunnable, 3500);
+    }
+
+    private void hideSafetyUnlockPill() {
+        if (layoutSafetyUnlock == null || layoutSafetyUnlock.getVisibility() != View.VISIBLE) return;
+        layoutSafetyUnlock.animate()
+                .alpha(0f)
+                .setDuration(250)
+                .withEndAction(() -> {
+                    if (layoutSafetyUnlock != null) layoutSafetyUnlock.setVisibility(View.GONE);
+                })
+                .start();
+    }
+
+    private void lockScreen() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode()) {
+            return;
+        }
+        if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+            Toast.makeText(this, "Kunci Layar hanya tersedia di mode Fullscreen Landscape", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        isScreenLocked = true;
+        if (btnScreenLock != null) {
+            btnScreenLock.setImageResource(R.drawable.ic_lock);
+            btnScreenLock.setVisibility(View.GONE);
+        }
+        if (playerView != null) {
+            playerView.hideController();
+            playerView.setUseController(false);
+        }
+        if (layoutTopBar != null) layoutTopBar.setVisibility(View.GONE);
+        if (btnSkipOpEd != null) btnSkipOpEd.setVisibility(View.GONE);
+        showSafetyUnlockPill();
+        HapticHelper.performClick(layoutSafetyUnlock != null ? layoutSafetyUnlock : playerView);
+        Toast.makeText(this, "🔒 Layar Terkunci", Toast.LENGTH_SHORT).show();
+    }
+
+    private void unlockScreen(boolean showFeedback) {
+        if (!isScreenLocked) return;
+        isScreenLocked = false;
+        mainHandler.removeCallbacks(hideSafetyUnlockRunnable);
+        if (layoutSafetyUnlock != null) {
+            layoutSafetyUnlock.setVisibility(View.GONE);
+        }
+        if (btnScreenLock != null) {
+            btnScreenLock.setImageResource(R.drawable.ic_lock_open);
+            boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+            boolean isInPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode();
+            btnScreenLock.setVisibility(isLandscape && !isInPip ? View.VISIBLE : View.GONE);
+        }
+        if (playerView != null) {
+            playerView.setUseController(true);
+            playerView.showController();
+        }
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (layoutTopBar != null) layoutTopBar.setVisibility(View.VISIBLE);
+        }
+        if (showFeedback) {
+            HapticHelper.performClick(layoutSafetyUnlock != null ? layoutSafetyUnlock : playerView);
+            Toast.makeText(this, "🔓 Layar Terbuka", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void toggleScreenLock() {
-        isScreenLocked = !isScreenLocked;
-        btnScreenLock.setImageResource(isScreenLocked ? R.drawable.ic_lock : R.drawable.ic_lock_open);
-        playerView.setUseController(!isScreenLocked);
-        layoutTopBar.setVisibility(isScreenLocked ? View.GONE : View.VISIBLE);
-        Toast.makeText(this, isScreenLocked ? "Layar Terkunci" : "Layar Terbuka", Toast.LENGTH_SHORT).show();
+        if (isScreenLocked) {
+            unlockScreen(true);
+        } else {
+            lockScreen();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isScreenLocked) {
+            showSafetyUnlockPill();
+            Toast.makeText(this, "Layar Terkunci. Ketuk 'Buka Kunci Layar' untuk membuka.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -2101,8 +2209,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             layoutPortraitBottom.setVisibility(View.GONE);
-            layoutTopBar.setVisibility(View.VISIBLE);
-            btnScreenLock.setVisibility(View.VISIBLE);
+            layoutTopBar.setVisibility(!isScreenLocked ? View.VISIBLE : View.GONE);
+            boolean isInPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode();
+            btnScreenLock.setVisibility(!isInPip && !isScreenLocked ? View.VISIBLE : View.GONE);
             btnPortraitFullscreen.setText("Kecilkan");
 
             flPlayerWrapper.setLayoutParams(new LinearLayout.LayoutParams(
@@ -2116,6 +2225,12 @@ public class PlayerActivity extends AppCompatActivity {
                 controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
             }
         } else {
+            if (isScreenLocked) {
+                unlockScreen(false); // Otomatis buka kunci bila diputar ke Portrait!
+            }
+            if (layoutSafetyUnlock != null) {
+                layoutSafetyUnlock.setVisibility(View.GONE);
+            }
             layoutPortraitBottom.setVisibility(View.VISIBLE);
             layoutTopBar.setVisibility(View.GONE);
             btnScreenLock.setVisibility(View.GONE);
@@ -2149,6 +2264,12 @@ public class PlayerActivity extends AppCompatActivity {
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
         if (isInPictureInPictureMode) {
+            if (isScreenLocked) {
+                unlockScreen(false); // MUTLAK BEBAS KUNCI DI PIP
+            }
+            if (layoutSafetyUnlock != null) {
+                layoutSafetyUnlock.setVisibility(View.GONE);
+            }
             if (playerView != null) {
                 playerView.hideController();
                 playerView.setUseController(false);
@@ -2162,6 +2283,7 @@ public class PlayerActivity extends AppCompatActivity {
                 tvSubtitles.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f);
             }
         } else {
+            isScreenLocked = false;
             boolean isRestored = !isFinishing();
             if (!isRestored) {
                 if (player != null) {

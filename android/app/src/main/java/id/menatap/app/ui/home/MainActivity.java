@@ -53,6 +53,7 @@ import id.menatap.app.R;
 import id.menatap.app.data.db.MenatapDatabase;
 import id.menatap.app.data.model.Anime;
 import id.menatap.app.data.service.AniListClient;
+import id.menatap.app.util.AnimeThemeManager;
 import id.menatap.app.ui.adapter.AnimeAdapter;
 import id.menatap.app.util.AppUpdateManager;
 import id.menatap.app.util.HapticHelper;
@@ -62,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
     public enum MainTab {
         MUSIM, AIRING, JADWAL, RIWAYAT, FAVORIT, KATALOG, GENRE
     }
+
+    // Root Layout & Theme Support
+    private FrameLayout layoutMainRoot;
+    private View btnThemeTrigger;
 
     // Top Aurora Bar & Dynamic Fluid Search Views
     private FrameLayout layoutAuroraTop;
@@ -100,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isFoldedMenuOpen = false;
 
     // Menu Items in Folded Floating Menu
-    private View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre, menuItemUpdate;
+    private View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre, menuItemTheme, menuItemUpdate;
     private TextView tvMenuMusim, tvMenuAiring, tvMenuJadwal, tvMenuRiwayat, tvMenuFavorit, tvMenuKatalog, tvMenuGenre;
 
     private AnimeAdapter gridAdapter;
@@ -259,12 +264,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        applyCurrentTheme();
         if (currentTab == MainTab.RIWAYAT || currentTab == MainTab.FAVORIT) {
             loadCurrentFeed();
         }
     }
 
+    private void applyCurrentTheme() {
+        if (layoutMainRoot != null) {
+            layoutMainRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+        }
+    }
+
     private void initViews() {
+        layoutMainRoot = findViewById(R.id.layout_main_root);
+        btnThemeTrigger = findViewById(R.id.btn_theme_trigger);
         layoutAuroraTop = findViewById(R.id.layout_aurora_top);
         layoutTopNormal = findViewById(R.id.layout_top_normal);
         tvAppLogo = findViewById(R.id.tv_app_logo);
@@ -302,6 +316,7 @@ public class MainActivity extends AppCompatActivity {
         menuItemFavorit = findViewById(R.id.menu_item_favorit);
         menuItemKatalog = findViewById(R.id.menu_item_katalog);
         menuItemGenre = findViewById(R.id.menu_item_genre);
+        menuItemTheme = findViewById(R.id.menu_item_theme);
         menuItemUpdate = findViewById(R.id.menu_item_update);
 
         tvMenuMusim = findViewById(R.id.tv_menu_musim);
@@ -423,6 +438,21 @@ public class MainActivity extends AppCompatActivity {
         menuItemFavorit.setOnClickListener(v -> selectMenuItem(MainTab.FAVORIT));
         menuItemKatalog.setOnClickListener(v -> selectMenuItem(MainTab.KATALOG));
         menuItemGenre.setOnClickListener(v -> selectMenuItem(MainTab.GENRE));
+
+        if (btnThemeTrigger != null) {
+            btnThemeTrigger.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                AnimeThemeManager.showThemeSelectorDialog(this, this::applyCurrentTheme);
+            });
+        }
+
+        if (menuItemTheme != null) {
+            menuItemTheme.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                setFoldedMenuOpen(false);
+                AnimeThemeManager.showThemeSelectorDialog(this, this::applyCurrentTheme);
+            });
+        }
 
         if (menuItemUpdate != null) {
             menuItemUpdate.setOnClickListener(v -> {

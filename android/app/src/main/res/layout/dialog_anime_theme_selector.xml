@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_frost"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="TEMA &amp; BACKGROUND ANIME"
+            android:textColor="@color/accent_glacial"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-black"
+            android:letterSpacing="0.06" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_badge_frost"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="3dp"
+            android:text="テーマ"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="10sp"
+            android:fontFamily="sans-serif-bold" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Pilih suasana latar belakang kanvas &amp; palet warna anime khas Menatap."
+        android:textColor="@color/text_frost_subtle"
+        android:textSize="12sp"
+        android:fontFamily="sans-serif" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="14dp"
+        android:background="@color/frost_border" />
+
+    <!-- Radio Options -->
+    <RadioGroup
+        android:id="@+id/rg_anime_themes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 1. Twilight Shinkai (Default) -->
+        <RadioButton
+            android:id="@+id/rb_theme_shinkai"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:padding="12dp"
+            android:buttonTint="@color/accent_glacial"
+            android:text="🌌 Twilight Shinkai (Default)\nLangit malam berbintang Makoto Shinkai · Glacial Cyan"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="12.5sp"
+            android:fontFamily="sans-serif-medium"
+            android:lineSpacingExtra="2dp" />
+
+        <!-- 2. Sakura Blossom -->
+        <RadioButton
+            android:id="@+id/rb_theme_sakura"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:padding="12dp"
+            android:buttonTint="@color/anime_sakura_pink"
+            android:text="🌸 Sakura Blossom\nMusim semi anime Jepang · Midnight Plum &amp; Sakura Pink"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="12.5sp"
+            android:fontFamily="sans-serif-medium"
+            android:lineSpacingExtra="2dp" />
+
+        <!-- 3. Cyber Neo-Tokyo -->
+        <RadioButton
+            android:id="@+id/rb_theme_cyber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:padding="12dp"
+            android:buttonTint="@color/anime_cyan_neon"
+            android:text="⚡ Cyber Neo-Tokyo\nSci-Fi / Mecha anime vibes · Obsidian &amp; Electric Neon"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="12.5sp"
+            android:fontFamily="sans-serif-medium"
+            android:lineSpacingExtra="2dp" />
+
+        <!-- 4. Ghibli Forest Night -->
+        <RadioButton
+            android:id="@+id/rb_theme_ghibli"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:padding="12dp"
+            android:buttonTint="@color/anime_mint_miku"
+            android:text="🍃 Ghibli Forest Night\nSuasana malam alam mistis · Deep Teal &amp; Miku Emerald"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="12.5sp"
+            android:fontFamily="sans-serif-medium"
+            android:lineSpacingExtra="2dp" />
+    </RadioGroup>
+
+    <!-- Bottom Actions -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_close_theme_dialog"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:backgroundTint="@color/frost_surface"
+            android:text="Selesai"
+            android:textColor="@color/accent_glacial"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-bold"
+            app:strokeColor="@color/frost_border"
+            app:strokeWidth="1dp"
+            app:cornerRadius="8dp" />
+    </LinearLayout>
+
+</LinearLayout>

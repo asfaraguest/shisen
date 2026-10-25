@@ -1,11 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Nordic Frost & Midnight Slate Canvas (Soft on Eyes / Eye-Friendly) -->
-    <color name="frost_void">#090D16</color>
-    <color name="frost_surface">#0F1726</color>
-    <color name="frost_elevated">#141F33</color>
-    <color name="frost_border">#1F2E4A</color>
-    <color name="frost_border_subtle">#152238</color>
+    <color name="frost_void">#0A0D18</color>
+    <color name="frost_surface">#10162A</color>
+    <color name="frost_elevated">#161F38</color>
+    <color name="frost_border">#233252</color>
+    <color name="frost_border_subtle">#1A253E</color>
+
+    <!-- ANIME ATMOSPHERIC CANVAS & SURFACES -->
+    <color name="anime_void_shinkai">#0A0D18</color>
+    <color name="anime_surface_shinkai">#10162A</color>
+    <color name="anime_elevated_shinkai">#161F38</color>
+    <color name="anime_border_shinkai">#233252</color>
+    <color name="anime_border_glow">#334A78</color>
+
+    <!-- ANIME PRESET PALETTES -->
+    <!-- 1. Sakura Blossom Palette -->
+    <color name="anime_void_sakura">#120B18</color>
+    <color name="anime_surface_sakura">#1C1226</color>
+    <color name="anime_border_sakura">#381D47</color>
+    <color name="anime_sakura_pink">#FB7185</color>
+    <color name="anime_sakura_soft">#FDA4AF</color>
+
+    <!-- 2. Cyber Neo-Tokyo Palette -->
+    <color name="anime_void_cyber">#080B14</color>
+    <color name="anime_surface_cyber">#0E1424</color>
+    <color name="anime_border_cyber">#1E2C4A</color>
+    <color name="anime_cyan_neon">#00F0FF</color>
+    <color name="anime_purple_cyber">#A855F7</color>
+
+    <!-- 3. Ghibli Forest Night Palette -->
+    <color name="anime_void_ghibli">#081412</color>
+    <color name="anime_surface_ghibli">#0E211E</color>
+    <color name="anime_border_ghibli">#1B3D37</color>
+
+    <!-- ANIME SIGNATURE ACCENT COLORS -->
+    <color name="anime_cyan_glacial">#38BDF8</color>
+    <color name="anime_iris_violet">#818CF8</color>
+    <color name="anime_mint_miku">#10B981</color>
+    <color name="anime_gold_star">#FBBF24</color>
+    <color name="anime_akira_red">#FF4757</color>
 
     <!-- Cool Spectrum Accents (Serene & Eye-Friendly Glow) -->
     <color name="accent_glacial">#38BDF8</color>

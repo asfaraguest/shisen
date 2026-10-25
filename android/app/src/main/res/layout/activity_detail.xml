@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout_detail_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/frost_void">
+    android:background="@drawable/bg_anime_canvas_shinkai">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -17,22 +18,22 @@
             android:orientation="vertical"
             android:paddingBottom="50dp">
 
-            <!-- Hero Backdrop with Gradient Scrim -->
+            <!-- Hero Backdrop with Ambient Gradient Scrim -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="260dp">
+                android:layout_height="230dp">
 
                 <ImageView
                     android:id="@+id/iv_detail_backdrop"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:contentDescription="Backdrop" />
+                    android:contentDescription="Ambient Backdrop" />
 
                 <!-- Bottom Fade Scrim -->
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="160dp"
+                    android:layout_height="170dp"
                     android:layout_gravity="bottom"
                     android:background="@drawable/bg_hero_gradient_scrim" />
 
@@ -48,61 +49,104 @@
                     android:contentDescription="Kembali" />
             </FrameLayout>
 
-            <!-- Anime Info Body -->
+            <!-- Anime Info Body (Overlapping Hero Section) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingHorizontal="16dp"
-                android:layout_marginTop="-24dp">
+                android:layout_marginTop="-75dp">
 
-                <!-- Title -->
-                <TextView
-                    android:id="@+id/tv_detail_title"
+                <!-- Hero Section: Official Character Cover Card + Primary Info -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Judul Anime"
-                    android:textColor="@color/text_frost_bright"
-                    android:textSize="22sp"
-                    android:fontFamily="sans-serif-black"
-                    android:lineSpacingExtra="2dp" />
+                    android:orientation="horizontal"
+                    android:gravity="bottom">
 
-                <!-- Alt / Romaji Title -->
-                <TextView
-                    android:id="@+id/tv_detail_romaji"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Sousou no Frieren"
-                    android:textColor="@color/text_frost_dim"
-                    android:textSize="12sp"
-                    android:fontFamily="sans-serif"
-                    android:singleLine="true"
-                    android:ellipsize="end" />
+                    <!-- Official Character Cover Poster Card (Focused on Character) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_detail_poster"
+                        android:layout_width="110dp"
+                        android:layout_height="160dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="8dp"
+                        app:cardBackgroundColor="@color/frost_surface"
+                        app:strokeColor="@color/anime_border_glow"
+                        app:strokeWidth="1.5dp">
 
-                <!-- Metadata Row (Glacial Sky chips) -->
-                <TextView
-                    android:id="@+id/tv_detail_meta"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Spring 2026 · TV · 12 Episode · 8.5 ★"
-                    android:textColor="@color/accent_glacial"
-                    android:textSize="12.5sp"
-                    android:fontFamily="sans-serif-medium" />
+                        <ImageView
+                            android:id="@+id/iv_detail_poster"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:contentDescription="Cover Karakter Anime" />
+                    </com.google.android.material.card.MaterialCardView>
 
-                <!-- Genres Row -->
-                <TextView
-                    android:id="@+id/tv_detail_genres"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Fantasi • Petualangan • Sihir"
-                    android:textColor="@color/text_frost_subtle"
-                    android:textSize="11.5sp"
-                    android:fontFamily="sans-serif" />
+                    <!-- Title & Essential Meta (Side by Side with Poster) -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="14dp"
+                        android:orientation="vertical"
+                        android:paddingBottom="4dp">
 
-                <!-- Dual Action Row (Netflix Play & Favorite) -->
+                        <!-- Title -->
+                        <TextView
+                            android:id="@+id/tv_detail_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Judul Anime"
+                            android:textColor="@color/text_frost_bright"
+                            android:textSize="18sp"
+                            android:fontFamily="sans-serif-black"
+                            android:lineSpacingExtra="2dp"
+                            android:maxLines="2"
+                            android:ellipsize="end" />
+
+                        <!-- Alt / Romaji Title + Native Japanese Title -->
+                        <TextView
+                            android:id="@+id/tv_detail_romaji"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="Sousou no Frieren • 葬送のフリーレン"
+                            android:textColor="@color/anime_iris_violet"
+                            android:textSize="11.5sp"
+                            android:fontFamily="sans-serif-medium"
+                            android:maxLines="2"
+                            android:ellipsize="end" />
+
+                        <!-- Metadata Row (Glacial Sky chips) -->
+                        <TextView
+                            android:id="@+id/tv_detail_meta"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Spring 2026 · TV · 12 Episode · 8.5 ★"
+                            android:textColor="@color/accent_glacial"
+                            android:textSize="12sp"
+                            android:fontFamily="sans-serif-medium"
+                            android:maxLines="2"
+                            android:ellipsize="end" />
+
+                        <!-- Genres Row -->
+                        <TextView
+                            android:id="@+id/tv_detail_genres"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Fantasi • Petualangan • Sihir"
+                            android:textColor="@color/text_frost_subtle"
+                            android:textSize="11sp"
+                            android:fontFamily="sans-serif"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Dual Action Row (Play Primary & Bookmark) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -139,42 +183,63 @@
                         android:stateListAnimator="@null" />
                 </LinearLayout>
 
-                <!-- Expandable Synopsis -->
-                <TextView
-                    android:id="@+id/tv_detail_synopsis"
+                <!-- Expandable Synopsis Card -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:textColor="@color/text_frost_subtle"
-                    android:textSize="13sp"
-                    android:lineSpacingExtra="3.5dp"
-                    android:fontFamily="sans-serif"
-                    android:maxLines="3"
-                    android:ellipsize="end"
-                    android:text="Memuat sinopsis anime..." />
+                    android:layout_marginTop="14dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/frost_surface"
+                    app:strokeColor="@color/frost_border"
+                    app:strokeWidth="1dp">
 
-                <TextView
-                    android:id="@+id/tv_synopsis_toggle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Selengkapnya ▼"
-                    android:textColor="@color/accent_glacial"
-                    android:textSize="11.5sp"
-                    android:fontFamily="sans-serif-bold"
-                    android:paddingVertical="4dp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/frost_border"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="16dp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="SINOPSIS ANIME"
+                            android:textColor="@color/accent_glacial"
+                            android:textSize="11sp"
+                            android:fontFamily="sans-serif-bold"
+                            android:letterSpacing="0.06" />
+
+                        <TextView
+                            android:id="@+id/tv_detail_synopsis"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textColor="@color/text_frost_subtle"
+                            android:textSize="12.5sp"
+                            android:lineSpacingExtra="3.5dp"
+                            android:fontFamily="sans-serif"
+                            android:maxLines="3"
+                            android:ellipsize="end"
+                            android:text="Memuat sinopsis anime..." />
+
+                        <TextView
+                            android:id="@+id/tv_synopsis_toggle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Selengkapnya ▼"
+                            android:textColor="@color/accent_glacial"
+                            android:textSize="11.5sp"
+                            android:fontFamily="sans-serif-bold"
+                            android:paddingVertical="2dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Episode Header -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 

@@ -4,7 +4,7 @@
     android:id="@+id/layout_main_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/frost_void">
+    android:background="@drawable/bg_anime_canvas_shinkai">
 
     <!-- MAIN APP CONTENT (TOPBAR + FEED) -->
     <LinearLayout
@@ -38,6 +38,17 @@
                     android:textSize="20sp"
                     android:fontFamily="sans-serif-black"
                     android:letterSpacing="0.08" />
+
+                <!-- Anime Kanji Brand Touch -->
+                <TextView
+                    android:id="@+id/tv_app_logo_kanji"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="見つめる"
+                    android:textColor="@color/anime_iris_violet"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-bold" />
 
                 <!-- Active Menu Category Badge -->
                 <TextView
@@ -90,11 +101,25 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
-                        android:text="Cari..."
+                        android:text="Cari anime..."
                         android:textColor="@color/text_frost_subtle"
                         android:textSize="12sp"
-                        android:fontFamily="sans-serif-medium" />
+                        android:fontFamily="sans-serif" />
                 </LinearLayout>
+
+                <!-- Anime Theme Selector Button -->
+                <ImageButton
+                    android:id="@+id/btn_theme_trigger"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_search_capsule"
+                    android:src="@drawable/ic_palette"
+                    app:tint="@color/accent_glacial"
+                    android:padding="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="Pilih Tema Anime" />
             </LinearLayout>
 
             <!-- Fluid Expanded Search State (Full Width Animated) -->
@@ -317,9 +342,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="Musim Ini (Beranda)"
+                android:text="Musim Ini • 今期アニメ"
                 android:textColor="@color/text_frost_bright"
-                android:textSize="13sp"
+                android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
         </LinearLayout>
 
@@ -346,9 +371,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="Masih Tayang"
+                android:text="Masih Tayang • 放送中"
                 android:textColor="@color/text_frost_bright"
-                android:textSize="13sp"
+                android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
         </LinearLayout>
 
@@ -375,9 +400,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="Jadwal Rilis 7 Hari WIB"
+                android:text="Jadwal Rilis • 週間番組表"
                 android:textColor="@color/text_frost_bright"
-                android:textSize="13sp"
+                android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
         </LinearLayout>
 
@@ -404,9 +429,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="Riwayat Tontonan"
+                android:text="Riwayat • 履歴"
                 android:textColor="@color/text_frost_bright"
-                android:textSize="13sp"
+                android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
         </LinearLayout>
 
@@ -433,9 +458,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="Favorit Saya"
+                android:text="Favorit Saya • お気に入り"
                 android:textColor="@color/text_frost_bright"
-                android:textSize="13sp"
+                android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
         </LinearLayout>
 
@@ -462,9 +487,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="Katalog Lengkap"
+                android:text="Katalog • 全作品目録"
                 android:textColor="@color/text_frost_bright"
-                android:textSize="13sp"
+                android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
         </LinearLayout>
 
@@ -491,13 +516,42 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="Kategori Genre"
+                android:text="Kategori Genre • ジャンル"
                 android:textColor="@color/text_frost_bright"
-                android:textSize="13sp"
+                android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
         </LinearLayout>
 
-        <!-- 8. Cek Pembaruan Aplikasi -->
+        <!-- 8. Tema Anime / Pemilih Background -->
+        <LinearLayout
+            android:id="@+id/menu_item_theme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_palette"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_menu_theme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Tema Anime • テーマ"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="12.5sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- 9. Cek Pembaruan Aplikasi -->
         <LinearLayout
             android:id="@+id/menu_item_update"
             android:layout_width="match_parent"
@@ -519,10 +573,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="Cek Pembaruan"
-                android:textColor="@color/accent_glacial"
-                android:textSize="13sp"
-                android:fontFamily="sans-serif-bold" />
+                android:text="Pembaruan • 更新"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="12.5sp"
+                android:fontFamily="sans-serif-medium" />
         </LinearLayout>
     </LinearLayout>
 

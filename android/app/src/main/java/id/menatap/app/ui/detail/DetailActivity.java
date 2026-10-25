@@ -33,13 +33,16 @@ import id.menatap.app.data.service.HiAnimeClient;
 import id.menatap.app.data.service.OtakudesuScraper;
 import id.menatap.app.ui.adapter.EpisodeAdapter;
 import id.menatap.app.ui.player.PlayerActivity;
+import id.menatap.app.util.AnimeThemeManager;
 import id.menatap.app.util.HapticHelper;
 import id.menatap.app.util.ImageLoader;
 import id.menatap.app.util.TitleMatcher;
 
 public class DetailActivity extends AppCompatActivity {
 
+    private View layoutDetailRoot;
     private ImageView ivBackdrop;
+    private ImageView ivPoster;
     private ImageButton btnBack;
     private TextView tvTitle;
     private TextView tvRomaji;
@@ -79,12 +82,17 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (layoutDetailRoot != null) {
+            layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+        }
         updateBookmarkUI();
         refreshWatchedStates();
     }
 
     private void initViews() {
+        layoutDetailRoot = findViewById(R.id.layout_detail_root);
         ivBackdrop = findViewById(R.id.iv_detail_backdrop);
+        ivPoster = findViewById(R.id.iv_detail_poster);
         btnBack = findViewById(R.id.btn_detail_back);
         tvTitle = findViewById(R.id.tv_detail_title);
         tvRomaji = findViewById(R.id.tv_detail_romaji);
@@ -127,20 +135,39 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void bindAnimeData() {
+        // 1. Character Cover Poster: Prioritas mutlak poster resmi yang memfokuskan visual pada karakter anime terkait
+        String characterCoverUrl = (anime.poster != null && !anime.poster.isEmpty() && !"null".equalsIgnoreCase(anime.poster))
+                ? anime.poster : anime.banner;
+        if (ivPoster != null) {
+            ImageLoader.load(characterCoverUrl, ivPoster);
+        }
+
+        // 2. Ambient Backdrop: Gunakan banner lanskap bila ada, atau fallback ke poster karakter dengan efek ambient
+        String backdropUrl = (anime.banner != null && !anime.banner.isEmpty() && !"null".equalsIgnoreCase(anime.banner))
+                ? anime.banner : characterCoverUrl;
+        ImageLoader.load(backdropUrl, ivBackdrop);
+
+        // 3. Judul Utama
         String safeTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
                 ? anime.title : anime.romajiTitle;
         tvTitle.setText(safeTitle);
 
+        // 4. Judul Romaji & Judul Asli Jepang (Kanji/Katakana)
+        StringBuilder subTitle = new StringBuilder();
         if (anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle) && !anime.romajiTitle.equalsIgnoreCase(safeTitle)) {
-            tvRomaji.setText(anime.romajiTitle);
+            subTitle.append(anime.romajiTitle);
+        }
+        if (anime.nativeTitle != null && !anime.nativeTitle.isEmpty() && !"null".equalsIgnoreCase(anime.nativeTitle)) {
+            if (subTitle.length() > 0) subTitle.append(" • ");
+            subTitle.append(anime.nativeTitle);
+        }
+
+        if (subTitle.length() > 0) {
+            tvRomaji.setText(subTitle.toString());
             tvRomaji.setVisibility(View.VISIBLE);
         } else {
             tvRomaji.setVisibility(View.GONE);
         }
-
-        String backdropUrl = (anime.banner != null && !anime.banner.isEmpty() && !"null".equalsIgnoreCase(anime.banner))
-                ? anime.banner : anime.poster;
-        ImageLoader.load(backdropUrl, ivBackdrop);
 
         StringBuilder meta = new StringBuilder();
         if (anime.season != null && !anime.season.isEmpty() && !"null".equalsIgnoreCase(anime.season)) {

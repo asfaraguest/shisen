@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/frost_void">
+    android:background="@drawable/bg_anime_canvas_shinkai">
 
     <!-- VIDEO STAGE (ExoPlayer + Scrims + Overlays) -->
     <FrameLayout
@@ -229,6 +229,38 @@
             app:tint="@color/text_frost_bright"
             android:visibility="gone"
             android:contentDescription="Kunci Layar" />
+
+        <!-- Floating Safety Unlock Pill (Shown when touching locked screen in Landscape) -->
+        <LinearLayout
+            android:id="@+id/layout_safety_unlock"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="24dp"
+            android:background="@drawable/bg_player_hud_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:elevation="14dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_lock"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Buka Kunci Layar"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="12.5sp"
+                android:fontFamily="sans-serif-bold" />
+        </LinearLayout>
 
         <!-- Top Overlay Header Bar (Minimalist Tatap Scrim) -->
         <LinearLayout

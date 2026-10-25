@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- Atmospheric Sakura Blossom Night Gradient -->
+    <gradient
+        android:angle="270"
+        android:startColor="#241328"
+        android:centerColor="#160D1F"
+        android:endColor="#0F0815"
+        android:type="linear" />
+</shape>

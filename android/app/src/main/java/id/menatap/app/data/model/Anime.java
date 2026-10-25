@@ -13,6 +13,7 @@ public class Anime implements Serializable {
     public String slug = "";
     public String title = "";
     public String romajiTitle = "";
+    public String nativeTitle = "";
     public String poster = "";
     public String banner = "";
     public double score = 0.0;

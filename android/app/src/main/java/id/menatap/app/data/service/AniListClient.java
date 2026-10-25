@@ -620,6 +620,7 @@ public class AniListClient {
             } else {
                 a.title = "Anime";
             }
+            a.nativeTitle = nat;
             a.romajiTitle = !rom.isEmpty() ? rom : a.title;
         } else {
             a.title = "Anime";
