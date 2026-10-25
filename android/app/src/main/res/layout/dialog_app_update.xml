@@ -42,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="v0.1.0-beta.1 ➔ v0.1.0-beta.2"
+                android:text="Versi Baru Tersedia"
                 android:textColor="@color/accent_glacial"
                 android:textSize="@dimen/text_body"
                 android:fontFamily="sans-serif-medium" />

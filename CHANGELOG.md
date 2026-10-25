@@ -2,6 +2,36 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [0.1.0-beta.2] - 2026-10-25
+
+### Ditambahkan
+- **Hardware-Backed Secret Storage (`SecureStore`)**:
+  - Implementasi penyimpanan rahasia terenkripsi berbasis Android Keystore dengan algoritma authenticated encryption AES-256-GCM (`AES/GCM/NoPadding`, 12-byte random IV, 128-bit authentication tag).
+  - Integrasi penyimpanan privat `SharedPreferences` terenkripsi dengan proteksi anti-tampering (menolak ciphertext yang diubah).
+  - Factory pengujian terisolasi untuk unit test JVM host.
+  - Zero-logging policy: tidak pernah mencatat atau menampilkan API key/secret ke logcat atau antarmuka. Dipersiapkan untuk BYOK LLM AI Subtitle (Fase 2).
+- **Network Security Configuration (`network_security_config.xml`)**:
+  - Konfigurasi keamanan jaringan ketat dengan `cleartextTrafficPermitted="false"`.
+  - Pengamanan aplikasi terhadap transmisi data tidak terenkripsi pada seluruh koneksi scraper, stream CDN, dan update checker.
+- **Root Gradle Wrapper (`gradlew`)**:
+  - Script wrapper eksekusi di root repositori untuk mempermudah eksekusi `./gradlew` langsung dari direktori utama maupun subdirektori `android/`.
+
+### Diubah & Dioptimalkan
+- **Build Release Hardening & R8 Shrinking**:
+  - Mengaktifkan optimasi R8 code shrinking (`minifyEnabled true`) dan resource shrinking (`shrinkResources true`) pada build release.
+  - Menambahkan aturan ProGuard terperinci (`proguard-rules.pro`) untuk OkHttp, jsoup, Media3 (ExoPlayer & HLS), Kotlin Coroutines, Tukaani XZ, dan model serialisasi data Menatap.
+  - Mengecualikan artefak `DebugProbesKt.bin` via blok `packaging { resources { excludes += ['DebugProbesKt.bin'] } }` dengan tetap menjaga kelengkapan seluruh berkas lisensi (`LICENSE`, `NOTICE`).
+- **Audit Manifest & Keamanan Jaringan**:
+  - Menetapkan `android:allowBackup="false"` untuk mencegah kebocoran data aplikasi melalui Android ADB backup.
+  - Menghapus atribut `extractNativeLibs` (aplikasi murni 100% Java/Kotlin bytecode tanpa pustaka C/C++ native).
+  - Menetapkan `android:usesCleartextTraffic="false"` dan mengikat `android:networkSecurityConfig="@xml/network_security_config"`.
+- **Audit Dex Bytecode**:
+  - Memverifikasi asal simbol `127.0.0.1` (dari pustaka Google Guava / Media3 `InetAddresses` dan `HttpClientProvider` untuk filter sinkhole ISP) dan `ServerSocket` (dari utilitas `okhttp3.internal.Util.closeQuietly`).
+  - Terbukti 100% bebas dari embedded HTTP server (NanoHTTPD, Ktor, atau ServerSocket listener).
+- **Sinkronisasi Versi Otomatis**:
+  - Pembaruan versi aplikasi ke `0.1.0-beta.2` (versionCode: 10002).
+  - Memperbarui `AppUpdateManager.java` agar membaca `BuildConfig.APP_VERSION_NAME` secara dinamis.
+
 ## [0.1.0-beta.1] - 2026-10-25
 
 ### Ditambahkan

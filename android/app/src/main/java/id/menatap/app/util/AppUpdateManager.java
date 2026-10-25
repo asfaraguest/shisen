@@ -82,7 +82,7 @@ public class AppUpdateManager {
                 }
             } catch (Exception ignored) {}
         }
-        return "0.1.0-beta.1";
+        return id.menatap.app.BuildConfig.APP_VERSION_NAME;
     }
 
     public void checkUpdate(Activity activity, boolean isManual) {
