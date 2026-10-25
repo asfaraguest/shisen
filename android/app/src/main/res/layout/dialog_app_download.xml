@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_frost"
+    android:padding="20dp">
+
+    <!-- Header Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ProgressBar
+            android:id="@+id/pb_download_spinner"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/accent_glacial" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_download_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mengunduh Pembaruan Menatap"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="@dimen/text_title_large"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/tv_download_target_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Versi Target: v0.1.0-beta.2"
+                android:textColor="@color/text_frost_subtle"
+                android:textSize="@dimen/text_caption"
+                android:fontFamily="sans-serif" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/pb_download_horizontal"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:layout_marginTop="18dp"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="@color/accent_glacial"
+        android:progressBackgroundTint="@color/frost_border" />
+
+    <!-- Status & Percentage Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_download_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Menghubungkan ke GitHub..."
+            android:textColor="@color/text_frost_subtle"
+            android:textSize="@dimen/text_caption"
+            android:fontFamily="sans-serif" />
+
+        <TextView
+            android:id="@+id/tv_download_percent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0%"
+            android:textColor="@color/accent_glacial"
+            android:textSize="@dimen/text_body"
+            android:fontFamily="sans-serif-bold" />
+    </LinearLayout>
+
+    <!-- Cancel Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:layout_marginTop="18dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_cancel_download"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Batal"
+            android:textColor="@color/text_frost_subtle"
+            android:textSize="@dimen/text_subhead"
+            android:fontFamily="sans-serif-medium"
+            android:textAllCaps="false"
+            android:backgroundTint="@color/frost_elevated"
+            app:strokeColor="@color/frost_border"
+            app:strokeWidth="1dp"
+            app:cornerRadius="10dp"
+            android:paddingHorizontal="18dp"
+            android:focusable="true" />
+    </LinearLayout>
+</LinearLayout>

@@ -16,50 +16,100 @@ public class StreamResolver {
     }
 
     public static void resolve(Anime anime, Episode episode, Callback callback) {
+        resolveWithServer(anime, episode, "hianime", callback);
+    }
+
+    public static void resolveWithServer(Anime anime, Episode episode, String preferredServer, Callback callback) {
         if (anime == null || episode == null) {
             callback.onError(new IllegalArgumentException("Anime atau episode tidak boleh kosong"));
             return;
         }
 
-        // TIER 1: HiAnime (Primary Stream Source)
-        tryHiAnime(anime, episode, new Callback() {
-            @Override
-            public void onSuccess(StreamSource source) {
-                callback.onSuccess(source);
-            }
+        if ("anichan".equalsIgnoreCase(preferredServer)) {
+            tryAniChan(anime, episode, new Callback() {
+                @Override
+                public void onSuccess(StreamSource source) {
+                    callback.onSuccess(source);
+                }
 
-            @Override
-            public void onError(Throwable t1) {
-                // TIER 2: AniChan (Direct HLS Fallback)
-                tryAniChan(anime, episode, new Callback() {
-                    @Override
-                    public void onSuccess(StreamSource source) {
-                        callback.onSuccess(source);
-                    }
+                @Override
+                public void onError(Throwable t1) {
+                    tryHiAnime(anime, episode, new Callback() {
+                        @Override
+                        public void onSuccess(StreamSource source) {
+                            callback.onSuccess(source);
+                        }
 
-                    @Override
-                    public void onError(Throwable t2) {
-                        // TIER 3: Otakudesu (Safety Net Fallback)
-                        tryOtakudesu(anime, episode, new Callback() {
-                            @Override
-                            public void onSuccess(StreamSource source) {
-                                callback.onSuccess(source);
-                            }
+                        @Override
+                        public void onError(Throwable t2) {
+                            tryOtakudesu(anime, episode, callback);
+                        }
+                    });
+                }
+            });
+        } else if ("otakudesu".equalsIgnoreCase(preferredServer)) {
+            tryOtakudesu(anime, episode, new Callback() {
+                @Override
+                public void onSuccess(StreamSource source) {
+                    callback.onSuccess(source);
+                }
 
-                            @Override
-                            public void onError(Throwable t3) {
-                                callback.onError(new IOException(
-                                        "Seluruh sumber stream gagal:\n" +
-                                        "1. HiAnime: " + t1.getMessage() + "\n" +
-                                        "2. AniChan: " + t2.getMessage() + "\n" +
-                                        "3. Otakudesu: " + t3.getMessage()
-                                ));
-                            }
-                        });
-                    }
-                });
-            }
-        });
+                @Override
+                public void onError(Throwable t1) {
+                    tryHiAnime(anime, episode, new Callback() {
+                        @Override
+                        public void onSuccess(StreamSource source) {
+                            callback.onSuccess(source);
+                        }
+
+                        @Override
+                        public void onError(Throwable t2) {
+                            tryAniChan(anime, episode, callback);
+                        }
+                    });
+                }
+            });
+        } else {
+            // TIER 1: HiAnime (Primary Stream Source)
+            tryHiAnime(anime, episode, new Callback() {
+                @Override
+                public void onSuccess(StreamSource source) {
+                    callback.onSuccess(source);
+                }
+
+                @Override
+                public void onError(Throwable t1) {
+                    // TIER 2: AniChan (Direct HLS Fallback)
+                    tryAniChan(anime, episode, new Callback() {
+                        @Override
+                        public void onSuccess(StreamSource source) {
+                            callback.onSuccess(source);
+                        }
+
+                        @Override
+                        public void onError(Throwable t2) {
+                            // TIER 3: Otakudesu (Safety Net Fallback)
+                            tryOtakudesu(anime, episode, new Callback() {
+                                @Override
+                                public void onSuccess(StreamSource source) {
+                                    callback.onSuccess(source);
+                                }
+
+                                @Override
+                                public void onError(Throwable t3) {
+                                    callback.onError(new IOException(
+                                            "Seluruh sumber stream gagal:\n" +
+                                            "1. HiAnime: " + t1.getMessage() + "\n" +
+                                            "2. AniChan: " + t2.getMessage() + "\n" +
+                                            "3. Otakudesu: " + t3.getMessage()
+                                    ));
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
     }
 
     private static void tryHiAnime(Anime anime, Episode episode, Callback callback) {

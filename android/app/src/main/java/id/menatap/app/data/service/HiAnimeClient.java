@@ -79,7 +79,7 @@ public class HiAnimeClient {
                     if (slug.contains("?")) slug = slug.substring(0, slug.indexOf("?"));
                     if (slug.endsWith("/")) slug = slug.substring(0, slug.length() - 1);
 
-                    if (slug.toLowerCase().contains("hentai") || title.toLowerCase().contains("hentai")) {
+                    if (slug.toLowerCase().contains("hentai") || title.toLowerCase().contains("hentai") || romaji.toLowerCase().contains("hentai")) {
                         continue;
                     }
 

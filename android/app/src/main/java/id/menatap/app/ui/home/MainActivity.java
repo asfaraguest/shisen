@@ -2,6 +2,7 @@ package id.menatap.app.ui.home;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -40,6 +41,7 @@ import id.menatap.app.data.db.MenatapDatabase;
 import id.menatap.app.data.model.Anime;
 import id.menatap.app.data.service.AniListClient;
 import id.menatap.app.ui.adapter.AnimeAdapter;
+import id.menatap.app.util.AppUpdateManager;
 import id.menatap.app.util.HapticHelper;
 
 public class MainActivity extends AppCompatActivity {
@@ -84,8 +86,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivFabIcon;
     private boolean isFoldedMenuOpen = false;
 
-    // 7 Menu Items in Folded Floating Menu
-    private View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre;
+    // Menu Items in Folded Floating Menu
+    private View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre, menuItemUpdate;
     private TextView tvMenuMusim, tvMenuAiring, tvMenuJadwal, tvMenuRiwayat, tvMenuFavorit, tvMenuKatalog, tvMenuGenre;
 
     private AnimeAdapter gridAdapter;
@@ -127,6 +129,9 @@ public class MainActivity extends AppCompatActivity {
         setupListeners();
         setupBackHandler();
         selectTab(MainTab.MUSIM);
+
+        // Silent background update check on app launch
+        mainHandler.postDelayed(() -> AppUpdateManager.getInstance().checkUpdate(this, false), 2500);
     }
 
     @Override
@@ -175,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
         menuItemFavorit = findViewById(R.id.menu_item_favorit);
         menuItemKatalog = findViewById(R.id.menu_item_katalog);
         menuItemGenre = findViewById(R.id.menu_item_genre);
+        menuItemUpdate = findViewById(R.id.menu_item_update);
 
         tvMenuMusim = findViewById(R.id.tv_menu_musim);
         tvMenuAiring = findViewById(R.id.tv_menu_airing);
@@ -227,6 +233,21 @@ public class MainActivity extends AppCompatActivity {
         menuItemFavorit.setOnClickListener(v -> selectMenuItem(MainTab.FAVORIT));
         menuItemKatalog.setOnClickListener(v -> selectMenuItem(MainTab.KATALOG));
         menuItemGenre.setOnClickListener(v -> selectMenuItem(MainTab.GENRE));
+
+        if (menuItemUpdate != null) {
+            menuItemUpdate.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                setFoldedMenuOpen(false);
+                AppUpdateManager.getInstance().checkUpdate(this, true);
+            });
+        }
+
+        if (tvAppLogo != null) {
+            tvAppLogo.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                AppUpdateManager.getInstance().checkUpdate(this, true);
+            });
+        }
 
         // 2. Dynamic Fluid Searchbar Transitions
         btnSearchTrigger.setOnClickListener(v -> {
@@ -735,5 +756,13 @@ public class MainActivity extends AppCompatActivity {
                 rvGrid.scrollToPosition(0);
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == AppUpdateManager.REQUEST_CODE_INSTALL_PERMISSION) {
+            AppUpdateManager.getInstance().onInstallPermissionResult(this);
+        }
     }
 }

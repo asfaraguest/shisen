@@ -473,6 +473,7 @@
             android:id="@+id/menu_item_genre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
             android:orientation="horizontal"
             android:gravity="center_vertical"
@@ -494,6 +495,34 @@
                 android:textColor="@color/text_frost_bright"
                 android:textSize="13sp"
                 android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- 8. Cek Pembaruan Aplikasi -->
+        <LinearLayout
+            android:id="@+id/menu_item_update"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_update"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_menu_update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Cek Pembaruan"
+                android:textColor="@color/accent_glacial"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-bold" />
         </LinearLayout>
     </LinearLayout>
 

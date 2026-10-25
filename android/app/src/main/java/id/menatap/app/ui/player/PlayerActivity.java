@@ -178,6 +178,7 @@ public class PlayerActivity extends AppCompatActivity {
     private float currentSpeed = 1.0f;
     private boolean isScreenLocked = false;
     private int currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+    private String preferredServer = "hianime";
     private boolean isActivityRunning = false;
 
     private StreamSource currentStreamSource = null;
@@ -989,15 +990,20 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void playEpisode(int index) {
+        playEpisodeWithServer(index, preferredServer);
+    }
+
+    private void playEpisodeWithServer(int index, String server) {
         if (index < 0 || index >= episodeList.size()) return;
         currentIndex = index;
+        preferredServer = server != null ? server : "hianime";
         Episode ep = episodeList.get(index);
 
         String safeTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
                 ? anime.title : anime.romajiTitle;
         tvPortraitAnimeTitle.setText(safeTitle);
         tvPlayerTitle.setText(safeTitle + " · Ep " + ep.number);
-        tvPortraitCurrentEp.setText("Episode " + ep.number + " · Menghubungkan...");
+        tvPortraitCurrentEp.setText("Episode " + ep.number + " · Menghubungkan (" + preferredServer.toUpperCase() + ")...");
         episodeAdapter.setCurrentPlayingNumber(ep.number);
         rvPortraitEpisodes.smoothScrollToPosition(index);
 
@@ -1012,8 +1018,7 @@ public class PlayerActivity extends AppCompatActivity {
         // Reset subtitle cues for new episode
         subtitleManager.clearCues();
 
-        // TIER 1 HiAnime -> TIER 2 AniChan -> TIER 3 Otakudesu
-        StreamResolver.resolve(anime, ep, new StreamResolver.Callback() {
+        StreamResolver.resolveWithServer(anime, ep, preferredServer, new StreamResolver.Callback() {
             @Override
             public void onSuccess(StreamSource source) {
                 runOnUiThread(() -> {
@@ -1106,12 +1111,27 @@ public class PlayerActivity extends AppCompatActivity {
         if (player == null || currentSkipTimes == null) return;
         long posSec = player.getCurrentPosition() / 1000;
 
+        boolean autoSkip = getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
+                .getBoolean("pref_auto_skip", false);
+
         if (currentSkipTimes.intro != null && posSec >= currentSkipTimes.intro.startTime && posSec < currentSkipTimes.intro.endTime) {
-            btnSkipOpEd.setText("Lewati Opening");
-            btnSkipOpEd.setVisibility(View.VISIBLE);
+            if (autoSkip) {
+                player.seekTo((long) (currentSkipTimes.intro.endTime * 1000));
+                Toast.makeText(this, "⚡ Melewati Opening Otomatis", Toast.LENGTH_SHORT).show();
+                btnSkipOpEd.setVisibility(View.GONE);
+            } else {
+                btnSkipOpEd.setText("Lewati Opening");
+                btnSkipOpEd.setVisibility(View.VISIBLE);
+            }
         } else if (currentSkipTimes.outro != null && posSec >= currentSkipTimes.outro.startTime && posSec < currentSkipTimes.outro.endTime) {
-            btnSkipOpEd.setText("Lewati Ending");
-            btnSkipOpEd.setVisibility(View.VISIBLE);
+            if (autoSkip) {
+                player.seekTo((long) (currentSkipTimes.outro.endTime * 1000));
+                Toast.makeText(this, "⚡ Melewati Ending Otomatis", Toast.LENGTH_SHORT).show();
+                btnSkipOpEd.setVisibility(View.GONE);
+            } else {
+                btnSkipOpEd.setText("Lewati Ending");
+                btnSkipOpEd.setVisibility(View.VISIBLE);
+            }
         } else {
             btnSkipOpEd.setVisibility(View.GONE);
         }
@@ -1171,14 +1191,122 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void showQualityDialog() {
         CharSequence[] qualities = {"Auto (Paling Pas)", "1080p Full HD", "720p HD", "480p SD", "360p Hemat"};
+        String[] qKeys = {"auto", "1080", "720", "480", "360"};
+
+        int selectedIndex = 0;
+        String cur = btnQuality.getText().toString();
+        for (int i = 0; i < qKeys.length; i++) {
+            if (cur.toLowerCase().contains(qKeys[i])) {
+                selectedIndex = i;
+                break;
+            }
+        }
+
         new AlertDialog.Builder(this)
-                .setTitle("Kualitas Video")
-                .setItems(qualities, (dialog, which) -> {
-                    String q = qualities[which].toString();
-                    btnQuality.setText(q.split(" ")[0]);
-                    btnPortraitQuality.setText(q.split(" ")[0]);
-                    Toast.makeText(this, "Kualitas: " + q, Toast.LENGTH_SHORT).show();
+                .setTitle("Pilih Resolusi Video")
+                .setSingleChoiceItems(qualities, selectedIndex, (dialog, which) -> {
+                    String key = qKeys[which];
+                    String label = qualities[which].toString().split(" ")[0];
+                    btnQuality.setText(label);
+                    btnPortraitQuality.setText(label);
+                    applyHlsTrackSelection(key);
+                    getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
+                            .edit().putString("pref_quality", key).apply();
+                    Toast.makeText(this, "Resolusi diubah ke " + label, Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
                 })
+                .setNegativeButton("Batal", null)
+                .show();
+    }
+
+    private void applyHlsTrackSelection(String quality) {
+        if (player == null) return;
+        if (quality == null || quality.isEmpty()) quality = "auto";
+
+        androidx.media3.common.TrackSelectionParameters.Builder builder =
+                player.getTrackSelectionParameters().buildUpon()
+                        .clearOverridesOfType(androidx.media3.common.C.TRACK_TYPE_VIDEO)
+                        .clearVideoSizeConstraints();
+
+        if (!"auto".equalsIgnoreCase(quality)) {
+            int targetH = 1080;
+            if (quality.contains("1080")) {
+                targetH = 1080;
+            } else if (quality.contains("720")) {
+                targetH = 720;
+            } else if (quality.contains("480")) {
+                targetH = 480;
+            } else if (quality.contains("360")) {
+                targetH = 360;
+            }
+
+            androidx.media3.common.Tracks currentTracks = player.getCurrentTracks();
+            androidx.media3.common.TrackGroup targetGroup = null;
+            int targetIndex = -1;
+            int bestDiff = Integer.MAX_VALUE;
+
+            for (androidx.media3.common.Tracks.Group group : currentTracks.getGroups()) {
+                if (group.getType() == androidx.media3.common.C.TRACK_TYPE_VIDEO) {
+                    androidx.media3.common.TrackGroup tg = group.getMediaTrackGroup();
+                    for (int i = 0; i < tg.length; i++) {
+                        androidx.media3.common.Format format = tg.getFormat(i);
+                        int diff = Math.abs(format.height - targetH);
+                        if (diff < bestDiff) {
+                            bestDiff = diff;
+                            targetGroup = tg;
+                            targetIndex = i;
+                        }
+                    }
+                }
+            }
+
+            if (targetGroup != null && targetIndex >= 0) {
+                builder.addOverride(new androidx.media3.common.TrackSelectionOverride(targetGroup, targetIndex));
+            } else {
+                int maxH = Integer.MAX_VALUE;
+                int maxW = Integer.MAX_VALUE;
+                if (quality.contains("1080")) {
+                    maxH = 1080; maxW = 1920;
+                } else if (quality.contains("720")) {
+                    maxH = 720; maxW = 1280;
+                } else if (quality.contains("480")) {
+                    maxH = 480; maxW = 854;
+                } else if (quality.contains("360")) {
+                    maxH = 360; maxW = 640;
+                }
+                builder.setMaxVideoSize(maxW, maxH);
+            }
+        }
+        player.setTrackSelectionParameters(builder.build());
+    }
+
+    private void showServerSelectorDialog() {
+        CharSequence[] servers = {
+                "HiAnime (Utama · Multi-Audio & Subtitle HD)",
+                "AniChan (Cepat · Direct HLS Stream)",
+                "Otakudesu (Cadangan · Hardsub Indonesia)"
+        };
+        String[] serverKeys = {"hianime", "anichan", "otakudesu"};
+
+        int selectedIdx = 0;
+        for (int i = 0; i < serverKeys.length; i++) {
+            if (serverKeys[i].equalsIgnoreCase(preferredServer)) {
+                selectedIdx = i;
+                break;
+            }
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Pilih Sumber / Server Video")
+                .setSingleChoiceItems(servers, selectedIdx, (dialog, which) -> {
+                    preferredServer = serverKeys[which];
+                    dialog.dismiss();
+                    Toast.makeText(this, "Mengalihkan ke " + servers[which].toString().split(" ")[0] + "...", Toast.LENGTH_SHORT).show();
+                    if (!episodeList.isEmpty() && currentIndex < episodeList.size()) {
+                        playEpisodeWithServer(currentIndex, preferredServer);
+                    }
+                })
+                .setNegativeButton("Batal", null)
                 .show();
     }
 
@@ -1485,7 +1613,7 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void showSubtitleStyleDialog() {
-        SharedPreferences sp = getSharedPreferences("tatap_player_prefs", Context.MODE_PRIVATE);
+        SharedPreferences sp = getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE);
         String curPos = sp.getString("sub_pos", "low");
         String curBg = sp.getString("sub_bg", "subtle");
         String curSize = sp.getString("sub_size", "medium");
@@ -1616,7 +1744,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void applySubtitleStyle() {
         if (tvSubtitles == null) return;
-        SharedPreferences sp = getSharedPreferences("tatap_player_prefs", Context.MODE_PRIVATE);
+        SharedPreferences sp = getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE);
         String pos = sp.getString("sub_pos", "low");
         String bg = sp.getString("sub_bg", "subtle");
         String size = sp.getString("sub_size", "medium");
@@ -1659,11 +1787,16 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void showPlayerUnifiedSettingsDialog() {
         String subLabel = subtitleManager.isSubEnabled() ? subtitleManager.getActiveLanguage().toUpperCase() : "Mati";
+        boolean autoSkip = getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
+                .getBoolean("pref_auto_skip", false);
+
         String[] menu = {
                 "Pilihan Subtitle & Terjemahan (" + subLabel + ")",
                 "Pengaturan Tampilan Subtitle",
                 "Sinkronisasi Waktu Subtitle (Offset)",
                 "Kualitas Video (" + btnQuality.getText() + ")",
+                "Pilihan Server / Sumber Video (" + preferredServer.toUpperCase() + ")",
+                "Auto-Skip Opening/Ending (" + (autoSkip ? "Aktif" : "Mati") + ")",
                 "Kecepatan Pemutaran (" + btnSpeed.getText() + ")",
                 "Skala Layar (" + btnAspect.getText() + ")",
                 "Kunci Layar (" + (isScreenLocked ? "Terkunci" : "Terbuka") + ")",
@@ -1678,10 +1811,17 @@ public class PlayerActivity extends AppCompatActivity {
                         case 1: showSubtitleStyleDialog(); break;
                         case 2: showSubtitleOffsetPicker(); break;
                         case 3: showQualityDialog(); break;
-                        case 4: showSpeedDialog(); break;
-                        case 5: cycleAspectRatio(); break;
-                        case 6: toggleScreenLock(); break;
-                        case 7: enterPipMode(); break;
+                        case 4: showServerSelectorDialog(); break;
+                        case 5:
+                            boolean newAuto = !autoSkip;
+                            getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
+                                    .edit().putBoolean("pref_auto_skip", newAuto).apply();
+                            Toast.makeText(this, "Auto-Skip " + (newAuto ? "Diaktifkan" : "Dimatikan"), Toast.LENGTH_SHORT).show();
+                            break;
+                        case 6: showSpeedDialog(); break;
+                        case 7: cycleAspectRatio(); break;
+                        case 8: toggleScreenLock(); break;
+                        case 9: enterPipMode(); break;
                     }
                 })
                 .setNegativeButton("Tutup", null)

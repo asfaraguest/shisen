@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,6 +50,7 @@ public class OtakudesuScraper {
                     Element linkEl = el.selectFirst("a");
                     if (linkEl == null) continue;
                     String title = titleEl != null ? titleEl.text() : linkEl.text();
+                    if (isHentai(title)) continue;
                     String link = linkEl.attr("href");
                     String slug = extractSlug(link);
                     String poster = "";
@@ -88,6 +90,7 @@ public class OtakudesuScraper {
                     if (titleEl == null) titleEl = el.selectFirst("a");
                     if (titleEl == null) continue;
                     String title = titleEl.text();
+                    if (isHentai(title)) continue;
                     String link = titleEl.hasAttr("href") ? titleEl.attr("href") : el.select("a").attr("href");
                     String slug = extractSlug(link);
                     String poster = "";
@@ -294,5 +297,11 @@ public class OtakudesuScraper {
             }
         } catch (Exception ignored) {}
         return 0;
+    }
+
+    private static boolean isHentai(String title) {
+        if (title == null) return false;
+        String t = title.toLowerCase(Locale.US);
+        return t.contains("hentai") || t.contains("overflow") || t.contains("uncensored");
     }
 }

@@ -295,7 +295,7 @@ public class AniListClient {
     }
 
     public static Anime parseMediaNode(JSONObject m) {
-        if (m == null) return null;
+        if (m == null || m.optBoolean("isAdult", false)) return null;
         Anime a = new Anime();
         a.id = m.optInt("id", 0);
         a.idMal = m.optInt("idMal", 0);
@@ -371,7 +371,8 @@ public class AniListClient {
         if (gArr != null) {
             for (int i = 0; i < gArr.length(); i++) {
                 String g = optSafeString(gArr, i, "");
-                if (!g.isEmpty() && !"hentai".equalsIgnoreCase(g)) {
+                if ("hentai".equalsIgnoreCase(g)) return null;
+                if (!g.isEmpty()) {
                     a.genres.add(g);
                 }
             }

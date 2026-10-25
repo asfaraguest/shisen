@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_frost"
+    android:padding="20dp">
+
+    <!-- Header Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_update"
+            app:tint="@color/accent_glacial"
+            android:contentDescription="Ikon Pembaruan" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_update_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pembaruan Menatap Tersedia"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="@dimen/text_title_large"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/tv_update_version_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="v0.1.0-beta.1 ➔ v0.1.0-beta.2"
+                android:textColor="@color/accent_glacial"
+                android:textSize="@dimen/text_body"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btn_close_update_dialog"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            app:tint="@color/text_frost_subtle"
+            android:contentDescription="Tutup" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/frost_border"
+        android:layout_marginVertical="14dp" />
+
+    <!-- Notes Section Header -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CATATAN RILIS &amp; PEMBARUAN"
+        android:textColor="@color/text_frost_dim"
+        android:textSize="@dimen/text_badge"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.08"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Scrollable Release Notes Container -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="220dp"
+        android:background="@color/frost_elevated"
+        android:padding="12dp"
+        android:overScrollMode="never"
+        android:fadeScrollbars="false">
+
+        <TextView
+            android:id="@+id/tv_update_notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Memuat catatan rilis..."
+            android:textColor="@color/text_frost_subtle"
+            android:textSize="@dimen/text_body"
+            android:fontFamily="sans-serif"
+            android:lineSpacingExtra="3dp" />
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Action Buttons: 'Nanti' and 'Perbarui Sekarang' (Mandatory directly below notes) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="18dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_update_later"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:text="Nanti"
+            android:textColor="@color/text_frost_subtle"
+            android:textSize="@dimen/text_subhead"
+            android:fontFamily="sans-serif-medium"
+            android:textAllCaps="false"
+            android:backgroundTint="@color/frost_elevated"
+            app:strokeColor="@color/frost_border"
+            app:strokeWidth="1dp"
+            app:cornerRadius="10dp"
+            android:paddingHorizontal="16dp"
+            android:focusable="true" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_update_now"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:layout_marginStart="10dp"
+            android:text="Perbarui Sekarang"
+            android:textColor="@color/frost_void"
+            android:textSize="@dimen/text_subhead"
+            android:fontFamily="sans-serif-bold"
+            android:textAllCaps="false"
+            android:backgroundTint="@color/accent_glacial"
+            app:cornerRadius="10dp"
+            android:paddingHorizontal="20dp"
+            android:focusable="true" />
+    </LinearLayout>
+
+    <!-- Fallback Secondary Link -->
+    <TextView
+        android:id="@+id/tv_update_fallback_browser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:text="Atau buka tautan rilis di browser"
+        android:textColor="@color/text_frost_dim"
+        android:textSize="@dimen/text_caption"
+        android:fontFamily="sans-serif"
+        android:padding="4dp"
+        android:background="?attr/selectableItemBackground"
+        android:focusable="true" />
+</LinearLayout>
