@@ -7,19 +7,188 @@
     android:orientation="vertical"
     android:background="@color/frost_void">
 
-    <!-- Video Stage -->
+    <!-- VIDEO STAGE (ExoPlayer + Scrims + Overlays) -->
     <FrameLayout
         android:id="@+id/fl_player_wrapper"
         android:layout_width="match_parent"
-        android:layout_height="220dp"
+        android:layout_height="225dp"
         android:background="#000000">
 
+        <!-- Native Media3 PlayerView -->
         <androidx.media3.ui.PlayerView
             android:id="@+id/player_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:surface_type="surface_view"
-            app:resize_mode="fit" />
+            app:use_controller="true"
+            app:show_timeout="3500"
+            app:show_next_button="true"
+            app:show_previous_button="true"
+            app:show_subtitle_button="true"
+            app:resize_mode="fit"
+            app:surface_type="surface_view" />
+
+        <!-- Press and Hold 2X Speed HUD Pill -->
+        <LinearLayout
+            android:id="@+id/hud_hold_speed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="28dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="@drawable/bg_player_hud_pill"
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="8dp"
+            android:elevation="6dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_hold_speed_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚡"
+                android:textColor="@color/accent_glacial"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_hold_speed_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="2X Cepat >>"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- Gesture HUD OSD (Volume, Brightness) -->
+        <LinearLayout
+            android:id="@+id/hud_osd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_player_hud_pill"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="9dp"
+            android:elevation="6dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_osd_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="VOL"
+                android:textColor="@color/accent_glacial"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.04" />
+
+            <ProgressBar
+                android:id="@+id/pb_osd_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="110dp"
+                android:layout_height="5dp"
+                android:layout_marginStart="12dp"
+                android:max="100"
+                android:progress="50"
+                android:progressTint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_osd_val"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="50%"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- Double Tap Seek Ripple Indicators -->
+        <TextView
+            android:id="@+id/tv_ripple_left"
+            android:layout_width="130dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:gravity="center"
+            android:text="-10s"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-bold"
+            android:background="@drawable/bg_ripple_seek_left"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_ripple_right"
+            android:layout_width="130dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:gravity="center"
+            android:text="+10s"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-bold"
+            android:background="@drawable/bg_ripple_seek_right"
+            android:visibility="gone" />
+
+        <!-- Minimalist Buffering & Stream Preparation HUD -->
+        <LinearLayout
+            android:id="@+id/layout_buffering"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="22dp"
+            android:paddingVertical="14dp"
+            android:background="@drawable/bg_buffering_hud"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:id="@+id/pb_video_buffering"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_buffering_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="MENYIAPKAN STREAM..."
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.05" />
+        </LinearLayout>
+
+        <!-- Custom Subtitle Overlay -->
+        <TextView
+            android:id="@+id/tv_subtitles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="22dp"
+            android:layout_marginHorizontal="20dp"
+            android:maxWidth="560dp"
+            android:elevation="20dp"
+            android:background="@drawable/bg_subtitle_pill"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="6dp"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:text=""
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:shadowColor="#000000"
+            android:shadowDx="1.5"
+            android:shadowDy="1.5"
+            android:shadowRadius="3.5"
+            android:visibility="gone" />
 
         <!-- Floating Skip Intro / Outro Button -->
         <Button
@@ -27,23 +196,25 @@
             android:layout_width="wrap_content"
             android:layout_height="38dp"
             android:layout_gravity="bottom|end"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="@color/hud_background"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="65dp"
+            android:backgroundTint="#D9090D16"
             app:strokeColor="@color/accent_glacial"
-            app:strokeWidth="1dp"
+            app:strokeWidth="1.5dp"
             app:cornerRadius="19dp"
             app:icon="@drawable/ic_skip_next"
             app:iconTint="@color/accent_glacial"
-            app:iconPadding="4dp"
-            app:iconSize="14dp"
-            android:text="Lewati Intro"
-            android:textColor="@color/text_frost_bright"
-            android:textSize="@dimen/text_caption"
-            android:fontFamily="sans-serif-medium"
+            app:iconPadding="5dp"
+            app:iconSize="15dp"
+            android:paddingHorizontal="14dp"
+            android:text="Lewati Opening"
+            android:textColor="@color/accent_glacial"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-bold"
+            android:letterSpacing="0.03"
             android:visibility="gone" />
 
-        <!-- Screen Lock Button -->
+        <!-- Screen Lock Button (Landscape Only) -->
         <ImageButton
             android:id="@+id/btn_screen_lock"
             android:layout_width="40dp"
@@ -56,16 +227,123 @@
             android:visibility="gone"
             android:contentDescription="Kunci Layar" />
 
-        <ProgressBar
-            android:id="@+id/pb_video_buffering"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_gravity="center"
-            android:indeterminateTint="@color/accent_glacial"
-            android:visibility="gone" />
+        <!-- Top Overlay Header Bar (Minimalist Tatap Scrim) -->
+        <LinearLayout
+            android:id="@+id/layout_top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="14dp"
+            android:paddingBottom="20dp"
+            android:paddingHorizontal="16dp"
+            android:background="@drawable/bg_player_top_scrim"
+            android:visibility="gone">
+
+            <ImageButton
+                android:id="@+id/btn_player_back"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:padding="8dp"
+                android:background="@drawable/bg_exo_icon_btn"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/text_frost_bright"
+                android:contentDescription="Kembali" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="8dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_player_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Memuat Video..."
+                    android:textColor="@color/text_frost_bright"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:singleLine="true"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tv_sub_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Subtitle: Auto (Indonesia)"
+                    android:textColor="@color/text_frost_subtle"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif" />
+            </LinearLayout>
+
+            <!-- Landscape Action Buttons -->
+            <Button
+                android:id="@+id/btn_aspect"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="11dp"
+                android:text="Fit"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/text_frost_bright"
+                app:strokeColor="@color/frost_border"
+                app:strokeWidth="1dp"
+                app:cornerRadius="17dp"
+                android:backgroundTint="#CC0F1726" />
+
+            <Button
+                android:id="@+id/btn_quality"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="11dp"
+                android:text="HD"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/text_frost_bright"
+                app:strokeColor="@color/frost_border"
+                app:strokeWidth="1dp"
+                app:cornerRadius="17dp"
+                android:backgroundTint="#CC0F1726" />
+
+            <Button
+                android:id="@+id/btn_speed"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="11dp"
+                android:text="1.0x"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/text_frost_bright"
+                app:strokeColor="@color/frost_border"
+                app:strokeWidth="1dp"
+                app:cornerRadius="17dp"
+                android:backgroundTint="#CC0F1726" />
+
+            <Button
+                android:id="@+id/btn_sub_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:paddingHorizontal="11dp"
+                android:text="Sub"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/text_frost_bright"
+                app:strokeColor="@color/frost_border"
+                app:strokeWidth="1dp"
+                app:cornerRadius="17dp"
+                android:backgroundTint="#CC0F1726" />
+        </LinearLayout>
     </FrameLayout>
 
-    <!-- Watch Portrait View Bottom Panel -->
+    <!-- WATCH PORTRAIT VIEW BOTTOM PANEL (Professional Tatap Styling) -->
     <LinearLayout
         android:id="@+id/layout_portrait_bottom"
         android:layout_width="match_parent"
@@ -74,14 +352,14 @@
         android:orientation="vertical"
         android:background="@color/frost_void">
 
-        <!-- Title & Quick Control Action Bar -->
+        <!-- Title & Action Bar Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="14dp"
+            android:paddingHorizontal="16dp"
             android:paddingTop="12dp"
-            android:paddingBottom="10dp"
+            android:paddingBottom="12dp"
             android:background="@color/frost_surface">
 
             <LinearLayout
@@ -92,8 +370,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_portrait_back"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_arrow_back"
                     app:tint="@color/text_frost_bright"
@@ -112,7 +390,7 @@
                         android:layout_height="wrap_content"
                         android:text="Judul Anime"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="@dimen/text_title"
+                        android:textSize="16sp"
                         android:fontFamily="sans-serif-bold"
                         android:maxLines="1"
                         android:ellipsize="end" />
@@ -124,80 +402,119 @@
                         android:layout_marginTop="2dp"
                         android:text="Memutar Episode 1"
                         android:textColor="@color/accent_glacial"
-                        android:textSize="@dimen/text_caption"
+                        android:textSize="12sp"
                         android:fontFamily="sans-serif-medium" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Quick Action Buttons -->
+            <!-- Quick Action Buttons Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="10dp">
+                android:gravity="center_vertical"
+                android:layout_marginTop="12dp">
 
                 <Button
                     android:id="@+id/btn_portrait_sub"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="35dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="6dp"
                     android:text="Subtitle"
-                    android:textSize="@dimen/text_badge"
+                    android:textSize="11.5sp"
                     android:textColor="@color/text_frost_bright"
                     android:backgroundTint="@color/frost_elevated"
-                    app:cornerRadius="18dp"
+                    app:cornerRadius="17dp"
+                    app:strokeColor="@color/frost_border"
+                    app:strokeWidth="1dp" />
+
+                <Button
+                    android:id="@+id/btn_portrait_quality"
+                    android:layout_width="0dp"
+                    android:layout_height="35dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Kualitas"
+                    android:textSize="11.5sp"
+                    android:textColor="@color/text_frost_bright"
+                    android:backgroundTint="@color/frost_elevated"
+                    app:cornerRadius="17dp"
                     app:strokeColor="@color/frost_border"
                     app:strokeWidth="1dp" />
 
                 <Button
                     android:id="@+id/btn_portrait_speed"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="35dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="6dp"
                     android:text="1.0x"
-                    android:textSize="@dimen/text_badge"
+                    android:textSize="11.5sp"
                     android:textColor="@color/text_frost_bright"
                     android:backgroundTint="@color/frost_elevated"
-                    app:cornerRadius="18dp"
+                    app:cornerRadius="17dp"
                     app:strokeColor="@color/frost_border"
                     app:strokeWidth="1dp" />
 
                 <Button
                     android:id="@+id/btn_portrait_fullscreen"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="35dp"
                     android:paddingHorizontal="14dp"
-                    android:text="Fullscreen"
-                    android:textSize="@dimen/text_caption"
-                    android:textColor="@color/text_frost_bright"
+                    android:text="⛶ Full"
+                    android:textSize="11.5sp"
+                    android:textColor="@color/accent_glacial"
                     android:backgroundTint="@color/frost_elevated"
-                    app:cornerRadius="18dp"
-                    app:strokeColor="@color/frost_border"
+                    app:cornerRadius="17dp"
+                    app:strokeColor="@color/accent_glacial"
                     app:strokeWidth="1dp" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Episode Grid in Portrait View -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Episode Section Header Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="6dp"
-            android:text="PILIH EPISODE"
-            android:textColor="@color/accent_glacial"
-            android:textSize="@dimen/text_badge"
-            android:fontFamily="sans-serif-bold"
-            android:letterSpacing="0.05" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp">
 
+            <TextView
+                android:id="@+id/tv_portrait_ep_count"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="DAFTAR EPISODE"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.06" />
+
+            <Button
+                android:id="@+id/btn_portrait_sort"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:text="Urutan: 1 - N"
+                android:textColor="@color/text_frost_subtle"
+                android:backgroundTint="@color/frost_surface"
+                app:cornerRadius="14dp"
+                app:strokeColor="@color/frost_border"
+                app:strokeWidth="1dp"
+                android:textSize="10sp"
+                android:paddingHorizontal="10dp" />
+        </LinearLayout>
+
+        <!-- Grid Episode 4 Kolom -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_portrait_episodes"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:paddingHorizontal="10dp"
+            android:paddingHorizontal="12dp"
+            android:paddingBottom="20dp"
             android:clipToPadding="false"
             android:scrollbars="vertical" />
     </LinearLayout>

@@ -5,11 +5,19 @@
     <dimen name="card_margin">6dp</dimen>
     <dimen name="card_corner_radius">12dp</dimen>
 
-    <!-- Typography Scale -->
+    <!-- Semantic Typography Scale -->
     <dimen name="text_display_large">22sp</dimen>
     <dimen name="text_headline">18sp</dimen>
+    <dimen name="text_title_large">16sp</dimen>
+    <dimen name="text_title_medium">14sp</dimen>
     <dimen name="text_title">15sp</dimen>
+    <dimen name="text_body_large">14sp</dimen>
     <dimen name="text_body">13.5sp</dimen>
+    <dimen name="text_subhead">12.5sp</dimen>
     <dimen name="text_caption">11sp</dimen>
     <dimen name="text_badge">9.5sp</dimen>
+
+    <!-- Player Dimensions -->
+    <dimen name="player_title_text_size">16sp</dimen>
+    <dimen name="tv_overscan_horizontal">16dp</dimen>
 </resources>

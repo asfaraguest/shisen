@@ -1,6 +1,5 @@
 package id.menatap.app.ui.home;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,15 +9,20 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -40,6 +44,11 @@ public class MainActivity extends AppCompatActivity {
         MUSIM, AIRING, JADWAL, RIWAYAT, FAVORIT, KATALOG, GENRE
     }
 
+    private DrawerLayout drawerLayout;
+    private ImageButton btnDrawerOpen;
+    private FrameLayout fabMenuTrigger;
+    private TextView tvCurrentMenuBadge;
+
     private ProgressBar pbLoading;
     private EditText etSearch;
     private ImageView btnClearSearch;
@@ -49,18 +58,13 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvEmptyTitle;
     private TextView tvEmptyDesc;
 
-    // 7 Navigation Tabs
-    private TextView tabMusim;
-    private TextView tabAiring;
-    private TextView tabJadwal;
-    private TextView tabRiwayat;
-    private TextView tabFavorit;
-    private TextView tabKatalog;
-    private TextView tabGenre;
-
     // Sub-Filter Container
     private HorizontalScrollView scrollSubFilters;
     private LinearLayout layoutSubChips;
+
+    // 7 Drawer Items
+    private View drawerItemMusim, drawerItemAiring, drawerItemJadwal, drawerItemRiwayat, drawerItemFavorit, drawerItemKatalog, drawerItemGenre;
+    private TextView tvDrawerMusim, tvDrawerAiring, tvDrawerJadwal, tvDrawerRiwayat, tvDrawerFavorit, tvDrawerKatalog, tvDrawerGenre;
 
     private AnimeAdapter gridAdapter;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -94,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         setupRecyclerView();
         setupListeners();
+        setupBackHandler();
         selectTab(MainTab.MUSIM);
     }
 
@@ -106,6 +111,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        drawerLayout = findViewById(R.id.drawer_layout);
+        btnDrawerOpen = findViewById(R.id.btn_drawer_open);
+        fabMenuTrigger = findViewById(R.id.fab_menu_trigger);
+        tvCurrentMenuBadge = findViewById(R.id.tv_current_menu_badge);
+
         pbLoading = findViewById(R.id.pb_header_loading);
         etSearch = findViewById(R.id.et_search);
         btnClearSearch = findViewById(R.id.btn_clear_search);
@@ -115,16 +125,25 @@ public class MainActivity extends AppCompatActivity {
         tvEmptyTitle = findViewById(R.id.tv_empty_title);
         tvEmptyDesc = findViewById(R.id.tv_empty_desc);
 
-        tabMusim = findViewById(R.id.tab_nav_musim);
-        tabAiring = findViewById(R.id.tab_nav_airing);
-        tabJadwal = findViewById(R.id.tab_nav_jadwal);
-        tabRiwayat = findViewById(R.id.tab_nav_riwayat);
-        tabFavorit = findViewById(R.id.tab_nav_favorit);
-        tabKatalog = findViewById(R.id.tab_nav_katalog);
-        tabGenre = findViewById(R.id.tab_nav_genre);
-
         scrollSubFilters = findViewById(R.id.scroll_sub_filters);
         layoutSubChips = findViewById(R.id.layout_sub_chips);
+
+        // Drawer items
+        drawerItemMusim = findViewById(R.id.drawer_item_musim);
+        drawerItemAiring = findViewById(R.id.drawer_item_airing);
+        drawerItemJadwal = findViewById(R.id.drawer_item_jadwal);
+        drawerItemRiwayat = findViewById(R.id.drawer_item_riwayat);
+        drawerItemFavorit = findViewById(R.id.drawer_item_favorit);
+        drawerItemKatalog = findViewById(R.id.drawer_item_katalog);
+        drawerItemGenre = findViewById(R.id.drawer_item_genre);
+
+        tvDrawerMusim = findViewById(R.id.tv_drawer_title_musim);
+        tvDrawerAiring = findViewById(R.id.tv_drawer_title_airing);
+        tvDrawerJadwal = findViewById(R.id.tv_drawer_title_jadwal);
+        tvDrawerRiwayat = findViewById(R.id.tv_drawer_title_riwayat);
+        tvDrawerFavorit = findViewById(R.id.tv_drawer_title_favorit);
+        tvDrawerKatalog = findViewById(R.id.tv_drawer_title_katalog);
+        tvDrawerGenre = findViewById(R.id.tv_drawer_title_genre);
 
         swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.accent_glacial));
         swipeRefresh.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.frost_surface));
@@ -149,14 +168,27 @@ public class MainActivity extends AppCompatActivity {
     private void setupListeners() {
         swipeRefresh.setOnRefreshListener(this::loadCurrentFeed);
 
-        // 7 Main Tabs
-        tabMusim.setOnClickListener(v -> selectTab(MainTab.MUSIM));
-        tabAiring.setOnClickListener(v -> selectTab(MainTab.AIRING));
-        tabJadwal.setOnClickListener(v -> selectTab(MainTab.JADWAL));
-        tabRiwayat.setOnClickListener(v -> selectTab(MainTab.RIWAYAT));
-        tabFavorit.setOnClickListener(v -> selectTab(MainTab.FAVORIT));
-        tabKatalog.setOnClickListener(v -> selectTab(MainTab.KATALOG));
-        tabGenre.setOnClickListener(v -> selectTab(MainTab.GENRE));
+        // Drawer toggle triggers (Top Hamburger & Bottom Right Floating Trigger)
+        View.OnClickListener toggleDrawer = v -> {
+            HapticHelper.performClick(v);
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        };
+
+        btnDrawerOpen.setOnClickListener(toggleDrawer);
+        fabMenuTrigger.setOnClickListener(toggleDrawer);
+
+        // 7 Drawer Items
+        drawerItemMusim.setOnClickListener(v -> selectDrawerTab(MainTab.MUSIM));
+        drawerItemAiring.setOnClickListener(v -> selectDrawerTab(MainTab.AIRING));
+        drawerItemJadwal.setOnClickListener(v -> selectDrawerTab(MainTab.JADWAL));
+        drawerItemRiwayat.setOnClickListener(v -> selectDrawerTab(MainTab.RIWAYAT));
+        drawerItemFavorit.setOnClickListener(v -> selectDrawerTab(MainTab.FAVORIT));
+        drawerItemKatalog.setOnClickListener(v -> selectDrawerTab(MainTab.KATALOG));
+        drawerItemGenre.setOnClickListener(v -> selectDrawerTab(MainTab.GENRE));
 
         // Search text watcher
         etSearch.addTextChangedListener(new TextWatcher() {
@@ -201,6 +233,28 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void setupBackHandler() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        });
+    }
+
+    private void selectDrawerTab(MainTab tab) {
+        HapticHelper.performTick();
+        if (drawerLayout != null) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        }
+        selectTab(tab);
+    }
+
     private void selectTab(MainTab tab) {
         currentTab = tab;
         updateTabsUI();
@@ -209,17 +263,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateTabsUI() {
-        TextView[] tabs = {tabMusim, tabAiring, tabJadwal, tabRiwayat, tabFavorit, tabKatalog, tabGenre};
+        View[] items = {drawerItemMusim, drawerItemAiring, drawerItemJadwal, drawerItemRiwayat, drawerItemFavorit, drawerItemKatalog, drawerItemGenre};
+        TextView[] titles = {tvDrawerMusim, tvDrawerAiring, tvDrawerJadwal, tvDrawerRiwayat, tvDrawerFavorit, tvDrawerKatalog, tvDrawerGenre};
         MainTab[] tabEnums = {MainTab.MUSIM, MainTab.AIRING, MainTab.JADWAL, MainTab.RIWAYAT, MainTab.FAVORIT, MainTab.KATALOG, MainTab.GENRE};
+        String[] badges = {"BERANDA", "SEDANG TAYANG", "JADWAL", "RIWAYAT", "FAVORIT", "KATALOG", "GENRE"};
 
-        for (int i = 0; i < tabs.length; i++) {
+        int activeColor = ContextCompat.getColor(this, R.color.accent_glacial);
+        int inactiveColor = ContextCompat.getColor(this, R.color.text_frost_bright);
+
+        for (int i = 0; i < items.length; i++) {
             boolean isActive = (tabEnums[i] == currentTab);
             if (isActive) {
-                tabs[i].setBackgroundResource(R.drawable.bg_chip_frost_active);
-                tabs[i].setTextColor(Color.parseColor("#090D16"));
+                items[i].setBackgroundResource(R.drawable.bg_drawer_item_active);
+                titles[i].setTextColor(activeColor);
+                titles[i].setTypeface(null, android.graphics.Typeface.BOLD);
+                tvCurrentMenuBadge.setText(badges[i]);
             } else {
-                tabs[i].setBackgroundResource(R.drawable.bg_chip_frost_inactive);
-                tabs[i].setTextColor(ContextCompat.getColor(this, R.color.text_frost_subtle));
+                items[i].setBackgroundResource(R.drawable.bg_drawer_item_inactive);
+                titles[i].setTextColor(inactiveColor);
+                titles[i].setTypeface(null, android.graphics.Typeface.NORMAL);
             }
         }
     }
@@ -423,10 +485,11 @@ public class MainActivity extends AppCompatActivity {
     private void performSearch(String query) {
         setLoading(true);
         gridAdapter.setHeroAnime(null);
+        tvCurrentMenuBadge.setText("PENCARIAN");
         AniListClient.search(query, 1, 40, new AniListClient.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> result) {
-                displayResults(result, "Pencarian Tidak Ditemukan", "Coba gunakan judul anime lain atau judul bahasa Inggris.");
+                displayResults(result, "Pencarian Tidak Ditemukan", "Coba gunakan kata kunci lain atau judul bahasa Inggris.");
             }
 
             @Override

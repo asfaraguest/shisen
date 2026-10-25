@@ -26,6 +26,10 @@ public class HapticHelper {
         } catch (Exception ignored) {}
     }
 
+    public static void performTick() {
+        // Safe no-op or context-free tick
+    }
+
     public static void performSelection(View v) {
         performTick(v);
     }

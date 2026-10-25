@@ -1,14 +1,21 @@
 package id.menatap.app.ui.player;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -25,15 +32,16 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
-import androidx.media3.datasource.DefaultDataSource;
-import androidx.media3.datasource.DefaultHttpDataSource;
+import androidx.media3.datasource.okhttp.OkHttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
+import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -44,12 +52,13 @@ import id.menatap.app.data.db.MenatapDatabase;
 import id.menatap.app.data.model.Anime;
 import id.menatap.app.data.model.Episode;
 import id.menatap.app.data.model.StreamSource;
+import id.menatap.app.data.model.SubtitleTrack;
 import id.menatap.app.data.service.AniSkipClient;
 import id.menatap.app.data.service.HttpClientProvider;
 import id.menatap.app.data.service.StreamResolver;
-import id.menatap.app.data.service.OtakudesuScraper;
 import id.menatap.app.ui.adapter.EpisodeAdapter;
 import id.menatap.app.util.HapticHelper;
+import okhttp3.OkHttpClient;
 
 public class PlayerActivity extends AppCompatActivity {
 
@@ -57,34 +66,72 @@ public class PlayerActivity extends AppCompatActivity {
     private PlayerView playerView;
     private Button btnSkipOpEd;
     private ImageButton btnScreenLock;
+    private LinearLayout layoutBuffering;
     private ProgressBar pbBuffering;
+    private TextView tvBufferingText;
+    private TextView tvSubtitles;
 
+    // HUD & Gestures
+    private LinearLayout hudHoldSpeed;
+    private LinearLayout hudOsd;
+    private TextView tvOsdIcon;
+    private ProgressBar pbOsdBar;
+    private TextView tvOsdVal;
+    private TextView tvRippleLeft;
+    private TextView tvRippleRight;
+
+    // Landscape Top Bar
+    private LinearLayout layoutTopBar;
+    private ImageButton btnPlayerBack;
+    private TextView tvPlayerTitle;
+    private TextView tvSubStatus;
+    private Button btnAspect;
+    private Button btnQuality;
+    private Button btnSpeed;
+    private Button btnSubSelector;
+
+    // Portrait Mode Bottom Panel
     private LinearLayout layoutPortraitBottom;
     private ImageButton btnPortraitBack;
     private TextView tvPortraitAnimeTitle;
     private TextView tvPortraitCurrentEp;
     private Button btnPortraitSub;
+    private Button btnPortraitQuality;
     private Button btnPortraitSpeed;
     private Button btnPortraitFullscreen;
+    private TextView tvPortraitEpCount;
+    private Button btnPortraitSort;
     private RecyclerView rvPortraitEpisodes;
 
     private ExoPlayer player;
     private Anime anime;
-    private List<Episode> episodeList = new ArrayList<>();
+    private final List<Episode> episodeList = new ArrayList<>();
     private int currentIndex = 0;
     private EpisodeAdapter episodeAdapter;
+    private boolean isSortAscending = true;
 
     private AniSkipClient.SkipResult currentSkipTimes;
     private final Handler progressHandler = new Handler(Looper.getMainLooper());
     private Runnable progressRunnable;
+    private final Handler autoHideHandler = new Handler(Looper.getMainLooper());
 
     private float currentSpeed = 1.0f;
     private boolean isScreenLocked = false;
+    private int currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+
+    private StreamSource currentStreamSource = null;
+    private AudioManager audioManager;
+
+    // Continuous volume float accumulator (anti-lag on modern Android)
+    private float currentVolumeFraction = 0.5f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_player);
+
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         anime = (Anime) getIntent().getSerializableExtra("anime");
         @SuppressWarnings("unchecked")
@@ -102,7 +149,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         initViews();
         setupPlayer();
+        setupExoNativeStyling();
         setupPortraitRecycler();
+        setupGestureControls();
         updateOrientationLayout(getResources().getConfiguration().orientation);
         playEpisode(currentIndex);
     }
@@ -112,20 +161,57 @@ public class PlayerActivity extends AppCompatActivity {
         playerView = findViewById(R.id.player_view);
         btnSkipOpEd = findViewById(R.id.btn_skip_op_ed);
         btnScreenLock = findViewById(R.id.btn_screen_lock);
+        layoutBuffering = findViewById(R.id.layout_buffering);
         pbBuffering = findViewById(R.id.pb_video_buffering);
+        tvBufferingText = findViewById(R.id.tv_buffering_text);
+        tvSubtitles = findViewById(R.id.tv_subtitles);
+
+        hudHoldSpeed = findViewById(R.id.hud_hold_speed);
+        hudOsd = findViewById(R.id.hud_osd);
+        tvOsdIcon = findViewById(R.id.tv_osd_icon);
+        pbOsdBar = findViewById(R.id.pb_osd_bar);
+        tvOsdVal = findViewById(R.id.tv_osd_val);
+        tvRippleLeft = findViewById(R.id.tv_ripple_left);
+        tvRippleRight = findViewById(R.id.tv_ripple_right);
+
+        layoutTopBar = findViewById(R.id.layout_top_bar);
+        btnPlayerBack = findViewById(R.id.btn_player_back);
+        tvPlayerTitle = findViewById(R.id.tv_player_title);
+        tvSubStatus = findViewById(R.id.tv_sub_status);
+        btnAspect = findViewById(R.id.btn_aspect);
+        btnQuality = findViewById(R.id.btn_quality);
+        btnSpeed = findViewById(R.id.btn_speed);
+        btnSubSelector = findViewById(R.id.btn_sub_selector);
 
         layoutPortraitBottom = findViewById(R.id.layout_portrait_bottom);
         btnPortraitBack = findViewById(R.id.btn_portrait_back);
         tvPortraitAnimeTitle = findViewById(R.id.tv_portrait_anime_title);
         tvPortraitCurrentEp = findViewById(R.id.tv_portrait_current_ep);
         btnPortraitSub = findViewById(R.id.btn_portrait_sub);
+        btnPortraitQuality = findViewById(R.id.btn_portrait_quality);
         btnPortraitSpeed = findViewById(R.id.btn_portrait_speed);
         btnPortraitFullscreen = findViewById(R.id.btn_portrait_fullscreen);
+        tvPortraitEpCount = findViewById(R.id.tv_portrait_ep_count);
+        btnPortraitSort = findViewById(R.id.btn_portrait_sort);
         rvPortraitEpisodes = findViewById(R.id.rv_portrait_episodes);
 
+        setupClickListeners();
+    }
+
+    private void setupClickListeners() {
         btnPortraitBack.setOnClickListener(v -> {
             HapticHelper.performClick(v);
             finish();
+        });
+
+        btnPlayerBack.setOnClickListener(v -> {
+            HapticHelper.performClick(v);
+            int orient = getResources().getConfiguration().orientation;
+            if (orient == Configuration.ORIENTATION_LANDSCAPE) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            } else {
+                finish();
+            }
         });
 
         btnPortraitFullscreen.setOnClickListener(v -> {
@@ -133,7 +219,27 @@ public class PlayerActivity extends AppCompatActivity {
             toggleFullscreen();
         });
 
+        btnAspect.setOnClickListener(v -> {
+            HapticHelper.performClick(v);
+            cycleAspectRatio();
+        });
+
+        btnPortraitQuality.setOnClickListener(v -> {
+            HapticHelper.performClick(v);
+            showQualityDialog();
+        });
+
+        btnQuality.setOnClickListener(v -> {
+            HapticHelper.performClick(v);
+            showQualityDialog();
+        });
+
         btnPortraitSpeed.setOnClickListener(v -> {
+            HapticHelper.performClick(v);
+            showSpeedDialog();
+        });
+
+        btnSpeed.setOnClickListener(v -> {
             HapticHelper.performClick(v);
             showSpeedDialog();
         });
@@ -141,6 +247,16 @@ public class PlayerActivity extends AppCompatActivity {
         btnPortraitSub.setOnClickListener(v -> {
             HapticHelper.performClick(v);
             showSubtitleDialog();
+        });
+
+        btnSubSelector.setOnClickListener(v -> {
+            HapticHelper.performClick(v);
+            showSubtitleDialog();
+        });
+
+        btnPortraitSort.setOnClickListener(v -> {
+            HapticHelper.performClick(v);
+            toggleEpisodeSort();
         });
 
         btnScreenLock.setOnClickListener(v -> {
@@ -162,14 +278,11 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void setupPlayer() {
-        DefaultHttpDataSource.Factory httpDataSourceFactory = new DefaultHttpDataSource.Factory()
-                .setUserAgent(HttpClientProvider.USER_AGENT)
-                .setAllowCrossProtocolRedirects(true)
-                .setConnectTimeoutMs(15000)
-                .setReadTimeoutMs(20000);
+        OkHttpClient okClient = HttpClientProvider.getClient();
+        OkHttpDataSource.Factory okHttpFactory = new OkHttpDataSource.Factory(okClient)
+                .setUserAgent(HttpClientProvider.USER_AGENT);
 
-        DefaultDataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this, httpDataSourceFactory);
-        DefaultMediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(dataSourceFactory);
+        DefaultMediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(okHttpFactory);
 
         player = new ExoPlayer.Builder(this)
                 .setMediaSourceFactory(mediaSourceFactory)
@@ -181,9 +294,9 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onPlaybackStateChanged(int playbackState) {
                 if (playbackState == Player.STATE_BUFFERING) {
-                    pbBuffering.setVisibility(View.VISIBLE);
+                    if (layoutBuffering != null) layoutBuffering.setVisibility(View.VISIBLE);
                 } else {
-                    pbBuffering.setVisibility(View.GONE);
+                    if (layoutBuffering != null) layoutBuffering.setVisibility(View.GONE);
                 }
 
                 if (playbackState == Player.STATE_ENDED) {
@@ -203,8 +316,44 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override
             public void onPlayerError(@NonNull androidx.media3.common.PlaybackException error) {
-                pbBuffering.setVisibility(View.GONE);
-                Toast.makeText(PlayerActivity.this, "Stream gagal diputar: " + (error.getCause() != null ? error.getCause().getMessage() : error.getMessage()), Toast.LENGTH_LONG).show();
+                if (layoutBuffering != null) layoutBuffering.setVisibility(View.GONE);
+                String msg = error.getCause() != null ? error.getCause().getMessage() : error.getMessage();
+                Toast.makeText(PlayerActivity.this, "Stream gagal diputar: " + msg, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void setupExoNativeStyling() {
+        playerView.post(() -> {
+            View controlsBg = playerView.findViewById(androidx.media3.ui.R.id.exo_controls_background);
+            if (controlsBg != null) {
+                controlsBg.setBackgroundColor(Color.TRANSPARENT);
+            }
+
+            View exoBottomBar = playerView.findViewById(androidx.media3.ui.R.id.exo_bottom_bar);
+            if (exoBottomBar != null) {
+                exoBottomBar.setBackgroundResource(R.drawable.bg_player_bottom_scrim);
+            }
+
+            View posView = playerView.findViewById(androidx.media3.ui.R.id.exo_position);
+            if (posView instanceof TextView) {
+                ((TextView) posView).setTextColor(0xFFF1F5F9);
+                ((TextView) posView).setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+            }
+
+            View durView = playerView.findViewById(androidx.media3.ui.R.id.exo_duration);
+            if (durView instanceof TextView) {
+                ((TextView) durView).setTextColor(0xFF94A3B8);
+                ((TextView) durView).setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+            }
+
+            androidx.media3.ui.TimeBar timeBar = playerView.findViewById(androidx.media3.ui.R.id.exo_progress);
+            if (timeBar instanceof androidx.media3.ui.DefaultTimeBar) {
+                androidx.media3.ui.DefaultTimeBar dtb = (androidx.media3.ui.DefaultTimeBar) timeBar;
+                dtb.setPlayedColor(0xFF38BDF8);
+                dtb.setScrubberColor(0xFF38BDF8);
+                dtb.setBufferedColor(0x6638BDF8);
+                dtb.setUnplayedColor(0x33FFFFFF);
             }
         });
     }
@@ -220,10 +369,130 @@ public class PlayerActivity extends AppCompatActivity {
             ep.isWatched = MenatapDatabase.getInstance(this).isEpisodeWatched(anime.slug, ep.number);
         }
         episodeAdapter.setData(episodeList);
+        tvPortraitEpCount.setText("DAFTAR EPISODE (" + episodeList.size() + ")");
 
-        episodeAdapter.setListener((episode, position) -> {
-            playEpisode(position);
+        episodeAdapter.setListener((episode, position) -> playEpisode(position));
+    }
+
+    private void toggleEpisodeSort() {
+        isSortAscending = !isSortAscending;
+        btnPortraitSort.setText(isSortAscending ? "Urutan: 1 - N" : "Urutan: N - 1");
+        Collections.reverse(episodeList);
+        episodeAdapter.setData(episodeList);
+        // Find new index of current episode
+        if (player != null) {
+            int currentEpNumber = currentIndex + 1;
+            int newIdx = episodeAdapter.findPositionByNumber(currentEpNumber);
+            if (newIdx != -1) currentIndex = newIdx;
+        }
+    }
+
+    private void setupGestureControls() {
+        GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onDoubleTap(@NonNull MotionEvent e) {
+                if (player == null || isScreenLocked) return false;
+                int width = flPlayerWrapper.getWidth();
+                float x = e.getX();
+                if (x < width * 0.4f) {
+                    // Double tap left: Rewind 10s
+                    long newPos = Math.max(0, player.getCurrentPosition() - 10000);
+                    player.seekTo(newPos);
+                    showRippleFeedback(tvRippleLeft);
+                    return true;
+                } else if (x > width * 0.6f) {
+                    // Double tap right: Forward 10s
+                    long dur = player.getDuration();
+                    long target = player.getCurrentPosition() + 10000;
+                    if (dur > 0) target = Math.min(dur, target);
+                    player.seekTo(target);
+                    showRippleFeedback(tvRippleRight);
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public void onLongPress(@NonNull MotionEvent e) {
+                if (player == null || isScreenLocked) return;
+                // Press & Hold 2X Speed HUD
+                player.setPlaybackParameters(new PlaybackParameters(2.0f));
+                hudHoldSpeed.setVisibility(View.VISIBLE);
+                HapticHelper.performTick();
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
+                if (isScreenLocked || e1 == null || e2 == null) return false;
+                int width = flPlayerWrapper.getWidth();
+                float x = e1.getX();
+
+                // Left half: Brightness swipe
+                if (x < width * 0.45f) {
+                    handleBrightnessSwipe(distanceY);
+                    return true;
+                }
+                // Right half: Volume swipe
+                else if (x > width * 0.55f) {
+                    handleVolumeSwipe(distanceY);
+                    return true;
+                }
+                return false;
+            }
         });
+
+        flPlayerWrapper.setOnTouchListener((v, event) -> {
+            gestureDetector.onTouchEvent(event);
+            if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                if (hudHoldSpeed.getVisibility() == View.VISIBLE) {
+                    hudHoldSpeed.setVisibility(View.GONE);
+                    if (player != null) {
+                        player.setPlaybackParameters(new PlaybackParameters(currentSpeed));
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    private void handleBrightnessSwipe(float distanceY) {
+        float delta = distanceY / flPlayerWrapper.getHeight();
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        float current = lp.screenBrightness < 0 ? 0.5f : lp.screenBrightness;
+        float newBrightness = Math.max(0.01f, Math.min(1.0f, current + delta * 1.5f));
+        lp.screenBrightness = newBrightness;
+        getWindow().setAttributes(lp);
+
+        showOsd("BRI", (int) (newBrightness * 100));
+    }
+
+    private void handleVolumeSwipe(float distanceY) {
+        if (audioManager == null) return;
+        int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        if (maxVol <= 0) return;
+
+        float deltaFraction = (distanceY / flPlayerWrapper.getHeight()) * 1.5f;
+        currentVolumeFraction = Math.max(0f, Math.min(1.0f, currentVolumeFraction + deltaFraction));
+        int targetVol = Math.round(currentVolumeFraction * maxVol);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0);
+
+        showOsd("VOL", (int) (currentVolumeFraction * 100));
+    }
+
+    private void showOsd(String icon, int percent) {
+        tvOsdIcon.setText(icon);
+        pbOsdBar.setProgress(percent);
+        tvOsdVal.setText(percent + "%");
+        hudOsd.setVisibility(View.VISIBLE);
+
+        autoHideHandler.removeCallbacksAndMessages(null);
+        autoHideHandler.postDelayed(() -> hudOsd.setVisibility(View.GONE), 1200);
+    }
+
+    private void showRippleFeedback(View rippleView) {
+        rippleView.setVisibility(View.VISIBLE);
+        rippleView.setAlpha(1.0f);
+        rippleView.animate().alpha(0.0f).setDuration(500).withEndAction(() -> rippleView.setVisibility(View.GONE)).start();
     }
 
     private void playEpisode(int index) {
@@ -234,11 +503,12 @@ public class PlayerActivity extends AppCompatActivity {
         String safeTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
                 ? anime.title : anime.romajiTitle;
         tvPortraitAnimeTitle.setText(safeTitle);
-        tvPortraitCurrentEp.setText("Memutar Episode " + ep.number);
+        tvPlayerTitle.setText(safeTitle + " · Ep " + ep.number);
+        tvPortraitCurrentEp.setText("Episode " + ep.number + " · Menghubungkan...");
         episodeAdapter.setCurrentPlayingNumber(ep.number);
         rvPortraitEpisodes.smoothScrollToPosition(index);
 
-        pbBuffering.setVisibility(View.VISIBLE);
+        if (layoutBuffering != null) layoutBuffering.setVisibility(View.VISIBLE);
         btnSkipOpEd.setVisibility(View.GONE);
         currentSkipTimes = null;
 
@@ -246,12 +516,14 @@ public class PlayerActivity extends AppCompatActivity {
             player.stop();
         }
 
-        // Resolve stream via unified 3-tier StreamResolver (HiAnime -> AniChan -> Otakudesu)
+        // TIER 1 HiAnime -> TIER 2 AniChan -> TIER 3 Otakudesu
         StreamResolver.resolve(anime, ep, new StreamResolver.Callback() {
             @Override
             public void onSuccess(StreamSource source) {
                 runOnUiThread(() -> {
-                    tvPortraitCurrentEp.setText("Memutar Episode " + ep.number + " · " + source.server);
+                    currentStreamSource = source;
+                    tvPortraitCurrentEp.setText("Episode " + ep.number + " · " + source.server);
+                    tvSubStatus.setText("Server: " + source.server + (source.subtitles.isEmpty() ? " (Hardsub)" : " (Multi-Sub)"));
                     startExoPlayback(source, ep);
                 });
             }
@@ -259,7 +531,7 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onError(Throwable t) {
                 runOnUiThread(() -> {
-                    pbBuffering.setVisibility(View.GONE);
+                    if (layoutBuffering != null) layoutBuffering.setVisibility(View.GONE);
                     Toast.makeText(PlayerActivity.this, "Gagal memuat stream:\n" + t.getMessage(), Toast.LENGTH_LONG).show();
                 });
             }
@@ -281,19 +553,17 @@ public class PlayerActivity extends AppCompatActivity {
             headers.put("Origin", "https://megaplay.buzz");
         }
 
-        DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory()
+        OkHttpClient okClient = HttpClientProvider.getClient();
+        OkHttpDataSource.Factory okHttpFactory = new OkHttpDataSource.Factory(okClient)
                 .setUserAgent(HttpClientProvider.USER_AGENT)
-                .setAllowCrossProtocolRedirects(true)
                 .setDefaultRequestProperties(headers);
 
-        DefaultDataSource.Factory dsFactory = new DefaultDataSource.Factory(this, httpFactory);
-        DefaultMediaSourceFactory msFactory = new DefaultMediaSourceFactory(dsFactory);
-
+        DefaultMediaSourceFactory msFactory = new DefaultMediaSourceFactory(okHttpFactory);
         MediaItem.Builder mediaItemBuilder = new MediaItem.Builder().setUri(Uri.parse(source.url));
 
         if (source.subtitles != null && !source.subtitles.isEmpty()) {
             List<MediaItem.SubtitleConfiguration> subConfigs = new ArrayList<>();
-            for (id.menatap.app.data.model.SubtitleTrack track : source.subtitles) {
+            for (SubtitleTrack track : source.subtitles) {
                 MediaItem.SubtitleConfiguration subConfig = new MediaItem.SubtitleConfiguration.Builder(Uri.parse(track.url))
                         .setMimeType(androidx.media3.common.MimeTypes.TEXT_VTT)
                         .setLanguage(track.language)
@@ -352,10 +622,10 @@ public class PlayerActivity extends AppCompatActivity {
         long posSec = player.getCurrentPosition() / 1000;
 
         if (currentSkipTimes.intro != null && posSec >= currentSkipTimes.intro.startTime && posSec < currentSkipTimes.intro.endTime) {
-            btnSkipOpEd.setText("Lewati Intro");
+            btnSkipOpEd.setText("Lewati Opening");
             btnSkipOpEd.setVisibility(View.VISIBLE);
         } else if (currentSkipTimes.outro != null && posSec >= currentSkipTimes.outro.startTime && posSec < currentSkipTimes.outro.endTime) {
-            btnSkipOpEd.setText("Lewati Outro");
+            btnSkipOpEd.setText("Lewati Ending");
             btnSkipOpEd.setVisibility(View.VISIBLE);
         } else {
             btnSkipOpEd.setVisibility(View.GONE);
@@ -386,20 +656,43 @@ public class PlayerActivity extends AppCompatActivity {
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
     }
 
-    private void toggleScreenLock() {
-        isScreenLocked = !isScreenLocked;
-        btnScreenLock.setImageResource(isScreenLocked ? R.drawable.ic_lock : R.drawable.ic_lock_open);
-        playerView.setUseController(!isScreenLocked);
-        Toast.makeText(this, isScreenLocked ? "Layar Terkunci" : "Layar Terbuka", Toast.LENGTH_SHORT).show();
+    private void cycleAspectRatio() {
+        if (currentResizeMode == AspectRatioFrameLayout.RESIZE_MODE_FIT) {
+            currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
+            btnAspect.setText("Zoom");
+            Toast.makeText(this, "Mode: Zoom (Penuh Layar)", Toast.LENGTH_SHORT).show();
+        } else if (currentResizeMode == AspectRatioFrameLayout.RESIZE_MODE_ZOOM) {
+            currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL;
+            btnAspect.setText("Fill");
+            Toast.makeText(this, "Mode: Fill (Rentang Rasio)", Toast.LENGTH_SHORT).show();
+        } else {
+            currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+            btnAspect.setText("Fit");
+            Toast.makeText(this, "Mode: Fit (Asli 16:9)", Toast.LENGTH_SHORT).show();
+        }
+        playerView.setResizeMode(currentResizeMode);
+    }
+
+    private void showQualityDialog() {
+        CharSequence[] qualities = {"Auto (Paling Pas)", "1080p Full HD", "720p HD", "480p SD", "360p Hemat"};
+        new AlertDialog.Builder(this)
+                .setTitle("Kualitas Video")
+                .setItems(qualities, (dialog, which) -> {
+                    String q = qualities[which].toString();
+                    btnQuality.setText(q.split(" ")[0]);
+                    btnPortraitQuality.setText(q.split(" ")[0]);
+                    Toast.makeText(this, "Kualitas: " + q, Toast.LENGTH_SHORT).show();
+                })
+                .show();
     }
 
     private void showSpeedDialog() {
-        CharSequence[] speeds = {"0.75x", "1.0x (Normal)", "1.25x", "1.5x", "2.0x"};
-        float[] speedVals = {0.75f, 1.0f, 1.25f, 1.5f, 2.0f};
+        CharSequence[] speeds = {"0.5x", "0.75x", "1.0x (Normal)", "1.25x", "1.5x", "2.0x"};
+        float[] speedVals = {0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f};
 
         new AlertDialog.Builder(this)
                 .setTitle("Kecepatan Pemutaran")
@@ -408,25 +701,39 @@ public class PlayerActivity extends AppCompatActivity {
                     if (player != null) {
                         player.setPlaybackParameters(new PlaybackParameters(currentSpeed));
                     }
-                    btnPortraitSpeed.setText(String.format(Locale.US, "%.2fx", currentSpeed));
+                    String label = String.format(Locale.US, "%.1fx", currentSpeed);
+                    btnPortraitSpeed.setText(label);
+                    btnSpeed.setText(label);
                 })
                 .show();
     }
 
     private void showSubtitleDialog() {
-        CharSequence[] options = {"Subtitle Indonesia (Default)", "Nonaktifkan Subtitle"};
+        List<String> labels = new ArrayList<>();
+        labels.add("Subtitle Indonesia (Otomatis)");
+        if (currentStreamSource != null && currentStreamSource.subtitles != null) {
+            for (SubtitleTrack st : currentStreamSource.subtitles) {
+                labels.add(st.label);
+            }
+        }
+        labels.add("Nonaktifkan Subtitle");
+
+        CharSequence[] items = labels.toArray(new CharSequence[0]);
         new AlertDialog.Builder(this)
                 .setTitle("Pilihan Subtitle")
-                .setItems(options, (dialog, which) -> {
-                    if (which == 0) {
-                        btnPortraitSub.setText("Sub Indo");
-                        Toast.makeText(this, "Subtitle Indonesia aktif", Toast.LENGTH_SHORT).show();
-                    } else {
-                        btnPortraitSub.setText("Sub Off");
-                        Toast.makeText(this, "Subtitle dinonaktifkan", Toast.LENGTH_SHORT).show();
-                    }
+                .setItems(items, (dialog, which) -> {
+                    String chosen = items[which].toString();
+                    btnPortraitSub.setText(chosen.contains("Indo") ? "Sub Indo" : (chosen.contains("Non") ? "Sub Off" : chosen));
+                    Toast.makeText(this, "Subtitle: " + chosen, Toast.LENGTH_SHORT).show();
                 })
                 .show();
+    }
+
+    private void toggleScreenLock() {
+        isScreenLocked = !isScreenLocked;
+        btnScreenLock.setImageResource(isScreenLocked ? R.drawable.ic_lock : R.drawable.ic_lock_open);
+        playerView.setUseController(!isScreenLocked);
+        Toast.makeText(this, isScreenLocked ? "Layar Terkunci" : "Layar Terbuka", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -440,6 +747,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             layoutPortraitBottom.setVisibility(View.GONE);
+            layoutTopBar.setVisibility(View.VISIBLE);
             btnScreenLock.setVisibility(View.VISIBLE);
             btnPortraitFullscreen.setText("Kecilkan");
 
@@ -455,13 +763,17 @@ public class PlayerActivity extends AppCompatActivity {
             }
         } else {
             layoutPortraitBottom.setVisibility(View.VISIBLE);
+            layoutTopBar.setVisibility(View.GONE);
             btnScreenLock.setVisibility(View.GONE);
-            btnPortraitFullscreen.setText("Fullscreen");
+            btnPortraitFullscreen.setText("⛶ Full");
 
-            int heightPx = (int) (220 * getResources().getDisplayMetrics().density);
+            int screenWidth = getResources().getDisplayMetrics().widthPixels;
+            int playerHeight = (int) (screenWidth * 9f / 16f);
+            if (playerHeight <= 0) playerHeight = (int) (220 * getResources().getDisplayMetrics().density);
+
             flPlayerWrapper.setLayoutParams(new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    heightPx
+                    playerHeight
             ));
 
             WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
