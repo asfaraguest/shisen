@@ -41,6 +41,10 @@ public class Anime implements Serializable {
     public String headerSubtitle = "";
     public boolean isLongRunning = false;
 
+    // Franchise Relations support (Seasons & Movies)
+    public String relationType = "";
+    public String relationLabel = "";
+
     public Anime() {}
 
     public static Anime createHeader(String title, String subtitle) {
@@ -78,6 +82,8 @@ public class Anime implements Serializable {
         a.year = json.optInt("year", 0);
         a.synopsis = safeStr(json, "synopsis", "");
         a.studio = safeStr(json, "studio", "");
+        a.relationType = safeStr(json, "relation_type", "");
+        a.relationLabel = safeStr(json, "relation_label", "");
         
         JSONArray gArr = json.optJSONArray("genres");
         if (gArr != null) {
@@ -109,6 +115,8 @@ public class Anime implements Serializable {
             json.put("year", year);
             json.put("synopsis", synopsis);
             json.put("studio", studio);
+            json.put("relation_type", relationType);
+            json.put("relation_label", relationLabel);
             JSONArray gArr = new JSONArray();
             for (String g : genres) {
                 gArr.put(g);

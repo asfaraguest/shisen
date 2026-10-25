@@ -5,6 +5,16 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 ## [0.1.0-beta.2] - 2026-10-25
 
 ### Ditambahkan
+- **Fitur Musim & Film Terkait di Detail Anime (`Related Seasons & Movies`)**:
+  - **Single GraphQL 2-Hop Traversal Query (`AniListClient.getRelations`)**: Mengambil seluruh relasi franchise (prekuel, sekuel, seri utama, spin-off, alternative, film/movie) hingga kedalaman relasi tingkat 2 dalam 1 kali request efisien tanpa memicu rate-limit HTTP 429 AniList.
+  - **Pemisahan Kategori Otomatis (`seasons` & `movies`)**:
+    - *Musim & Seri Terkait*: Format serial (`TV`, `TV_SHORT`, `ONA`, `OVA`, `SPECIAL`) dengan badge dinamis kontekstual (*Season X*, *Season 1*, *Prekuel*, *Sekuel*, *Seri Utama*, *Side Story*, *Spin-Off*, *OVA*, *Spesial*).
+    - *Film & Movie Terkait*: Format layar lebar (`MOVIE`) dengan badge dinamis (*Movie*, *Movie Part X*, *Prekuel Film*, *Sekuel Film*).
+  - **Penyaringan Bersih & Zero-Tolerance Blacklist**: Mengecualikan konten non-anime (`MANGA`, `NOVEL`, `ONE_SHOT`), ID anime yang sedang dibuka, duplikasi franchise (`seenIds`), serta penyaringan mutlak terhadap genre Hentai.
+  - **Urutan Kronologis (*Chronological Order*)**: Seluruh seri dan film diurutkan secara menaik berdasarkan tahun rilis (`year`) dan relasi alur cerita agar penonton dapat mengikuti urutan rilis secara alami.
+  - **Komponen UI Kartu Relasi (`item_related_card.xml` & `RelatedAnimeAdapter`)**: Tampilan kartu kompak berukuran 105dp x 160dp dengan thumbnail karakter, scrim gradasi gelap, badge pill relasi, judul anime tebal, tahun/format, dan animasi spring touch interaktif.
+  - **Integrasi Seamless di `DetailActivity`**: Menampilkan kontainer horizontal `rv_detail_seasons` dan `rv_detail_movies` tepat di bawah kartu sinopsis dengan jumlah item ("X Seri" / "X Film"), serta auto-hide (`View.GONE`) jika tidak memiliki relasi terkait. Mengetuk kartu relasi langsung membuka `DetailActivity` baru dengan haptic feedback.
+  - **Unit Testing Komprehensif (`AniListRelationsTest`)**: Pengujian unit test untuk multi-season franchise (Jujutsu Kaisen, Kimetsu no Yaiba), deteksi part film (Girls und Panzer Finale Part 2), eksklusi manga/novel, dan verifikasi blacklist genre hentai.
 - **Perbaikan Paginasi Musim Ini & Sedang Tayang (`AniListClient` & `MainActivity`)**:
   - Menyertakan metadata resmi `pageInfo { hasNextPage total currentPage }` pada seluruh kueri GraphQL AniList (`PagedCallback`), membebaskan paginasi dari asumsi naif `currentCount >= pageSize`.
   - Pengecualian anime berseri panjang (`isLongRunning`) pada Beranda Musim Ini tidak lagi mematikan tombol "Berikutnya ›" pada halaman 1 ketika jumlah item tersaring menjadi <35.

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_related_root"
+    android:layout_width="105dp"
+    android:layout_height="160dp"
+    android:layout_marginEnd="10dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/frost_surface"
+    app:strokeColor="@color/frost_border"
+    app:strokeWidth="1dp">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Poster Image -->
+        <ImageView
+            android:id="@+id/iv_related_poster"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:contentDescription="Poster Karakter Anime Terkait" />
+
+        <!-- Gradient Scrim for Bottom Text Legibility -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/bg_poster_frost_scrim" />
+
+        <!-- Top Badge (Relation Label) -->
+        <TextView
+            android:id="@+id/tv_related_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:layout_margin="6dp"
+            android:paddingHorizontal="7dp"
+            android:paddingVertical="2dp"
+            android:background="@drawable/bg_badge_frost"
+            android:text="Season 1"
+            android:textColor="@color/accent_glacial"
+            android:textSize="9.5sp"
+            android:fontFamily="sans-serif-black"
+            android:letterSpacing="0.02"
+            android:singleLine="true" />
+
+        <!-- Bottom Info Container (Title & Meta) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            android:paddingHorizontal="7dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:id="@+id/tv_related_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Judul Terkait"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="10.5sp"
+                android:fontFamily="sans-serif-bold"
+                android:lineSpacingExtra="1dp"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tv_related_meta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="2024 · TV"
+                android:textColor="@color/accent_glacial"
+                android:textSize="9.5sp"
+                android:fontFamily="sans-serif-medium"
+                android:singleLine="true"
+                android:ellipsize="end" />
+        </LinearLayout>
+    </FrameLayout>
+</com.google.android.material.card.MaterialCardView>

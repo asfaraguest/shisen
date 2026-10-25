@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.Serializable;
@@ -29,9 +30,11 @@ import id.menatap.app.data.db.MenatapDatabase;
 import id.menatap.app.data.model.Anime;
 import id.menatap.app.data.model.Episode;
 import id.menatap.app.data.service.AniChanClient;
+import id.menatap.app.data.service.AniListClient;
 import id.menatap.app.data.service.HiAnimeClient;
 import id.menatap.app.data.service.OtakudesuScraper;
 import id.menatap.app.ui.adapter.EpisodeAdapter;
+import id.menatap.app.ui.adapter.RelatedAnimeAdapter;
 import id.menatap.app.ui.player.PlayerActivity;
 import id.menatap.app.util.AnimeThemeManager;
 import id.menatap.app.util.HapticHelper;
@@ -55,6 +58,16 @@ public class DetailActivity extends AppCompatActivity {
     private ProgressBar pbEpisodesLoading;
     private RecyclerView rvEpisodes;
 
+    private View layoutRelatedSeasons;
+    private TextView tvRelatedSeasonsCount;
+    private RecyclerView rvRelatedSeasons;
+    private RelatedAnimeAdapter seasonsAdapter;
+
+    private View layoutRelatedMovies;
+    private TextView tvRelatedMoviesCount;
+    private RecyclerView rvRelatedMovies;
+    private RelatedAnimeAdapter moviesAdapter;
+
     private Anime anime;
     private EpisodeAdapter episodeAdapter;
     private final List<Episode> episodeList = new ArrayList<>();
@@ -77,6 +90,7 @@ public class DetailActivity extends AppCompatActivity {
         bindAnimeData();
         setupEpisodeRecycler();
         loadAccurateEpisodes();
+        loadRelations();
     }
 
     @Override
@@ -104,6 +118,20 @@ public class DetailActivity extends AppCompatActivity {
         btnBookmark = findViewById(R.id.btn_toggle_bookmark);
         pbEpisodesLoading = findViewById(R.id.pb_episodes_loading);
         rvEpisodes = findViewById(R.id.rv_detail_episodes);
+
+        layoutRelatedSeasons = findViewById(R.id.layout_related_seasons);
+        tvRelatedSeasonsCount = findViewById(R.id.tv_related_seasons_count);
+        rvRelatedSeasons = findViewById(R.id.rv_detail_seasons);
+        seasonsAdapter = new RelatedAnimeAdapter(this);
+        rvRelatedSeasons.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvRelatedSeasons.setAdapter(seasonsAdapter);
+
+        layoutRelatedMovies = findViewById(R.id.layout_related_movies);
+        tvRelatedMoviesCount = findViewById(R.id.tv_related_movies_count);
+        rvRelatedMovies = findViewById(R.id.rv_detail_movies);
+        moviesAdapter = new RelatedAnimeAdapter(this);
+        rvRelatedMovies.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvRelatedMovies.setAdapter(moviesAdapter);
 
         btnBack.setOnClickListener(v -> {
             HapticHelper.performClick(v);
@@ -467,6 +495,52 @@ public class DetailActivity extends AppCompatActivity {
             public void onError(Throwable t) {
                 mainHandler.post(() -> {
                     if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
+                });
+            }
+        });
+    }
+
+    private void loadRelations() {
+        String queryTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
+                ? anime.title : anime.romajiTitle;
+
+        AniListClient.getRelations(anime.id, queryTitle, new AniListClient.Callback<AniListClient.RelationsResult>() {
+            @Override
+            public void onSuccess(AniListClient.RelationsResult result) {
+                mainHandler.post(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+
+                    if (result != null && result.seasons != null && !result.seasons.isEmpty()) {
+                        seasonsAdapter.setData(result.seasons);
+                        if (tvRelatedSeasonsCount != null) {
+                            tvRelatedSeasonsCount.setText(result.seasons.size() + " Seri");
+                        }
+                        if (layoutRelatedSeasons != null) {
+                            layoutRelatedSeasons.setVisibility(View.VISIBLE);
+                        }
+                    } else if (layoutRelatedSeasons != null) {
+                        layoutRelatedSeasons.setVisibility(View.GONE);
+                    }
+
+                    if (result != null && result.movies != null && !result.movies.isEmpty()) {
+                        moviesAdapter.setData(result.movies);
+                        if (tvRelatedMoviesCount != null) {
+                            tvRelatedMoviesCount.setText(result.movies.size() + " Film");
+                        }
+                        if (layoutRelatedMovies != null) {
+                            layoutRelatedMovies.setVisibility(View.VISIBLE);
+                        }
+                    } else if (layoutRelatedMovies != null) {
+                        layoutRelatedMovies.setVisibility(View.GONE);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                mainHandler.post(() -> {
+                    if (layoutRelatedSeasons != null) layoutRelatedSeasons.setVisibility(View.GONE);
+                    if (layoutRelatedMovies != null) layoutRelatedMovies.setVisibility(View.GONE);
                 });
             }
         });

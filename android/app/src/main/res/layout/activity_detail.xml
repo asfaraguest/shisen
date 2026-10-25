@@ -235,6 +235,94 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- Section 1: Related Seasons & Series -->
+                <LinearLayout
+                    android:id="@+id/layout_related_seasons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="MUSIM &amp; SERI TERKAIT"
+                            android:textColor="@color/accent_glacial"
+                            android:textSize="11.5sp"
+                            android:fontFamily="sans-serif-bold"
+                            android:letterSpacing="0.06" />
+
+                        <TextView
+                            android:id="@+id/tv_related_seasons_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_frost_subtle"
+                            android:textSize="10.5sp"
+                            android:fontFamily="sans-serif-medium" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_detail_seasons"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:clipToPadding="false"
+                        android:nestedScrollingEnabled="false"
+                        android:overScrollMode="never" />
+                </LinearLayout>
+
+                <!-- Section 2: Related Movies & Films -->
+                <LinearLayout
+                    android:id="@+id/layout_related_movies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="FILM &amp; MOVIE TERKAIT"
+                            android:textColor="@color/accent_glacial"
+                            android:textSize="11.5sp"
+                            android:fontFamily="sans-serif-bold"
+                            android:letterSpacing="0.06" />
+
+                        <TextView
+                            android:id="@+id/tv_related_movies_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_frost_subtle"
+                            android:textSize="10.5sp"
+                            android:fontFamily="sans-serif-medium" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_detail_movies"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:clipToPadding="false"
+                        android:nestedScrollingEnabled="false"
+                        android:overScrollMode="never" />
+                </LinearLayout>
+
                 <!-- Episode Header -->
                 <LinearLayout
                     android:layout_width="match_parent"
