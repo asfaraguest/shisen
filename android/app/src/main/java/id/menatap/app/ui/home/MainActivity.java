@@ -9,7 +9,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -20,27 +19,20 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 import id.menatap.app.R;
 import id.menatap.app.data.db.MenatapDatabase;
 import id.menatap.app.data.model.Anime;
 import id.menatap.app.data.service.AniListClient;
 import id.menatap.app.ui.adapter.AnimeAdapter;
-import id.menatap.app.ui.adapter.HistoryHorizontalAdapter;
-import id.menatap.app.ui.adapter.PosterHorizontalAdapter;
-import id.menatap.app.ui.detail.DetailActivity;
 import id.menatap.app.util.HapticHelper;
-import id.menatap.app.util.ImageLoader;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,44 +48,6 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout layoutEmpty;
     private TextView tvEmptyTitle;
     private TextView tvEmptyDesc;
-
-    // Netflix Home Views
-    private NestedScrollView scrollNetflixHome;
-    private View viewHeroBillboard;
-    private ImageView ivHeroBackdrop;
-    private TextView tvHeroGenres;
-    private TextView tvHeroTitle;
-    private TextView tvHeroFormat;
-    private TextView tvHeroScore;
-    private TextView tvHeroEps;
-    private Button btnHeroPlay;
-    private Button btnHeroInfo;
-
-    // Swimlanes
-    private View swimlaneHistoryView;
-    private TextView tvSwimlaneHistoryTitle;
-    private RecyclerView rvSwimlaneHistory;
-    private HistoryHorizontalAdapter historyAdapter;
-
-    private View swimlaneTrendingView;
-    private TextView tvSwimlaneTrendingTitle;
-    private RecyclerView rvSwimlaneTrending;
-    private PosterHorizontalAdapter trendingAdapter;
-
-    private View swimlaneSeasonalView;
-    private TextView tvSwimlaneSeasonalTitle;
-    private RecyclerView rvSwimlaneSeasonal;
-    private PosterHorizontalAdapter seasonalAdapter;
-
-    private View swimlaneScheduleView;
-    private TextView tvSwimlaneScheduleTitle;
-    private RecyclerView rvSwimlaneSchedule;
-    private PosterHorizontalAdapter scheduleAdapter;
-
-    private View swimlanePopularView;
-    private TextView tvSwimlanePopularTitle;
-    private RecyclerView rvSwimlanePopular;
-    private PosterHorizontalAdapter popularAdapter;
 
     // 7 Navigation Tabs
     private TextView tabMusim;
@@ -113,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
     private Runnable searchDebounceRunnable;
 
     private MainTab currentTab = MainTab.MUSIM;
-    private Anime currentHeroAnime = null;
 
     // Sub-filter states
     private int selectedDayOfWeek = Calendar.MONDAY;
@@ -139,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initViews();
-        setupNetflixCarousels();
         setupRecyclerView();
         setupListeners();
         selectTab(MainTab.MUSIM);
@@ -148,9 +100,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (currentTab == MainTab.MUSIM) {
-            refreshHistorySwimlane();
-        } else if (currentTab == MainTab.RIWAYAT || currentTab == MainTab.FAVORIT) {
+        if (currentTab == MainTab.RIWAYAT || currentTab == MainTab.FAVORIT) {
             loadCurrentFeed();
         }
     }
@@ -164,48 +114,6 @@ public class MainActivity extends AppCompatActivity {
         layoutEmpty = findViewById(R.id.layout_empty);
         tvEmptyTitle = findViewById(R.id.tv_empty_title);
         tvEmptyDesc = findViewById(R.id.tv_empty_desc);
-
-        scrollNetflixHome = findViewById(R.id.scroll_netflix_home);
-        viewHeroBillboard = findViewById(R.id.view_hero_billboard);
-        ivHeroBackdrop = viewHeroBillboard.findViewById(R.id.iv_hero_backdrop);
-        tvHeroGenres = viewHeroBillboard.findViewById(R.id.tv_hero_genres);
-        tvHeroTitle = viewHeroBillboard.findViewById(R.id.tv_hero_title);
-        tvHeroFormat = viewHeroBillboard.findViewById(R.id.tv_hero_format);
-        tvHeroScore = viewHeroBillboard.findViewById(R.id.tv_hero_score);
-        tvHeroEps = viewHeroBillboard.findViewById(R.id.tv_hero_eps);
-        btnHeroPlay = viewHeroBillboard.findViewById(R.id.btn_hero_play);
-        btnHeroInfo = viewHeroBillboard.findViewById(R.id.btn_hero_info);
-
-        // Swimlane views
-        swimlaneHistoryView = findViewById(R.id.swimlane_history);
-        tvSwimlaneHistoryTitle = swimlaneHistoryView.findViewById(R.id.tv_swimlane_title);
-        tvSwimlaneHistoryTitle.setText("Lanjutkan Menonton");
-        swimlaneHistoryView.findViewById(R.id.btn_swimlane_more).setVisibility(View.GONE);
-        rvSwimlaneHistory = swimlaneHistoryView.findViewById(R.id.rv_swimlane_items);
-
-        swimlaneTrendingView = findViewById(R.id.swimlane_trending);
-        tvSwimlaneTrendingTitle = swimlaneTrendingView.findViewById(R.id.tv_swimlane_title);
-        tvSwimlaneTrendingTitle.setText("Sedang Tren Sekarang");
-        swimlaneTrendingView.findViewById(R.id.btn_swimlane_more).setOnClickListener(v -> selectTab(MainTab.AIRING));
-        rvSwimlaneTrending = swimlaneTrendingView.findViewById(R.id.rv_swimlane_items);
-
-        swimlaneSeasonalView = findViewById(R.id.swimlane_seasonal);
-        tvSwimlaneSeasonalTitle = swimlaneSeasonalView.findViewById(R.id.tv_swimlane_title);
-        tvSwimlaneSeasonalTitle.setText("Anime Musim Ini");
-        swimlaneSeasonalView.findViewById(R.id.btn_swimlane_more).setOnClickListener(v -> selectTab(MainTab.KATALOG));
-        rvSwimlaneSeasonal = swimlaneSeasonalView.findViewById(R.id.rv_swimlane_items);
-
-        swimlaneScheduleView = findViewById(R.id.swimlane_schedule);
-        tvSwimlaneScheduleTitle = swimlaneScheduleView.findViewById(R.id.tv_swimlane_title);
-        tvSwimlaneScheduleTitle.setText("Jadwal Tayang Hari Ini");
-        swimlaneScheduleView.findViewById(R.id.btn_swimlane_more).setOnClickListener(v -> selectTab(MainTab.JADWAL));
-        rvSwimlaneSchedule = swimlaneScheduleView.findViewById(R.id.rv_swimlane_items);
-
-        swimlanePopularView = findViewById(R.id.swimlane_popular);
-        tvSwimlanePopularTitle = swimlanePopularView.findViewById(R.id.tv_swimlane_title);
-        tvSwimlanePopularTitle.setText("Populer Sepanjang Masa");
-        swimlanePopularView.findViewById(R.id.btn_swimlane_more).setOnClickListener(v -> selectTab(MainTab.KATALOG));
-        rvSwimlanePopular = swimlanePopularView.findViewById(R.id.rv_swimlane_items);
 
         tabMusim = findViewById(R.id.tab_nav_musim);
         tabAiring = findViewById(R.id.tab_nav_airing);
@@ -222,36 +130,18 @@ public class MainActivity extends AppCompatActivity {
         swipeRefresh.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.frost_surface));
     }
 
-    private void setupNetflixCarousels() {
-        // History horizontal
-        historyAdapter = new HistoryHorizontalAdapter(this);
-        rvSwimlaneHistory.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvSwimlaneHistory.setAdapter(historyAdapter);
-
-        // Trending horizontal
-        trendingAdapter = new PosterHorizontalAdapter(this);
-        rvSwimlaneTrending.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvSwimlaneTrending.setAdapter(trendingAdapter);
-
-        // Seasonal horizontal
-        seasonalAdapter = new PosterHorizontalAdapter(this);
-        rvSwimlaneSeasonal.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvSwimlaneSeasonal.setAdapter(seasonalAdapter);
-
-        // Schedule horizontal
-        scheduleAdapter = new PosterHorizontalAdapter(this);
-        rvSwimlaneSchedule.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvSwimlaneSchedule.setAdapter(scheduleAdapter);
-
-        // Popular horizontal
-        popularAdapter = new PosterHorizontalAdapter(this);
-        rvSwimlanePopular.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvSwimlanePopular.setAdapter(popularAdapter);
-    }
-
     private void setupRecyclerView() {
         gridAdapter = new AnimeAdapter(this);
         GridLayoutManager glm = new GridLayoutManager(this, 2);
+        glm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                if (gridAdapter.getItemViewType(position) == AnimeAdapter.VIEW_TYPE_HERO) {
+                    return 2; // Spans full width across 2 columns
+                }
+                return 1; // Standard grid card occupies 1 column
+            }
+        });
         rvGrid.setLayoutManager(glm);
         rvGrid.setAdapter(gridAdapter);
     }
@@ -268,25 +158,6 @@ public class MainActivity extends AppCompatActivity {
         tabKatalog.setOnClickListener(v -> selectTab(MainTab.KATALOG));
         tabGenre.setOnClickListener(v -> selectTab(MainTab.GENRE));
 
-        // Hero CTA listeners
-        btnHeroPlay.setOnClickListener(v -> {
-            HapticHelper.performClick(v);
-            if (currentHeroAnime != null) {
-                Intent intent = new Intent(this, DetailActivity.class);
-                intent.putExtra("anime", currentHeroAnime);
-                startActivity(intent);
-            }
-        });
-
-        btnHeroInfo.setOnClickListener(v -> {
-            HapticHelper.performClick(v);
-            if (currentHeroAnime != null) {
-                Intent intent = new Intent(this, DetailActivity.class);
-                intent.putExtra("anime", currentHeroAnime);
-                startActivity(intent);
-            }
-        });
-
         // Search text watcher
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -302,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if (!q.isEmpty()) {
                     searchDebounceRunnable = () -> performSearch(q);
-                    mainHandler.postDelayed(searchDebounceRunnable, 600);
+                    mainHandler.postDelayed(searchDebounceRunnable, 500);
                 } else if (before > 0 && q.isEmpty()) {
                     loadCurrentFeed();
                 }
@@ -358,15 +229,17 @@ public class MainActivity extends AppCompatActivity {
 
         if (currentTab == MainTab.JADWAL) {
             scrollSubFilters.setVisibility(View.VISIBLE);
-            for (int i = 0; i < DAYS_NAMES.length; i++) {
-                final int dayCal = DAYS_CALENDAR[i];
-                final String dayName = DAYS_NAMES[i];
-                boolean isSelected = (dayCal == selectedDayOfWeek);
+            int todayCalendar = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
 
-                TextView chip = createSubFilterChip(dayName, isSelected);
+            for (int i = 0; i < DAYS_NAMES.length; i++) {
+                final int calDay = DAYS_CALENDAR[i];
+                boolean isSelected = (calDay == selectedDayOfWeek);
+                String label = DAYS_NAMES[i] + (calDay == todayCalendar ? " (Hari Ini)" : "");
+
+                TextView chip = createSubFilterChip(label, isSelected);
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
-                    selectedDayOfWeek = dayCal;
+                    selectedDayOfWeek = calDay;
                     updateSubFilterUI();
                     loadCurrentFeed();
                 });
@@ -375,41 +248,43 @@ public class MainActivity extends AppCompatActivity {
         } else if (currentTab == MainTab.KATALOG) {
             scrollSubFilters.setVisibility(View.VISIBLE);
 
-            String[] formats = {"Semua", "TV", "Movie", "OVA"};
-            String[] formatVals = {"ALL", "TV", "MOVIE", "OVA"};
-
+            String[] formats = {"ALL", "TV", "MOVIE", "OVA", "SPECIAL"};
+            String[] formatLabels = {"Semua", "Serial TV", "Film / Movie", "OVA", "Spesial"};
             for (int i = 0; i < formats.length; i++) {
-                final String fVal = formatVals[i];
-                boolean isSelected = fVal.equalsIgnoreCase(selectedCatalogFormat);
+                final String f = formats[i];
+                boolean isSelected = f.equalsIgnoreCase(selectedCatalogFormat);
 
-                TextView chip = createSubFilterChip(formats[i], isSelected);
+                TextView chip = createSubFilterChip(formatLabels[i], isSelected);
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
-                    selectedCatalogFormat = fVal;
+                    selectedCatalogFormat = f;
                     updateSubFilterUI();
                     loadCurrentFeed();
                 });
                 layoutSubChips.addView(chip);
             }
 
+            // Separator
             View div = new View(this);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(2, (int) (18 * getResources().getDisplayMetrics().density));
-            lp.setMargins((int) (8 * getResources().getDisplayMetrics().density), 0, (int) (8 * getResources().getDisplayMetrics().density), 0);
-            div.setLayoutParams(lp);
-            div.setBackgroundColor(ContextCompat.getColor(this, R.color.frost_border));
+            LinearLayout.LayoutParams dLp = new LinearLayout.LayoutParams(
+                    (int) (1 * getResources().getDisplayMetrics().density),
+                    (int) (16 * getResources().getDisplayMetrics().density)
+            );
+            dLp.setMargins((int) (4 * getResources().getDisplayMetrics().density), 0, (int) (8 * getResources().getDisplayMetrics().density), 0);
+            div.setLayoutParams(dLp);
+            div.setBackgroundColor(Color.parseColor("#1F2E4A"));
             layoutSubChips.addView(div);
 
-            String[] sorts = {"Populer", "Rating", "Trending"};
-            String[] sortVals = {"POPULARITY_DESC", "SCORE_DESC", "TRENDING_DESC"};
-
+            String[] sorts = {"POPULARITY_DESC", "SCORE_DESC", "TRENDING_DESC", "FAVOURITES_DESC"};
+            String[] sortLabels = {"Terpopuler", "Skor Tertinggi", "Sedang Tren", "Favorit"};
             for (int i = 0; i < sorts.length; i++) {
-                final String sVal = sortVals[i];
-                boolean isSelected = sVal.equalsIgnoreCase(selectedCatalogSort);
+                final String s = sorts[i];
+                boolean isSelected = s.equalsIgnoreCase(selectedCatalogSort);
 
-                TextView chip = createSubFilterChip(sorts[i], isSelected);
+                TextView chip = createSubFilterChip(sortLabels[i], isSelected);
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
-                    selectedCatalogSort = sVal;
+                    selectedCatalogSort = s;
                     updateSubFilterUI();
                     loadCurrentFeed();
                 });
@@ -469,20 +344,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void refreshHistorySwimlane() {
-        new Thread(() -> {
-            List<Anime> history = MenatapDatabase.getInstance(this).getHistoryList();
-            mainHandler.post(() -> {
-                if (history != null && !history.isEmpty()) {
-                    swimlaneHistoryView.setVisibility(View.VISIBLE);
-                    historyAdapter.setData(history);
-                } else {
-                    swimlaneHistoryView.setVisibility(View.GONE);
-                }
-            });
-        }).start();
-    }
-
     private void loadCurrentFeed() {
         String searchQuery = etSearch.getText().toString().trim();
         if (!searchQuery.isEmpty()) {
@@ -490,77 +351,43 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        setLoading(true);
+
         if (currentTab == MainTab.MUSIM) {
-            // MODE 1: NETFLIX-CLASS HOME EXPERIENCE
-            scrollNetflixHome.setVisibility(View.VISIBLE);
-            rvGrid.setVisibility(View.GONE);
-            layoutEmpty.setVisibility(View.GONE);
-            setLoading(true);
-
-            refreshHistorySwimlane();
-
-            // 1. Trending & Hero Spotlight
-            AniListClient.getTrending(1, 15, new AniListClient.Callback<List<Anime>>() {
+            // BERANDA: 1 Featured Spotlight Hero + Breathable 2-Column Grid
+            AniListClient.getTrending(1, 35, new AniListClient.Callback<List<Anime>>() {
                 @Override
                 public void onSuccess(List<Anime> result) {
                     mainHandler.post(() -> {
+                        setLoading(false);
                         if (result != null && !result.isEmpty()) {
-                            bindHeroBillboard(result.get(0));
-                            // Remaining list goes to trending swimlane
-                            List<Anime> carouselItems = (result.size() > 1) ? result.subList(1, result.size()) : result;
-                            trendingAdapter.setData(carouselItems);
+                            layoutEmpty.setVisibility(View.GONE);
+                            rvGrid.setVisibility(View.VISIBLE);
+
+                            Anime hero = result.get(0);
+                            List<Anime> gridList = (result.size() > 1) ? result.subList(1, result.size()) : new ArrayList<>();
+                            gridAdapter.setHeroAnime(hero);
+                            gridAdapter.setData(gridList);
+                            rvGrid.scrollToPosition(0);
+                        } else {
+                            gridAdapter.setHeroAnime(null);
+                            gridAdapter.setData(new ArrayList<>());
+                            layoutEmpty.setVisibility(View.VISIBLE);
                         }
                     });
                 }
 
                 @Override
-                public void onError(Throwable t) {}
-            });
-
-            // 2. Seasonal Hits
-            AniListClient.getSeasonal(AniListClient.getCurrentSeason(), 0, 1, 15, new AniListClient.Callback<List<Anime>>() {
-                @Override
-                public void onSuccess(List<Anime> result) {
-                    mainHandler.post(() -> seasonalAdapter.setData(result));
-                }
-
-                @Override
-                public void onError(Throwable t) {}
-            });
-
-            // 3. Today's Airing Schedule
-            int todayCalendar = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-            AniListClient.getSchedule(todayCalendar, new AniListClient.Callback<List<Anime>>() {
-                @Override
-                public void onSuccess(List<Anime> result) {
-                    mainHandler.post(() -> scheduleAdapter.setData(result));
-                }
-
-                @Override
-                public void onError(Throwable t) {}
-            });
-
-            // 4. All-Time Popular
-            AniListClient.getPopular(1, 15, new AniListClient.Callback<List<Anime>>() {
-                @Override
-                public void onSuccess(List<Anime> result) {
+                public void onError(Throwable t) {
                     mainHandler.post(() -> {
                         setLoading(false);
-                        popularAdapter.setData(result);
+                        Toast.makeText(MainActivity.this, "Gagal memuat beranda: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     });
-                }
-
-                @Override
-                public void onError(Throwable t) {
-                    mainHandler.post(() -> setLoading(false));
                 }
             });
 
         } else {
-            // MODE 2: FULL CATALOG GRID
-            scrollNetflixHome.setVisibility(View.GONE);
-            rvGrid.setVisibility(View.VISIBLE);
-            setLoading(true);
+            gridAdapter.setHeroAnime(null);
 
             switch (currentTab) {
                 case AIRING:
@@ -593,99 +420,57 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void bindHeroBillboard(Anime anime) {
-        if (anime == null) return;
-        currentHeroAnime = anime;
-
-        String displayTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
-                ? anime.title : anime.romajiTitle;
-        tvHeroTitle.setText(displayTitle);
-
-        if (anime.genres != null && !anime.genres.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            int count = Math.min(3, anime.genres.size());
-            for (int i = 0; i < count; i++) {
-                sb.append(anime.genres.get(i).toUpperCase(Locale.US));
-                if (i < count - 1) sb.append(" • ");
+    private void performSearch(String query) {
+        setLoading(true);
+        gridAdapter.setHeroAnime(null);
+        AniListClient.search(query, 1, 40, new AniListClient.Callback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result) {
+                displayResults(result, "Pencarian Tidak Ditemukan", "Coba gunakan judul anime lain atau judul bahasa Inggris.");
             }
-            tvHeroGenres.setText(sb.toString());
-            tvHeroGenres.setVisibility(View.VISIBLE);
-        } else {
-            tvHeroGenres.setVisibility(View.GONE);
-        }
 
-        tvHeroFormat.setText(anime.format != null ? anime.format : "TV");
+            @Override
+            public void onError(Throwable t) {
+                mainHandler.post(() -> {
+                    setLoading(false);
+                    Toast.makeText(MainActivity.this, "Pencarian gagal: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
 
-        if (anime.score > 0) {
-            tvHeroScore.setVisibility(View.VISIBLE);
-            tvHeroScore.setText(String.format(Locale.US, "%.1f", anime.score));
-        } else {
-            tvHeroScore.setVisibility(View.GONE);
-        }
+    private AniListClient.Callback<List<Anime>> createCallback(String errorPrefix) {
+        return new AniListClient.Callback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result) {
+                displayResults(result, "Tidak Ada Data", "Konten belum tersedia untuk kategori ini.");
+            }
 
-        if (anime.epsCounter != null && !anime.epsCounter.isEmpty() && !"null".equalsIgnoreCase(anime.epsCounter)) {
-            tvHeroEps.setText(anime.epsCounter);
-            tvHeroEps.setVisibility(View.VISIBLE);
-        } else {
-            tvHeroEps.setVisibility(View.GONE);
-        }
-
-        String heroImg = (anime.banner != null && !anime.banner.isEmpty() && !"null".equalsIgnoreCase(anime.banner))
-                ? anime.banner : anime.poster;
-        ImageLoader.load(heroImg, ivHeroBackdrop);
+            @Override
+            public void onError(Throwable t) {
+                mainHandler.post(() -> {
+                    setLoading(false);
+                    Toast.makeText(MainActivity.this, errorPrefix + ": " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+            }
+        };
     }
 
     private void displayResults(List<Anime> list, String emptyTitle, String emptyDesc) {
         mainHandler.post(() -> {
             setLoading(false);
             if (list == null || list.isEmpty()) {
+                gridAdapter.setHeroAnime(null);
                 gridAdapter.setData(new ArrayList<>());
                 layoutEmpty.setVisibility(View.VISIBLE);
                 tvEmptyTitle.setText(emptyTitle);
                 tvEmptyDesc.setText(emptyDesc);
             } else {
                 layoutEmpty.setVisibility(View.GONE);
+                rvGrid.setVisibility(View.VISIBLE);
+                gridAdapter.setHeroAnime(null);
                 gridAdapter.setData(list);
-            }
-        });
-    }
-
-    private AniListClient.Callback<List<Anime>> createCallback(String errorLabel) {
-        return new AniListClient.Callback<List<Anime>>() {
-            @Override
-            public void onSuccess(List<Anime> result) {
-                displayResults(result, "Tidak Ada Anime", "Coba segarkan halaman atau periksa filter.");
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                mainHandler.post(() -> {
-                    setLoading(false);
-                    Toast.makeText(MainActivity.this, errorLabel + ": " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                    displayResults(new ArrayList<>(), "Gagal Terhubung", "Periksa koneksi internet kamu.");
-                });
-            }
-        };
-    }
-
-    private void performSearch(String keyword) {
-        scrollNetflixHome.setVisibility(View.GONE);
-        rvGrid.setVisibility(View.VISIBLE);
-        scrollSubFilters.setVisibility(View.GONE);
-        setLoading(true);
-
-        AniListClient.search(keyword, 1, 40, new AniListClient.Callback<List<Anime>>() {
-            @Override
-            public void onSuccess(List<Anime> result) {
-                displayResults(result, "Anime Tidak Ditemukan", "Coba kata kunci yang lebih spesifik.");
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                mainHandler.post(() -> {
-                    setLoading(false);
-                    displayResults(new ArrayList<>(), "Pencarian Gagal", t.getMessage());
-                });
+                rvGrid.scrollToPosition(0);
             }
         });
     }

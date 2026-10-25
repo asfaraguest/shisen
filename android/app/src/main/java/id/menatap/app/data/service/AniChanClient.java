@@ -141,14 +141,39 @@ public class AniChanClient {
                     return;
                 }
 
+                // Sort by server priority (anikoto > megaplay > aniwatch > others)
+                java.util.Collections.sort(serversList, (s1, s2) -> {
+                    int p1 = getServerScore(s1.optString("name", ""));
+                    int p2 = getServerScore(s2.optString("name", ""));
+                    return Integer.compare(p1, p2);
+                });
+
                 for (JSONObject srv : serversList) {
                     String type = srv.optString("type", "");
-                    String streamUrl = srv.optString("stream", "");
-                    if ("hls".equalsIgnoreCase(type) && !streamUrl.isEmpty()) {
+                    String rawStreamUrl = srv.optString("stream", "");
+                    if ("hls".equalsIgnoreCase(type) && !rawStreamUrl.isEmpty()) {
+                        String directUrl = rawStreamUrl;
+                        String referer = "https://megaplay.buzz/";
+
+                        // Unwrap direct CDN URL if wrapped by c.toroplay.cymru
+                        if (rawStreamUrl.contains("url=")) {
+                            try {
+                                android.net.Uri u = android.net.Uri.parse(rawStreamUrl);
+                                String rawUpstream = u.getQueryParameter("url");
+                                String rawRef = u.getQueryParameter("ref");
+                                if (rawUpstream != null && rawUpstream.startsWith("http")) {
+                                    directUrl = rawUpstream;
+                                }
+                                if (rawRef != null && !rawRef.isEmpty()) {
+                                    referer = rawRef;
+                                }
+                            } catch (Exception ignored) {}
+                        }
+
                         String serverName = srv.optString("name", "AniChan HLS");
-                        StreamSource source = new StreamSource(streamUrl, "HD", "AniChan (" + serverName + ")", true);
+                        StreamSource source = new StreamSource(directUrl, "HD", "AniChan (" + serverName + ")", true);
                         source.provider = "AniChan";
-                        source.headers.put("Referer", "https://megaplay.buzz/");
+                        source.headers.put("Referer", referer);
                         source.headers.put("Origin", "https://megaplay.buzz");
 
                         JSONArray subs = srv.optJSONArray("subtitles");
@@ -174,6 +199,15 @@ public class AniChanClient {
                 callback.onError(e);
             }
         }).start();
+    }
+
+    private static int getServerScore(String name) {
+        String n = name != null ? name.toLowerCase(java.util.Locale.US) : "";
+        if (n.contains("anikoto")) return 0;
+        if (n.contains("megaplay_hd1")) return 1;
+        if (n.contains("megaplay_hd2")) return 2;
+        if (n.contains("aniwatch") || n.contains("zoko")) return 3;
+        return 4;
     }
 
     private static synchronized void ensureSession() throws Exception {

@@ -200,6 +200,12 @@ public class PlayerActivity extends AppCompatActivity {
                     saveCurrentPlayback();
                 }
             }
+
+            @Override
+            public void onPlayerError(@NonNull androidx.media3.common.PlaybackException error) {
+                pbBuffering.setVisibility(View.GONE);
+                Toast.makeText(PlayerActivity.this, "Stream gagal diputar: " + (error.getCause() != null ? error.getCause().getMessage() : error.getMessage()), Toast.LENGTH_LONG).show();
+            }
         });
     }
 

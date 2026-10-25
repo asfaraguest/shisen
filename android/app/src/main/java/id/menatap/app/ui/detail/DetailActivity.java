@@ -348,11 +348,27 @@ public class DetailActivity extends AppCompatActivity {
     private String pickBestSlug(List<Anime> list, String target, String alt) {
         if (list == null || list.isEmpty()) return null;
         for (Anime a : list) {
+            if (TitleMatcher.isMatchAny(anime, a)) {
+                return a.slug;
+            }
             if (TitleMatcher.isTitleMatch(target, a.title) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, a.title))) {
                 return a.slug;
             }
+            if (a.romajiTitle != null && !a.romajiTitle.isEmpty()) {
+                if (TitleMatcher.isTitleMatch(target, a.romajiTitle) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, a.romajiTitle))) {
+                    return a.slug;
+                }
+            }
         }
-        return null;
+        // Season-consistent match
+        int sTarget = TitleMatcher.extractSeasonNumber(target);
+        for (Anime a : list) {
+            int sCandidate = TitleMatcher.extractSeasonNumber(a.title);
+            if (sTarget == sCandidate) {
+                return a.slug;
+            }
+        }
+        return list.get(0).slug;
     }
 
     // TIER 2 Fallback: AniChan

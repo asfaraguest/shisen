@@ -67,6 +67,7 @@ public class HiAnimeClient {
 
                     String title = titleEl.attr("title").trim();
                     if (title.isEmpty()) title = titleEl.text().trim();
+                    String romaji = titleEl.attr("data-jname").trim();
 
                     String href = titleEl.attr("href").trim();
                     String slug = href;
@@ -90,6 +91,9 @@ public class HiAnimeClient {
 
                     Anime a = new Anime();
                     a.title = title;
+                    if (!romaji.isEmpty() && !"null".equalsIgnoreCase(romaji)) {
+                        a.romajiTitle = romaji;
+                    }
                     a.slug = slug;
                     a.poster = poster;
 

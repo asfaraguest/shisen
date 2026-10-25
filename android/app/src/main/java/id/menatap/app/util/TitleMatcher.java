@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import id.menatap.app.data.model.Anime;
+
 public class TitleMatcher {
 
     private static final Set<String> STOPWORDS = new HashSet<>(Arrays.asList(
@@ -126,14 +128,37 @@ public class TitleMatcher {
         Set<String> sigB = new HashSet<>(tokensB);
         sigB.removeAll(STOPWORDS);
 
+        // If there is a substantive shared keyword of length >= 4 (e.g. "frieren", "dandadan", "jujutsu"),
+        // and season/format checks passed above, it is a valid match!
+        for (String tok : common) {
+            if (tok.length() >= 4 && !STOPWORDS.contains(tok)) {
+                return true;
+            }
+        }
+
         if (sigA.isEmpty() || sigB.isEmpty()) {
             Set<String> allCommon = new HashSet<>(tokensA);
             allCommon.retainAll(tokensB);
-            return ((double) allCommon.size() / Math.max(tokensA.size(), tokensB.size())) >= 0.75;
+            return ((double) allCommon.size() / Math.max(tokensA.size(), tokensB.size())) >= 0.60;
         }
 
         double overlap = (double) common.size() / Math.max(sigA.size(), sigB.size());
-        return overlap >= 0.55;
+        return overlap >= 0.40;
+    }
+
+    public static boolean isMatchAny(Anime anime, Anime candidate) {
+        if (anime == null || candidate == null) return false;
+        String aTitle = anime.title;
+        String aRomaji = anime.romajiTitle;
+        String cTitle = candidate.title;
+        String cRomaji = candidate.romajiTitle;
+
+        if (isTitleMatch(aTitle, cTitle)) return true;
+        if (aRomaji != null && !aRomaji.isEmpty() && isTitleMatch(aRomaji, cTitle)) return true;
+        if (cRomaji != null && !cRomaji.isEmpty() && isTitleMatch(aTitle, cRomaji)) return true;
+        if (aRomaji != null && !aRomaji.isEmpty() && cRomaji != null && !cRomaji.isEmpty() && isTitleMatch(aRomaji, cRomaji)) return true;
+
+        return false;
     }
 
     public static String cleanSearchQuery(String title) {

@@ -3,10 +3,9 @@ package id.menatap.app.ui.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.OvershootInterpolator;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,12 +22,21 @@ import id.menatap.app.ui.detail.DetailActivity;
 import id.menatap.app.util.HapticHelper;
 import id.menatap.app.util.ImageLoader;
 
-public class AnimeAdapter extends RecyclerView.Adapter<AnimeAdapter.AnimeViewHolder> {
+public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    public static final int VIEW_TYPE_HERO = 0;
+    public static final int VIEW_TYPE_CARD = 1;
+
     private final Context context;
     private final List<Anime> items = new ArrayList<>();
+    private Anime heroAnime = null;
 
     public AnimeAdapter(Context context) {
         this.context = context;
+    }
+
+    public void setHeroAnime(Anime hero) {
+        this.heroAnime = hero;
+        notifyDataSetChanged();
     }
 
     public void setData(List<Anime> newItems) {
@@ -39,23 +47,110 @@ public class AnimeAdapter extends RecyclerView.Adapter<AnimeAdapter.AnimeViewHol
         notifyDataSetChanged();
     }
 
-    @NonNull
     @Override
-    public AnimeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_anime_card, parent, false);
-        return new AnimeViewHolder(view);
+    public int getItemViewType(int position) {
+        if (heroAnime != null && position == 0) {
+            return VIEW_TYPE_HERO;
+        }
+        return VIEW_TYPE_CARD;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull AnimeViewHolder holder, int position) {
-        Anime anime = items.get(position);
+    public int getItemCount() {
+        int count = items.size();
+        if (heroAnime != null) {
+            count += 1;
+        }
+        return count;
+    }
 
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_HERO) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_netflix_hero, parent, false);
+            return new HeroViewHolder(view);
+        } else {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_anime_card, parent, false);
+            return new AnimeViewHolder(view);
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (getItemViewType(position) == VIEW_TYPE_HERO) {
+            bindHero((HeroViewHolder) holder, heroAnime);
+        } else {
+            int actualPos = (heroAnime != null) ? position - 1 : position;
+            if (actualPos >= 0 && actualPos < items.size()) {
+                bindCard((AnimeViewHolder) holder, items.get(actualPos));
+            }
+        }
+    }
+
+    private void bindHero(HeroViewHolder holder, Anime anime) {
+        if (anime == null) return;
+
+        String displayTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
+                ? anime.title
+                : ((anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
+                        ? anime.romajiTitle : "Anime Unggulan");
+        holder.tvHeroTitle.setText(displayTitle);
+
+        if (anime.genres != null && !anime.genres.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            int count = Math.min(3, anime.genres.size());
+            for (int i = 0; i < count; i++) {
+                sb.append(anime.genres.get(i).toUpperCase(Locale.US));
+                if (i < count - 1) sb.append(" • ");
+            }
+            holder.tvHeroGenres.setText(sb.toString());
+            holder.tvHeroGenres.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvHeroGenres.setVisibility(View.GONE);
+        }
+
+        holder.tvHeroFormat.setText(anime.format != null ? anime.format : "TV");
+
+        if (anime.score > 0) {
+            holder.tvHeroScore.setVisibility(View.VISIBLE);
+            holder.tvHeroScore.setText(String.format(Locale.US, "%.1f", anime.score));
+        } else {
+            holder.tvHeroScore.setVisibility(View.GONE);
+        }
+
+        if (anime.epsCounter != null && !anime.epsCounter.isEmpty() && !"null".equalsIgnoreCase(anime.epsCounter)) {
+            holder.tvHeroEps.setText(anime.epsCounter);
+            holder.tvHeroEps.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvHeroEps.setVisibility(View.GONE);
+        }
+
+        String heroImg = (anime.banner != null && !anime.banner.isEmpty() && !"null".equalsIgnoreCase(anime.banner))
+                ? anime.banner : anime.poster;
+        ImageLoader.load(heroImg, holder.ivHeroBackdrop);
+
+        // Immediate click navigation to Detail
+        View.OnClickListener openDetailAction = v -> {
+            HapticHelper.performClick(v);
+            Intent intent = new Intent(context, DetailActivity.class);
+            intent.putExtra("anime", anime);
+            context.startActivity(intent);
+        };
+
+        holder.itemView.setOnClickListener(openDetailAction);
+        holder.cardHero.setOnClickListener(openDetailAction);
+        holder.btnHeroPlay.setOnClickListener(openDetailAction);
+        holder.btnHeroInfo.setOnClickListener(openDetailAction);
+    }
+
+    private void bindCard(AnimeViewHolder holder, Anime anime) {
         String displayTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
                 ? anime.title
                 : ((anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
                         ? anime.romajiTitle : "Anime");
         holder.tvTitle.setText(displayTitle);
-        
+
         // Format meta string
         String seasonStr = (anime.season != null && !anime.season.isEmpty() && !"null".equalsIgnoreCase(anime.season))
                 ? (anime.season.substring(0, 1).toUpperCase(Locale.US) + anime.season.substring(1).toLowerCase(Locale.US))
@@ -103,44 +198,48 @@ public class AnimeAdapter extends RecyclerView.Adapter<AnimeAdapter.AnimeViewHol
         // Load image
         ImageLoader.load(anime.poster, holder.ivPoster);
 
-        // Spring touch feedback
-        attachSpringTouchFeedback(holder.itemView);
-
-        holder.itemView.setOnClickListener(v -> {
+        // Direct and reliable click handling
+        View.OnClickListener cardClickListener = v -> {
             HapticHelper.performClick(v);
             Intent intent = new Intent(context, DetailActivity.class);
             intent.putExtra("anime", anime);
             context.startActivity(intent);
-        });
+        };
+
+        holder.itemView.setOnClickListener(cardClickListener);
+        if (holder.cardAnime != null) {
+            holder.cardAnime.setOnClickListener(cardClickListener);
+        }
     }
 
-    @Override
-    public int getItemCount() {
-        return items.size();
-    }
+    public static class HeroViewHolder extends RecyclerView.ViewHolder {
+        View cardHero;
+        ImageView ivHeroBackdrop;
+        TextView tvHeroGenres, tvHeroTitle, tvHeroFormat, tvHeroScore, tvHeroEps;
+        Button btnHeroPlay, btnHeroInfo;
 
-    private void attachSpringTouchFeedback(View view) {
-        view.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(120).start();
-                    break;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(220)
-                            .setInterpolator(new OvershootInterpolator(1.2f)).start();
-                    break;
-            }
-            return false;
-        });
+        public HeroViewHolder(@NonNull View itemView) {
+            super(itemView);
+            cardHero = itemView.findViewById(R.id.card_hero);
+            ivHeroBackdrop = itemView.findViewById(R.id.iv_hero_backdrop);
+            tvHeroGenres = itemView.findViewById(R.id.tv_hero_genres);
+            tvHeroTitle = itemView.findViewById(R.id.tv_hero_title);
+            tvHeroFormat = itemView.findViewById(R.id.tv_hero_format);
+            tvHeroScore = itemView.findViewById(R.id.tv_hero_score);
+            tvHeroEps = itemView.findViewById(R.id.tv_hero_eps);
+            btnHeroPlay = itemView.findViewById(R.id.btn_hero_play);
+            btnHeroInfo = itemView.findViewById(R.id.btn_hero_info);
+        }
     }
 
     public static class AnimeViewHolder extends RecyclerView.ViewHolder {
+        View cardAnime;
         ImageView ivPoster;
         TextView tvTitle, tvMeta, tvBadgeEp, tvBadgeScore, tvBadgeType;
 
         public AnimeViewHolder(@NonNull View itemView) {
             super(itemView);
+            cardAnime = itemView.findViewById(R.id.card_anime);
             ivPoster = itemView.findViewById(R.id.iv_poster);
             tvTitle = itemView.findViewById(R.id.tv_title);
             tvMeta = itemView.findViewById(R.id.tv_meta);

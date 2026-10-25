@@ -91,14 +91,14 @@ public class StreamResolver {
         HiAnimeClient.searchAnime(targetTitle, new HiAnimeClient.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> results) {
-                String pickedSlug = pickBestSlug(results, targetTitle, altTitle);
+                String pickedSlug = pickBestSlug(results, anime, targetTitle, altTitle);
                 if (pickedSlug != null) {
                     fetchHiAnimeEpAndResolve(pickedSlug, episode, callback);
                 } else if (!altTitle.isEmpty() && !altTitle.equalsIgnoreCase(targetTitle)) {
                     HiAnimeClient.searchAnime(altTitle, new HiAnimeClient.Callback<List<Anime>>() {
                         @Override
                         public void onSuccess(List<Anime> res2) {
-                            String picked2 = pickBestSlug(res2, targetTitle, altTitle);
+                            String picked2 = pickBestSlug(res2, anime, targetTitle, altTitle);
                             if (picked2 != null) {
                                 fetchHiAnimeEpAndResolve(picked2, episode, callback);
                             } else {
@@ -123,14 +123,30 @@ public class StreamResolver {
         });
     }
 
-    private static String pickBestSlug(List<Anime> candidates, String target, String alt) {
+    private static String pickBestSlug(List<Anime> candidates, Anime anime, String target, String alt) {
         if (candidates == null || candidates.isEmpty()) return null;
         for (Anime c : candidates) {
+            if (TitleMatcher.isMatchAny(anime, c)) {
+                return c.slug;
+            }
             if (TitleMatcher.isTitleMatch(target, c.title) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, c.title))) {
                 return c.slug;
             }
+            if (c.romajiTitle != null && !c.romajiTitle.isEmpty()) {
+                if (TitleMatcher.isTitleMatch(target, c.romajiTitle) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, c.romajiTitle))) {
+                    return c.slug;
+                }
+            }
         }
-        return null;
+        // Season-aware fallback on search candidates
+        int sTarget = TitleMatcher.extractSeasonNumber(target);
+        for (Anime c : candidates) {
+            int sCandidate = TitleMatcher.extractSeasonNumber(c.title);
+            if (sTarget == sCandidate) {
+                return c.slug;
+            }
+        }
+        return candidates.get(0).slug;
     }
 
     private static void fetchHiAnimeEpAndResolve(String slug, Episode episode, Callback callback) {
