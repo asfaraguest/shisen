@@ -5,6 +5,9 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 ## [0.1.0-beta.2] - 2026-10-25
 
 ### Diperbaiki
+- **Pemunculan Musim & Film Terkait di Detail Anime (`AniListClient.getRelations`)**:
+  - **Eliminasi HTTP 500 GraphQL AniList**: Menghapus nesting rekursif ilegal `relations { edges { node { relations { ... } } } }` di dalam `RELATIONS_QUERY` yang memicu respon `HTTP 500 Internal Server Error` dari server AniList untuk seluruh anime, yang sebelumnya menyebabkan kontainer Musim dan Film Terkait disembunyikan permanen (`View.GONE`).
+  - **Arsitektur Traversal 2-Hop Berbasis GraphQL Aliases**: Menerapkan pengambilan relasi langsung (Hop 1) yang disajikan seketika ke UI, dilanjutkan dengan pengayaan relasi tingkat 2 (Hop 2) secara asinkron menggunakan multi-node aliases (`m0`, `m1`, `m2`) untuk prekuel/sekuel utama. Menjamin seluruh franchise anime (seperti kelanjutan Season 2, Season 3, film kanon, dan movie spin-off) tampil lengkap dan akurat.
 - **Pencegahan Terlempar ke View Sebelumnya & Watchdog Crash Saat Menonton / Idle**:
   - **Eliminasi Fatal Foreground Service Crash (`PlayerActivity`, `PlaybackService`)**: Mengganti `startForegroundService` di `PlayerActivity.setupPlayer()` menjadi `startService` aman dengan `sessionIntent` lengkap, meniadakan crash OS `ForegroundServiceDidNotStartInTimeException` yang mematikan activity saat resolusi stream berlangsung.
   - **Eliminasi UI Freeze & ANR pada Main UI Thread (`PlayerActivity`, `MenatapDatabase`)**: Memindahkan operasi penulisan disk SQLite `saveHistory` ke single-thread executor latar belakang (`dbExecutor`) dengan debouncing 10 detik, serta meniadakan `notifyItemChanged` setiap 1000ms pada thread UI utama yang memicu frame drops dan watchdog termination.

@@ -578,16 +578,6 @@ public class AniListClient {
             "          id idMal title { romaji english native } coverImage { extraLarge large medium } " +
             "          bannerImage averageScore status format episodes season seasonYear " +
             "          description(asHtml: false) genres studios(isMain: true) { nodes { name } } " +
-            "          relations { " +
-            "            edges { " +
-            "              relationType " +
-            "              node { " +
-            "                id idMal title { romaji english native } coverImage { extraLarge large medium } " +
-            "                bannerImage averageScore status format episodes season seasonYear " +
-            "                description(asHtml: false) genres studios(isMain: true) { nodes { name } } " +
-            "              } " +
-            "            } " +
-            "          } " +
             "        } " +
             "      } " +
             "    } " +
@@ -618,6 +608,9 @@ public class AniListClient {
                     try {
                         RelationsResult result = parseRelationsResponse(root, animeId);
                         callback.onSuccess(result);
+
+                        // Asynchronously enrich with 2nd-hop franchise traversal via GraphQL aliases
+                        fetchSecondHopRelations(result, animeId, callback);
                     } catch (Exception e) {
                         callback.onError(e);
                     }
@@ -631,6 +624,146 @@ public class AniListClient {
         } catch (Exception e) {
             callback.onError(e);
         }
+    }
+
+    private static void fetchSecondHopRelations(RelationsResult result, int originalAnimeId, Callback<RelationsResult> callback) {
+        if (result == null) return;
+        List<Integer> candidateIds = new ArrayList<>();
+        Set<Integer> existingIds = new HashSet<>();
+        if (originalAnimeId > 0) existingIds.add(originalAnimeId);
+
+        for (Anime a : result.seasons) {
+            existingIds.add(a.id);
+            if (("PREQUEL".equalsIgnoreCase(a.relationType) || "SEQUEL".equalsIgnoreCase(a.relationType) || "PARENT".equalsIgnoreCase(a.relationType))
+                    && a.id > 0 && !candidateIds.contains(a.id)) {
+                candidateIds.add(a.id);
+                if (candidateIds.size() >= 3) break;
+            }
+        }
+        for (Anime a : result.movies) {
+            existingIds.add(a.id);
+            if (("PREQUEL".equalsIgnoreCase(a.relationType) || "SEQUEL".equalsIgnoreCase(a.relationType))
+                    && a.id > 0 && !candidateIds.contains(a.id)) {
+                candidateIds.add(a.id);
+                if (candidateIds.size() >= 3) break;
+            }
+        }
+
+        if (candidateIds.isEmpty()) return;
+
+        try {
+            StringBuilder queryBuilder = new StringBuilder("query { ");
+            for (int i = 0; i < candidateIds.size(); i++) {
+                queryBuilder.append("m").append(i).append(": Media(id: ").append(candidateIds.get(i))
+                        .append(", type: ANIME, isAdult: false) { ")
+                        .append("relations { edges { relationType node { ")
+                        .append("id idMal title { romaji english native } coverImage { extraLarge large medium } ")
+                        .append("bannerImage averageScore status format episodes season seasonYear ")
+                        .append("description(asHtml: false) genres studios(isMain: true) { nodes { name } } ")
+                        .append("} } } } ");
+            }
+            queryBuilder.append("}");
+
+            JSONObject body = new JSONObject();
+            body.put("query", queryBuilder.toString());
+
+            executePostCustom(body.toString(), new Callback<JSONObject>() {
+                @Override
+                public void onSuccess(JSONObject hopRoot) {
+                    try {
+                        JSONObject data = hopRoot != null ? hopRoot.optJSONObject("data") : null;
+                        if (data == null) return;
+
+                        boolean added = false;
+                        for (int i = 0; i < candidateIds.size(); i++) {
+                            JSONObject mObj = data.optJSONObject("m" + i);
+                            if (mObj == null) continue;
+                            JSONObject relObj = mObj.optJSONObject("relations");
+                            if (relObj == null) continue;
+                            JSONArray edges = relObj.optJSONArray("edges");
+                            if (edges == null) continue;
+
+                            for (int j = 0; j < edges.length(); j++) {
+                                JSONObject edge = edges.optJSONObject(j);
+                                if (edge == null) continue;
+                                String relType = optSafeString(edge, "relationType", "");
+                                JSONObject node = edge.optJSONObject("node");
+                                if (node == null) continue;
+
+                                int nid = node.optInt("id", 0);
+                                if (nid <= 0 || existingIds.contains(nid)) continue;
+
+                                String fmt = optSafeString(node, "format", "TV");
+                                if (!isAnimeFormat(fmt)) continue;
+
+                                boolean isRelevant = "PREQUEL".equalsIgnoreCase(relType) ||
+                                                     "SEQUEL".equalsIgnoreCase(relType) ||
+                                                     "PARENT".equalsIgnoreCase(relType) ||
+                                                     "ALTERNATIVE".equalsIgnoreCase(relType) ||
+                                                     "MOVIE".equalsIgnoreCase(fmt);
+                                if (!isRelevant) continue;
+
+                                Anime subAnime = parseMediaNode(node);
+                                if (subAnime == null) continue;
+
+                                existingIds.add(nid);
+                                subAnime.relationType = relType;
+
+                                if ("MOVIE".equalsIgnoreCase(fmt)) {
+                                    String moviePart = extractMoviePart(subAnime.title, subAnime.romajiTitle);
+                                    if (moviePart != null) {
+                                        subAnime.relationLabel = moviePart;
+                                    } else if ("PREQUEL".equalsIgnoreCase(relType)) {
+                                        subAnime.relationLabel = "Prekuel Film";
+                                    } else if ("SEQUEL".equalsIgnoreCase(relType)) {
+                                        subAnime.relationLabel = "Sekuel Film";
+                                    } else {
+                                        subAnime.relationLabel = "Movie";
+                                    }
+                                    result.movies.add(subAnime);
+                                    added = true;
+                                } else {
+                                    int explicitSeason = extractExplicitSeasonNumber(subAnime.title, subAnime.romajiTitle);
+                                    if (explicitSeason > 1) {
+                                        subAnime.relationLabel = "Season " + explicitSeason;
+                                    } else if (explicitSeason == 1) {
+                                        subAnime.relationLabel = "Season 1";
+                                    } else if ("PREQUEL".equalsIgnoreCase(relType)) {
+                                        subAnime.relationLabel = "Prekuel";
+                                    } else if ("SEQUEL".equalsIgnoreCase(relType)) {
+                                        subAnime.relationLabel = "Sekuel";
+                                    } else if ("PARENT".equalsIgnoreCase(relType)) {
+                                        subAnime.relationLabel = "Seri Utama";
+                                    } else if ("SIDE_STORY".equalsIgnoreCase(relType)) {
+                                        subAnime.relationLabel = "Side Story";
+                                    } else if ("SPIN_OFF".equalsIgnoreCase(relType)) {
+                                        subAnime.relationLabel = "Spin-Off";
+                                    } else if ("OVA".equalsIgnoreCase(fmt)) {
+                                        subAnime.relationLabel = "OVA";
+                                    } else if ("SPECIAL".equalsIgnoreCase(fmt)) {
+                                        subAnime.relationLabel = "Spesial";
+                                    } else {
+                                        subAnime.relationLabel = "Terkait";
+                                    }
+                                    result.seasons.add(subAnime);
+                                    added = true;
+                                }
+                            }
+                        }
+
+                        if (added) {
+                            sortRelationsChronologically(result);
+                            callback.onSuccess(result);
+                        }
+                    } catch (Throwable ignored) {}
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    // 1st hop was already delivered; ignore 2nd hop background error
+                }
+            });
+        } catch (Throwable ignored) {}
     }
 
     private static boolean isAnimeFormat(String fmt) {
@@ -847,8 +980,15 @@ public class AniListClient {
             }
         }
 
-        // Chronological sort: ascending by release year
-        Collections.sort(rawSeasons, new Comparator<Anime>() {
+        result.seasons.addAll(rawSeasons);
+        result.movies.addAll(rawMovies);
+        sortRelationsChronologically(result);
+        return result;
+    }
+
+    public static void sortRelationsChronologically(RelationsResult result) {
+        if (result == null) return;
+        Collections.sort(result.seasons, new Comparator<Anime>() {
             @Override
             public int compare(Anime a, Anime b) {
                 int yA = a.year > 0 ? a.year : 9999;
@@ -858,15 +998,14 @@ public class AniListClient {
             }
         });
 
-        // Smart refinement: if earliest item in seasons is Prekuel and has earliest year, label it "Season 1"
-        if (!rawSeasons.isEmpty()) {
-            Anime first = rawSeasons.get(0);
+        if (!result.seasons.isEmpty()) {
+            Anime first = result.seasons.get(0);
             if ("Prekuel".equals(first.relationLabel) && first.year > 0) {
                 first.relationLabel = "Season 1";
             }
         }
 
-        Collections.sort(rawMovies, new Comparator<Anime>() {
+        Collections.sort(result.movies, new Comparator<Anime>() {
             @Override
             public int compare(Anime a, Anime b) {
                 int yA = a.year > 0 ? a.year : 9999;
@@ -875,10 +1014,6 @@ public class AniListClient {
                 return Integer.compare(relationRank(a.relationType), relationRank(b.relationType));
             }
         });
-
-        result.seasons.addAll(rawSeasons);
-        result.movies.addAll(rawMovies);
-        return result;
     }
 
     private static void executePagedQuery(String query, int page, int perPage, PagedCallback<List<Anime>> callback) {
