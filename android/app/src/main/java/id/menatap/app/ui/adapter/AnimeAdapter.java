@@ -152,16 +152,22 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         holder.tvTitle.setText(displayTitle);
 
         // Format meta string
-        String seasonStr = (anime.season != null && !anime.season.isEmpty() && !"null".equalsIgnoreCase(anime.season))
-                ? (anime.season.substring(0, 1).toUpperCase(Locale.US) + anime.season.substring(1).toLowerCase(Locale.US))
-                : "";
         String metaText;
-        if (!seasonStr.isEmpty() && anime.year > 0) {
-            metaText = seasonStr + " " + anime.year + " · " + (anime.format != null ? anime.format : "TV");
-        } else if (anime.year > 0) {
-            metaText = anime.year + " · " + (anime.format != null ? anime.format : "TV");
+        if (anime.lastPlayedEp > 0) {
+            metaText = "Terakhir diputar: Ep " + anime.lastPlayedEp;
+        } else if (anime.airingDay != null && !anime.airingDay.isEmpty()) {
+            metaText = anime.airingDay + (anime.format != null ? " · " + anime.format : "");
         } else {
-            metaText = (anime.format != null && !anime.format.isEmpty()) ? anime.format : "Anime";
+            String seasonStr = (anime.season != null && !anime.season.isEmpty() && !"null".equalsIgnoreCase(anime.season))
+                    ? (anime.season.substring(0, 1).toUpperCase(Locale.US) + anime.season.substring(1).toLowerCase(Locale.US))
+                    : "";
+            if (!seasonStr.isEmpty() && anime.year > 0) {
+                metaText = seasonStr + " " + anime.year + " · " + (anime.format != null ? anime.format : "TV");
+            } else if (anime.year > 0) {
+                metaText = anime.year + " · " + (anime.format != null ? anime.format : "TV");
+            } else {
+                metaText = (anime.format != null && !anime.format.isEmpty()) ? anime.format : "Anime";
+            }
         }
         holder.tvMeta.setText(metaText);
 
@@ -181,8 +187,12 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             holder.tvBadgeScore.setVisibility(View.GONE);
         }
 
-        // Episode counter badge
-        if (anime.epsCounter != null && !anime.epsCounter.isEmpty()) {
+        // Episode counter / History badge
+        if (anime.lastPlayedEp > 0) {
+            holder.tvBadgeEp.setVisibility(View.VISIBLE);
+            holder.tvBadgeEp.setText("Ep " + anime.lastPlayedEp);
+            holder.tvBadgeEp.setBackgroundResource(R.drawable.bg_badge_frost);
+        } else if (anime.epsCounter != null && !anime.epsCounter.isEmpty()) {
             holder.tvBadgeEp.setVisibility(View.VISIBLE);
             holder.tvBadgeEp.setText(anime.epsCounter);
             if ("TAMAT".equalsIgnoreCase(anime.status) || "FINISHED".equalsIgnoreCase(anime.status)) {

@@ -150,6 +150,12 @@ public class AniListClient {
                                         seenIds.add(a.id);
                                         int ep = item.optInt("episode", 0);
                                         if (ep > 0) a.epsCounter = "Ep " + ep;
+                                        long airingAt = item.optLong("airingAt", 0);
+                                        if (airingAt > 0) {
+                                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm 'WIB'", Locale.US);
+                                            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Jakarta"));
+                                            a.airingDay = sdf.format(new java.util.Date(airingAt * 1000L));
+                                        }
                                         list.add(a);
                                     }
                                 }

@@ -1,576 +1,522 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/drawer_layout"
+    android:id="@+id/layout_main_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/frost_void">
 
-    <!-- MAIN APP SCREEN (FEED + TRIGGER) -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <!-- Top Aurora Bar & App Branding -->
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_aurora_header"
-                android:paddingHorizontal="14dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="8dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <!-- Top Bar Header Row -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <!-- Hamburger Menu Trigger -->
-                        <ImageButton
-                            android:id="@+id/btn_drawer_open"
-                            android:layout_width="38dp"
-                            android:layout_height="38dp"
-                            android:background="@drawable/bg_drawer_item_inactive"
-                            android:src="@drawable/ic_menu"
-                            app:tint="@color/accent_glacial"
-                            android:padding="7dp"
-                            android:contentDescription="Buka Menu" />
-
-                        <!-- Logo MENATAP (Glacial Sky Glow) -->
-                        <TextView
-                            android:id="@+id/tv_app_logo"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="MENATAP"
-                            android:textColor="@color/accent_glacial"
-                            android:textSize="20sp"
-                            android:fontFamily="sans-serif-black"
-                            android:letterSpacing="0.08" />
-
-                        <!-- Active Menu Category Badge -->
-                        <TextView
-                            android:id="@+id/tv_current_menu_badge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="BERANDA"
-                            android:textColor="@color/text_frost_bright"
-                            android:background="@drawable/bg_badge_frost"
-                            android:textSize="9.5sp"
-                            android:fontFamily="sans-serif-bold"
-                            android:letterSpacing="0.06"
-                            android:paddingHorizontal="7dp"
-                            android:paddingVertical="3dp" />
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="1dp"
-                            android:layout_weight="1" />
-
-                        <!-- Header Loading Progress -->
-                        <ProgressBar
-                            android:id="@+id/pb_header_loading"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:indeterminateTint="@color/accent_glacial"
-                            android:visibility="gone" />
-                    </LinearLayout>
-
-                    <!-- Search Box Capsule 36dp -->
-                    <LinearLayout
-                        android:id="@+id/layout_search_box"
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_search_capsule"
-                        android:gravity="center_vertical"
-                        android:paddingHorizontal="12dp">
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/ic_search"
-                            app:tint="@color/text_frost_subtle"
-                            android:contentDescription="Search" />
-
-                        <EditText
-                            android:id="@+id/et_search"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:background="@android:color/transparent"
-                            android:hint="Cari judul anime..."
-                            android:textColorHint="@color/text_frost_dim"
-                            android:textColor="@color/text_frost_bright"
-                            android:textSize="@dimen/text_body"
-                            android:fontFamily="sans-serif"
-                            android:imeOptions="actionSearch"
-                            android:inputType="text"
-                            android:singleLine="true" />
-
-                        <ImageView
-                            android:id="@+id/btn_clear_search"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/ic_close"
-                            app:tint="@color/text_frost_subtle"
-                            android:visibility="gone"
-                            android:contentDescription="Clear" />
-                    </LinearLayout>
-                </LinearLayout>
-            </FrameLayout>
-
-            <!-- Dynamic Contextual Sub-Filter Bar (Only visible when Jadwal, Katalog, or Genre is active) -->
-            <HorizontalScrollView
-                android:id="@+id/scroll_sub_filters"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:scrollbars="none"
-                android:overScrollMode="never"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="5dp"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:id="@+id/layout_sub_chips"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal" />
-            </HorizontalScrollView>
-
-            <!-- Main Feed (SwipeRefreshLayout) -->
-            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                android:id="@+id/swipe_refresh"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1">
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <!-- Unified Responsive Anime Grid View -->
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rv_anime_grid"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:clipToPadding="false"
-                        android:paddingHorizontal="6dp"
-                        android:paddingTop="4dp"
-                        android:paddingBottom="80dp" />
-
-                    <!-- Empty State -->
-                    <LinearLayout
-                        android:id="@+id/layout_empty"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:visibility="gone"
-                        android:padding="24dp">
-
-                        <TextView
-                            android:id="@+id/tv_empty_title"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Tidak Ada Anime"
-                            android:textColor="@color/text_frost_bright"
-                            android:textSize="@dimen/text_headline"
-                            android:fontFamily="sans-serif-medium" />
-
-                        <TextView
-                            android:id="@+id/tv_empty_desc"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="Tarik ke bawah untuk memuat ulang"
-                            android:textColor="@color/text_frost_subtle"
-                            android:textSize="@dimen/text_body" />
-                    </LinearLayout>
-                </FrameLayout>
-            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-        </LinearLayout>
-
-        <!-- Folded Floating Menu Trigger (Bottom Right) -->
-        <FrameLayout
-            android:id="@+id/fab_menu_trigger"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="18dp"
-            android:layout_marginBottom="24dp"
-            android:background="@drawable/bg_fab_trigger"
-            android:elevation="8dp"
-            android:clickable="true"
-            android:focusable="true">
-
-            <ImageView
-                android:layout_width="26dp"
-                android:layout_height="26dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_menu"
-                app:tint="@color/accent_glacial"
-                android:contentDescription="Trigger Menu" />
-        </FrameLayout>
-    </FrameLayout>
-
-    <!-- LEFT DRAWER NAVIGATION PANEL (Sleek Nordic Frost Design) -->
+    <!-- MAIN APP CONTENT (TOPBAR + FEED) -->
     <LinearLayout
-        android:id="@+id/layout_drawer_content"
-        android:layout_width="290dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:orientation="vertical"
-        android:background="@color/frost_void"
-        android:clickable="true"
-        android:focusable="true"
-        android:paddingTop="20dp"
-        android:paddingBottom="16dp"
-        android:paddingHorizontal="16dp">
+        android:orientation="vertical">
 
-        <!-- Drawer Header Branding -->
-        <LinearLayout
+        <!-- DYNAMIC FLUID TOPBAR (54dp Aurora Header) -->
+        <FrameLayout
+            android:id="@+id/layout_aurora_top"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="16dp"
-            android:paddingHorizontal="4dp">
+            android:layout_height="54dp"
+            android:background="@drawable/bg_aurora_header">
 
-            <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@mipmap/ic_launcher"
-                android:contentDescription="App Icon" />
-
+            <!-- Normal State: Branding Logo + Menu Badge + Search Trigger Capsule -->
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="12dp"
-                android:orientation="vertical">
+                android:id="@+id/layout_top_normal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="14dp">
 
-                <LinearLayout
+                <!-- Logo MENATAP (Glacial Sky Blue) -->
+                <TextView
+                    android:id="@+id/tv_app_logo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:text="MENATAP"
+                    android:textColor="@color/accent_glacial"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif-black"
+                    android:letterSpacing="0.08" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="MENATAP"
-                        android:textColor="@color/accent_glacial"
-                        android:textSize="17sp"
-                        android:fontFamily="sans-serif-black"
-                        android:letterSpacing="0.08" />
+                <!-- Active Menu Category Badge -->
+                <TextView
+                    android:id="@+id/tv_current_menu_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="BERANDA"
+                    android:textColor="@color/text_frost_bright"
+                    android:background="@drawable/bg_badge_frost"
+                    android:textSize="9.5sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:letterSpacing="0.06"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <!-- Header Loading Spinner -->
+                <ProgressBar
+                    android:id="@+id/pb_header_loading"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="8dp"
+                    android:indeterminateTint="@color/accent_glacial"
+                    android:visibility="gone" />
+
+                <!-- Compact Search Trigger Capsule (Expands on click) -->
+                <LinearLayout
+                    android:id="@+id/btn_search_trigger"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_search_capsule"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="@color/accent_glacial"
+                        android:contentDescription="Cari" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
-                        android:text="BETA"
-                        android:textColor="@color/accent_glacial"
-                        android:background="@drawable/bg_badge_frost"
-                        android:textSize="8.5sp"
-                        android:fontFamily="sans-serif-bold"
-                        android:paddingHorizontal="5dp"
-                        android:paddingVertical="1.5dp" />
+                        android:text="Cari..."
+                        android:textColor="@color/text_frost_subtle"
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif-medium" />
                 </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Pure Native Android Player"
-                    android:textColor="@color/text_frost_subtle"
-                    android:textSize="11sp"
-                    android:fontFamily="sans-serif" />
             </LinearLayout>
-        </LinearLayout>
 
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/frost_border"
-            android:layout_marginBottom="14dp" />
-
-        <!-- Drawer Menu Section Label -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_marginBottom="8dp"
-            android:text="MENU UTAMA"
-            android:textColor="@color/accent_glacial"
-            android:textSize="10sp"
-            android:fontFamily="sans-serif-bold"
-            android:letterSpacing="0.08" />
-
-        <!-- 7 Menu Items Scrollable -->
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:scrollbars="none"
-            android:overScrollMode="never">
-
+            <!-- Fluid Expanded Search State (Full Width Animated) -->
             <LinearLayout
+                android:id="@+id/layout_top_search_fluid"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="10dp"
+                android:visibility="gone">
 
-                <!-- 1. Musim / Beranda -->
+                <ImageButton
+                    android:id="@+id/btn_collapse_search"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/accent_glacial"
+                    android:padding="8dp"
+                    android:contentDescription="Tutup Pencarian" />
+
                 <LinearLayout
-                    android:id="@+id/drawer_item_musim"
-                    android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:background="@drawable/bg_drawer_item_active"
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_search_capsule"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:clickable="true"
-                    android:focusable="true">
+                    android:paddingHorizontal="12dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🌸"
-                        android:textSize="17sp" />
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="@color/text_frost_subtle"
+                        android:contentDescription="Icon Search" />
 
-                    <TextView
-                        android:id="@+id/tv_drawer_title_musim"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:text="Beranda (Musim &amp; Tren)"
-                        android:textColor="@color/accent_glacial"
-                        android:textSize="13.5sp"
-                        android:fontFamily="sans-serif-bold" />
-                </LinearLayout>
-
-                <!-- 2. Sedang Tayang -->
-                <LinearLayout
-                    android:id="@+id/drawer_item_airing"
-                    android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginTop="4dp"
-                    android:background="@drawable/bg_drawer_item_inactive"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="⚡"
-                        android:textSize="17sp" />
-
-                    <TextView
-                        android:id="@+id/tv_drawer_title_airing"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:text="Sedang Tayang"
+                    <EditText
+                        android:id="@+id/et_search"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:background="@android:color/transparent"
+                        android:hint="Cari judul anime..."
+                        android:textColorHint="@color/text_frost_dim"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="13.5sp"
-                        android:fontFamily="sans-serif-medium" />
-                </LinearLayout>
+                        android:textSize="13sp"
+                        android:fontFamily="sans-serif"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:singleLine="true" />
 
-                <!-- 3. Jadwal Rilis -->
-                <LinearLayout
-                    android:id="@+id/drawer_item_jadwal"
-                    android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginTop="4dp"
-                    android:background="@drawable/bg_drawer_item_inactive"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📅"
-                        android:textSize="17sp" />
-
-                    <TextView
-                        android:id="@+id/tv_drawer_title_jadwal"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:text="Jadwal Rilis 7 Hari WIB"
-                        android:textColor="@color/text_frost_bright"
-                        android:textSize="13.5sp"
-                        android:fontFamily="sans-serif-medium" />
-                </LinearLayout>
-
-                <!-- 4. Riwayat -->
-                <LinearLayout
-                    android:id="@+id/drawer_item_riwayat"
-                    android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginTop="4dp"
-                    android:background="@drawable/bg_drawer_item_inactive"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="⌛"
-                        android:textSize="17sp" />
-
-                    <TextView
-                        android:id="@+id/tv_drawer_title_riwayat"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:text="Riwayat Tontonan"
-                        android:textColor="@color/text_frost_bright"
-                        android:textSize="13.5sp"
-                        android:fontFamily="sans-serif-medium" />
-                </LinearLayout>
-
-                <!-- 5. Favorit -->
-                <LinearLayout
-                    android:id="@+id/drawer_item_favorit"
-                    android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginTop="4dp"
-                    android:background="@drawable/bg_drawer_item_inactive"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="★"
-                        android:textSize="17sp"
-                        android:textColor="@color/star_gold" />
-
-                    <TextView
-                        android:id="@+id/tv_drawer_title_favorit"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:text="Koleksi Favorit"
-                        android:textColor="@color/text_frost_bright"
-                        android:textSize="13.5sp"
-                        android:fontFamily="sans-serif-medium" />
-                </LinearLayout>
-
-                <!-- 6. Katalog -->
-                <LinearLayout
-                    android:id="@+id/drawer_item_katalog"
-                    android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginTop="4dp"
-                    android:background="@drawable/bg_drawer_item_inactive"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📚"
-                        android:textSize="17sp" />
-
-                    <TextView
-                        android:id="@+id/tv_drawer_title_katalog"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:text="Katalog Lengkap"
-                        android:textColor="@color/text_frost_bright"
-                        android:textSize="13.5sp"
-                        android:fontFamily="sans-serif-medium" />
-                </LinearLayout>
-
-                <!-- 7. Genre -->
-                <LinearLayout
-                    android:id="@+id/drawer_item_genre"
-                    android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginTop="4dp"
-                    android:background="@drawable/bg_drawer_item_inactive"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🎭"
-                        android:textSize="17sp" />
-
-                    <TextView
-                        android:id="@+id/tv_drawer_title_genre"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:text="Kategori Genre"
-                        android:textColor="@color/text_frost_bright"
-                        android:textSize="13.5sp"
-                        android:fontFamily="sans-serif-medium" />
+                    <ImageView
+                        android:id="@+id/btn_clear_search"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_close"
+                        app:tint="@color/text_frost_subtle"
+                        android:visibility="gone"
+                        android:contentDescription="Clear Text" />
                 </LinearLayout>
             </LinearLayout>
-        </ScrollView>
+        </FrameLayout>
 
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/frost_border"
-            android:layout_marginVertical="10dp" />
-
-        <!-- Drawer Footer -->
+        <!-- CONTEXTUAL ACTION BAR (Riwayat / Favorit Counter & Clear Button) -->
         <LinearLayout
+            android:id="@+id/layout_contextual_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="5dp"
+            android:visibility="gone">
 
             <TextView
+                android:id="@+id/tv_contextual_title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Versi v0.1.0-beta.1"
-                android:textColor="@color/text_frost_dim"
-                android:textSize="11sp"
-                android:fontFamily="sans-serif" />
+                android:text="Riwayat Tontonan"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-bold" />
 
             <TextView
+                android:id="@+id/btn_clear_history_all"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_badge_danger"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="Hapus Semua"
+                android:textColor="#EF4444"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- SUB-FILTER CAROUSEL (Jadwal 7 Hari / Katalog / Genre) -->
+        <HorizontalScrollView
+            android:id="@+id/scroll_sub_filters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:overScrollMode="never"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="5dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/layout_sub_chips"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="100% Java Native"
-                android:textColor="@color/accent_glacial"
-                android:textSize="10.5sp"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <!-- MAIN ANIME GRID FEED -->
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <!-- 2-Column Responsive Grid View -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_anime_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="6dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="84dp" />
+
+                <!-- Empty State View -->
+                <LinearLayout
+                    android:id="@+id/layout_empty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:id="@+id/tv_empty_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tidak Ada Anime"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="@dimen/text_headline"
+                        android:fontFamily="sans-serif-bold" />
+
+                    <TextView
+                        android:id="@+id/tv_empty_desc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Tarik ke bawah untuk memuat ulang"
+                        android:textColor="@color/text_frost_subtle"
+                        android:textSize="@dimen/text_body"
+                        android:gravity="center" />
+                </LinearLayout>
+            </FrameLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </LinearLayout>
+
+    <!-- FULLSCREEN BACKDROP SCRIM FOR FOLDED FLOATING MENU -->
+    <View
+        android:id="@+id/scrim_folded_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#A6000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="14dp"
+        android:visibility="gone" />
+
+    <!-- FOLDED FLOATING MENU (Unfolds UPWARDS from bottom-right trigger) -->
+    <LinearLayout
+        android:id="@+id/layout_folded_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="84dp"
+        android:orientation="vertical"
+        android:gravity="end"
+        android:elevation="16dp"
+        android:visibility="gone">
+
+        <!-- 1. Musim Ini / Beranda -->
+        <LinearLayout
+            android:id="@+id/menu_item_musim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_tab_season"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_menu_musim"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Musim Ini (Beranda)"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- 2. Masih Tayang (Airing) -->
+        <LinearLayout
+            android:id="@+id/menu_item_airing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_tab_airing"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_menu_airing"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Masih Tayang"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- 3. Jadwal Rilis 7 Hari WIB -->
+        <LinearLayout
+            android:id="@+id/menu_item_jadwal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_tab_schedule"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_menu_jadwal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Jadwal Rilis 7 Hari WIB"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- 4. Riwayat Tontonan -->
+        <LinearLayout
+            android:id="@+id/menu_item_riwayat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_tab_history"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_menu_riwayat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Riwayat Tontonan"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- 5. Favorit Saya -->
+        <LinearLayout
+            android:id="@+id/menu_item_favorit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_tab_favorite"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_menu_favorit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Favorit Saya"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- 6. Katalog Lengkap -->
+        <LinearLayout
+            android:id="@+id/menu_item_katalog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_tab_catalog"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_menu_katalog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Katalog Lengkap"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- 7. Kategori Genre -->
+        <LinearLayout
+            android:id="@+id/menu_item_genre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_tab_genre"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_menu_genre"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Kategori Genre"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13sp"
                 android:fontFamily="sans-serif-medium" />
         </LinearLayout>
     </LinearLayout>
-</androidx.drawerlayout.widget.DrawerLayout>
+
+    <!-- FLOATING MENU TRIGGER BUTTON (Bottom-Right FAB) -->
+    <FrameLayout
+        android:id="@+id/fab_menu_trigger"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_fab_trigger"
+        android:elevation="18dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/iv_fab_icon"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_menu"
+            app:tint="@color/accent_glacial"
+            android:contentDescription="Menu Folded Trigger" />
+    </FrameLayout>
+</FrameLayout>

@@ -91,6 +91,11 @@ public class MenatapDatabase extends SQLiteOpenHelper {
         markEpisodeWatched(slug, ep);
     }
 
+    public void clearAllHistory() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete("history", null, null);
+    }
+
     public List<Anime> getHistoryList() {
         List<Anime> list = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
