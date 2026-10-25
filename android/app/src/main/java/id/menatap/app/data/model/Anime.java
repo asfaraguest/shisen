@@ -34,7 +34,23 @@ public class Anime implements Serializable {
     public long lastPlayedProgressMs = 0;
     public String lastPlayedAt = "";
 
+    // Dual-Lane Header & Long-Running support
+    public boolean isHeader = false;
+    public String headerTitle = "";
+    public String headerSubtitle = "";
+    public boolean isLongRunning = false;
+
     public Anime() {}
+
+    public static Anime createHeader(String title, String subtitle) {
+        Anime a = new Anime();
+        a.isHeader = true;
+        a.headerTitle = title;
+        a.headerSubtitle = subtitle;
+        a.title = title;
+        a.slug = "header_" + (title != null ? title.hashCode() : 0);
+        return a;
+    }
 
     private static String safeStr(JSONObject json, String key, String fallback) {
         if (json == null || !json.has(key) || json.isNull(key)) return fallback;

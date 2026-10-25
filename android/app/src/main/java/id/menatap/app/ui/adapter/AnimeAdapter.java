@@ -25,6 +25,7 @@ import id.menatap.app.util.ImageLoader;
 public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final int VIEW_TYPE_HERO = 0;
     public static final int VIEW_TYPE_CARD = 1;
+    public static final int VIEW_TYPE_HEADER = 2;
 
     private final Context context;
     private final List<Anime> items = new ArrayList<>();
@@ -59,6 +60,12 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (heroAnime != null && position == 0) {
             return VIEW_TYPE_HERO;
         }
+        int actualPos = (heroAnime != null) ? position - 1 : position;
+        if (actualPos >= 0 && actualPos < items.size()) {
+            if (items.get(actualPos).isHeader) {
+                return VIEW_TYPE_HEADER;
+            }
+        }
         return VIEW_TYPE_CARD;
     }
 
@@ -77,6 +84,9 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (viewType == VIEW_TYPE_HERO) {
             View view = LayoutInflater.from(context).inflate(R.layout.item_netflix_hero, parent, false);
             return new HeroViewHolder(view);
+        } else if (viewType == VIEW_TYPE_HEADER) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_lane_header, parent, false);
+            return new HeaderViewHolder(view);
         } else {
             View view = LayoutInflater.from(context).inflate(R.layout.item_anime_card, parent, false);
             return new AnimeViewHolder(view);
@@ -85,13 +95,30 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (getItemViewType(position) == VIEW_TYPE_HERO) {
+        int viewType = getItemViewType(position);
+        if (viewType == VIEW_TYPE_HERO) {
             bindHero((HeroViewHolder) holder, heroAnime);
+        } else if (viewType == VIEW_TYPE_HEADER) {
+            int actualPos = (heroAnime != null) ? position - 1 : position;
+            if (actualPos >= 0 && actualPos < items.size()) {
+                bindHeader((HeaderViewHolder) holder, items.get(actualPos));
+            }
         } else {
             int actualPos = (heroAnime != null) ? position - 1 : position;
             if (actualPos >= 0 && actualPos < items.size()) {
                 bindCard((AnimeViewHolder) holder, items.get(actualPos));
             }
+        }
+    }
+
+    private void bindHeader(HeaderViewHolder holder, Anime header) {
+        if (header == null) return;
+        holder.tvLaneTitle.setText(header.headerTitle != null && !header.headerTitle.isEmpty() ? header.headerTitle : header.title);
+        if (header.headerSubtitle != null && !header.headerSubtitle.isEmpty()) {
+            holder.tvLaneSubtitle.setText(header.headerSubtitle);
+            holder.tvLaneSubtitle.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvLaneSubtitle.setVisibility(View.GONE);
         }
     }
 
@@ -195,7 +222,11 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
 
         // Episode counter / History badge
-        if (anime.lastPlayedEp > 0) {
+        if (anime.isLongRunning) {
+            holder.tvBadgeEp.setVisibility(View.VISIBLE);
+            holder.tvBadgeEp.setText("SERIAL PANJANG");
+            holder.tvBadgeEp.setBackgroundResource(R.drawable.bg_badge_frost);
+        } else if (anime.lastPlayedEp > 0) {
             holder.tvBadgeEp.setVisibility(View.VISIBLE);
             holder.tvBadgeEp.setText("Ep " + anime.lastPlayedEp);
             holder.tvBadgeEp.setBackgroundResource(R.drawable.bg_badge_frost);
@@ -246,6 +277,16 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             tvHeroEps = itemView.findViewById(R.id.tv_hero_eps);
             btnHeroPlay = itemView.findViewById(R.id.btn_hero_play);
             btnHeroInfo = itemView.findViewById(R.id.btn_hero_info);
+        }
+    }
+
+    public static class HeaderViewHolder extends RecyclerView.ViewHolder {
+        TextView tvLaneTitle, tvLaneSubtitle;
+
+        public HeaderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvLaneTitle = itemView.findViewById(R.id.tv_lane_title);
+            tvLaneSubtitle = itemView.findViewById(R.id.tv_lane_subtitle);
         }
     }
 

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="18dp"
+    android:paddingBottom="8dp"
+    android:paddingHorizontal="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/view_lane_indicator"
+            android:layout_width="3.5dp"
+            android:layout_height="16dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/accent_glacial" />
+
+        <TextView
+            android:id="@+id/tv_lane_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif-bold"
+            android:letterSpacing="0.04"
+            android:text="ANIME 2 MUSIM SEBELUMNYA (ONGOING)"
+            android:textColor="@color/accent_glacial"
+            android:textSize="12.5sp" />
+
+        <TextView
+            android:id="@+id/tv_lane_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="[2 MUSIM LALU]"
+            android:textColor="@color/text_frost_subtle"
+            android:textSize="10.5sp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="#243859" />
+</LinearLayout>

@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
     private String selectedCatalogFormat = "ALL";
     private String selectedCatalogSort = "POPULARITY_DESC";
     private String selectedGenre = "Action";
+    private String selectedAiringLane = "ALL";
 
     private final String[] GENRES = {
             "Action", "Adventure", "Comedy", "Drama", "Fantasy",
@@ -212,8 +213,9 @@ public class MainActivity extends AppCompatActivity {
         glm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                if (gridAdapter.getItemViewType(position) == AnimeAdapter.VIEW_TYPE_HERO) {
-                    return 2; // Spans 2 full columns for Hero Spotlight
+                int type = gridAdapter.getItemViewType(position);
+                if (type == AnimeAdapter.VIEW_TYPE_HERO || type == AnimeAdapter.VIEW_TYPE_HEADER) {
+                    return 2; // Spans 2 full columns for Hero Spotlight & Section Headers
                 }
                 return 1;
             }
@@ -520,7 +522,27 @@ public class MainActivity extends AppCompatActivity {
     private void updateSubFilterUI() {
         layoutSubChips.removeAllViews();
 
-        if (currentTab == MainTab.JADWAL) {
+        if (currentTab == MainTab.AIRING) {
+            layoutContextualBar.setVisibility(View.GONE);
+            scrollSubFilters.setVisibility(View.VISIBLE);
+
+            String[] lanes = {"ALL", "PREV", "LONG"};
+            String[] laneLabels = {"Semua (Dual-Lane)", "2 Musim Sebelumnya", "Serial Panjang"};
+            for (int i = 0; i < lanes.length; i++) {
+                final String l = lanes[i];
+                boolean isSelected = l.equalsIgnoreCase(selectedAiringLane);
+
+                TextView chip = createSubFilterChip(laneLabels[i], isSelected);
+                chip.setOnClickListener(v -> {
+                    HapticHelper.performClick(v);
+                    selectedAiringLane = l;
+                    currentPage = 1;
+                    updateSubFilterUI();
+                    loadCurrentFeed();
+                });
+                layoutSubChips.addView(chip);
+            }
+        } else if (currentTab == MainTab.JADWAL) {
             layoutContextualBar.setVisibility(View.GONE);
             scrollSubFilters.setVisibility(View.VISIBLE);
 
@@ -675,8 +697,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (currentTab == MainTab.MUSIM) {
             layoutContextualBar.setVisibility(View.GONE);
-            // BERANDA: 1 Featured Spotlight Hero + 2-Column Grid
-            AniListClient.getTrending(currentPage, 35, new AniListClient.Callback<List<Anime>>() {
+            // BERANDA: Anime yang tayang pada musim saat ini (Current Season Airing)
+            AniListClient.getCurrentSeasonAiring(currentPage, 35, new AniListClient.Callback<List<Anime>>() {
                 @Override
                 public void onSuccess(List<Anime> result) {
                     mainHandler.post(() -> {
@@ -715,7 +737,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onError(Throwable t) {
                     mainHandler.post(() -> {
                         setLoading(false);
-                        Toast.makeText(MainActivity.this, "Gagal memuat beranda: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Gagal memuat anime musim ini: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     });
                 }
             });
@@ -725,10 +747,9 @@ public class MainActivity extends AppCompatActivity {
 
             switch (currentTab) {
                 case AIRING:
-                    layoutContextualBar.setVisibility(View.VISIBLE);
-                    tvContextualTitle.setText("SEDANG TAYANG (AIRING LIVE)" + (currentPage > 1 ? " - Hal " + currentPage : ""));
-                    btnClearHistoryAll.setVisibility(View.GONE);
-                    AniListClient.getAiring(currentPage, 40, createCallback("Gagal Memuat Sedang Tayang", 40));
+                    layoutContextualBar.setVisibility(View.GONE);
+                    // MASIH TAYANG: Dual-Lane (Anime 2 musim sebelumnya ongoing + serial panjang berkelanjutan)
+                    AniListClient.getMasihTayangDualLane(currentPage, 40, selectedAiringLane, createCallback("Gagal Memuat Masih Tayang", 40));
                     break;
                 case JADWAL:
                     layoutContextualBar.setVisibility(View.GONE);
