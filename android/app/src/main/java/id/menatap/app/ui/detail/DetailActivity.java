@@ -35,6 +35,7 @@ import id.menatap.app.data.service.HiAnimeClient;
 import id.menatap.app.data.service.OtakudesuScraper;
 import id.menatap.app.ui.adapter.EpisodeAdapter;
 import id.menatap.app.ui.adapter.RelatedAnimeAdapter;
+import id.menatap.app.ui.player.PlaybackDataHolder;
 import id.menatap.app.ui.player.PlayerActivity;
 import id.menatap.app.util.AnimeThemeManager;
 import id.menatap.app.util.HapticHelper;
@@ -80,17 +81,36 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        anime = (Anime) getIntent().getSerializableExtra("anime");
+        if (getIntent() != null && getIntent().hasExtra("anime")) {
+            anime = (Anime) getIntent().getSerializableExtra("anime");
+        }
+        if (anime == null && savedInstanceState != null) {
+            anime = (Anime) savedInstanceState.getSerializable("saved_anime");
+        }
+        if (anime == null) {
+            anime = DetailDataHolder.getAnime();
+        }
+
         if (anime == null) {
             finish();
             return;
         }
+
+        DetailDataHolder.setAnime(anime);
 
         initViews();
         bindAnimeData();
         setupEpisodeRecycler();
         loadAccurateEpisodes();
         loadRelations();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (anime != null) {
+            outState.putSerializable("saved_anime", anime);
+        }
     }
 
     @Override
@@ -562,6 +582,8 @@ public class DetailActivity extends AppCompatActivity {
 
     private void launchPlayer(int index) {
         if (index < 0 || index >= episodeList.size()) return;
+
+        PlaybackDataHolder.set(anime, episodeList, index);
 
         Intent intent = new Intent(this, PlayerActivity.class);
         intent.putExtra("anime", anime);

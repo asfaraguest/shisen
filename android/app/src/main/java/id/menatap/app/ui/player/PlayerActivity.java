@@ -1,5 +1,8 @@
 package id.menatap.app.ui.player;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
@@ -96,6 +99,9 @@ import id.menatap.app.ui.adapter.EpisodeAdapter;
 import id.menatap.app.ui.dialog.SettingsDialog;
 import id.menatap.app.util.HapticHelper;
 import okhttp3.OkHttpClient;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class PlayerActivity extends AppCompatActivity {
 
@@ -194,9 +200,13 @@ public class PlayerActivity extends AppCompatActivity {
     private final List<Episode> episodeList = new ArrayList<>();
     private int currentIndex = 0;
     private EpisodeAdapter episodeAdapter;
+    private static final ExecutorService dbExecutor = Executors.newSingleThreadExecutor();
+    private long lastHistorySaveTime = 0;
+    private long lastHistorySavePosition = -1;
+
     private boolean isSortAscending = true;
 
-    private AniSkipClient.SkipResult currentSkipTimes;
+    private volatile AniSkipClient.SkipResult currentSkipTimes;
     private final Handler progressHandler = new Handler(Looper.getMainLooper());
     private Runnable progressRunnable;
     private final Handler autoHideHandler = new Handler(Looper.getMainLooper());
@@ -219,27 +229,29 @@ public class PlayerActivity extends AppCompatActivity {
     private final Runnable subtitleSyncRunnable = new Runnable() {
         @Override
         public void run() {
-            if (player != null && subtitleManager != null) {
-                if (subtitleManager.isSubEnabled()) {
-                    String text = subtitleManager.getCurrentText(player.getCurrentPosition());
-                    if (text != null && !text.isEmpty()) {
-                        if (!text.equals(tvSubtitles.getText().toString())) {
-                            tvSubtitles.setText(text);
-                        }
-                        if (tvSubtitles.getVisibility() != View.VISIBLE) {
-                            tvSubtitles.setVisibility(View.VISIBLE);
+            try {
+                if (player != null && subtitleManager != null) {
+                    if (subtitleManager.isSubEnabled()) {
+                        String text = subtitleManager.getCurrentText(player.getCurrentPosition());
+                        if (text != null && !text.isEmpty()) {
+                            if (!text.equals(tvSubtitles.getText().toString())) {
+                                tvSubtitles.setText(text);
+                            }
+                            if (tvSubtitles.getVisibility() != View.VISIBLE) {
+                                tvSubtitles.setVisibility(View.VISIBLE);
+                            }
+                        } else {
+                            if (tvSubtitles.getVisibility() != View.GONE) {
+                                tvSubtitles.setVisibility(View.GONE);
+                            }
                         }
                     } else {
                         if (tvSubtitles.getVisibility() != View.GONE) {
                             tvSubtitles.setVisibility(View.GONE);
                         }
                     }
-                } else {
-                    if (tvSubtitles.getVisibility() != View.GONE) {
-                        tvSubtitles.setVisibility(View.GONE);
-                    }
                 }
-            }
+            } catch (Throwable ignored) {}
             if (isActivityRunning) {
                 subtitleHandler.postDelayed(this, 80);
             }
@@ -256,19 +268,40 @@ public class PlayerActivity extends AppCompatActivity {
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         subtitleManager = new SubtitleManager(this);
 
-        anime = (Anime) getIntent().getSerializableExtra("anime");
-        @SuppressWarnings("unchecked")
-        List<Episode> eps = (List<Episode>) getIntent().getSerializableExtra("episodes");
-        if (eps != null) {
-            episodeList.addAll(eps);
+        if (getIntent() != null) {
+            anime = (Anime) getIntent().getSerializableExtra("anime");
+            @SuppressWarnings("unchecked")
+            List<Episode> eps = (List<Episode>) getIntent().getSerializableExtra("episodes");
+            if (eps != null) {
+                episodeList.addAll(eps);
+            }
+            currentIndex = getIntent().getIntExtra("selectedIndex", 0);
         }
-        currentIndex = getIntent().getIntExtra("selectedIndex", 0);
+
+        if (anime == null && savedInstanceState != null) {
+            anime = (Anime) savedInstanceState.getSerializable("saved_anime");
+            @SuppressWarnings("unchecked")
+            List<Episode> savedEps = (List<Episode>) savedInstanceState.getSerializable("saved_episodes");
+            if (savedEps != null && !savedEps.isEmpty()) {
+                episodeList.addAll(savedEps);
+            }
+            currentIndex = savedInstanceState.getInt("saved_index", 0);
+        }
+
+        if ((anime == null || episodeList.isEmpty()) && PlaybackDataHolder.hasData()) {
+            anime = PlaybackDataHolder.getAnime();
+            episodeList.clear();
+            episodeList.addAll(PlaybackDataHolder.getEpisodes());
+            currentIndex = PlaybackDataHolder.getIndex();
+        }
 
         if (anime == null || episodeList.isEmpty()) {
             Toast.makeText(this, "Data episode tidak ditemukan", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
+
+        PlaybackDataHolder.set(anime, episodeList, currentIndex);
 
         initViews();
         registerPipReceiver();
@@ -469,6 +502,10 @@ public class PlayerActivity extends AppCompatActivity {
         // Initialize Media3 MediaSession & background PlaybackService
         try {
             Intent sessionIntent = new Intent(this, PlayerActivity.class);
+            if (anime != null) sessionIntent.putExtra("anime", anime);
+            if (!episodeList.isEmpty()) sessionIntent.putExtra("episodes", (Serializable) episodeList);
+            sessionIntent.putExtra("selectedIndex", currentIndex);
+
             PendingIntent pi = PendingIntent.getActivity(this, 0, sessionIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
             mediaSession = new MediaSession.Builder(this, player)
@@ -477,11 +514,9 @@ public class PlayerActivity extends AppCompatActivity {
             PlaybackService.setActiveSession(mediaSession);
 
             Intent serviceIntent = new Intent(this, PlaybackService.class);
-            if (Build.VERSION.SDK_INT >= 26) {
-                startForegroundService(serviceIntent);
-            } else {
+            try {
                 startService(serviceIntent);
-            }
+            } catch (Throwable ignored) {}
         } catch (Throwable ignored) {}
 
         // Hide default ExoPlayer subtitle view since we use seamless custom overlay
@@ -1306,9 +1341,13 @@ public class PlayerActivity extends AppCompatActivity {
         progressRunnable = new Runnable() {
             @Override
             public void run() {
-                if (player != null && player.isPlaying()) {
-                    checkSkipTimes();
-                    saveCurrentPlayback();
+                try {
+                    if (player != null && player.isPlaying()) {
+                        checkSkipTimes();
+                        saveCurrentPlayback(false);
+                    }
+                } catch (Throwable ignored) {}
+                if (isActivityRunning) {
                     progressHandler.postDelayed(this, 1000);
                 }
             }
@@ -1354,15 +1393,45 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void saveCurrentPlayback() {
-        if (player == null || episodeList.isEmpty() || currentIndex >= episodeList.size()) return;
-        Episode ep = episodeList.get(currentIndex);
-        long pos = player.getCurrentPosition();
-        long dur = player.getDuration();
-        if (dur <= 0) dur = 1;
+        saveCurrentPlayback(false);
+    }
 
-        MenatapDatabase.getInstance(this).saveHistory(anime.slug, anime.title, anime.poster, ep.number, pos, dur);
-        ep.isWatched = true;
-        episodeAdapter.notifyItemChanged(currentIndex);
+    private void saveCurrentPlayback(boolean force) {
+        try {
+            if (player == null || anime == null || episodeList.isEmpty() || currentIndex >= episodeList.size()) return;
+            Episode ep = episodeList.get(currentIndex);
+            final long pos = player.getCurrentPosition();
+            long durVal = player.getDuration();
+            if (durVal <= 0) durVal = 1;
+            final long dur = durVal;
+
+            PlaybackDataHolder.setPositionMs(pos);
+
+            long now = System.currentTimeMillis();
+            // Debounce disk SQLite writes: write at most once every 10s unless forced (e.g. pause/stop/episode change)
+            if (!force && (now - lastHistorySaveTime < 10000) && Math.abs(pos - lastHistorySavePosition) < 10000) {
+                return;
+            }
+            lastHistorySaveTime = now;
+            lastHistorySavePosition = pos;
+
+            final String slug = anime.slug;
+            final String title = anime.title;
+            final String poster = anime.poster;
+            final int epNum = ep.number;
+            dbExecutor.execute(() -> {
+                try {
+                    MenatapDatabase.getInstance(getApplicationContext()).saveHistory(slug, title, poster, epNum, pos, dur);
+                } catch (Throwable ignored) {}
+            });
+
+            if (!ep.isWatched) {
+                ep.isWatched = true;
+                if (episodeAdapter != null) {
+                    episodeAdapter.notifyItemChanged(currentIndex);
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 
     private void playNextEpisode() {
@@ -2335,16 +2404,6 @@ public class PlayerActivity extends AppCompatActivity {
             }
         } else {
             isScreenLocked = false;
-            boolean isRestored = !isFinishing();
-            if (!isRestored) {
-                if (player != null) {
-                    player.pause();
-                }
-                saveCurrentPlayback();
-                finish();
-                return;
-            }
-
             if (playerView != null) {
                 playerView.setUseController(true);
             }
@@ -2379,7 +2438,7 @@ public class PlayerActivity extends AppCompatActivity {
             player.pause();
         }
         stopProgressTracker();
-        saveCurrentPlayback();
+        saveCurrentPlayback(true);
     }
 
     @Override
@@ -2388,11 +2447,48 @@ public class PlayerActivity extends AppCompatActivity {
         if (player != null) {
             player.pause();
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode()) {
-            finish();
-        }
         stopProgressTracker();
-        saveCurrentPlayback();
+        saveCurrentPlayback(true);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (anime != null) {
+            outState.putSerializable("saved_anime", anime);
+        }
+        if (!episodeList.isEmpty()) {
+            outState.putSerializable("saved_episodes", (Serializable) new ArrayList<>(episodeList));
+        }
+        outState.putInt("saved_index", currentIndex);
+        if (player != null) {
+            long pos = player.getCurrentPosition();
+            outState.putLong("saved_position", pos);
+            PlaybackDataHolder.setPositionMs(pos);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent != null && intent.hasExtra("anime")) {
+            Anime newAnime = (Anime) intent.getSerializableExtra("anime");
+            @SuppressWarnings("unchecked")
+            List<Episode> newEps = (List<Episode>) intent.getSerializableExtra("episodes");
+            int newIndex = intent.getIntExtra("selectedIndex", -1);
+            if (newAnime != null && newEps != null && !newEps.isEmpty()) {
+                anime = newAnime;
+                episodeList.clear();
+                episodeList.addAll(newEps);
+                if (newIndex >= 0) {
+                    PlaybackDataHolder.set(anime, episodeList, newIndex);
+                    if (newIndex != currentIndex) {
+                        playEpisode(newIndex);
+                    }
+                }
+            }
+        }
     }
 
     @Override

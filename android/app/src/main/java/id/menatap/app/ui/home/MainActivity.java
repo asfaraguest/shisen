@@ -259,10 +259,30 @@ public class MainActivity extends AppCompatActivity {
         setupRecyclerView();
         setupListeners();
         setupBackHandler();
-        selectTab(MainTab.MUSIM);
+
+        MainTab targetTab = MainTab.MUSIM;
+        if (savedInstanceState != null) {
+            String tabName = savedInstanceState.getString("saved_tab");
+            if (tabName != null) {
+                try {
+                    targetTab = MainTab.valueOf(tabName);
+                } catch (Exception ignored) {}
+            }
+            currentPage = savedInstanceState.getInt("saved_page", 1);
+        }
+        selectTab(targetTab);
 
         // Silent background update check on app launch
         mainHandler.postDelayed(() -> AppUpdateManager.getInstance().checkUpdate(this, false), 2500);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (currentTab != null) {
+            outState.putString("saved_tab", currentTab.name());
+        }
+        outState.putInt("saved_page", currentPage);
     }
 
     @Override

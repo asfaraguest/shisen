@@ -40,7 +40,7 @@ public class AniSkipClient {
 
         new Thread(() -> {
             try {
-                String url = String.format("https://api.aniskip.com/v2/skip-times/%d/%d?types=op&types=ed&episodeLength=%.0f",
+                String url = String.format(java.util.Locale.US, "https://api.aniskip.com/v2/skip-times/%d/%d?types=op&types=ed&episodeLength=%.0f",
                         malId, episodeNum, durationSec > 0 ? durationSec : 0);
                 OkHttpClient client = HttpClientProvider.getClient();
                 Request request = new Request.Builder()

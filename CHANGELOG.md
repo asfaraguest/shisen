@@ -4,6 +4,15 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 
 ## [0.1.0-beta.2] - 2026-10-25
 
+### Diperbaiki
+- **Pencegahan Terlempar ke View Sebelumnya & Watchdog Crash Saat Menonton / Idle**:
+  - **Eliminasi Fatal Foreground Service Crash (`PlayerActivity`, `PlaybackService`)**: Mengganti `startForegroundService` di `PlayerActivity.setupPlayer()` menjadi `startService` aman dengan `sessionIntent` lengkap, meniadakan crash OS `ForegroundServiceDidNotStartInTimeException` yang mematikan activity saat resolusi stream berlangsung.
+  - **Eliminasi UI Freeze & ANR pada Main UI Thread (`PlayerActivity`, `MenatapDatabase`)**: Memindahkan operasi penulisan disk SQLite `saveHistory` ke single-thread executor latar belakang (`dbExecutor`) dengan debouncing 10 detik, serta meniadakan `notifyItemChanged` setiap 1000ms pada thread UI utama yang memicu frame drops dan watchdog termination.
+  - **Penghapusan `finish()` Tak Disengaja Saat Layar Mati / Idle (`PlayerActivity.onStop`)**: Menghapus pemanggilan `finish()` prematur di `onStop()` saat layar mati atau berpindah sementara, memastikan video/player tetap utuh saat pengguna kembali ke aplikasi.
+  - **Restorasi Status Activity Lengkap Saat Memory Reclamation / Idle Timeout (`DetailActivity`, `PlayerActivity`, `MainActivity`)**: Mengimplementasikan `onSaveInstanceState`, pemulihan `savedInstanceState`, serta in-memory data holder (`PlaybackDataHolder`, `DetailDataHolder`) agar view tidak memanggil `finish()` atau kehilangan data saat proses direklamasi sistem Android.
+  - **Optimasi Alokasi Memori & Downsampling Gambar (`ImageLoader`, `MenatapApplication`)**: Menerapkan dynamic downsampling `inSampleSize` saat mendecode gambar web/disk, pembersihan memori pada `onTrimMemory` / `onLowMemory`, dan penambahan `android:largeHeap="true"` untuk meniadakan OOM crash pada penayangan berkelanjutan.
+  - **Pencegahan Concurrency Race Condition Subtitle (`SubtitleManager`)**: Penggunaan referensi cue snapshot aman dan penanganan `try-catch` terisolasi pada sinkronisasi subtitle real-time (80ms interval).
+
 ### Ditambahkan
 - **Fitur Haptic Feedback & Getaran Ergonomis (`AppSettings`, `HapticHelper`, `AndroidManifest.xml`)**:
   - Penambahan izin sistem Android `<uses-permission android:name="android.permission.VIBRATE" />` pada `AndroidManifest.xml`.

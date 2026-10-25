@@ -21,8 +21,8 @@ public class SubtitleManager {
     private final Context context;
     private SubtitleStateListener listener;
 
-    private List<SubtitleCue> activeCues = new ArrayList<>();
-    private List<SubtitleCue> sourceEnglishCues = new ArrayList<>();
+    private volatile List<SubtitleCue> activeCues = new ArrayList<>();
+    private volatile List<SubtitleCue> sourceEnglishCues = new ArrayList<>();
 
     private boolean subEnabled = true;
     private String activeLanguage = "id"; // "id" | "en" | ...
@@ -72,17 +72,21 @@ public class SubtitleManager {
     }
 
     public synchronized void clearCues() {
-        activeCues.clear();
+        activeCues = new ArrayList<>();
     }
 
     public synchronized String getCurrentText(long currentPositionMs) {
-        if (!subEnabled || activeCues.isEmpty()) return "";
+        if (!subEnabled) return "";
+        List<SubtitleCue> cues = activeCues;
+        if (cues == null || cues.isEmpty()) return "";
 
         long effectivePos = currentPositionMs + subtitleOffsetMs;
-        for (int i = 0; i < activeCues.size(); i++) {
-            SubtitleCue cue = activeCues.get(i);
-            if (cue.isActive(effectivePos)) {
-                return cue.text;
+        int size = cues.size();
+        for (int i = 0; i < size; i++) {
+            if (i >= cues.size()) break;
+            SubtitleCue cue = cues.get(i);
+            if (cue != null && cue.isActive(effectivePos)) {
+                return cue.text != null ? cue.text : "";
             }
         }
         return "";
