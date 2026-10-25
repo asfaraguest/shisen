@@ -28,22 +28,28 @@ import id.menatap.app.R;
 import id.menatap.app.data.db.MenatapDatabase;
 import id.menatap.app.data.model.Anime;
 import id.menatap.app.data.model.Episode;
+import id.menatap.app.data.service.AniChanClient;
 import id.menatap.app.data.service.HiAnimeClient;
 import id.menatap.app.data.service.OtakudesuScraper;
 import id.menatap.app.ui.adapter.EpisodeAdapter;
 import id.menatap.app.ui.player.PlayerActivity;
 import id.menatap.app.util.HapticHelper;
 import id.menatap.app.util.ImageLoader;
+import id.menatap.app.util.TitleMatcher;
 
 public class DetailActivity extends AppCompatActivity {
 
     private ImageView ivBackdrop;
     private ImageButton btnBack;
     private TextView tvTitle;
+    private TextView tvRomaji;
     private TextView tvMeta;
+    private TextView tvGenres;
     private TextView tvSynopsis;
+    private TextView tvSynopsisToggle;
     private Button btnPlayPrimary;
     private Button btnBookmark;
+    private ProgressBar pbEpisodesLoading;
     private RecyclerView rvEpisodes;
 
     private Anime anime;
@@ -51,6 +57,7 @@ public class DetailActivity extends AppCompatActivity {
     private final List<Episode> episodeList = new ArrayList<>();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private int lastWatchedEp = 0;
+    private boolean isSynopsisExpanded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +87,14 @@ public class DetailActivity extends AppCompatActivity {
         ivBackdrop = findViewById(R.id.iv_detail_backdrop);
         btnBack = findViewById(R.id.btn_detail_back);
         tvTitle = findViewById(R.id.tv_detail_title);
+        tvRomaji = findViewById(R.id.tv_detail_romaji);
         tvMeta = findViewById(R.id.tv_detail_meta);
+        tvGenres = findViewById(R.id.tv_detail_genres);
         tvSynopsis = findViewById(R.id.tv_detail_synopsis);
+        tvSynopsisToggle = findViewById(R.id.tv_synopsis_toggle);
         btnPlayPrimary = findViewById(R.id.btn_play_primary);
         btnBookmark = findViewById(R.id.btn_toggle_bookmark);
+        pbEpisodesLoading = findViewById(R.id.pb_episodes_loading);
         rvEpisodes = findViewById(R.id.rv_detail_episodes);
 
         btnBack.setOnClickListener(v -> {
@@ -101,17 +112,39 @@ public class DetailActivity extends AppCompatActivity {
             HapticHelper.performClick(v);
             startPlaybackAtLastOrFirst();
         });
+
+        tvSynopsisToggle.setOnClickListener(v -> {
+            HapticHelper.performClick(v);
+            isSynopsisExpanded = !isSynopsisExpanded;
+            if (isSynopsisExpanded) {
+                tvSynopsis.setMaxLines(Integer.MAX_VALUE);
+                tvSynopsisToggle.setText("Sembunyikan ▲");
+            } else {
+                tvSynopsis.setMaxLines(3);
+                tvSynopsisToggle.setText("Selengkapnya ▼");
+            }
+        });
     }
 
     private void bindAnimeData() {
-        tvTitle.setText(anime.title);
+        String safeTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
+                ? anime.title : anime.romajiTitle;
+        tvTitle.setText(safeTitle);
 
-        String backdropUrl = (anime.banner != null && !anime.banner.isEmpty()) ? anime.banner : anime.poster;
+        if (anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle) && !anime.romajiTitle.equalsIgnoreCase(safeTitle)) {
+            tvRomaji.setText(anime.romajiTitle);
+            tvRomaji.setVisibility(View.VISIBLE);
+        } else {
+            tvRomaji.setVisibility(View.GONE);
+        }
+
+        String backdropUrl = (anime.banner != null && !anime.banner.isEmpty() && !"null".equalsIgnoreCase(anime.banner))
+                ? anime.banner : anime.poster;
         ImageLoader.load(backdropUrl, ivBackdrop);
 
         StringBuilder meta = new StringBuilder();
-        if (anime.season != null && !anime.season.isEmpty()) {
-            meta.append(anime.season).append(" ");
+        if (anime.season != null && !anime.season.isEmpty() && !"null".equalsIgnoreCase(anime.season)) {
+            meta.append(anime.season.substring(0, 1).toUpperCase(Locale.US)).append(anime.season.substring(1).toLowerCase(Locale.US)).append(" ");
             if (anime.year > 0) meta.append(anime.year).append(" · ");
         } else if (anime.year > 0) {
             meta.append(anime.year).append(" · ");
@@ -123,7 +156,7 @@ public class DetailActivity extends AppCompatActivity {
             meta.append(" · ").append(anime.airedEpisodesCount).append(" Episode Tayang");
         } else if (anime.episodesCount > 0) {
             meta.append(" · ").append(anime.episodesCount).append(" Episode");
-        } else if (anime.epsCounter != null && !anime.epsCounter.isEmpty()) {
+        } else if (anime.epsCounter != null && !anime.epsCounter.isEmpty() && !"null".equalsIgnoreCase(anime.epsCounter)) {
             meta.append(" · ").append(anime.epsCounter);
         }
 
@@ -133,7 +166,20 @@ public class DetailActivity extends AppCompatActivity {
 
         tvMeta.setText(meta.toString());
 
-        if (anime.synopsis != null && !anime.synopsis.isEmpty()) {
+        if (anime.genres != null && !anime.genres.isEmpty()) {
+            StringBuilder gb = new StringBuilder();
+            int c = Math.min(4, anime.genres.size());
+            for (int i = 0; i < c; i++) {
+                gb.append(anime.genres.get(i));
+                if (i < c - 1) gb.append(" • ");
+            }
+            tvGenres.setText(gb.toString());
+            tvGenres.setVisibility(View.VISIBLE);
+        } else {
+            tvGenres.setVisibility(View.GONE);
+        }
+
+        if (anime.synopsis != null && !anime.synopsis.isEmpty() && !"null".equalsIgnoreCase(anime.synopsis)) {
             String clean = Html.fromHtml(anime.synopsis, Html.FROM_HTML_MODE_LEGACY).toString().trim();
             tvSynopsis.setText(clean);
         } else {
@@ -180,7 +226,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void loadAccurateEpisodes() {
-        // Calculate strict safe maximum aired episodes
+        // Safe airing count (anti-overflow on on-going anime)
         int safeAiredCount = 1;
         boolean isReleasing = "RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status);
 
@@ -190,7 +236,7 @@ public class DetailActivity extends AppCompatActivity {
             } else if (anime.airedEpisodesCount > 0) {
                 safeAiredCount = anime.airedEpisodesCount;
             } else {
-                safeAiredCount = 1; // Only start with episode 1 until provider reports more
+                safeAiredCount = 1; // Default to 1 episode until provider confirms more
             }
         } else {
             if ("MOVIE".equalsIgnoreCase(anime.format)) {
@@ -213,18 +259,26 @@ public class DetailActivity extends AppCompatActivity {
         refreshWatchedStates();
         episodeAdapter.setData(episodeList);
 
-        // Fetch real episodes from HiAnime (Primary provider)
-        String query = (anime.title != null && !anime.title.isEmpty()) ? anime.title : anime.romajiTitle;
-        HiAnimeClient.searchAnime(query, new HiAnimeClient.Callback<List<Anime>>() {
+        if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.VISIBLE);
+
+        // TIER 1: HiAnime Search & Accurate Episode Fetch
+        String primaryTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
+                ? anime.title : anime.romajiTitle;
+        final String targetQuery = primaryTitle != null ? primaryTitle : "Anime";
+        final String altQuery = (anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
+                ? anime.romajiTitle : "";
+
+        HiAnimeClient.searchAnime(targetQuery, new HiAnimeClient.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> results) {
-                if (results != null && !results.isEmpty()) {
-                    String matchedSlug = results.get(0).slug;
+                String matchedSlug = pickBestSlug(results, targetQuery, altQuery);
+                if (matchedSlug != null) {
                     HiAnimeClient.getEpisodes(matchedSlug, new HiAnimeClient.Callback<List<Episode>>() {
                         @Override
                         public void onSuccess(List<Episode> hiEpisodes) {
                             if (hiEpisodes != null && !hiEpisodes.isEmpty()) {
                                 mainHandler.post(() -> {
+                                    if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
                                     episodeList.clear();
                                     episodeList.addAll(hiEpisodes);
                                     anime.airedEpisodesCount = hiEpisodes.size();
@@ -233,18 +287,96 @@ public class DetailActivity extends AppCompatActivity {
                                 });
                                 return;
                             }
-                            // Fallback to Otakudesu if HiAnime has empty episodes
-                            fetchOtakudesuFallback();
+                            fetchAniChanFallback();
                         }
 
                         @Override
                         public void onError(Throwable t) {
-                            fetchOtakudesuFallback();
+                            fetchAniChanFallback();
+                        }
+                    });
+                } else if (!altQuery.isEmpty() && !altQuery.equalsIgnoreCase(targetQuery)) {
+                    HiAnimeClient.searchAnime(altQuery, new HiAnimeClient.Callback<List<Anime>>() {
+                        @Override
+                        public void onSuccess(List<Anime> res2) {
+                            String matched2 = pickBestSlug(res2, targetQuery, altQuery);
+                            if (matched2 != null) {
+                                HiAnimeClient.getEpisodes(matched2, new HiAnimeClient.Callback<List<Episode>>() {
+                                    @Override
+                                    public void onSuccess(List<Episode> hiEps) {
+                                        if (hiEps != null && !hiEps.isEmpty()) {
+                                            mainHandler.post(() -> {
+                                                if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
+                                                episodeList.clear();
+                                                episodeList.addAll(hiEps);
+                                                anime.airedEpisodesCount = hiEps.size();
+                                                refreshWatchedStates();
+                                                episodeAdapter.setData(episodeList);
+                                            });
+                                            return;
+                                        }
+                                        fetchAniChanFallback();
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable t) {
+                                        fetchAniChanFallback();
+                                    }
+                                });
+                            } else {
+                                fetchAniChanFallback();
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable t) {
+                            fetchAniChanFallback();
                         }
                     });
                 } else {
-                    fetchOtakudesuFallback();
+                    fetchAniChanFallback();
                 }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                fetchAniChanFallback();
+            }
+        });
+    }
+
+    private String pickBestSlug(List<Anime> list, String target, String alt) {
+        if (list == null || list.isEmpty()) return null;
+        for (Anime a : list) {
+            if (TitleMatcher.isTitleMatch(target, a.title) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, a.title))) {
+                return a.slug;
+            }
+        }
+        return null;
+    }
+
+    // TIER 2 Fallback: AniChan
+    private void fetchAniChanFallback() {
+        if (anime.id <= 0) {
+            fetchOtakudesuFallback();
+            return;
+        }
+
+        AniChanClient.getEpisodes(anime.id, new AniChanClient.Callback<List<Episode>>() {
+            @Override
+            public void onSuccess(List<Episode> aniChanEps) {
+                if (aniChanEps != null && !aniChanEps.isEmpty()) {
+                    mainHandler.post(() -> {
+                        if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
+                        episodeList.clear();
+                        episodeList.addAll(aniChanEps);
+                        anime.airedEpisodesCount = aniChanEps.size();
+                        refreshWatchedStates();
+                        episodeAdapter.setData(episodeList);
+                    });
+                    return;
+                }
+                fetchOtakudesuFallback();
             }
 
             @Override
@@ -254,13 +386,18 @@ public class DetailActivity extends AppCompatActivity {
         });
     }
 
+    // TIER 3 Fallback: Otakudesu
     private void fetchOtakudesuFallback() {
-        String cleanTitle = (anime.romajiTitle != null && !anime.romajiTitle.isEmpty()) ? anime.romajiTitle : anime.title;
+        String cleanTitle = (anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
+                ? anime.romajiTitle : anime.title;
         cleanTitle = cleanTitle.replaceAll("(?i)(season|part|s\\d+|2nd|3rd|4th)\\b", "").trim();
 
         OtakudesuScraper.searchAnime(cleanTitle, new OtakudesuScraper.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> results) {
+                mainHandler.post(() -> {
+                    if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
+                });
                 if (results != null && !results.isEmpty()) {
                     String matchedSlug = results.get(0).slug;
                     OtakudesuScraper.getEpisodes(matchedSlug, new OtakudesuScraper.Callback<List<Episode>>() {
@@ -284,7 +421,11 @@ public class DetailActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onError(Throwable t) {}
+            public void onError(Throwable t) {
+                mainHandler.post(() -> {
+                    if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
+                });
+            }
         });
     }
 

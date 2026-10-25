@@ -225,7 +225,9 @@ public class PlayerActivity extends AppCompatActivity {
         currentIndex = index;
         Episode ep = episodeList.get(index);
 
-        tvPortraitAnimeTitle.setText(anime.title);
+        String safeTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
+                ? anime.title : anime.romajiTitle;
+        tvPortraitAnimeTitle.setText(safeTitle);
         tvPortraitCurrentEp.setText("Memutar Episode " + ep.number);
         episodeAdapter.setCurrentPlayingNumber(ep.number);
         rvPortraitEpisodes.smoothScrollToPosition(index);
@@ -265,6 +267,12 @@ public class PlayerActivity extends AppCompatActivity {
         headers.put("User-Agent", HttpClientProvider.USER_AGENT);
         if (source.headers != null) {
             headers.putAll(source.headers);
+        }
+        if (!headers.containsKey("Referer") || headers.get("Referer") == null || headers.get("Referer").isEmpty()) {
+            headers.put("Referer", "https://megaplay.buzz/");
+        }
+        if (!headers.containsKey("Origin") || headers.get("Origin") == null || headers.get("Origin").isEmpty()) {
+            headers.put("Origin", "https://megaplay.buzz");
         }
 
         DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory()

@@ -1,26 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Cold-Frost & Deep Obsidian Canvas -->
-    <color name="frost_void">#080C14</color>
+    <!-- Nordic Frost & Midnight Slate Canvas (Soft on Eyes / Eye-Friendly) -->
+    <color name="frost_void">#090D16</color>
     <color name="frost_surface">#0F1726</color>
-    <color name="frost_elevated">#172136</color>
-    <color name="frost_border">#1E2B45</color>
-    <color name="frost_border_subtle">#152033</color>
+    <color name="frost_elevated">#141F33</color>
+    <color name="frost_border">#1F2E4A</color>
+    <color name="frost_border_subtle">#152238</color>
 
-    <!-- Cool Spectrum Accents -->
-    <color name="accent_glacial">#00F2FE</color>
-    <color name="accent_azure">#4FACFE</color>
+    <!-- Cool Spectrum Accents (Serene & Eye-Friendly Glow) -->
+    <color name="accent_glacial">#38BDF8</color>
+    <color name="accent_glacial_deep">#0284C7</color>
+    <color name="accent_azure">#38BDF8</color>
     <color name="accent_frost_iris">#818CF8</color>
-    <color name="accent_mint">#10B981</color>
-    <color name="accent_danger">#EF4444</color>
-    <color name="star_gold">#F5C518</color>
+    <color name="accent_mint">#34D399</color>
+    <color name="accent_danger">#F87171</color>
+    <color name="star_gold">#FBBF24</color>
 
-    <!-- Typography Scale -->
-    <color name="text_frost_bright">#F8FAFC</color>
+    <!-- Typography Scale (Soft Off-White, Anti-Glare) -->
+    <color name="text_frost_bright">#F1F5F9</color>
     <color name="text_frost_subtle">#94A3B8</color>
     <color name="text_frost_dim">#64748B</color>
 
-    <!-- Frosted Surfaces -->
+    <!-- Frosted Surfaces & Overlays -->
     <color name="dock_background">#E60F1726</color>
-    <color name="hud_background">#D90B0F19</color>
+    <color name="hud_background">#D9090D16</color>
+    <color name="glass_button">#2638BDF8</color>
+    <color name="glass_card">#1A1E2D4A</color>
 </resources>

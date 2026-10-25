@@ -36,29 +36,39 @@ public class Anime implements Serializable {
 
     public Anime() {}
 
+    private static String safeStr(JSONObject json, String key, String fallback) {
+        if (json == null || !json.has(key) || json.isNull(key)) return fallback;
+        String s = json.optString(key, fallback);
+        if (s == null || "null".equalsIgnoreCase(s.trim())) return fallback;
+        return s.trim();
+    }
+
     public static Anime fromJson(JSONObject json) {
         Anime a = new Anime();
         if (json == null) return a;
         a.id = json.optInt("id", 0);
-        a.slug = json.optString("slug", json.optString("id", ""));
-        a.title = json.optString("title", "");
-        a.romajiTitle = json.optString("romaji_title", a.title);
-        a.poster = json.optString("poster", "");
-        a.banner = json.optString("banner", "");
+        a.slug = safeStr(json, "slug", safeStr(json, "id", ""));
+        a.title = safeStr(json, "title", "Anime");
+        a.romajiTitle = safeStr(json, "romaji_title", a.title);
+        a.poster = safeStr(json, "poster", "");
+        a.banner = safeStr(json, "banner", "");
         a.score = json.optDouble("score", 0.0);
-        a.status = json.optString("status", "");
-        a.format = json.optString("type", json.optString("format", "TV"));
+        a.status = safeStr(json, "status", "");
+        a.format = safeStr(json, "type", safeStr(json, "format", "TV"));
         a.episodesCount = json.optInt("eps", json.optInt("episodes", 0));
-        a.epsCounter = json.optString("eps_counter", "");
-        a.season = json.optString("season", "");
+        a.epsCounter = safeStr(json, "eps_counter", "");
+        a.season = safeStr(json, "season", "");
         a.year = json.optInt("year", 0);
-        a.synopsis = json.optString("synopsis", "");
-        a.studio = json.optString("studio", "");
+        a.synopsis = safeStr(json, "synopsis", "");
+        a.studio = safeStr(json, "studio", "");
         
         JSONArray gArr = json.optJSONArray("genres");
         if (gArr != null) {
             for (int i = 0; i < gArr.length(); i++) {
-                a.genres.add(gArr.optString(i));
+                String g = gArr.optString(i, "");
+                if (g != null && !g.isEmpty() && !"null".equalsIgnoreCase(g)) {
+                    a.genres.add(g.trim());
+                }
             }
         }
         return a;

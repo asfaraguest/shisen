@@ -11,12 +11,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import id.menatap.app.data.model.Episode;
 import id.menatap.app.data.model.StreamSource;
 import id.menatap.app.data.model.SubtitleTrack;
 import okhttp3.MediaType;
@@ -28,17 +31,60 @@ import okhttp3.Response;
 public class AniChanClient {
     public static final String ANICHAN_BASE = "https://anichan.to";
 
-    private static final String STATIC_K = "f7312859";
-    private static final String STATIC_O = "dF+YyX8ksuoyznJHUVeHE1yRdVJVwZM4/FEnWRi2Wbg=";
-    private static final String STATIC_B = "Mh83TJtN3J8ZDnKT35ASzU31AL5zurEGSAsX9scP4Lk=";
+    // Active AniChan encryption keys (verified live)
+    private static String activeK = "903089e1";
+    private static String activeO = "8jaT7svYhpkeirzPKSjTSshKM9gATuwNk9XgHf8mpgM=";
+    private static String activeB = "ZM3doawsrjvonxh8mEbni0WBlgp6rYiASHUBpHLPaqY=";
 
     private static String cachedTokenN = "";
-    private static Map<String, String> cachedCookies = new HashMap<>();
+    private static final Map<String, String> cachedCookies = new HashMap<>();
     private static long tokenExpiresEpoch = 0;
 
     public interface Callback<T> {
         void onSuccess(T result);
         void onError(Throwable t);
+    }
+
+    public static void getEpisodes(int anilistId, Callback<List<Episode>> callback) {
+        new Thread(() -> {
+            try {
+                if (anilistId <= 0) {
+                    callback.onError(new IOException("AniList ID kosong untuk AniChan episodes"));
+                    return;
+                }
+                String url = ANICHAN_BASE + "/api/watch/episodes?anilistId=" + anilistId;
+                OkHttpClient client = HttpClientProvider.getClient();
+                Request req = new Request.Builder()
+                        .url(url)
+                        .header("User-Agent", HttpClientProvider.USER_AGENT)
+                        .header("Referer", ANICHAN_BASE + "/anime/" + anilistId)
+                        .build();
+
+                try (Response resp = client.newCall(req).execute()) {
+                    if (!resp.isSuccessful() || resp.body() == null) {
+                        callback.onError(new IOException("Gagal memuat episodes AniChan: " + resp.code()));
+                        return;
+                    }
+                    String body = resp.body().string();
+                    JSONObject json = new JSONObject(body);
+                    int totalEps = json.optInt("episodes", 0);
+                    if (totalEps <= 0) {
+                        callback.onError(new IOException("Jumlah episode AniChan 0"));
+                        return;
+                    }
+                    List<Episode> list = new ArrayList<>();
+                    for (int i = 1; i <= totalEps; i++) {
+                        Episode ep = new Episode(i);
+                        ep.epId = String.valueOf(i);
+                        ep.provider = "anichan";
+                        list.add(ep);
+                    }
+                    callback.onSuccess(list);
+                }
+            } catch (Exception e) {
+                callback.onError(e);
+            }
+        }).start();
     }
 
     public static void resolveStream(int anilistId, int epNumber, Callback<StreamSource> callback) {
@@ -59,16 +105,18 @@ public class AniChanClient {
                     Request.Builder rb = new Request.Builder()
                             .url(url)
                             .header("User-Agent", HttpClientProvider.USER_AGENT)
-                            .header("X-Wk", STATIC_K)
+                            .header("X-Wk", activeK)
                             .header("Referer", ANICHAN_BASE + "/anime/" + anilistId)
                             .header("Origin", ANICHAN_BASE);
 
-                    if (!cachedCookies.isEmpty()) {
-                        StringBuilder cookieHeader = new StringBuilder();
-                        for (Map.Entry<String, String> e : cachedCookies.entrySet()) {
-                            cookieHeader.append(e.getKey()).append("=").append(e.getValue()).append("; ");
+                    synchronized (cachedCookies) {
+                        if (!cachedCookies.isEmpty()) {
+                            StringBuilder cookieHeader = new StringBuilder();
+                            for (Map.Entry<String, String> e : cachedCookies.entrySet()) {
+                                cookieHeader.append(e.getKey()).append("=").append(e.getValue()).append("; ");
+                            }
+                            rb.header("Cookie", cookieHeader.toString());
                         }
-                        rb.header("Cookie", cookieHeader.toString());
                     }
 
                     OkHttpClient client = HttpClientProvider.getClient();
@@ -100,8 +148,8 @@ public class AniChanClient {
                         String serverName = srv.optString("name", "AniChan HLS");
                         StreamSource source = new StreamSource(streamUrl, "HD", "AniChan (" + serverName + ")", true);
                         source.provider = "AniChan";
-                        source.headers.put("Referer", ANICHAN_BASE + "/");
-                        source.headers.put("Origin", ANICHAN_BASE);
+                        source.headers.put("Referer", "https://megaplay.buzz/");
+                        source.headers.put("Origin", "https://megaplay.buzz");
 
                         JSONArray subs = srv.optJSONArray("subtitles");
                         if (subs != null) {
@@ -149,13 +197,15 @@ public class AniChanClient {
                 throw new IOException("Gagal inisialisasi sesi AniChan: " + resp.code());
             }
 
-            for (String cookie : resp.headers("Set-Cookie")) {
-                int eq = cookie.indexOf('=');
-                int sc = cookie.indexOf(';');
-                if (eq > 0) {
-                    String k = cookie.substring(0, eq).trim();
-                    String v = sc > eq ? cookie.substring(eq + 1, sc).trim() : cookie.substring(eq + 1).trim();
-                    cachedCookies.put(k, v);
+            synchronized (cachedCookies) {
+                for (String cookie : resp.headers("Set-Cookie")) {
+                    int eq = cookie.indexOf('=');
+                    int sc = cookie.indexOf(';');
+                    if (eq > 0) {
+                        String k = cookie.substring(0, eq).trim();
+                        String v = sc > eq ? cookie.substring(eq + 1, sc).trim() : cookie.substring(eq + 1).trim();
+                        cachedCookies.put(k, v);
+                    }
                 }
             }
 
@@ -173,8 +223,8 @@ public class AniChanClient {
         try {
             byte[] iv = Base64.decode(raw.getString("i"), Base64.DEFAULT);
             byte[] cipherText = Base64.decode(raw.getString("d"), Base64.DEFAULT);
-            byte[] rawO = Base64.decode(STATIC_O, Base64.DEFAULT);
-            byte[] rawB = Base64.decode(STATIC_B, Base64.DEFAULT);
+            byte[] rawO = Base64.decode(activeO, Base64.DEFAULT);
+            byte[] rawB = Base64.decode(activeB, Base64.DEFAULT);
 
             byte[] hmacKey = new byte[Math.min(rawO.length, rawB.length)];
             for (int i = 0; i < hmacKey.length; i++) {

@@ -50,11 +50,25 @@ public class AnimeAdapter extends RecyclerView.Adapter<AnimeAdapter.AnimeViewHol
     public void onBindViewHolder(@NonNull AnimeViewHolder holder, int position) {
         Anime anime = items.get(position);
 
-        holder.tvTitle.setText(anime.title);
+        String displayTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
+                ? anime.title
+                : ((anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
+                        ? anime.romajiTitle : "Anime");
+        holder.tvTitle.setText(displayTitle);
         
         // Format meta string
-        String seasonYear = (anime.season != null && !anime.season.isEmpty()) ? (anime.season + " " + anime.year) : (anime.year > 0 ? String.valueOf(anime.year) : "Anime");
-        holder.tvMeta.setText(seasonYear + " · " + anime.format);
+        String seasonStr = (anime.season != null && !anime.season.isEmpty() && !"null".equalsIgnoreCase(anime.season))
+                ? (anime.season.substring(0, 1).toUpperCase(Locale.US) + anime.season.substring(1).toLowerCase(Locale.US))
+                : "";
+        String metaText;
+        if (!seasonStr.isEmpty() && anime.year > 0) {
+            metaText = seasonStr + " " + anime.year + " · " + (anime.format != null ? anime.format : "TV");
+        } else if (anime.year > 0) {
+            metaText = anime.year + " · " + (anime.format != null ? anime.format : "TV");
+        } else {
+            metaText = (anime.format != null && !anime.format.isEmpty()) ? anime.format : "Anime";
+        }
+        holder.tvMeta.setText(metaText);
 
         // Format format badge
         if (anime.format != null && !anime.format.isEmpty()) {

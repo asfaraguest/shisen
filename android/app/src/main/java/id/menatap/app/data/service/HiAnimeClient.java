@@ -68,11 +68,15 @@ public class HiAnimeClient {
                     String title = titleEl.attr("title").trim();
                     if (title.isEmpty()) title = titleEl.text().trim();
 
-                    String href = titleEl.attr("href");
-                    String slug = href.startsWith("/") ? href.substring(1) : href;
-                    if (slug.startsWith("watch/")) {
-                        slug = slug.substring("watch/".length());
+                    String href = titleEl.attr("href").trim();
+                    String slug = href;
+                    if (slug.contains("hianime.at/")) {
+                        slug = slug.substring(slug.indexOf("hianime.at/") + "hianime.at/".length());
                     }
+                    if (slug.startsWith("/")) slug = slug.substring(1);
+                    if (slug.startsWith("watch/")) slug = slug.substring("watch/".length());
+                    if (slug.contains("?")) slug = slug.substring(0, slug.indexOf("?"));
+                    if (slug.endsWith("/")) slug = slug.substring(0, slug.length() - 1);
 
                     if (slug.toLowerCase().contains("hentai") || title.toLowerCase().contains("hentai")) {
                         continue;
@@ -311,8 +315,8 @@ public class HiAnimeClient {
     }
 
     private static String extractNumericId(String slug) {
-        if (slug == null) return "";
-        Pattern p = Pattern.compile("-(\\d+)$");
+        if (slug == null || slug.isEmpty()) return "";
+        Pattern p = Pattern.compile("-(\\d+)(?:[/?#]|$)");
         Matcher m = p.matcher(slug);
         if (m.find()) {
             return m.group(1);

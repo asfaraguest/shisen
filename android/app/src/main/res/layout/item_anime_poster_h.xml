@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="128dp"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="5dp"
+    android:orientation="vertical">
+
+    <!-- Card Poster -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_poster"
+        android:layout_width="128dp"
+        android:layout_height="182dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/frost_surface"
+        app:strokeColor="@color/frost_border"
+        app:strokeWidth="1dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/iv_poster"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="Poster" />
+
+            <!-- Bottom Vignette -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/bg_poster_frost_scrim" />
+
+            <!-- Rating Badge (Top End) -->
+            <TextView
+                android:id="@+id/tv_badge_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="6dp"
+                android:background="@drawable/bg_badge_frost"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="2dp"
+                android:gravity="center_vertical"
+                app:drawableStartCompat="@drawable/ic_star_filled"
+                app:drawableTint="@color/star_gold"
+                android:drawablePadding="2dp"
+                android:text="8.5"
+                android:textColor="@color/star_gold"
+                android:textSize="9.5sp"
+                android:fontFamily="sans-serif-bold" />
+
+            <!-- Episode Badge (Bottom Start) -->
+            <TextView
+                android:id="@+id/tv_badge_ep"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|start"
+                android:layout_margin="6dp"
+                android:background="@drawable/bg_badge_frost"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="2dp"
+                android:text="12 Ep"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="9.5sp"
+                android:fontFamily="sans-serif-medium" />
+        </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Title & Subtitle Below Card -->
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:layout_marginTop="6dp"
+        android:text="Judul Anime"
+        android:textColor="@color/text_frost_bright"
+        android:textSize="12sp"
+        android:fontFamily="sans-serif-medium"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:lineSpacingExtra="1dp" />
+
+    <TextView
+        android:id="@+id/tv_meta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:text="2026 · TV"
+        android:textColor="@color/text_frost_subtle"
+        android:textSize="10.5sp"
+        android:fontFamily="sans-serif"
+        android:singleLine="true"
+        android:ellipsize="end" />
+</LinearLayout>

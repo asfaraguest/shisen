@@ -266,6 +266,28 @@ public class AniListClient {
         });
     }
 
+    public static String optSafeString(JSONObject obj, String key, String fallback) {
+        if (obj == null || !obj.has(key) || obj.isNull(key)) {
+            return fallback;
+        }
+        String val = obj.optString(key, fallback);
+        if (val == null || "null".equalsIgnoreCase(val.trim())) {
+            return fallback;
+        }
+        return val.trim();
+    }
+
+    public static String optSafeString(JSONArray arr, int index, String fallback) {
+        if (arr == null || arr.isNull(index)) {
+            return fallback;
+        }
+        String val = arr.optString(index, fallback);
+        if (val == null || "null".equalsIgnoreCase(val.trim())) {
+            return fallback;
+        }
+        return val.trim();
+    }
+
     public static Anime parseMediaNode(JSONObject m) {
         if (m == null) return null;
         Anime a = new Anime();
@@ -274,32 +296,45 @@ public class AniListClient {
         
         JSONObject titleObj = m.optJSONObject("title");
         if (titleObj != null) {
-            a.title = titleObj.optString("english", titleObj.optString("romaji", ""));
-            if (a.title.isEmpty()) {
-                a.title = titleObj.optString("romaji", titleObj.optString("native", "Anime"));
+            String eng = optSafeString(titleObj, "english", "");
+            String rom = optSafeString(titleObj, "romaji", "");
+            String nat = optSafeString(titleObj, "native", "");
+
+            if (!eng.isEmpty()) {
+                a.title = eng;
+            } else if (!rom.isEmpty()) {
+                a.title = rom;
+            } else if (!nat.isEmpty()) {
+                a.title = nat;
+            } else {
+                a.title = "Anime";
             }
-            a.romajiTitle = titleObj.optString("romaji", a.title);
+            a.romajiTitle = !rom.isEmpty() ? rom : a.title;
         } else {
             a.title = "Anime";
+            a.romajiTitle = "Anime";
         }
         
-        a.slug = a.title.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+        a.slug = a.title.toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+        if (a.slug.isEmpty()) {
+            a.slug = "anime-" + a.id;
+        }
 
         JSONObject coverObj = m.optJSONObject("coverImage");
         if (coverObj != null) {
-            a.poster = coverObj.optString("extraLarge", coverObj.optString("large", ""));
+            a.poster = optSafeString(coverObj, "extraLarge", optSafeString(coverObj, "large", ""));
         }
-        a.banner = m.optString("bannerImage", "");
+        a.banner = optSafeString(m, "bannerImage", "");
 
         int rawScore = m.optInt("averageScore", 0);
         a.score = rawScore > 0 ? (rawScore / 10.0) : 0.0;
 
-        a.status = m.optString("status", "");
-        a.format = m.optString("format", "TV");
+        a.status = optSafeString(m, "status", "");
+        a.format = optSafeString(m, "format", "TV");
         a.episodesCount = m.optInt("episodes", 0);
-        a.season = m.optString("season", "");
+        a.season = optSafeString(m, "season", "");
         a.year = m.optInt("seasonYear", 0);
-        a.synopsis = m.optString("description", "");
+        a.synopsis = optSafeString(m, "description", "");
 
         // Next Airing Episode handling
         JSONObject nextEpObj = m.optJSONObject("nextAiringEpisode");
@@ -311,12 +346,17 @@ public class AniListClient {
             }
         }
 
+        boolean isOngoing = "RELEASING".equalsIgnoreCase(a.status) || "AIRING".equalsIgnoreCase(a.status);
         if (a.airedEpisodesCount > 0) {
-            a.epsCounter = a.airedEpisodesCount + (a.episodesCount > 0 ? ("/" + a.episodesCount + " Ep") : " Ep");
+            if (a.episodesCount > 0) {
+                a.epsCounter = a.airedEpisodesCount + "/" + a.episodesCount + " Ep";
+            } else {
+                a.epsCounter = a.airedEpisodesCount + " Ep";
+            }
+        } else if (isOngoing) {
+            a.epsCounter = a.episodesCount > 0 ? ("1/" + a.episodesCount + " Ep") : "Ongoing";
         } else if (a.episodesCount > 0) {
             a.epsCounter = a.episodesCount + " Ep";
-        } else if ("RELEASING".equalsIgnoreCase(a.status)) {
-            a.epsCounter = "Ongoing";
         } else {
             a.epsCounter = a.format;
         }
@@ -324,7 +364,10 @@ public class AniListClient {
         JSONArray gArr = m.optJSONArray("genres");
         if (gArr != null) {
             for (int i = 0; i < gArr.length(); i++) {
-                a.genres.add(gArr.optString(i));
+                String g = optSafeString(gArr, i, "");
+                if (!g.isEmpty() && !"hentai".equalsIgnoreCase(g)) {
+                    a.genres.add(g);
+                }
             }
         }
 
@@ -332,7 +375,10 @@ public class AniListClient {
         if (studiosObj != null) {
             JSONArray nodes = studiosObj.optJSONArray("nodes");
             if (nodes != null && nodes.length() > 0) {
-                a.studio = nodes.optJSONObject(0).optString("name", "");
+                JSONObject studioNode = nodes.optJSONObject(0);
+                if (studioNode != null) {
+                    a.studio = optSafeString(studioNode, "name", "");
+                }
             }
         }
 

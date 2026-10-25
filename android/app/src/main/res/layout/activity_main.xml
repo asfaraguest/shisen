@@ -30,7 +30,7 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <!-- Logo MENATAP (Glacial Cyan) -->
+                    <!-- Logo MENATAP (Glacial Sky Glow) -->
                     <TextView
                         android:id="@+id/tv_app_logo"
                         android:layout_width="wrap_content"
@@ -136,10 +136,10 @@
                     android:layout_height="32dp"
                     android:gravity="center"
                     android:paddingHorizontal="14dp"
-                    android:text="🌸 Musim Ini"
+                    android:text="🌸 Beranda"
                     android:textSize="@dimen/text_caption"
                     android:fontFamily="sans-serif-bold"
-                    android:textColor="#080C14"
+                    android:textColor="#090D16"
                     android:background="@drawable/bg_chip_frost_active" />
 
                 <TextView
@@ -240,7 +240,7 @@
                 android:orientation="horizontal" />
         </HorizontalScrollView>
 
-        <!-- Main Feed Grid -->
+        <!-- Main Feed (SwipeRefreshLayout) -->
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipe_refresh"
             android:layout_width="match_parent"
@@ -251,6 +251,54 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
+                <!-- Mode 1: Netflix-Class Home Feed (Billboard + Swimlanes) -->
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/scroll_netflix_home"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fillViewport="true"
+                    android:overScrollMode="never"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingBottom="40dp">
+
+                        <!-- Hero Spotlight Billboard -->
+                        <include
+                            android:id="@+id/view_hero_billboard"
+                            layout="@layout/item_netflix_hero" />
+
+                        <!-- Swimlane: Lanjutkan Menonton (Riwayat) -->
+                        <include
+                            android:id="@+id/swimlane_history"
+                            layout="@layout/item_netflix_swimlane" />
+
+                        <!-- Swimlane: Sedang Tren Sekarang -->
+                        <include
+                            android:id="@+id/swimlane_trending"
+                            layout="@layout/item_netflix_swimlane" />
+
+                        <!-- Swimlane: Anime Musim Ini -->
+                        <include
+                            android:id="@+id/swimlane_seasonal"
+                            layout="@layout/item_netflix_swimlane" />
+
+                        <!-- Swimlane: Jadwal Tayang Hari Ini -->
+                        <include
+                            android:id="@+id/swimlane_schedule"
+                            layout="@layout/item_netflix_swimlane" />
+
+                        <!-- Swimlane: Populer Sepanjang Masa -->
+                        <include
+                            android:id="@+id/swimlane_popular"
+                            layout="@layout/item_netflix_swimlane" />
+                    </LinearLayout>
+                </androidx.core.widget.NestedScrollView>
+
+                <!-- Mode 2: Full Catalog Grid View (for Filters, Category Tabs, & Search) -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_anime_grid"
                     android:layout_width="match_parent"
@@ -258,7 +306,8 @@
                     android:clipToPadding="false"
                     android:paddingHorizontal="6dp"
                     android:paddingTop="4dp"
-                    android:paddingBottom="20dp" />
+                    android:paddingBottom="30dp"
+                    android:visibility="gone" />
 
                 <!-- Empty State -->
                 <LinearLayout

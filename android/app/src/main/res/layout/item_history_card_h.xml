@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="170dp"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="6dp"
+    android:orientation="vertical">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_history"
+        android:layout_width="170dp"
+        android:layout_height="104dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/frost_surface"
+        app:strokeColor="@color/frost_border"
+        app:strokeWidth="1dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/iv_history_thumb"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="History Thumbnail" />
+
+            <!-- Dark Overlay -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#40000000" />
+
+            <!-- Center Play Ripple Icon -->
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_play"
+                app:tint="@color/text_frost_bright"
+                android:background="@drawable/bg_badge_frost"
+                android:padding="6dp"
+                android:contentDescription="Play" />
+
+            <!-- Episode Tag (Top Start) -->
+            <TextView
+                android:id="@+id/tv_history_ep"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="6dp"
+                android:background="@drawable/bg_badge_frost"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:text="Ep 3"
+                android:textColor="@color/accent_glacial"
+                android:textSize="9.5sp"
+                android:fontFamily="sans-serif-bold" />
+
+            <!-- Glacial Progress Bar at Bottom -->
+            <ProgressBar
+                android:id="@+id/pb_history_progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="3.5dp"
+                android:layout_gravity="bottom"
+                android:max="100"
+                android:progress="45"
+                android:progressTint="@color/accent_glacial"
+                android:progressBackgroundTint="@color/frost_elevated" />
+        </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tv_history_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Judul Anime"
+        android:textColor="@color/text_frost_bright"
+        android:textSize="12sp"
+        android:fontFamily="sans-serif-medium"
+        android:singleLine="true"
+        android:ellipsize="end" />
+</LinearLayout>

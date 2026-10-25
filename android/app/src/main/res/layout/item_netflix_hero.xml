@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_hero"
+    android:layout_width="match_parent"
+    android:layout_height="330dp"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="16dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/frost_surface"
+    app:strokeColor="@color/frost_border"
+    app:strokeWidth="1dp">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- High-Res Backdrop Image -->
+        <ImageView
+            android:id="@+id/iv_hero_backdrop"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:contentDescription="Hero Backdrop" />
+
+        <!-- Cinematic Multi-Stop Gradient Scrim (Fade to Deep Nordic Obsidian) -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/bg_hero_gradient_scrim" />
+
+        <!-- Top Ranking Chip (#1 TREN HARI INI) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:layout_gravity="top|start"
+            android:layout_margin="14dp"
+            android:background="@drawable/bg_badge_frost"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TOP 1"
+                android:textColor="@color/accent_glacial"
+                android:textSize="10sp"
+                android:fontFamily="sans-serif-black"
+                android:letterSpacing="0.08" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="TREN HARI INI"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="9.5sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.05" />
+        </LinearLayout>
+
+        <!-- Hero Content Overlay -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Category / Genre Tags -->
+            <TextView
+                android:id="@+id/tv_hero_genres"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="PETUALANGAN • FANTASI • AKSI"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.06"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Anime Title -->
+            <TextView
+                android:id="@+id/tv_hero_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Judul Anime Unggulan"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="21sp"
+                android:fontFamily="sans-serif-black"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:lineSpacingExtra="2dp" />
+
+            <!-- Meta Badges Row (Format, Score, Episodes) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp">
+
+                <TextView
+                    android:id="@+id/tv_hero_format"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_badge_frost"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:text="TV"
+                    android:textColor="@color/text_frost_bright"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:id="@+id/tv_hero_score"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_badge_frost"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:gravity="center_vertical"
+                    app:drawableStartCompat="@drawable/ic_star_filled"
+                    app:drawableTint="@color/star_gold"
+                    android:drawablePadding="3dp"
+                    android:text="8.9"
+                    android:textColor="@color/star_gold"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-bold" />
+
+                <TextView
+                    android:id="@+id/tv_hero_eps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="28 Episode"
+                    android:textColor="@color/text_frost_subtle"
+                    android:textSize="11.5sp"
+                    android:fontFamily="sans-serif" />
+            </LinearLayout>
+
+            <!-- Dual Action CTA Buttons (Netflix Signature) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="14dp">
+
+                <!-- Solid Play Button -->
+                <Button
+                    android:id="@+id/btn_hero_play"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:text="▶ Putar Sekarang"
+                    android:textColor="#090D16"
+                    android:backgroundTint="@color/accent_glacial"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-bold"
+                    app:cornerRadius="21dp"
+                    android:stateListAnimator="@null" />
+
+                <!-- Frosted Info / Favorite Button -->
+                <Button
+                    android:id="@+id/btn_hero_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:layout_marginStart="10dp"
+                    android:text="ℹ Info Detail"
+                    android:textColor="@color/text_frost_bright"
+                    android:backgroundTint="@color/frost_elevated"
+                    app:strokeColor="@color/frost_border"
+                    app:strokeWidth="1dp"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium"
+                    app:cornerRadius="21dp"
+                    android:paddingHorizontal="16dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</com.google.android.material.card.MaterialCardView>
