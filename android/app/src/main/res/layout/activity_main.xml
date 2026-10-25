@@ -539,6 +539,8 @@
         android:orientation="horizontal"
         android:paddingHorizontal="6dp"
         android:paddingVertical="3dp"
+        android:clickable="true"
+        android:focusable="true"
         android:visibility="gone">
 
         <TextView

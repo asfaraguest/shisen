@@ -17,6 +17,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.OvershootInterpolator;
+import android.transition.AutoTransition;
+import android.transition.Transition;
+import android.transition.TransitionManager;
+import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -109,6 +113,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvPageIndicator;
     private TextView btnNextPage;
     private int currentPage = 1;
+    private boolean isPaginationFolded = false;
+    private final Runnable expandPaginationRunnable = () -> setPaginationFolded(false);
 
     private MainTab currentTab = MainTab.MUSIM;
     private boolean isSearchExpanded = false;
@@ -330,6 +336,34 @@ public class MainActivity extends AppCompatActivity {
         });
         rvGrid.setLayoutManager(glm);
         rvGrid.setAdapter(gridAdapter);
+
+        // Auto-Fold pagination on scroll, auto-expand on idle
+        rvGrid.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (layoutPagination == null || layoutPagination.getVisibility() != View.VISIBLE) return;
+
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING || newState == RecyclerView.SCROLL_STATE_SETTLING) {
+                    mainHandler.removeCallbacks(expandPaginationRunnable);
+                    setPaginationFolded(true);
+                } else if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    mainHandler.removeCallbacks(expandPaginationRunnable);
+                    mainHandler.postDelayed(expandPaginationRunnable, 300);
+                }
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (layoutPagination == null || layoutPagination.getVisibility() != View.VISIBLE) return;
+
+                if (Math.abs(dy) > 6 && !isPaginationFolded) {
+                    mainHandler.removeCallbacks(expandPaginationRunnable);
+                    setPaginationFolded(true);
+                }
+            }
+        });
     }
 
     private void setupListeners() {
@@ -356,6 +390,16 @@ public class MainActivity extends AppCompatActivity {
                 currentPage++;
                 loadCurrentFeed();
                 rvGrid.scrollToPosition(0);
+            });
+        }
+
+        if (layoutPagination != null) {
+            layoutPagination.setOnClickListener(v -> {
+                if (isPaginationFolded) {
+                    HapticHelper.performClick(v);
+                    mainHandler.removeCallbacks(expandPaginationRunnable);
+                    setPaginationFolded(false);
+                }
             });
         }
 
@@ -532,7 +576,21 @@ public class MainActivity extends AppCompatActivity {
                     .setInterpolator(new OvershootInterpolator(0.85f))
                     .start();
 
-            ivFabIcon.animate().rotation(45f).setDuration(200).start();
+            ivFabIcon.animate()
+                    .rotation(90f)
+                    .scaleX(0.2f)
+                    .scaleY(0.2f)
+                    .setDuration(110)
+                    .withEndAction(() -> {
+                        ivFabIcon.setImageResource(R.drawable.ic_sword_cross);
+                        ivFabIcon.animate()
+                                .rotation(0f)
+                                .scaleX(1.0f)
+                                .scaleY(1.0f)
+                                .setDuration(130)
+                                .start();
+                    })
+                    .start();
         } else {
             scrimFoldedMenu.animate()
                     .alpha(0f)
@@ -547,7 +605,21 @@ public class MainActivity extends AppCompatActivity {
                     .withEndAction(() -> layoutFoldedMenu.setVisibility(View.GONE))
                     .start();
 
-            ivFabIcon.animate().rotation(0f).setDuration(180).start();
+            ivFabIcon.animate()
+                    .rotation(-90f)
+                    .scaleX(0.2f)
+                    .scaleY(0.2f)
+                    .setDuration(90)
+                    .withEndAction(() -> {
+                        ivFabIcon.setImageResource(R.drawable.ic_menu);
+                        ivFabIcon.animate()
+                                .rotation(0f)
+                                .scaleX(1.0f)
+                                .scaleY(1.0f)
+                                .setDuration(110)
+                                .start();
+                    })
+                    .start();
         }
     }
 
@@ -1172,18 +1244,52 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void setPaginationFolded(boolean folded) {
+        if (isPaginationFolded == folded || layoutPagination == null || layoutPagination.getVisibility() != View.VISIBLE) {
+            return;
+        }
+        isPaginationFolded = folded;
+
+        Transition transition = new AutoTransition()
+                .setDuration(180)
+                .setInterpolator(new DecelerateInterpolator());
+        TransitionManager.beginDelayedTransition(layoutPagination, transition);
+
+        if (folded) {
+            if (btnPrevPage != null) btnPrevPage.setVisibility(View.GONE);
+            if (btnNextPage != null) btnNextPage.setVisibility(View.GONE);
+            layoutPagination.animate().alpha(0.75f).setDuration(180).start();
+        } else {
+            if (btnPrevPage != null) {
+                btnPrevPage.setVisibility(View.VISIBLE);
+                boolean canPrev = currentPage > 1;
+                btnPrevPage.setEnabled(canPrev);
+                btnPrevPage.setAlpha(canPrev ? 1.0f : 0.4f);
+            }
+            if (btnNextPage != null) {
+                btnNextPage.setVisibility(View.VISIBLE);
+            }
+            layoutPagination.animate().alpha(1.0f).setDuration(180).start();
+        }
+    }
+
     private void updatePaginationUI(int currentCount, int pageSize) {
         if (layoutPagination == null) return;
+        mainHandler.removeCallbacks(expandPaginationRunnable);
+        isPaginationFolded = false;
         layoutPagination.setVisibility(View.VISIBLE);
+        layoutPagination.setAlpha(1.0f);
         if (tvPageIndicator != null) {
             tvPageIndicator.setText("Hal " + currentPage);
         }
         if (btnPrevPage != null) {
+            btnPrevPage.setVisibility(View.VISIBLE);
             boolean canPrev = currentPage > 1;
             btnPrevPage.setEnabled(canPrev);
             btnPrevPage.setAlpha(canPrev ? 1.0f : 0.4f);
         }
         if (btnNextPage != null) {
+            btnNextPage.setVisibility(View.VISIBLE);
             boolean canNext = (currentCount >= pageSize);
             btnNextPage.setEnabled(canNext);
             btnNextPage.setAlpha(canNext ? 1.0f : 0.4f);

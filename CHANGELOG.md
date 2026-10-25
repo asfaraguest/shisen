@@ -34,6 +34,11 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
   - Pengamanan aplikasi terhadap transmisi data tidak terenkripsi pada seluruh koneksi scraper, stream CDN, dan update checker.
 - **Root Gradle Wrapper (`gradlew`)**:
   - Script wrapper eksekusi di root repositori untuk mempermudah eksekusi `./gradlew` langsung dari direktori utama maupun subdirektori `android/`.
+- **Floating Pagination Auto-Fold & Crossed Swords Trigger**:
+  - Paginasi mengambang melipat otomatis (`folded`) saat scrolling menjadi pill nomor halaman minimalis ("Hal X", alpha 75%) selebar ~56dp untuk memaksimalkan area pandang konten anime.
+  - Kembali melebar (*expand*) mulus ke ukuran normal beserta tombol navigasi ("‹ Sebelumnya" dan "Berikutnya ›") saat pengguliran berhenti (`SCROLL_STATE_IDLE`).
+  - Ketukan langsung pada pill dalam kondisi folded langsung mengembalikan status expanded.
+  - Ikon FAB menu mengambang berganti secara dinamis menjadi ikon pedang bersilang (`ic_sword_cross`) dengan animasi rotasi & scaling halus saat menu aktif/terbuka, dan kembali ke hamburger (`ic_menu`) saat ditutup.
 
 ### Diubah & Dioptimalkan
 - **Build Release Hardening & R8 Shrinking**:
