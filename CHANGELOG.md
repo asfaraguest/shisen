@@ -4,6 +4,13 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 
 ## [0.1.0-beta.2] - 2026-10-25
 
+### Ditambahkan
+- **Harmonisasi Pewarnaan System UI & Indikator Sistem Bilah Atas (`SystemUiHelper.java`, `styles.xml`, `AnimeThemeManager.java`, `MainActivity.java`, `DetailActivity.java`, `PlayerActivity.java`, `SettingsDialog.java`)**:
+  - **Sinkronisasi Warna Status Bar & Navigation Bar**: Mengintegrasikan utilitas baru `SystemUiHelper` yang secara dinamis menyelaraskan warna status bar dan navigation bar dengan palet warna kanvas tema Shisen yang sedang aktif (Shinkai `#0A0D18`, Sakura `#120B18`, Cyber `#080B14`, Ghibli `#081412`).
+  - **Indikator Sistem Putih/Terang Kontras Tinggi (Anti-Blackout)**: Menyetel `WindowInsetsControllerCompat.setAppearanceLightStatusBars(false)` dan `setAppearanceLightNavigationBars(false)` serta konfigurasi tema dasar `<item name="android:windowLightStatusBar">false</item>` dan `<item name="android:windowLightNavigationBar">false</item>`. Menjamin ikon indikator sistem di bilah atas (jam, baterai, sinyal seluler, dan ikon Wi-Fi) selalu berwarna putih/terang yang kontras dan tajam di atas bilah status, mengeliminasi masalah indikator hitam yang tidak terbaca saat perangkat pengguna mengaktifkan Light Mode sistem OS.
+  - **Reaktif Real-Time Terhadap Pergantian Tema**: Mengikat `SystemUiHelper.applySystemBarsTheme(activity, selectedTheme)` pada interaksi klik pemilihan tema di `SettingsDialog` dan `AnimeThemeManager`, sehingga status bar dan bilah navigasi langsung berganti warna seketika secara seamless tanpa perlu memuat ulang aplikasi.
+  - **Dukungan Menyeluruh di Semua Layar & Pemutar Video**: Diterapkan secara konsisten di `MainActivity`, `DetailActivity`, dan `PlayerActivity` (baik pada mode portrait dengan visual canvas maupun saat transisi pemulihan dari mode lanskap fullscreen).
+
 ### Diperbaiki
 - **Akurasi Tampilan & Isolasi Kueri Musim Sebelumnya pada Tab Sedang Tayang (`AniListClient.getMasihTayangDualLane`)**:
   - **Kueri Spesifik Musim Sebelumnya (`PREV`)**: Mengubah arsitektur pemanggilan sub-filter "Musim Sebelumnya" dari yang sebelumnya hanya memfilter array kueri global `status: RELEASING` (yang 95%-nya berisi anime musim berjalan sehingga hanya menyisakan 1-2 judul) menjadi kueri langsung `season: prev.season, seasonYear: prev.year, sort: POPULARITY_DESC`.

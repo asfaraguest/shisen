@@ -62,6 +62,7 @@ import id.menatap.app.ui.adapter.AnimeAdapter;
 import id.menatap.app.util.AppUpdateManager;
 import id.menatap.app.util.HapticHelper;
 import id.menatap.app.util.LocaleHelper;
+import id.menatap.app.util.SystemUiHelper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -267,6 +268,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SystemUiHelper.applySystemBarsTheme(this);
 
         // Auto-select today in Jakarta / WIB timezone
         Calendar wibCal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Jakarta"));
@@ -315,6 +317,7 @@ public class MainActivity extends AppCompatActivity {
         if (layoutMainRoot != null) {
             layoutMainRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
         }
+        SystemUiHelper.applySystemBarsTheme(this);
     }
 
     private void initViews() {

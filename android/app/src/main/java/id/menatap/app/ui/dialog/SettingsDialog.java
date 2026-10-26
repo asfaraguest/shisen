@@ -30,6 +30,7 @@ import id.menatap.app.util.AppSettings;
 import id.menatap.app.util.AppUpdateManager;
 import id.menatap.app.util.HapticHelper;
 import id.menatap.app.util.LocaleHelper;
+import id.menatap.app.util.SystemUiHelper;
 
 public class SettingsDialog {
 
@@ -102,6 +103,7 @@ public class SettingsDialog {
         cardShinkai.setOnClickListener(v -> {
             HapticHelper.performSelection(v);
             AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_SHINKAI);
+            SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_SHINKAI);
             updateRadios.run();
             if (listener != null) listener.onThemeChanged();
         });
@@ -109,6 +111,7 @@ public class SettingsDialog {
         cardSakura.setOnClickListener(v -> {
             HapticHelper.performSelection(v);
             AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_SAKURA);
+            SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_SAKURA);
             updateRadios.run();
             if (listener != null) listener.onThemeChanged();
         });
@@ -116,6 +119,7 @@ public class SettingsDialog {
         cardCyber.setOnClickListener(v -> {
             HapticHelper.performSelection(v);
             AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_CYBER);
+            SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_CYBER);
             updateRadios.run();
             if (listener != null) listener.onThemeChanged();
         });
@@ -123,6 +127,7 @@ public class SettingsDialog {
         cardGhibli.setOnClickListener(v -> {
             HapticHelper.performSelection(v);
             AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_GHIBLI);
+            SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_GHIBLI);
             updateRadios.run();
             if (listener != null) listener.onThemeChanged();
         });

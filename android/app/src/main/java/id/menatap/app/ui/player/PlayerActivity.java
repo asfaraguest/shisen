@@ -99,6 +99,7 @@ import id.menatap.app.ui.adapter.EpisodeAdapter;
 import id.menatap.app.ui.dialog.SettingsDialog;
 import id.menatap.app.util.HapticHelper;
 import id.menatap.app.util.LocaleHelper;
+import id.menatap.app.util.SystemUiHelper;
 import okhttp3.OkHttpClient;
 
 import java.util.concurrent.ExecutorService;
@@ -269,6 +270,7 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         isActivityRunning = true;
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        SystemUiHelper.applySystemBarsTheme(this);
         setContentView(R.layout.activity_player);
 
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -2372,8 +2374,11 @@ public class PlayerActivity extends AppCompatActivity {
             ));
 
             WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+            SystemUiHelper.applySystemBarsTheme(this);
             if (controller != null) {
                 controller.show(WindowInsetsCompat.Type.systemBars());
+                controller.setAppearanceLightStatusBars(false);
+                controller.setAppearanceLightNavigationBars(false);
             }
         }
     }

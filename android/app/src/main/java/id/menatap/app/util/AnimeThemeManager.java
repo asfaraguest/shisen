@@ -73,6 +73,26 @@ public class AnimeThemeManager {
         }
     }
 
+    public static int getSystemBarColor(Context context) {
+        return getSystemBarColorForTheme(context, getTheme(context));
+    }
+
+    public static int getSystemBarColorForTheme(Context context, String theme) {
+        if (context == null) return Color.parseColor("#0A0D18");
+        if (theme == null) theme = THEME_SHINKAI;
+        switch (theme) {
+            case THEME_SAKURA:
+                return ContextCompat.getColor(context, R.color.anime_void_sakura);
+            case THEME_CYBER:
+                return ContextCompat.getColor(context, R.color.anime_void_cyber);
+            case THEME_GHIBLI:
+                return ContextCompat.getColor(context, R.color.anime_void_ghibli);
+            case THEME_SHINKAI:
+            default:
+                return ContextCompat.getColor(context, R.color.anime_void_shinkai);
+        }
+    }
+
     public static void showThemeSelectorDialog(Activity activity, Runnable onThemeChanged) {
         if (activity == null || activity.isFinishing()) return;
 
@@ -118,6 +138,7 @@ public class AnimeThemeManager {
             }
 
             setTheme(activity, selected);
+            SystemUiHelper.applySystemBarsTheme(activity, selected);
             HapticHelper.performClick(group);
 
             if (onThemeChanged != null) {

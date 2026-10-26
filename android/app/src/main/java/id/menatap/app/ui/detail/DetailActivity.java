@@ -42,6 +42,7 @@ import id.menatap.app.util.AnimeThemeManager;
 import id.menatap.app.util.HapticHelper;
 import id.menatap.app.util.ImageLoader;
 import id.menatap.app.util.LocaleHelper;
+import id.menatap.app.util.SystemUiHelper;
 import id.menatap.app.util.TitleMatcher;
 
 public class DetailActivity extends AppCompatActivity {
@@ -87,6 +88,7 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        SystemUiHelper.applySystemBarsTheme(this);
 
         if (getIntent() != null && getIntent().hasExtra("anime")) {
             anime = (Anime) getIntent().getSerializableExtra("anime");
@@ -123,6 +125,7 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        SystemUiHelper.applySystemBarsTheme(this);
         if (layoutDetailRoot != null) {
             layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
         }
@@ -132,6 +135,9 @@ public class DetailActivity extends AppCompatActivity {
 
     private void initViews() {
         layoutDetailRoot = findViewById(R.id.layout_detail_root);
+        if (layoutDetailRoot != null) {
+            layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+        }
         ivBackdrop = findViewById(R.id.iv_detail_backdrop);
         ivPoster = findViewById(R.id.iv_detail_poster);
         btnBack = findViewById(R.id.btn_detail_back);
