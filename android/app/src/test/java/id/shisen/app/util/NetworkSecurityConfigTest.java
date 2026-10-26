@@ -106,6 +106,20 @@ public class NetworkSecurityConfigTest {
     public void xmlParsesAndHasRootElement() throws Exception {
         Document doc = parse(configFile);
         assertEquals("network-security-config", doc.getDocumentElement().getTagName());
-        assertEquals(0, doc.getDocumentElement().getElementsByTagName("domain-config").getLength());
+    }
+
+    @Test
+    public void cleartextDomainsLimitedToLocalhostForOllamaByok() throws Exception {
+        Document doc = parse(configFile);
+        NodeList configs = doc.getDocumentElement().getElementsByTagName("domain-config");
+        for (int i = 0; i < configs.getLength(); i++) {
+            Element dc = (Element) configs.item(i);
+            if ("true".equals(dc.getAttribute("cleartextTrafficPermitted"))) {
+                NodeList domains = dc.getElementsByTagName("domain");
+                assertEquals("domain-config cleartext hanya boleh localhost", 2, domains.getLength());
+                assertEquals("localhost", domains.item(0).getTextContent());
+                assertEquals("127.0.0.1", domains.item(1).getTextContent());
+            }
+        }
     }
 }

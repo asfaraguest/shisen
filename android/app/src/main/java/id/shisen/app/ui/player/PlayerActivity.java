@@ -1292,7 +1292,12 @@ public class PlayerActivity extends AppCompatActivity {
             public void onError(Throwable t) {
                 runOnUiThread(() -> {
                     if (layoutBuffering != null) layoutBuffering.setVisibility(View.GONE);
-                    Toast.makeText(PlayerActivity.this, "Gagal memuat stream:\n" + t.getMessage(), Toast.LENGTH_LONG).show();
+                    String raw = t.getMessage() != null ? t.getMessage() : "";
+                    if (raw.contains("CLEARTEXT")) {
+                        Toast.makeText(PlayerActivity.this, "Sumber ini hanya HTTP tanpa enkripsi — diblokir oleh kebijakan keamanan.", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(PlayerActivity.this, "Gagal memuat stream:\n" + raw, Toast.LENGTH_LONG).show();
+                    }
                 });
             }
         });

@@ -7,6 +7,14 @@
             <certificates src="system" />
         </trust-anchors>
     </base-config>
+
+    <!-- Fase 1.5c: endpoint BYOK Ollama lokal hanya melalui HTTP (tidak memungkinkan HTTPS) —
+         cleartext DIIZINKAN hanya untuk host local machine ini -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+
     <!-- CA user hanya untuk build debug (debugging proxy khusus) -->
     <debug-overrides>
         <trust-anchors>
