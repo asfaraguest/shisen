@@ -22,6 +22,8 @@ public class MenatapApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        id.shisen.app.util.PerfLogger.onAppStart();
+
         setupGlobalExceptionHandler();
 
         // Initialize local database

@@ -184,6 +184,15 @@ public class HttpClientProvider {
             }
         } catch (Exception ignored) {}
 
+        // 5. Logger performa DEBUG-ONLY: hitung total byte jaringan (tanpa menyimpan URL berparameter sensitif)
+        if (id.shisen.app.BuildConfig.DEBUG) {
+            builder.addInterceptor(chain -> {
+                okhttp3.Response r = chain.proceed(chain.request());
+                id.shisen.app.util.PerfLogger.addNetworkBytes(0, r.body() != null ? r.body().contentLength() : 0);
+                return r;
+            });
+        }
+
         return builder.build();
     }
 }

@@ -294,6 +294,12 @@ public class MainActivity extends AppCompatActivity {
         }
         selectTab(targetTab);
 
+        // Logger performa DEBUG-ONLY: reportFullyDrawn resmi + log cold start sekali
+        getWindow().getDecorView().post(() -> {
+            id.shisen.app.util.PerfLogger.onFullyDrawn();
+            try { reportFullyDrawn(); } catch (Throwable ignored) {}
+        });
+
         // Silent background update check on app launch
         mainHandler.postDelayed(() -> AppUpdateManager.getInstance().checkUpdate(this, false), 2500);
     }

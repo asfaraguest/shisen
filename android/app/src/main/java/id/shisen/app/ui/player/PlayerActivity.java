@@ -491,6 +491,7 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void setupPlayer() {
+        id.shisen.app.util.PerfLogger.markEpisodeTap();
         OkHttpClient okClient = HttpClientProvider.getClient();
         OkHttpDataSource.Factory okHttpFactory = new OkHttpDataSource.Factory(okClient)
                 .setUserAgent(HttpClientProvider.USER_AGENT);
@@ -501,6 +502,11 @@ public class PlayerActivity extends AppCompatActivity {
                 .setMediaSourceFactory(mediaSourceFactory)
                 .build();
 
+        // Logger performa DEBUG-ONLY: first frame, dropped frames, rebuffering
+        androidx.media3.exoplayer.analytics.AnalyticsListener perfListener = id.shisen.app.util.PerfLogger.exoPlayerListener();
+        if (perfListener != null) {
+            player.addAnalyticsListener(perfListener);
+        }
         playerView.setPlayer(player);
         playerView.setShowNextButton(true);
         playerView.setShowPreviousButton(true);
