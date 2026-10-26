@@ -196,86 +196,204 @@ public class AniListClient {
      */
     public static void getMasihTayangDualLane(int page, int perPage, String filterLane, PagedCallback<List<Anime>> callback) {
         SeasonPair cur = getCurrentSeasonPair();
-        String query = "query ($page: Int, $perPage: Int) { " +
-                "Page(page: $page, perPage: $perPage) { " +
-                "pageInfo { hasNextPage total currentPage } " +
-                "media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
-                MEDIA_FIELDS + " } } }";
+        SeasonPair prev = getPreviousSeasonPair(cur);
 
-        executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
-            @Override
-            public void onSuccess(List<Anime> list, boolean hasNextPage, int total) {
-                List<Anime> currentSeasonList = new ArrayList<>();
-                List<Anime> prevSeasonList = new ArrayList<>();
-                List<Anime> longRunningList = new ArrayList<>();
-                Set<Integer> seenIds = new HashSet<>();
+        // 1. Jalur Musim Sebelumnya (PREV / PREVIOUS): Kueri langsung ke katalog musim sebelumnya (100% akurat & isolasi ketat)
+        if ("PREV".equalsIgnoreCase(filterLane) || "PREVIOUS".equalsIgnoreCase(filterLane)) {
+            String query = String.format(Locale.US,
+                    "query GetPreviousSeason($page: Int, $perPage: Int) { " +
+                    "Page(page: $page, perPage: $perPage) { " +
+                    "pageInfo { hasNextPage total currentPage } " +
+                    "media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                    MEDIA_FIELDS + " } } }", prev.season, prev.year);
 
-                if (list != null) {
-                    for (Anime a : list) {
-                        if (a == null || seenIds.contains(a.id)) continue;
-                        seenIds.add(a.id);
-                        if (isLongRunning(a)) {
-                            a.isLongRunning = true;
-                            longRunningList.add(a);
-                        } else {
-                            a.isLongRunning = false;
-                            boolean isCurrentSeason = a.season != null && cur.season.equalsIgnoreCase(a.season) && a.year == cur.year;
-                            if (isCurrentSeason) {
-                                currentSeasonList.add(a);
-                            } else {
-                                // Started in previous seasons / years but still airing
-                                prevSeasonList.add(a);
+            executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
+                @Override
+                public void onSuccess(List<Anime> list, boolean hasNextPage, int total) {
+                    List<Anime> result = new ArrayList<>();
+                    if (list != null) {
+                        for (Anime a : list) {
+                            if (a == null) continue;
+                            if (prev.season.equalsIgnoreCase(a.season) && prev.year == a.year && !isLongRunning(a)) {
+                                result.add(a);
                             }
                         }
                     }
+                    callback.onSuccess(result, hasNextPage, total);
                 }
 
-                List<Anime> result = new ArrayList<>();
-                if ("CUR".equalsIgnoreCase(filterLane) || "CURRENT".equalsIgnoreCase(filterLane)) {
-                    result.addAll(currentSeasonList);
-                } else if ("PREV".equalsIgnoreCase(filterLane) || "PREVIOUS".equalsIgnoreCase(filterLane)) {
-                    result.addAll(prevSeasonList);
-                } else if ("LONG".equalsIgnoreCase(filterLane)) {
-                    result.addAll(longRunningList);
-                } else {
-                    // Tampilan 3-Lane Terstruktur dengan section header pembatas
-                    String lang = Locale.getDefault().getLanguage();
-                    boolean isJa = "ja".equalsIgnoreCase(lang);
-                    boolean isEn = "en".equalsIgnoreCase(lang);
+                @Override
+                public void onError(Throwable t) {
+                    callback.onError(t);
+                }
+            });
+            return;
+        }
 
-                    String h1Title = isJa ? ("今期放送枠 (" + cur.season + " " + cur.year + ")") :
-                            (isEn ? ("CURRENT SEASON ANIME (" + cur.season + " " + cur.year + ")") :
-                                    ("ANIME MUSIM BERJALAN (" + cur.season + " " + cur.year + ")"));
-                    String h1Tag = isJa ? "放送中" : (isEn ? "AIRING NOW" : "SEDANG TAYANG");
+        // 2. Jalur Musim Berjalan (CUR / CURRENT): Kueri langsung anime yang tayang pada musim aktif
+        if ("CUR".equalsIgnoreCase(filterLane) || "CURRENT".equalsIgnoreCase(filterLane)) {
+            String query = String.format(Locale.US,
+                    "query GetCurrentSeasonAiring($page: Int, $perPage: Int) { " +
+                    "Page(page: $page, perPage: $perPage) { " +
+                    "pageInfo { hasNextPage total currentPage } " +
+                    "media(season: %s, seasonYear: %d, status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                    MEDIA_FIELDS + " } } }", cur.season, cur.year);
 
-                    String h2Title = isJa ? "前期継続枠" : (isEn ? "PREVIOUS SEASON CONTINUATION" : "LANJUTAN MUSIM SEBELUMNYA");
-                    String h2Tag = isJa ? "継続中" : (isEn ? "CARRY-OVER" : "LANJUTAN TAYANG");
-
-                    String h3Title = isJa ? "長期連載枠" : (isEn ? "CONTINUOUS LONG-RUNNING SERIES" : "SERIAL PANJANG BERKELANJUTAN");
-                    String h3Tag = isJa ? "定番作品" : (isEn ? "LONG RUNNING" : "SERIAL PANJANG");
-
-                    if (!currentSeasonList.isEmpty()) {
-                        result.add(Anime.createHeader(h1Title, h1Tag));
-                        result.addAll(currentSeasonList);
+            executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
+                @Override
+                public void onSuccess(List<Anime> list, boolean hasNextPage, int total) {
+                    List<Anime> result = new ArrayList<>();
+                    if (list != null) {
+                        for (Anime a : list) {
+                            if (a == null) continue;
+                            if (cur.season.equalsIgnoreCase(a.season) && cur.year == a.year && !isLongRunning(a)) {
+                                result.add(a);
+                            }
+                        }
                     }
-                    if (!prevSeasonList.isEmpty()) {
-                        result.add(Anime.createHeader(h2Title, h2Tag));
-                        result.addAll(prevSeasonList);
+                    callback.onSuccess(result, hasNextPage, total);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    callback.onError(t);
+                }
+            });
+            return;
+        }
+
+        // 3. Jalur Serial Panjang Berkelanjutan (LONG): Kueri anime status RELEASING berdurasi panjang/tahunan
+        if ("LONG".equalsIgnoreCase(filterLane)) {
+            String query = "query GetLongRunning($page: Int, $perPage: Int) { " +
+                    "Page(page: $page, perPage: $perPage) { " +
+                    "pageInfo { hasNextPage total currentPage } " +
+                    "media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                    MEDIA_FIELDS + " } } }";
+
+            executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
+                @Override
+                public void onSuccess(List<Anime> list, boolean hasNextPage, int total) {
+                    List<Anime> result = new ArrayList<>();
+                    if (list != null) {
+                        for (Anime a : list) {
+                            if (a == null) continue;
+                            if (isLongRunning(a)) {
+                                a.isLongRunning = true;
+                                result.add(a);
+                            }
+                        }
                     }
-                    if (!longRunningList.isEmpty()) {
-                        result.add(Anime.createHeader(h3Title, h3Tag));
-                        result.addAll(longRunningList);
+                    callback.onSuccess(result, hasNextPage, total);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    callback.onError(t);
+                }
+            });
+            return;
+        }
+
+        // 4. Default / ALL (Semua 3 Jalur): Tampilan 3-Jalur terstruktur dalam 1 kueri multi-node efisien
+        String query = String.format(Locale.US,
+                "query GetMasihTayangAll($page: Int) { " +
+                "cur: Page(page: $page, perPage: 12) { " +
+                "  pageInfo { hasNextPage total currentPage } " +
+                "  media(season: %s, seasonYear: %d, status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                MEDIA_FIELDS + " } } " +
+                "prev: Page(page: $page, perPage: 12) { " +
+                "  pageInfo { hasNextPage total currentPage } " +
+                "  media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                MEDIA_FIELDS + " } } " +
+                "longMedia: Page(page: $page, perPage: 25) { " +
+                "  pageInfo { hasNextPage total currentPage } " +
+                "  media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                MEDIA_FIELDS + " } } }",
+                cur.season, cur.year, prev.season, prev.year);
+
+        try {
+            JSONObject variables = new JSONObject();
+            variables.put("page", page);
+            JSONObject body = new JSONObject();
+            body.put("query", query);
+            body.put("variables", variables);
+
+            executePostCustom(body.toString(), new Callback<JSONObject>() {
+                @Override
+                public void onSuccess(JSONObject root) {
+                    try {
+                        JSONObject data = root != null ? root.optJSONObject("data") : null;
+                        JSONObject curPageObj = data != null ? data.optJSONObject("cur") : null;
+                        JSONObject prevPageObj = data != null ? data.optJSONObject("prev") : null;
+                        JSONObject longPageObj = data != null ? data.optJSONObject("longMedia") : null;
+
+                        List<Anime> currentSeasonList = parseMediaArray(curPageObj);
+                        List<Anime> prevSeasonList = parseMediaArray(prevPageObj);
+                        List<Anime> rawLongList = parseMediaArray(longPageObj);
+
+                        List<Anime> longRunningList = new ArrayList<>();
+                        Set<Integer> seenIds = new HashSet<>();
+                        for (Anime a : currentSeasonList) seenIds.add(a.id);
+                        for (Anime a : prevSeasonList) seenIds.add(a.id);
+
+                        for (Anime a : rawLongList) {
+                            if (a == null || seenIds.contains(a.id)) continue;
+                            if (isLongRunning(a)) {
+                                a.isLongRunning = true;
+                                seenIds.add(a.id);
+                                longRunningList.add(a);
+                            }
+                        }
+
+                        String lang = Locale.getDefault().getLanguage();
+                        boolean isJa = "ja".equalsIgnoreCase(lang);
+                        boolean isEn = "en".equalsIgnoreCase(lang);
+
+                        String h1Title = isJa ? ("今期アニメ (" + cur.season + " " + cur.year + ")") :
+                                (isEn ? ("CURRENT SEASON ANIME (" + cur.season + " " + cur.year + ")") :
+                                        ("ANIME MUSIM BERJALAN (" + cur.season + " " + cur.year + ")"));
+                        String h1Tag = isJa ? "放送中" : (isEn ? "AIRING NOW" : "SEDANG TAYANG");
+
+                        String h2Title = isJa ? ("前期アニメ (" + prev.season + " " + prev.year + ")") :
+                                (isEn ? ("PREVIOUS SEASON ANIME (" + prev.season + " " + prev.year + ")") :
+                                        ("ANIME MUSIM SEBELUMNYA (" + prev.season + " " + prev.year + ")"));
+                        String h2Tag = isJa ? "前期枠" : (isEn ? "PREV SEASON" : "MUSIM LALU");
+
+                        String h3Title = isJa ? "長期連載枠" : (isEn ? "CONTINUOUS LONG-RUNNING SERIES" : "SERIAL PANJANG BERKELANJUTAN");
+                        String h3Tag = isJa ? "定番作品" : (isEn ? "LONG RUNNING" : "SERIAL PANJANG");
+
+                        List<Anime> result = new ArrayList<>();
+                        if (!currentSeasonList.isEmpty()) {
+                            result.add(Anime.createHeader(h1Title, h1Tag));
+                            result.addAll(currentSeasonList);
+                        }
+                        if (!prevSeasonList.isEmpty()) {
+                            result.add(Anime.createHeader(h2Title, h2Tag));
+                            result.addAll(prevSeasonList);
+                        }
+                        if (!longRunningList.isEmpty()) {
+                            result.add(Anime.createHeader(h3Title, h3Tag));
+                            result.addAll(longRunningList);
+                        }
+
+                        JSONObject curInfo = curPageObj != null ? curPageObj.optJSONObject("pageInfo") : null;
+                        boolean hasNext = curInfo != null && curInfo.optBoolean("hasNextPage", false);
+                        int total = curInfo != null ? curInfo.optInt("total", 0) : result.size();
+
+                        callback.onSuccess(result, hasNext, total);
+                    } catch (Exception e) {
+                        callback.onError(e);
                     }
                 }
 
-                callback.onSuccess(result, hasNextPage, total);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                callback.onError(t);
-            }
-        });
+                @Override
+                public void onError(Throwable t) {
+                    callback.onError(t);
+                }
+            });
+        } catch (Exception e) {
+            callback.onError(e);
+        }
     }
 
     public static void getMasihTayangDualLane(int page, int perPage, String filterLane, Callback<List<Anime>> callback) {

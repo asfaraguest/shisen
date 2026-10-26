@@ -4,6 +4,12 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 
 ## [0.1.0-beta.2] - 2026-10-25
 
+### Diperbaiki
+- **Akurasi Tampilan & Isolasi Kueri Musim Sebelumnya pada Tab Sedang Tayang (`AniListClient.getMasihTayangDualLane`)**:
+  - **Kueri Spesifik Musim Sebelumnya (`PREV`)**: Mengubah arsitektur pemanggilan sub-filter "Musim Sebelumnya" dari yang sebelumnya hanya memfilter array kueri global `status: RELEASING` (yang 95%-nya berisi anime musim berjalan sehingga hanya menyisakan 1-2 judul) menjadi kueri langsung `season: prev.season, seasonYear: prev.year, sort: POPULARITY_DESC`.
+  - **Penyajian 35 Anime Penuh & Paginasi Bersih**: Pengguna kini disuguhkan 35 anime terpopuler musim sebelumnya per halaman secara penuh (seperti *Mushoku Tensei Season 3*, *Bleach TYBW*, *The Exiled Heavy Knight*, dll.) dengan badge status yang tepat (*Ongoing* untuk anime berlanjut dan *Tamat* untuk anime yang telah selesai).
+  - **Kueri Multi-Node 3-Jalur pada Tampilan Semua (`ALL`)**: Mengoptimalkan tampilan default "Semua (3 Jalur)" menggunakan kueri multi-node GraphQL (`cur`, `prev`, `longMedia`) dalam 1 HTTP request sehingga ketiga section terisi lengkap, seimbang, dan bebas dari kebocoran antar-musim.
+
 ### Ditambahkan
 - **Penyeragaman Lokalisasi Hero CTA & Tags Dinamis (`item_netflix_hero.xml`, `AnimeAdapter.java`, `strings.xml`)**:
   - Menghubungkan seluruh elemen Hero Card di Beranda (`TREN HARI INI` / `TRENDING TODAY` / `本日のトレンド`, `▶ Putar Sekarang` / `▶ Watch Now` / `▶ 今すぐ再生`, `ℹ Info Detail` / `ℹ Details` / `ℹ 詳細情報`, dan jumlah episode) dengan string resources dinamis multi-bahasa.

@@ -149,4 +149,64 @@ public class AniListSeasonIsolationTest {
         assertEquals("Filtered list should only contain 4 episodes", 4, filtered.size());
         assertEquals("Last episode number should be 4", 4, filtered.get(filtered.size() - 1).number);
     }
+
+    @Test
+    public void testPreviousSeasonIsolationLogic() {
+        AniListClient.SeasonPair cur = AniListClient.getCurrentSeasonPair();
+        AniListClient.SeasonPair prev = AniListClient.getPreviousSeasonPair(cur);
+
+        // Previous season must not be identical to current season
+        assertFalse("Previous season must be different from current season",
+                cur.season.equalsIgnoreCase(prev.season) && cur.year == prev.year);
+
+        // Simulate incoming media list
+        List<Anime> rawList = new ArrayList<>();
+
+        Anime curAnime = new Anime();
+        curAnime.id = 1;
+        curAnime.title = "Current Season Hit";
+        curAnime.season = cur.season;
+        curAnime.year = cur.year;
+        curAnime.status = "RELEASING";
+        rawList.add(curAnime);
+
+        Anime prevAnime = new Anime();
+        prevAnime.id = 2;
+        prevAnime.title = "Previous Season Classic";
+        prevAnime.season = prev.season;
+        prevAnime.year = prev.year;
+        prevAnime.status = "FINISHED";
+        rawList.add(prevAnime);
+
+        Anime longAnime = new Anime();
+        longAnime.id = 3;
+        longAnime.title = "One Piece";
+        longAnime.slug = "one-piece";
+        longAnime.season = "FALL";
+        longAnime.year = 1999;
+        longAnime.status = "RELEASING";
+        rawList.add(longAnime);
+
+        // Test PREV filter: must strictly isolate prev season and exclude current and long-running
+        List<Anime> prevFiltered = new ArrayList<>();
+        for (Anime a : rawList) {
+            if (prev.season.equalsIgnoreCase(a.season) && prev.year == a.year && !AniListClient.isLongRunning(a)) {
+                prevFiltered.add(a);
+            }
+        }
+
+        assertEquals("PREV filter must only retain previous season anime", 1, prevFiltered.size());
+        assertEquals("Retained anime must be previous season classic", "Previous Season Classic", prevFiltered.get(0).title);
+
+        // Test CUR filter: must strictly isolate current season and exclude prev and long-running
+        List<Anime> curFiltered = new ArrayList<>();
+        for (Anime a : rawList) {
+            if (cur.season.equalsIgnoreCase(a.season) && cur.year == a.year && !AniListClient.isLongRunning(a)) {
+                curFiltered.add(a);
+            }
+        }
+
+        assertEquals("CUR filter must only retain current season anime", 1, curFiltered.size());
+        assertEquals("Retained anime must be current season hit", "Current Season Hit", curFiltered.get(0).title);
+    }
 }
