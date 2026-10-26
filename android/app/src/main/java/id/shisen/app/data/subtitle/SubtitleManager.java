@@ -86,6 +86,12 @@ public class SubtitleManager {
         activeCues = new ArrayList<>();
     }
 
+    /**
+     * Pointer cue terakhir yang terlihat (urutan cue terjamin sorted oleh SubtitleParser).
+     * Hit aktif berikutnya memakai pointer; kalau tidak aktif kita binary startMs (O(log n)).
+     */
+    private int lastCueIndex = -1;
+
     public synchronized String getCurrentText(long currentPositionMs) {
         if (!subEnabled) return "";
         List<SubtitleCue> cues = activeCues;
@@ -93,11 +99,29 @@ public class SubtitleManager {
 
         long effectivePos = currentPositionMs + subtitleOffsetMs;
         int size = cues.size();
-        for (int i = 0; i < size; i++) {
-            if (i >= cues.size()) break;
-            SubtitleCue cue = cues.get(i);
-            if (cue != null && cue.isActive(effectivePos)) {
-                return cue.text != null ? cue.text : "";
+
+        // Fast path: pointer hasil render sebelumnya masih aktif
+        if (lastCueIndex >= 0 && lastCueIndex < size) {
+            SubtitleCue cached = cues.get(lastCueIndex);
+            if (cached != null && cached.isActive(effectivePos)) {
+                return cached.text != null ? cached.text : "";
+            }
+        }
+
+        // Binary search: cue terakhir dengan startMs <= pos
+        int lo = 0, hi = size - 1, idx = -1;
+        while (lo <= hi) {
+            int mid = (lo + hi) >>> 1;
+            SubtitleCue c = cues.get(mid);
+            if (c == null) { lo++; continue; }
+            if (c.startMs <= effectivePos) { idx = mid; lo = mid + 1; }
+            else { hi = mid - 1; }
+        }
+        lastCueIndex = idx;
+        if (idx >= 0) {
+            SubtitleCue c = cues.get(idx);
+            if (c != null && c.isActive(effectivePos)) {
+                return c.text != null ? c.text : "";
             }
         }
         return "";
