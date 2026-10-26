@@ -524,6 +524,9 @@ public class PlayerActivity extends AppCompatActivity {
                     PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
             mediaSession = new MediaSession.Builder(this, player)
                     .setSessionActivity(pi)
+                    // Whitelist controller: hanya app sendiri, controller notifikasi media,
+                    // dan sistem tepercaya (lockscreen/headset). Pihak ketiga ditolak.
+                    .setCallback(PlaybackService.createControllerCallback(this))
                     .build();
             PlaybackService.setActiveSession(mediaSession);
 
