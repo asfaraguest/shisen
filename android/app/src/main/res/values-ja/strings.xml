@@ -48,6 +48,20 @@
     <string name="page_next">次へ ›</string>
     <string name="page_indicator_format">第 %d 頁</string>
 
+    <!-- Hero Card Actions & Badges -->
+    <string name="hero_trending_today">本日のトレンド</string>
+    <string name="hero_play_now">▶ 今すぐ再生</string>
+    <string name="hero_info_detail">ℹ 詳細情報</string>
+
+    <!-- Anime Card Badges & Counters -->
+    <string name="badge_not_yet_aired">未放送</string>
+    <string name="badge_ongoing">放送中</string>
+    <string name="badge_finished">完結</string>
+    <string name="badge_long_running">長期連載</string>
+    <string name="card_last_played">前回再生: 第%d話</string>
+    <string name="card_episodes_format">全%d話</string>
+    <string name="card_episodes_finished_format">全%d話 (完結)</string>
+
     <!-- Contextual Bar Actions & Labels -->
     <string name="action_clear_all">全消去</string>
     <string name="action_reset">初期化</string>
@@ -92,6 +106,10 @@
     <string name="player_server">サーバー</string>
     <string name="player_portrait">縦画面</string>
 
+    <string name="action_clear_key">キー削除</string>
+    <string name="action_save_ai">AI設定を保存</string>
+    <string name="action_reset_prompt">初期化</string>
+
     <!-- Settings Dialog -->
     <string name="settings_title">設定</string>
     <string name="settings_subtitle">テーマ、言語、セーフモード、触覚、AI設定</string>
@@ -101,7 +119,7 @@
     <string name="settings_lang_en">🇬🇧 英語</string>
     <string name="settings_lang_ja">🇯🇵 日本語</string>
     <string name="settings_section_safety">安心機能・触覚振動</string>
-    <string name="settings_safemode_title">🛡️ セーフモード</string>
+    <string name="settings_safemode_title">🛡️ Shisen セーフモード</string>
     <string name="settings_safemode_desc">成人向け・過激コンテンツをカタログや検索から除外します。(Hentaiは常に完全遮断)。</string>
     <string name="settings_haptic_title">📳 触覚振動</string>
     <string name="settings_haptic_desc">メニュー操作、ページ移動、シーク時の微細な振動フィードバック。</string>

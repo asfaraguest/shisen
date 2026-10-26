@@ -48,6 +48,20 @@
     <string name="page_next">Next ›</string>
     <string name="page_indicator_format">Page %d</string>
 
+    <!-- Hero Card Actions & Badges -->
+    <string name="hero_trending_today">TRENDING TODAY</string>
+    <string name="hero_play_now">▶ Watch Now</string>
+    <string name="hero_info_detail">ℹ Details</string>
+
+    <!-- Anime Card Badges & Counters -->
+    <string name="badge_not_yet_aired">Not Yet Aired</string>
+    <string name="badge_ongoing">Ongoing</string>
+    <string name="badge_finished">Finished</string>
+    <string name="badge_long_running">Long Running</string>
+    <string name="card_last_played">Last watched: Ep %d</string>
+    <string name="card_episodes_format">%d Episodes</string>
+    <string name="card_episodes_finished_format">%d Eps (Finished)</string>
+
     <!-- Contextual Bar Actions & Labels -->
     <string name="action_clear_all">Clear All</string>
     <string name="action_reset">Reset</string>
@@ -92,6 +106,10 @@
     <string name="player_server">Server</string>
     <string name="player_portrait">Portrait</string>
 
+    <string name="action_clear_key">Clear Key</string>
+    <string name="action_save_ai">Save AI</string>
+    <string name="action_reset_prompt">Reset Prompt</string>
+
     <!-- Settings Dialog -->
     <string name="settings_title">SETTINGS</string>
     <string name="settings_subtitle">Configure Theme, Language, Safe Mode, Haptics, &amp; AI</string>
@@ -101,7 +119,7 @@
     <string name="settings_lang_en">🇬🇧 English</string>
     <string name="settings_lang_ja">🇯🇵 日本語</string>
     <string name="settings_section_safety">SAFETY &amp; HAPTICS</string>
-    <string name="settings_safemode_title">🛡️ Safe Mode Tatap</string>
+    <string name="settings_safemode_title">🛡️ Safe Mode Shisen</string>
     <string name="settings_safemode_desc">Filter ecchi &amp; erotica anime from catalog and search results. (Hentai genre is always 100% blocked).</string>
     <string name="settings_haptic_title">📳 Haptic Feedback</string>
     <string name="settings_haptic_desc">Subtle tactile vibration when navigating menus, pagination, and player gestures.</string>

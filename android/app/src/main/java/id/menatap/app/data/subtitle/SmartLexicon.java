@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * SmartLexicon - Kamus Leksikon Universal & Subtitle Sanitizer Menatap
+ * SmartLexicon - Kamus Leksikon Universal & Subtitle Sanitizer Shisen
  * Paritas Penuh Subtitle Engine Tatap (610+ Aturan Universal, Koreksi Overgeared Satisfy,
  * Diksi Kasual Fansub, AIGTX Smooth Rules, dan Otomasi Kata Ganti Scene Context).
  */

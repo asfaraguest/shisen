@@ -40,7 +40,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Manajer In-App Update Seamless untuk Menatap (100% Pure Native Java).
+ * Manajer In-App Update Seamless untuk Shisen (100% Pure Native Java).
  * - Pemeriksaan rilis publik via GitHub Releases API.
  * - Mengunduh streaming APK resmi bertanda tangan dengan progress bar halus.
  * - Meluncurkan PackageInstaller resmi Android via FileProvider tanpa browser eksternal.
@@ -48,7 +48,10 @@ import okhttp3.Response;
 public class AppUpdateManager {
 
     public static final int REQUEST_CODE_INSTALL_PERMISSION = 7129;
-    private static final String GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/asfaraguest/menatap/releases/latest";
+    private static final String[] UPDATE_URLS = {
+            "https://api.github.com/repos/asfaraguest/shisen/releases/latest",
+            "https://api.github.com/repos/asfaraguest/menatap/releases/latest"
+    };
 
     private static volatile AppUpdateManager instance;
 
@@ -103,53 +106,67 @@ public class AppUpdateManager {
         new Thread(() -> {
             try {
                 OkHttpClient client = HttpClientProvider.getClient();
-                Request req = new Request.Builder()
-                        .url(GITHUB_LATEST_RELEASE_URL)
-                        .header("Accept", "application/vnd.github.v3+json")
-                        .header("User-Agent", "Menatap-Android")
-                        .build();
+                JSONObject releaseObj = null;
+                String lastError = null;
 
-                try (Response resp = client.newCall(req).execute()) {
-                    if (!resp.isSuccessful() || resp.body() == null) {
-                        onCheckFinished(activity, isManual, false, "Gagal terhubung ke GitHub (HTTP " + resp.code() + ")", null, null, null, 0);
-                        return;
+                for (String endpoint : UPDATE_URLS) {
+                    try {
+                        Request req = new Request.Builder()
+                                .url(endpoint)
+                                .header("Accept", "application/vnd.github.v3+json")
+                                .header("User-Agent", "Shisen-Android")
+                                .build();
+
+                        try (Response resp = client.newCall(req).execute()) {
+                            if (resp.isSuccessful() && resp.body() != null) {
+                                String json = resp.body().string();
+                                releaseObj = new JSONObject(json);
+                                break;
+                            } else {
+                                lastError = "HTTP " + resp.code();
+                            }
+                        }
+                    } catch (Exception err) {
+                        lastError = err.getMessage();
                     }
+                }
 
-                    String json = resp.body().string();
-                    JSONObject releaseObj = new JSONObject(json);
+                if (releaseObj == null) {
+                    onCheckFinished(activity, isManual, false, "Gagal terhubung ke GitHub (" + lastError + ")", null, null, null, 0);
+                    return;
+                }
 
-                    String tagName = releaseObj.optString("tag_name", "");
-                    String bodyNotes = releaseObj.optString("body", "Pembaruan kestabilan dan fitur terbaru Shisen (視線).");
-                    String htmlUrl = releaseObj.optString("html_url", "https://github.com/asfaraguest/menatap/releases");
+                String tagName = releaseObj.optString("tag_name", "");
+                String bodyNotes = releaseObj.optString("body", "Pembaruan kestabilan dan fitur terbaru Shisen (視線).");
+                String htmlUrl = releaseObj.optString("html_url", "https://github.com/asfaraguest/shisen/releases");
 
-                    String cleanRemote = tagName.replaceFirst("^v", "");
-                    String cleanInstalled = getInstalledVersion(activity);
+                String cleanRemote = tagName.replaceFirst("^v", "");
+                String cleanInstalled = getInstalledVersion(activity);
 
-                    // Temukan asset APK resmi
-                    String downloadUrl = null;
-                    long apkSize = 0;
-                    JSONArray assets = releaseObj.optJSONArray("assets");
-                    if (assets != null) {
-                        for (int i = 0; i < assets.length(); i++) {
-                            JSONObject a = assets.getJSONObject(i);
-                            String name = a.optString("name", "");
-                            if (name.endsWith(".apk")) {
-                                downloadUrl = a.optString("browser_download_url", null);
-                                apkSize = a.optLong("size", 0);
-                                if (name.contains("shisen-release") || name.contains("miru-release") || name.contains("menatap-release")) {
-                                    break; // Preferred official signed asset
-                                }
+                // Temukan asset APK resmi
+                String downloadUrl = null;
+                long apkSize = 0;
+                JSONArray assets = releaseObj.optJSONArray("assets");
+                if (assets != null) {
+                    for (int i = 0; i < assets.length(); i++) {
+                        JSONObject a = assets.getJSONObject(i);
+                        String name = a.optString("name", "");
+                        if (name.endsWith(".apk")) {
+                            downloadUrl = a.optString("browser_download_url", null);
+                            apkSize = a.optLong("size", 0);
+                            if (name.contains("shisen-release") || name.contains("menatap-release") || name.contains("miru-release")) {
+                                break; // Preferred official signed asset
                             }
                         }
                     }
-
-                    if (downloadUrl == null) {
-                        downloadUrl = htmlUrl;
-                    }
-
-                    boolean hasUpdate = isNewerVersion(cleanRemote, cleanInstalled);
-                    onCheckFinished(activity, isManual, hasUpdate, null, cleanRemote, bodyNotes, downloadUrl, apkSize);
                 }
+
+                if (downloadUrl == null) {
+                    downloadUrl = htmlUrl;
+                }
+
+                boolean hasUpdate = isNewerVersion(cleanRemote, cleanInstalled);
+                onCheckFinished(activity, isManual, hasUpdate, null, cleanRemote, bodyNotes, downloadUrl, apkSize);
             } catch (Exception e) {
                 onCheckFinished(activity, isManual, false, "Koneksi terganggu: " + e.getMessage(), null, null, null, 0);
             }
@@ -172,7 +189,7 @@ public class AppUpdateManager {
             if (hasUpdate) {
                 showUpdateDialog(activity, latestVer, notes, downloadUrl, sizeBytes);
             } else if (isManual) {
-                Toast.makeText(activity, "Menatap sudah dalam versi terbaru (v" + getInstalledVersion(activity) + ")", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "Shisen sudah dalam versi terbaru (v" + getInstalledVersion(activity) + ")", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -296,7 +313,7 @@ public class AppUpdateManager {
                 OkHttpClient client = HttpClientProvider.getClient();
                 Request req = new Request.Builder()
                         .url(downloadUrl)
-                        .header("User-Agent", "Menatap-Android")
+                        .header("User-Agent", "Shisen-Android")
                         .build();
 
                 try (Response resp = client.newCall(req).execute()) {
@@ -395,7 +412,7 @@ public class AppUpdateManager {
                 this.pendingApkFile = apkFile;
                 new AlertDialog.Builder(activity)
                         .setTitle("Izin Pemasangan Aplikasi")
-                        .setMessage("Menatap memerlukan izin untuk memasang pembaruan langsung dari berkas APK resmi bertanda tangan. Silakan aktifkan 'Izinkan dari sumber ini' pada layar pengaturan.")
+                        .setMessage("Shisen memerlukan izin untuk memasang pembaruan langsung dari berkas APK resmi bertanda tangan. Silakan aktifkan 'Izinkan dari sumber ini' pada layar pengaturan.")
                         .setPositiveButton("Buka Pengaturan", (d, w) -> {
                             try {
                                 Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);

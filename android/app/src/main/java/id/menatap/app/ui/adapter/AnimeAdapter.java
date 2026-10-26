@@ -153,8 +153,19 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             holder.tvHeroScore.setVisibility(View.GONE);
         }
 
-        if (anime.epsCounter != null && !anime.epsCounter.isEmpty() && !"null".equalsIgnoreCase(anime.epsCounter)) {
-            holder.tvHeroEps.setText(anime.epsCounter);
+        if (holder.tvHeroTrendingTag != null) {
+            holder.tvHeroTrendingTag.setText(context.getString(R.string.hero_trending_today));
+        }
+        if (holder.btnHeroPlay != null) {
+            holder.btnHeroPlay.setText(context.getString(R.string.hero_play_now));
+        }
+        if (holder.btnHeroInfo != null) {
+            holder.btnHeroInfo.setText(context.getString(R.string.hero_info_detail));
+        }
+
+        String heroEps = getLocalizedHeroEps(context, anime);
+        if (heroEps != null && !heroEps.isEmpty()) {
+            holder.tvHeroEps.setText(heroEps);
             holder.tvHeroEps.setVisibility(View.VISIBLE);
         } else {
             holder.tvHeroEps.setVisibility(View.GONE);
@@ -188,7 +199,7 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         // Format meta string
         String metaText;
         if (anime.lastPlayedEp > 0) {
-            metaText = "Terakhir diputar: Ep " + anime.lastPlayedEp;
+            metaText = context.getString(R.string.card_last_played, anime.lastPlayedEp);
         } else if (anime.airingDay != null && !anime.airingDay.isEmpty()) {
             metaText = anime.airingDay + (anime.format != null ? " · " + anime.format : "");
         } else {
@@ -221,24 +232,13 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             holder.tvBadgeScore.setVisibility(View.GONE);
         }
 
-        // Episode counter / History badge
-        if (anime.isLongRunning) {
+        // Episode counter / History / Localized Status badge
+        String badge = getLocalizedBadge(context, anime);
+        if (badge != null && !badge.isEmpty()) {
             holder.tvBadgeEp.setVisibility(View.VISIBLE);
-            holder.tvBadgeEp.setText("SERIAL PANJANG");
-            holder.tvBadgeEp.setBackgroundResource(R.drawable.bg_badge_frost);
-        } else if (anime.lastPlayedEp > 0) {
-            holder.tvBadgeEp.setVisibility(View.VISIBLE);
-            holder.tvBadgeEp.setText("Ep " + anime.lastPlayedEp);
-            holder.tvBadgeEp.setBackgroundResource(R.drawable.bg_badge_frost);
-        } else if (anime.epsCounter != null && !anime.epsCounter.isEmpty()) {
-            holder.tvBadgeEp.setVisibility(View.VISIBLE);
-            holder.tvBadgeEp.setText(anime.epsCounter);
-            if ("TAMAT".equalsIgnoreCase(anime.status) || "FINISHED".equalsIgnoreCase(anime.status)) {
-                holder.tvBadgeEp.setBackgroundResource(R.drawable.bg_badge_mint);
-                holder.tvBadgeEp.setText("TAMAT");
-            } else {
-                holder.tvBadgeEp.setBackgroundResource(R.drawable.bg_badge_frost);
-            }
+            holder.tvBadgeEp.setText(badge);
+            boolean isFinished = "FINISHED".equalsIgnoreCase(anime.status) || "TAMAT".equalsIgnoreCase(anime.status);
+            holder.tvBadgeEp.setBackgroundResource(isFinished ? R.drawable.bg_badge_mint : R.drawable.bg_badge_frost);
         } else {
             holder.tvBadgeEp.setVisibility(View.GONE);
         }
@@ -263,13 +263,14 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public static class HeroViewHolder extends RecyclerView.ViewHolder {
         View cardHero;
         ImageView ivHeroBackdrop;
-        TextView tvHeroGenres, tvHeroTitle, tvHeroFormat, tvHeroScore, tvHeroEps;
+        TextView tvHeroTrendingTag, tvHeroGenres, tvHeroTitle, tvHeroFormat, tvHeroScore, tvHeroEps;
         Button btnHeroPlay, btnHeroInfo;
 
         public HeroViewHolder(@NonNull View itemView) {
             super(itemView);
             cardHero = itemView.findViewById(R.id.card_hero);
             ivHeroBackdrop = itemView.findViewById(R.id.iv_hero_backdrop);
+            tvHeroTrendingTag = itemView.findViewById(R.id.tv_hero_trending_tag);
             tvHeroGenres = itemView.findViewById(R.id.tv_hero_genres);
             tvHeroTitle = itemView.findViewById(R.id.tv_hero_title);
             tvHeroFormat = itemView.findViewById(R.id.tv_hero_format);
@@ -305,5 +306,57 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             tvBadgeScore = itemView.findViewById(R.id.tv_badge_score);
             tvBadgeType = itemView.findViewById(R.id.tv_badge_type);
         }
+    }
+
+    public static String getLocalizedBadge(Context context, Anime anime) {
+        if (anime == null || context == null) return "";
+        if (anime.isLongRunning) {
+            return context.getString(R.string.badge_long_running);
+        }
+        if (anime.lastPlayedEp > 0) {
+            return "Ep " + anime.lastPlayedEp;
+        }
+
+        boolean isOngoing = "RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status);
+        boolean isNotYetAired = "NOT_YET_RELEASED".equalsIgnoreCase(anime.status) ||
+                (isOngoing && anime.nextAiringEpisode == 1 && anime.airedEpisodesCount == 0);
+
+        if (isNotYetAired) {
+            return context.getString(R.string.badge_not_yet_aired);
+        }
+        if (isOngoing) {
+            if (anime.airedEpisodesCount > 0) {
+                if (anime.episodesCount > 0) {
+                    return "Ep " + anime.airedEpisodesCount + "/" + anime.episodesCount;
+                }
+                return "Ep " + anime.airedEpisodesCount;
+            }
+            return context.getString(R.string.badge_ongoing);
+        }
+        if ("FINISHED".equalsIgnoreCase(anime.status) || "TAMAT".equalsIgnoreCase(anime.status)) {
+            if (anime.episodesCount > 0) {
+                return context.getString(R.string.card_episodes_finished_format, anime.episodesCount);
+            }
+            return context.getString(R.string.badge_finished);
+        }
+        if (anime.episodesCount > 0) {
+            return context.getString(R.string.card_episodes_format, anime.episodesCount);
+        }
+        if (anime.format != null && !anime.format.isEmpty() && !"null".equalsIgnoreCase(anime.format)) {
+            return anime.format.toUpperCase(Locale.US);
+        }
+        return "";
+    }
+
+    public static String getLocalizedHeroEps(Context context, Anime anime) {
+        if (anime == null || context == null) return "";
+        if (anime.episodesCount > 0) {
+            boolean isFinished = "FINISHED".equalsIgnoreCase(anime.status) || "TAMAT".equalsIgnoreCase(anime.status);
+            if (isFinished) {
+                return context.getString(R.string.card_episodes_finished_format, anime.episodesCount);
+            }
+            return context.getString(R.string.card_episodes_format, anime.episodesCount);
+        }
+        return getLocalizedBadge(context, anime);
     }
 }

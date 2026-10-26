@@ -22,7 +22,7 @@
 
 ## 📱 Unduhan Rilis Resmi (Android Mobile Only)
 
-Unduh berkas rilis resmi bertanda tangan dari [Halaman Rilis GitHub](https://github.com/asfaraguest/menatap/releases):
+Unduh berkas rilis resmi bertanda tangan dari [Halaman Rilis GitHub Shisen](https://github.com/asfaraguest/shisen/releases) (atau cermin rilis [asfaraguest/menatap](https://github.com/asfaraguest/menatap/releases)):
 - 📱 **`shisen-release-v0.1.0-beta.2.apk`** (Official Signed Mobile APK via production Keystore)
 
 ---

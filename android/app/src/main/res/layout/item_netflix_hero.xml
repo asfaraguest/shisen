@@ -55,10 +55,11 @@
                 android:letterSpacing="0.08" />
 
             <TextView
+                android:id="@+id/tv_hero_trending_tag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:text="TREN HARI INI"
+                android:text="@string/hero_trending_today"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="9.5sp"
                 android:fontFamily="sans-serif-bold"
@@ -161,7 +162,7 @@
                     android:layout_width="0dp"
                     android:layout_height="42dp"
                     android:layout_weight="1"
-                    android:text="▶ Putar Sekarang"
+                    android:text="@string/hero_play_now"
                     android:textColor="#090D16"
                     android:backgroundTint="@color/accent_glacial"
                     android:textSize="13sp"
@@ -175,7 +176,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="42dp"
                     android:layout_marginStart="10dp"
-                    android:text="ℹ Info Detail"
+                    android:text="@string/hero_info_detail"
                     android:textColor="@color/text_frost_bright"
                     android:backgroundTint="@color/frost_elevated"
                     app:strokeColor="@color/frost_border"

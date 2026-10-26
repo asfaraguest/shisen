@@ -3,6 +3,7 @@ package id.menatap.app.ui.dialog;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -140,14 +141,17 @@ public class SettingsDialog {
             boolean isEn = LocaleHelper.LANG_EN.equalsIgnoreCase(active);
             boolean isJa = LocaleHelper.LANG_JA.equalsIgnoreCase(active);
 
+            int selectedColor = Color.parseColor("#080C14");
+            int normalColor = ContextCompat.getColor(activity, R.color.text_frost_bright);
+
             btnLangId.setBackgroundResource(isId ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
-            btnLangId.setTextColor(ContextCompat.getColor(activity, isId ? R.color.accent_glacial : R.color.text_frost_bright));
+            btnLangId.setTextColor(isId ? selectedColor : normalColor);
 
             btnLangEn.setBackgroundResource(isEn ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
-            btnLangEn.setTextColor(ContextCompat.getColor(activity, isEn ? R.color.accent_glacial : R.color.text_frost_bright));
+            btnLangEn.setTextColor(isEn ? selectedColor : normalColor);
 
             btnLangJa.setBackgroundResource(isJa ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
-            btnLangJa.setTextColor(ContextCompat.getColor(activity, isJa ? R.color.accent_glacial : R.color.text_frost_bright));
+            btnLangJa.setTextColor(isJa ? selectedColor : normalColor);
         };
         updateChips.run();
 
@@ -339,7 +343,7 @@ public class SettingsDialog {
     private static void applyChipStyle(TextView chip, Context context, boolean isSelected) {
         if (isSelected) {
             chip.setBackgroundResource(R.drawable.bg_chip_frost_active);
-            chip.setTextColor(ContextCompat.getColor(context, R.color.frost_void));
+            chip.setTextColor(Color.parseColor("#080C14"));
         } else {
             chip.setBackgroundResource(R.drawable.bg_chip_frost_inactive);
             chip.setTextColor(ContextCompat.getColor(context, R.color.text_frost_bright));
@@ -349,7 +353,7 @@ public class SettingsDialog {
     private static void setupAboutSection(View root, Activity activity) {
         TextView tvVersion = root.findViewById(R.id.tv_settings_app_version);
         if (tvVersion != null) {
-            tvVersion.setText("Menatap v" + BuildConfig.VERSION_NAME);
+            tvVersion.setText("Shisen v" + BuildConfig.VERSION_NAME);
         }
 
         Button btnCheckUpdate = root.findViewById(R.id.btn_settings_check_update);

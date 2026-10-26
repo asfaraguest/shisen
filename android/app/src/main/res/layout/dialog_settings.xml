@@ -319,7 +319,7 @@
                 android:focusable="true"
                 android:gravity="center"
                 android:text="@string/settings_lang_in"
-                android:textColor="@color/accent_glacial"
+                android:textColor="#080C14"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-bold" />
 
@@ -579,7 +579,7 @@
                 android:id="@+id/btn_settings_reset_prompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Reset"
+                android:text="@string/action_reset_prompt"
                 android:textColor="@color/accent_glacial"
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-bold"
@@ -617,10 +617,14 @@
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_chip_frost_inactive"
-                android:text="Hapus Kunci"
-                android:textColor="@color/text_frost_subtle"
+                android:backgroundTint="@color/frost_elevated"
+                app:strokeColor="@color/frost_border"
+                app:strokeWidth="1dp"
+                app:cornerRadius="8dp"
+                android:text="@string/action_clear_key"
+                android:textColor="@color/text_frost_bright"
                 android:textSize="12sp"
+                android:fontFamily="sans-serif-medium"
                 android:textAllCaps="false" />
 
             <Button
@@ -628,11 +632,12 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1.5"
-                android:background="@drawable/bg_chip_frost_active"
-                android:text="Simpan AI"
-                android:textColor="@color/frost_void"
+                android:backgroundTint="@color/accent_glacial"
+                app:cornerRadius="8dp"
+                android:text="@string/action_save_ai"
+                android:textColor="#080C14"
                 android:textSize="12sp"
-                android:textStyle="bold"
+                android:fontFamily="sans-serif-bold"
                 android:textAllCaps="false" />
         </LinearLayout>
 
@@ -685,12 +690,9 @@
                 android:layout_height="40dp"
                 android:layout_marginTop="10dp"
                 android:backgroundTint="@color/frost_elevated"
+                app:strokeColor="@color/frost_border"
+                app:strokeWidth="1dp"
                 android:text="@string/settings_check_update"
-                android:textColor="@color/text_frost_bright"
-                android:textSize="12sp"
-                android:fontFamily="sans-serif-bold"
-                android:textAllCaps="false"
-                app:cornerRadius="8dp" />
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-bold"

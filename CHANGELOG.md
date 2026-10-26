@@ -5,6 +5,20 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 ## [0.1.0-beta.2] - 2026-10-25
 
 ### Ditambahkan
+- **Penyeragaman Lokalisasi Hero CTA & Tags Dinamis (`item_netflix_hero.xml`, `AnimeAdapter.java`, `strings.xml`)**:
+  - Menghubungkan seluruh elemen Hero Card di Beranda (`TREN HARI INI` / `TRENDING TODAY` / `本日のトレンド`, `▶ Putar Sekarang` / `▶ Watch Now` / `▶ 今すぐ再生`, `ℹ Info Detail` / `ℹ Details` / `ℹ 詳細情報`, dan jumlah episode) dengan string resources dinamis multi-bahasa.
+  - Memberikan ID resmi `tv_hero_trending_tag` pada label tren teratas dan memperbarui method `bindHero()` agar bereaksi seketika terhadap perubahan bahasa aktif.
+- **Penyeragaman Lokalisasi Status Episode & Badge Kartu Anime (`AnimeAdapter.java`)**:
+  - Mengganti teks status hardcoded bahasa Indonesia (`"Belum Tayang"`, `"Ongoing"`, `"Tamat"`, `"SERIAL PANJANG"`, `"Terakhir diputar: Ep X"`) dengan helper method `getLocalizedBadge()` dan `getLocalizedHeroEps()`.
+  - Seluruh badge kartu anime (status penayangan, format serial, progres riwayat tontonan) kini secara otomatis mengikuti preferensi bahasa aktif pengguna (Bahasa Indonesia, English, dan 日本語).
+- **Perbaikan Kontras Warna Tinggi WCAG AAA pada Tombol & Chip Pengaturan (`dialog_settings.xml`, `SettingsDialog.java`)**:
+  - Memperbaiki kontras chip selektor bahasa aktif (`btn_lang_id`, `btn_lang_en`, `btn_lang_ja`): teks disetel hitam pekat `#080C14` di atas latar belakang sian glasial terang (`@color/accent_glacial`), mengeliminasi bug teks cyan di atas cyan yang tidak terbaca.
+  - Memperbaiki tombol aksi simpan AI (`btn_settings_save_ai`): menggunakan teks hitam tebal `#080C14` di atas latar sian glasial.
+  - Memperbaiki tombol hapus kunci (`btn_settings_clear_ai`) dan cek pembaruan (`btn_settings_check_update`): menggunakan latar elevated frosted `#161F38` dengan stroke kontras `#233252` dan teks putih cerah `#F1F5F9`.
+  - Membersihkan duplikasi penutup tag XML pada tombol periksa pembaruan di `dialog_settings.xml`.
+- **Dukungan Multi-Endpoint Update Checker & Fallback Repositori GitHub (`AppUpdateManager.java`)**:
+  - Menerapkan rantai endpoint pembaruan terpadu: mencoba repositori utama `asfaraguest/shisen`, dan secara otomatis fallback ke `asfaraguest/menatap` jika endpoint pertama belum tersedia.
+  - Memperbarui User-Agent ke `Shisen-Android` dan menyelaraskan seluruh dialog perizinan paket serta notifikasi toast dengan identitas resmi **Shisen**.
 - **Sistem Trilingual & Language Switcher di Pengaturan Terpadu (`LocaleHelper.java`, `SettingsDialog.java`, `strings.xml`)**:
   - **Bahasa Indonesia Bersih Sebagai Default**: Menghilangkan istilah dan karakter kanji/kana Jepang yang sebelumnya terpasang di antarmuka default. Pengguna kini disuguhkan antarmuka Bahasa Indonesia yang bersih, alami, dan mudah dipahami.
   - **Selector 3 Bahasa (Trilingual)**: Menyediakan selektor bahasa interaktif di dalam modal Pengaturan Terpadu dengan pilihan:

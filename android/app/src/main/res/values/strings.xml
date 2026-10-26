@@ -48,6 +48,20 @@
     <string name="page_next">Berikutnya ›</string>
     <string name="page_indicator_format">Hal %d</string>
 
+    <!-- Hero Card Actions & Badges -->
+    <string name="hero_trending_today">TREN HARI INI</string>
+    <string name="hero_play_now">▶ Putar Sekarang</string>
+    <string name="hero_info_detail">ℹ Info Detail</string>
+
+    <!-- Anime Card Badges & Counters -->
+    <string name="badge_not_yet_aired">Belum Tayang</string>
+    <string name="badge_ongoing">Ongoing</string>
+    <string name="badge_finished">Tamat</string>
+    <string name="badge_long_running">Serial Panjang</string>
+    <string name="card_last_played">Terakhir diputar: Ep %d</string>
+    <string name="card_episodes_format">%d Episode</string>
+    <string name="card_episodes_finished_format">%d Ep (Tamat)</string>
+
     <!-- Contextual Bar Actions & Labels -->
     <string name="action_clear_all">Hapus Semua</string>
     <string name="action_reset">Reset</string>
@@ -92,6 +106,10 @@
     <string name="player_server">Server</string>
     <string name="player_portrait">Portrait</string>
 
+    <string name="action_clear_key">Hapus Kunci</string>
+    <string name="action_save_ai">Simpan AI</string>
+    <string name="action_reset_prompt">Reset</string>
+
     <!-- Settings Dialog -->
     <string name="settings_title">PENGATURAN</string>
     <string name="settings_subtitle">Konfigurasi Tema, Bahasa, Safe Mode, Haptic, &amp; AI</string>
@@ -101,7 +119,7 @@
     <string name="settings_lang_en">🇬🇧 English</string>
     <string name="settings_lang_ja">🇯🇵 日本語</string>
     <string name="settings_section_safety">KEAMANAN &amp; HAPTIC</string>
-    <string name="settings_safemode_title">🛡️ Safe Mode Tatap</string>
+    <string name="settings_safemode_title">🛡️ Safe Mode Shisen</string>
     <string name="settings_safemode_desc">Saring judul anime ecchi &amp; erotica dari katalog dan pencarian. (Genre Hentai selalu diblokir 100%).</string>
     <string name="settings_haptic_title">📳 Getaran Haptic</string>
     <string name="settings_haptic_desc">Umpan balik getaran halus saat navigasi menu, pagination, dan gesture seek pemutar video.</string>
