@@ -2,6 +2,14 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [0.1.0-beta.5] - 2026-10-26
+
+### Diperbaiki
+- **Lokalisasi Modal Genre & Modal Cross-Filter (`dialog_genre_selector.xml`, `dialog_catalog_filter.xml`)**:
+  - Dialog pemilih genre kini mengikuti bahasa aktif: judul dialog, hint pencarian genre, tombol `Hapus Filter`, dan `Tutup` dipindahkan ke string resources.
+  - Dialog cross-filter katalog kini mengikuti bahasa aktif untuk seluruh 6 seksi penyaringan: header & deskripsi, judul seksi (Urutan/Tahun/Musim/Bulan/Tipe/Status), chip sortir (Skor Tertinggi, Terbaru, Trending, Favorit), opsi "Semua", nama musim (Musim Semi/Panas/Gugur/Dingin), 12 bulan, format (TV Series, Movie, Special), status tayang (Sedang Tayang, Sudah Tamat), serta tombol `Hapus Filter` / `Terapkan Filter`.
+  - String baru ditambahkan lengkap pada ketiga locale (Indonesia, English, 日本語). Nilai netral bahasa (A-Z, angka tahun, OVA/ONA) sengaja dibiarkan hardcoded.
+
 ## [0.1.0-beta.4] - 2026-10-26
 
 ### Diperbaiki
