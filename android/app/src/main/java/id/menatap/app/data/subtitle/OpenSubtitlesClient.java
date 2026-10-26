@@ -95,6 +95,7 @@ public class OpenSubtitlesClient {
                 Request req = new Request.Builder()
                         .url(downloadUrl)
                         .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0")
+                        .header("Referer", "https://opensubtitles.org/")
                         .build();
 
                 try (Response resp = client.newCall(req).execute()) {

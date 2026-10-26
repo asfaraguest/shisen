@@ -1653,7 +1653,7 @@ public class PlayerActivity extends AppCompatActivity {
                     options.add("[ID] Bahasa Indonesia (Asli Bawaan)" + (isIdRawSelected ? " [Aktif]" : ""));
                     actions.add(() -> {
                         subtitleManager.setSubEnabled(true);
-                        subtitleManager.loadRawTrack(st.url, st.label, "id");
+                        subtitleManager.loadRawTrack(st.url, st.label, "id", st.referer);
                     });
                     break;
                 }
@@ -1687,7 +1687,7 @@ public class PlayerActivity extends AppCompatActivity {
                 options.add(st.label);
                 actions.add(() -> {
                     subtitleManager.setSubEnabled(true);
-                    subtitleManager.loadRawTrack(st.url, st.label, st.lang);
+                    subtitleManager.loadRawTrack(st.url, st.label, st.lang, st.referer);
                 });
             }
         }

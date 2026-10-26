@@ -286,6 +286,7 @@ public class HiAnimeClient {
         // Parse Subtitles
         JSONArray tracksArr = cfg.optJSONArray("tracks");
         if (tracksArr != null) {
+            String subReferer = origin + "/";
             for (int i = 0; i < tracksArr.length(); i++) {
                 JSONObject tr = tracksArr.getJSONObject(i);
                 String kind = tr.optString("kind", "");
@@ -295,7 +296,7 @@ public class HiAnimeClient {
                     boolean isDef = tr.optBoolean("default", false);
                     String lang = label.toLowerCase().contains("indonesia") ? "id" : "en";
                     if (!file.isEmpty()) {
-                        streamSource.subtitles.add(new SubtitleTrack(file, lang, label, isDef));
+                        streamSource.subtitles.add(new SubtitleTrack(file, lang, label, isDef, subReferer));
                     }
                 }
             }

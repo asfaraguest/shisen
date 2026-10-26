@@ -73,9 +73,21 @@ public class HttpClientProvider {
                 }
 
                 String host = original.url().host().toLowerCase(java.util.Locale.US);
+                String path = original.url().encodedPath().toLowerCase(java.util.Locale.US);
 
                 // Anti-403 CDN Referer/Origin Injection
-                if (host.contains("megaplay") || host.contains("megap.") || host.contains("nexabloom") || host.contains("ivorysummit") || host.contains("shiora")) {
+                boolean isMegaCdn = host.contains("megaplay") || host.contains("megap.")
+                        || host.contains("megacloud") || host.contains("rabbitstream")
+                        || host.contains("dokicloud") || host.contains("rapid-cloud")
+                        || host.contains("nexabloom") || host.contains("ivorysummit")
+                        || host.contains("shiora") || host.contains("broforgotsave")
+                        || host.contains("eclipseharbor") || host.contains("emeralddrift")
+                        || host.endsWith(".world") || host.endsWith(".buzz")
+                        || host.endsWith(".top") || host.endsWith(".xyz")
+                        || path.contains("/subtitles/") || path.contains("/anime/")
+                        || path.endsWith(".vtt") || path.endsWith(".srt");
+
+                if (isMegaCdn) {
                     if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
                         rb.header("Referer", "https://megaplay.buzz/");
                     }
@@ -88,6 +100,14 @@ public class HttpClientProvider {
                     }
                     if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
                         rb.header("Origin", "https://zokoanime.video");
+                    }
+                } else if (host.contains("animetosho")) {
+                    if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
+                        rb.header("Referer", "https://animetosho.net/");
+                    }
+                } else if (host.contains("opensubtitles")) {
+                    if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
+                        rb.header("Referer", "https://opensubtitles.org/");
                     }
                 } else if (host.contains("hianime")) {
                     if (original.header("Referer") == null) {
@@ -103,8 +123,20 @@ public class HttpClientProvider {
                     }
                 }
 
+                if (original.header("Accept") == null) {
+                    rb.header("Accept", "*/*");
+                }
                 if (original.header("Accept-Language") == null) {
                     rb.header("Accept-Language", "en-US,en;q=0.9,id;q=0.8");
+                }
+                if (original.header("Sec-Fetch-Dest") == null) {
+                    rb.header("Sec-Fetch-Dest", "empty");
+                }
+                if (original.header("Sec-Fetch-Mode") == null) {
+                    rb.header("Sec-Fetch-Mode", "cors");
+                }
+                if (original.header("Sec-Fetch-Site") == null) {
+                    rb.header("Sec-Fetch-Site", "cross-site");
                 }
 
                 return chain.proceed(rb.build());
