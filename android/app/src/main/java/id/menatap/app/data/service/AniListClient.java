@@ -240,15 +240,15 @@ public class AniListClient {
                 } else {
                     // Tampilan 3-Lane Terstruktur dengan section header pembatas
                     if (!currentSeasonList.isEmpty()) {
-                        result.add(Anime.createHeader("ANIME MUSIM BERJALAN (" + cur.season + " " + cur.year + ")", "SEDANG TAYANG"));
+                        result.add(Anime.createHeader("今期放送枠 • MUSIM BERJALAN (" + cur.season + " " + cur.year + ")", "放送中"));
                         result.addAll(currentSeasonList);
                     }
                     if (!prevSeasonList.isEmpty()) {
-                        result.add(Anime.createHeader("LANJUTAN MUSIM SEBELUMNYA (CARRY-OVER)", "LANJUTAN TAYANG"));
+                        result.add(Anime.createHeader("前期継続枠 • LANJUTAN MUSIM SEBELUMNYA", "継続中"));
                         result.addAll(prevSeasonList);
                     }
                     if (!longRunningList.isEmpty()) {
-                        result.add(Anime.createHeader("SERIAL PANJANG BERKELANJUTAN (CONTINUOUS ON-GOING)", "SERIAL PANJANG"));
+                        result.add(Anime.createHeader("長期連載枠 • SERIAL PANJANG BERKELANJUTAN", "定番作品"));
                         result.addAll(longRunningList);
                     }
                 }

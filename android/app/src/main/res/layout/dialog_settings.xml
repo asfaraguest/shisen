@@ -73,7 +73,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="TAMPILAN &amp; TEMA ANIME"
+            android:text="テーマ設定 • TAMPILAN &amp; TEMA ANIME"
             android:textColor="@color/accent_glacial"
             android:textSize="11sp"
             android:fontFamily="sans-serif-bold"
@@ -114,7 +114,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Twilight Shinkai (Signature)"
+                        android:text="新海ブルー • Twilight Shinkai (君の名は)"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
                         android:fontFamily="sans-serif-bold" />
@@ -164,7 +164,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Sakura Blossom"
+                        android:text="桜ブロッサム • Sakura Blossom (氷菓)"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
                         android:fontFamily="sans-serif-bold" />
@@ -214,7 +214,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Cyber Neo-Tokyo"
+                        android:text="電脳サイバー • Cyber Neo-Tokyo (攻殻機動隊)"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
                         android:fontFamily="sans-serif-bold" />
@@ -263,7 +263,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ghibli Forest Night"
+                        android:text="ジブリフォレスト • Ghibli Forest (もののけ姫)"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
                         android:fontFamily="sans-serif-bold" />
@@ -296,7 +296,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="KEAMANAN &amp; UMPAN BALIK"
+            android:text="安心機能 • KEAMANAN &amp; HAPTIC"
             android:textColor="@color/accent_glacial"
             android:textSize="11sp"
             android:fontFamily="sans-serif-bold"
@@ -321,7 +321,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🛡️ Safe Mode Tatap"
+                    android:text="🛡️ Safe Mode Tatap (安心フィルター)"
                     android:textColor="@color/text_frost_bright"
                     android:textSize="13sp"
                     android:fontFamily="sans-serif-bold" />
@@ -362,7 +362,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="📳 Getaran &amp; Haptic Feedback"
+                    android:text="📳 触覚振動 • Haptic Feedback"
                     android:textColor="@color/text_frost_bright"
                     android:textSize="13sp"
                     android:fontFamily="sans-serif-bold" />
@@ -402,7 +402,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="AI SUBTITLE (BYOK LLM)"
+                android:text="AI 字幕 • AI SUBTITLE (BYOK)"
                 android:textColor="@color/accent_glacial"
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-bold"
@@ -447,7 +447,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Pilihan Model AI (Model Selector)"
+            android:text="AIモデル選択 • Model Selector"
             android:textColor="@color/text_frost_bright"
             android:textSize="12sp"
             android:fontFamily="sans-serif-medium" />
@@ -502,7 +502,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Prompt Fansub Kustom"
+                android:text="字幕生成プロンプト • Prompt Fansub"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-medium" />
@@ -511,7 +511,7 @@
                 android:id="@+id/btn_settings_reset_prompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Reset ke Default"
+                android:text="初期化 • Reset"
                 android:textColor="@color/accent_glacial"
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-bold"
@@ -528,7 +528,7 @@
             android:maxLines="5"
             android:layout_marginTop="6dp"
             android:background="@drawable/bg_input_field"
-            android:hint="Prompt instruksi terjemahan..."
+            android:hint="Prompt instruksi terjemahan fansub..."
             android:textColorHint="@color/text_frost_dim"
             android:textColor="@color/text_frost_bright"
             android:textSize="12sp"
@@ -550,7 +550,7 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_chip_frost_inactive"
-                android:text="Hapus Kunci"
+                android:text="削除 • Hapus Kunci"
                 android:textColor="@color/text_frost_subtle"
                 android:textSize="12sp"
                 android:textAllCaps="false" />
@@ -561,7 +561,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="1.5"
                 android:background="@drawable/bg_chip_frost_active"
-                android:text="Simpan AI"
+                android:text="保存 • Simpan AI"
                 android:textColor="@color/frost_void"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -579,7 +579,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="SISTEM &amp; PEMBARUAN"
+            android:text="システム情報 • SISTEM &amp; PEMBARUAN"
             android:textColor="@color/accent_glacial"
             android:textSize="11sp"
             android:fontFamily="sans-serif-bold"
@@ -597,7 +597,7 @@
                 android:id="@+id/tv_settings_app_version"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Menatap v0.1.0-beta.2"
+                android:text="Miru 観る v0.1.0-beta.2"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
                 android:fontFamily="sans-serif-bold" />
@@ -617,7 +617,7 @@
                 android:layout_height="40dp"
                 android:layout_marginTop="10dp"
                 android:backgroundTint="@color/frost_elevated"
-                android:text="🔄 Cek Pembaruan Sekarang"
+                android:text="🔄 最新版を確認 • Cek Pembaruan"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-bold"

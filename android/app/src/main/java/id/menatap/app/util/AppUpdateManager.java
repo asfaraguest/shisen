@@ -119,7 +119,7 @@ public class AppUpdateManager {
                     JSONObject releaseObj = new JSONObject(json);
 
                     String tagName = releaseObj.optString("tag_name", "");
-                    String bodyNotes = releaseObj.optString("body", "Pembaruan kestabilan dan fitur terbaru Menatap.");
+                    String bodyNotes = releaseObj.optString("body", "Pembaruan kestabilan dan fitur terbaru Miru (観る).");
                     String htmlUrl = releaseObj.optString("html_url", "https://github.com/asfaraguest/menatap/releases");
 
                     String cleanRemote = tagName.replaceFirst("^v", "");
@@ -136,7 +136,7 @@ public class AppUpdateManager {
                             if (name.endsWith(".apk")) {
                                 downloadUrl = a.optString("browser_download_url", null);
                                 apkSize = a.optLong("size", 0);
-                                if (name.contains("menatap-release")) {
+                                if (name.contains("miru-release") || name.contains("menatap-release")) {
                                     break; // Preferred official signed asset
                                 }
                             }
@@ -306,7 +306,7 @@ public class AppUpdateManager {
 
                     long totalBytes = resp.body().contentLength();
                     File cacheDir = activity.getExternalCacheDir() != null ? activity.getExternalCacheDir() : activity.getCacheDir();
-                    outFile = new File(cacheDir, "menatap-update-v" + latestVer + ".apk");
+                    outFile = new File(cacheDir, "miru-update-v" + latestVer + ".apk");
                     if (outFile.exists()) {
                         outFile.delete();
                     }

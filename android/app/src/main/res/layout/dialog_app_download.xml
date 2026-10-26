@@ -32,7 +32,7 @@
                 android:id="@+id/tv_download_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mengunduh Pembaruan Menatap"
+                android:text="Mengunduh Pembaruan Miru (観る)"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="@dimen/text_title_large"
                 android:fontFamily="sans-serif-medium" />

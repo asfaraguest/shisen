@@ -174,10 +174,10 @@ public class DetailActivity extends AppCompatActivity {
             isSynopsisExpanded = !isSynopsisExpanded;
             if (isSynopsisExpanded) {
                 tvSynopsis.setMaxLines(Integer.MAX_VALUE);
-                tvSynopsisToggle.setText("Sembunyikan ▲");
+                tvSynopsisToggle.setText("閉じる • Sembunyikan ▲");
             } else {
                 tvSynopsis.setMaxLines(3);
-                tvSynopsisToggle.setText("Selengkapnya ▼");
+                tvSynopsisToggle.setText("続きを読む • Selengkapnya ▼");
             }
         });
     }
@@ -278,11 +278,11 @@ public class DetailActivity extends AppCompatActivity {
     private void updateBookmarkUI() {
         boolean bookmarked = MenatapDatabase.getInstance(this).isBookmarked(anime.slug);
         if (bookmarked) {
-            btnBookmark.setText("★ Tersimpan");
+            btnBookmark.setText("★ 保存済み • Tersimpan");
             btnBookmark.setTextColor(ContextCompat.getColor(this, R.color.accent_glacial));
             btnBookmark.setBackgroundColor(Color.parseColor("#17253D"));
         } else {
-            btnBookmark.setText("+ Favorit");
+            btnBookmark.setText("+ お気に入り • Favorit");
             btnBookmark.setTextColor(ContextCompat.getColor(this, R.color.text_frost_bright));
             btnBookmark.setBackgroundColor(ContextCompat.getColor(this, R.color.frost_elevated));
         }
@@ -308,9 +308,9 @@ public class DetailActivity extends AppCompatActivity {
             boolean isNotYet = "NOT_YET_RELEASED".equalsIgnoreCase(anime.status) ||
                     (("RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status)) && anime.nextAiringEpisode == 1 && anime.airedEpisodesCount == 0);
             if (isNotYet) {
-                btnPlayPrimary.setText("Belum Tayang");
+                btnPlayPrimary.setText("未放送 • Belum Tayang");
             } else {
-                btnPlayPrimary.setText("Episode Belum Tersedia");
+                btnPlayPrimary.setText("準備中 • Belum Tersedia");
             }
             btnPlayPrimary.setEnabled(false);
             btnPlayPrimary.setAlpha(0.5f);
@@ -318,9 +318,9 @@ public class DetailActivity extends AppCompatActivity {
             btnPlayPrimary.setEnabled(true);
             btnPlayPrimary.setAlpha(1.0f);
             if (lastWatchedEp > 0) {
-                btnPlayPrimary.setText("▶ Lanjut Episode " + lastWatchedEp);
+                btnPlayPrimary.setText("▶ 再生 • Lanjut Episode " + lastWatchedEp);
             } else {
-                btnPlayPrimary.setText("▶ Putar Episode 1");
+                btnPlayPrimary.setText("▶ 再生 • Putar Episode 1");
             }
         }
     }
