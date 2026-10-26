@@ -323,7 +323,8 @@ public class AppUpdateManager {
 
                     long totalBytes = resp.body().contentLength();
                     File cacheDir = activity.getExternalCacheDir() != null ? activity.getExternalCacheDir() : activity.getCacheDir();
-                    outFile = new File(cacheDir, "shisen-update-v" + latestVer + ".apk");
+                    // Simpan di subfolder khusus updates/ (satu-satunya area yang dibagikan FileProvider)
+                    outFile = UpdateApkStore.apkFile(cacheDir, latestVer);
                     if (outFile.exists()) {
                         outFile.delete();
                     }
@@ -443,9 +444,25 @@ public class AppUpdateManager {
             installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.startActivity(installIntent);
+
+            // Setelah instalasi dimulai, bersihkan APK pembaruan lain (APK yang dipasang dihapus oleh
+            // penginstal/system, atau saat aplikasi berikutnya start)
+            try {
+                File cacheDir = activity.getExternalCacheDir() != null ? activity.getExternalCacheDir() : activity.getCacheDir();
+                UpdateApkStore.deleteOldApks(cacheDir, apkFile);
+            } catch (Exception ignored) {}
         } catch (Exception e) {
             Toast.makeText(activity, "Gagal meluncurkan penginstal paket: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
+    }
+
+    /** Panggil saat aplikasi start: APK pembaruan apa pun yang tersisa dibuang. */
+    public static void cleanupAtStart(Context context) {
+        if (context == null) return;
+        try {
+            File cacheDir = context.getExternalCacheDir() != null ? context.getExternalCacheDir() : context.getCacheDir();
+            new Thread(() -> UpdateApkStore.deleteOldApks(cacheDir, null)).start();
+        } catch (Exception ignored) {}
     }
 
     public void onInstallPermissionResult(Activity activity) {

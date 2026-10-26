@@ -282,6 +282,9 @@ public class MainActivity extends AppCompatActivity {
         setupListeners();
         setupBackHandler();
 
+        // Bersihkan sisa APK pembaruan lama di subfolder updates/ cache
+        AppUpdateManager.cleanupAtStart(this);
+
         MainTab targetTab = MainTab.MUSIM;
         if (savedInstanceState != null) {
             String tabName = savedInstanceState.getString("saved_tab");
