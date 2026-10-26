@@ -4,11 +4,11 @@ Alat ukur:
 - `tools/bench.sh` (di HP, via adb) — cold start, meminfo, batterystats. Ikuti protokol di header skrip (Wi-Fi stabil, kecerahan tetap, episode sama, 30 menit pemutaran).
 - Tag log `SHISEN_PERF` (build debug) — cold start→`reportFullyDrawn`, tap episode→`onRenderedFirstFrame`, dropped frames, rebuffering, byte jaringan, puncak memori.
 
-## Baseline 0.1.0-beta.5 (dapat diukur tanpa perangkat)
+## Baseline 0.1.0-beta.3 (dapat diukur tanpa perangkat)
 
 | Metrik | Nilai |
 |---|---|
-| Ukuran APK release (`shisen-release-v0.1.0-beta.5.apk`) | 5.161.172 byte |
+| Ukuran APK release (`shisen-release-v0.1.0-beta.3.apk`) | 5.161.172 byte |
 | Jumlah method dex (release, R8, classes.dex) | 43.978 |
 | Cold start median (TotalTime, `bench.sh` 5x) | *(diisi dari HP)* |
 | Meminfo idle katalog (TOTAL PSS) | *(diisi dari HP)* |
