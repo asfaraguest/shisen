@@ -40,7 +40,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Pilih suasana latar belakang kanvas &amp; palet warna anime khas Miru (観る)."
+        android:text="Pilih suasana latar belakang kanvas &amp; palet warna anime khas Shisen (視線)."
         android:textColor="@color/text_frost_subtle"
         android:textSize="12sp"
         android:fontFamily="sans-serif" />

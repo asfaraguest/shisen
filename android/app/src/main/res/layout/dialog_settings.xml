@@ -597,7 +597,7 @@
                 android:id="@+id/tv_settings_app_version"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Miru 観る v0.1.0-beta.2"
+                android:text="Shisen 視線 v0.1.0-beta.2"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
                 android:fontFamily="sans-serif-bold" />

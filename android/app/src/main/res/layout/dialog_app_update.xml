@@ -32,7 +32,7 @@
                 android:id="@+id/tv_update_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Pembaruan Miru (観る) Tersedia"
+                android:text="Pembaruan Shisen (視線) Tersedia"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="@dimen/text_title_large"
                 android:fontFamily="sans-serif-medium" />

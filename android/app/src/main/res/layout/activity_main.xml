@@ -28,24 +28,24 @@
                 android:gravity="center_vertical"
                 android:paddingHorizontal="14dp">
 
-                <!-- Logo MIRU (Glacial Sky Blue) -->
+                <!-- Logo SHISEN (Glacial Sky Blue) -->
                 <TextView
                     android:id="@+id/tv_app_logo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="MIRU"
+                    android:text="SHISEN"
                     android:textColor="@color/accent_glacial"
                     android:textSize="20sp"
                     android:fontFamily="sans-serif-black"
                     android:letterSpacing="0.08" />
 
-                <!-- Anime Kanji Brand Touch (Miru / 観る) -->
+                <!-- Anime Kanji Brand Touch (Shisen / 視線) -->
                 <TextView
                     android:id="@+id/tv_app_logo_kanji"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:text="観る"
+                    android:text="視線"
                     android:textColor="@color/anime_iris_violet"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-bold" />

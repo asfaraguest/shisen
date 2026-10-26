@@ -8,8 +8,10 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 - **Penghapusan Shortcut Tema di Top Bar (`activity_main.xml`, `MainActivity.java`)**:
   - Menghapus tombol shortcut tema (`btn_theme_trigger` / icon palette) dari header top bar untuk menghilangkan redundansi antarmuka dan memperluas capsule input pencarian (*search trigger capsule*).
   - Penggantian tema anime (Shinkai, Sakura, Cyber, Ghibli) tetap terintegrasi secara seamless melalui modal Pengaturan Terpadu (*SettingsDialog*).
-- **Rebranding UI Estetika Anime Jepang Otentik (Dwibahasa Kanji/Kana + Penjelas)**:
+- **Rebranding UI Estetika Anime Jepang Otentik: Shisen (視線 • シセン)**:
+  - **Identitas Unik "Shisen (視線)"**: Mengubah nama aplikasi menjadi **Shisen** dengan kanji **視線** (artinya *Tatapan / Line of Sight*, padanan kata paling pas dan otentik untuk "Menatap", ringkas 2 suku kata, modern, dan belum pernah digunakan oleh aplikasi anime mana pun).
   - **Header & Pencarian (`MainActivity`, `activity_main.xml`)**:
+    - Logo: `SHISEN` dengan kanji `視線`.
     - Lencana kategori aktif: `今期アニメ` (Musim Ini), `放送中` (Sedang Tayang), `週間番組表` (Jadwal), `視聴履歴` (Riwayat), `お気に入り` (Favorit), `作品目録` (Katalog), `ジャンル` (Genre), dan `検索結果` (Pencarian).
     - Capsule & hint pencarian: `検索 • Cari anime...` dan `アニメのタイトルを検索...`.
   - **Menu Navigasi Melayang (Floating Folded Nav)**:
