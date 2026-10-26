@@ -13,6 +13,7 @@
         android:overScrollMode="never">
 
         <LinearLayout
+            android:id="@+id/layout_detail_scroll_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -20,6 +21,7 @@
 
             <!-- Hero Backdrop with Ambient Gradient Scrim -->
             <FrameLayout
+                android:id="@+id/fl_detail_backdrop_container"
                 android:layout_width="match_parent"
                 android:layout_height="230dp">
 

@@ -57,6 +57,8 @@ import id.menatap.app.ui.dialog.SettingsDialog;
 import id.menatap.app.util.AppSettings;
 import id.menatap.app.data.model.Anime;
 import id.menatap.app.data.service.AniListClient;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import id.menatap.app.util.AnimeThemeManager;
 import id.menatap.app.ui.adapter.AnimeAdapter;
 import id.menatap.app.util.AppUpdateManager;
@@ -275,6 +277,7 @@ public class MainActivity extends AppCompatActivity {
         selectedDayOfWeek = wibCal.get(Calendar.DAY_OF_WEEK);
 
         initViews();
+        setupWindowInsets();
         setupRecyclerView();
         setupListeners();
         setupBackHandler();
@@ -386,6 +389,60 @@ public class MainActivity extends AppCompatActivity {
 
         swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.accent_glacial));
         swipeRefresh.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.frost_surface));
+    }
+
+    private void setupWindowInsets() {
+        if (layoutMainRoot == null) return;
+        ViewCompat.setOnApplyWindowInsetsListener(layoutMainRoot, (v, windowInsets) -> {
+            androidx.core.graphics.Insets statusBars = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars());
+            androidx.core.graphics.Insets displayCutout = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout());
+            androidx.core.graphics.Insets navBars = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars());
+
+            int topInset = Math.max(statusBars.top, displayCutout.top);
+            int bottomInset = navBars.bottom;
+            float density = getResources().getDisplayMetrics().density;
+
+            if (layoutAuroraTop != null) {
+                int baseHeight = (int) (54 * density);
+                ViewGroup.LayoutParams lp = layoutAuroraTop.getLayoutParams();
+                if (lp != null) {
+                    lp.height = baseHeight + topInset;
+                    layoutAuroraTop.setLayoutParams(lp);
+                }
+                layoutAuroraTop.setPadding(0, topInset, 0, 0);
+            }
+
+            if (fabMenuTrigger != null) {
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) fabMenuTrigger.getLayoutParams();
+                if (lp != null) {
+                    lp.bottomMargin = (int) (20 * density) + bottomInset;
+                    fabMenuTrigger.setLayoutParams(lp);
+                }
+            }
+
+            if (layoutPagination != null) {
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) layoutPagination.getLayoutParams();
+                if (lp != null) {
+                    lp.bottomMargin = (int) (20 * density) + bottomInset;
+                    layoutPagination.setLayoutParams(lp);
+                }
+            }
+
+            if (layoutFoldedMenu != null) {
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) layoutFoldedMenu.getLayoutParams();
+                if (lp != null) {
+                    lp.bottomMargin = (int) (84 * density) + bottomInset;
+                    layoutFoldedMenu.setLayoutParams(lp);
+                }
+            }
+
+            if (rvGrid != null) {
+                int basePadding = (int) (80 * density);
+                rvGrid.setPadding(rvGrid.getPaddingLeft(), rvGrid.getPaddingTop(), rvGrid.getPaddingRight(), basePadding + bottomInset);
+            }
+
+            return windowInsets;
+        });
     }
 
     private void setupRecyclerView() {

@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Html;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -17,6 +18,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -108,6 +111,7 @@ public class DetailActivity extends AppCompatActivity {
         DetailDataHolder.setAnime(anime);
 
         initViews();
+        setupWindowInsets();
         bindAnimeData();
         setupEpisodeRecycler();
         loadAccurateEpisodes();
@@ -192,6 +196,48 @@ public class DetailActivity extends AppCompatActivity {
                 tvSynopsis.setMaxLines(3);
                 tvSynopsisToggle.setText(getString(R.string.detail_read_more));
             }
+        });
+    }
+
+    private void setupWindowInsets() {
+        if (layoutDetailRoot == null) return;
+        ViewCompat.setOnApplyWindowInsetsListener(layoutDetailRoot, (v, windowInsets) -> {
+            androidx.core.graphics.Insets statusBars = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars());
+            androidx.core.graphics.Insets displayCutout = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout());
+            androidx.core.graphics.Insets navBars = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars());
+
+            int topInset = Math.max(statusBars.top, displayCutout.top);
+            int bottomInset = navBars.bottom;
+            float density = getResources().getDisplayMetrics().density;
+
+            View backdropContainer = findViewById(R.id.fl_detail_backdrop_container);
+            if (backdropContainer != null) {
+                ViewGroup.LayoutParams lp = backdropContainer.getLayoutParams();
+                if (lp != null) {
+                    lp.height = (int) (230 * density) + topInset;
+                    backdropContainer.setLayoutParams(lp);
+                }
+            }
+
+            if (btnBack != null) {
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) btnBack.getLayoutParams();
+                if (lp != null) {
+                    lp.topMargin = (int) (16 * density) + topInset;
+                    btnBack.setLayoutParams(lp);
+                }
+            }
+
+            View scrollContent = findViewById(R.id.layout_detail_scroll_content);
+            if (scrollContent != null) {
+                scrollContent.setPadding(
+                        scrollContent.getPaddingLeft(),
+                        scrollContent.getPaddingTop(),
+                        scrollContent.getPaddingRight(),
+                        (int) (50 * density) + bottomInset
+                );
+            }
+
+            return windowInsets;
         });
     }
 

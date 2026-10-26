@@ -2,8 +2,8 @@
 <resources>
     <style name="Theme.Menatap" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowBackground">@color/frost_void</item>
-        <item name="android:statusBarColor">@color/frost_void</item>
-        <item name="android:navigationBarColor">@color/frost_void</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
         <item name="colorPrimary">@color/accent_glacial</item>

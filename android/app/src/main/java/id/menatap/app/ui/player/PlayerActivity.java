@@ -2374,7 +2374,7 @@ public class PlayerActivity extends AppCompatActivity {
             ));
 
             WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
-            SystemUiHelper.applySystemBarsTheme(this);
+            getWindow().setStatusBarColor(Color.BLACK);
             if (controller != null) {
                 controller.show(WindowInsetsCompat.Type.systemBars());
                 controller.setAppearanceLightStatusBars(false);
