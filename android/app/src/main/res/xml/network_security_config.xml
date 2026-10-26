@@ -3,8 +3,15 @@
     <!-- Master Zero-Cleartext Policy: Cleartext HTTP traffic is strictly disallowed across all domains -->
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
+            <!-- Hanya sertifikat sistem; CA user (MITM) tidak dipercaya di release -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <!-- CA user hanya untuk build debug (debugging proxy khusus) -->
+    <debug-overrides>
+        <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />
         </trust-anchors>
-    </base-config>
+    </debug-overrides>
 </network-security-config>
