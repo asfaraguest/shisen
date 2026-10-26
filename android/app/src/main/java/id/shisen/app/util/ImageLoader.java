@@ -25,9 +25,13 @@ public class ImageLoader {
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public static void init(Context context) {
-        if (memoryCache == null) {
-            int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-            int cacheSize = maxMemory / 8; // 1/8 of available RAM
+        if (memoryCache == null && context != null) {
+            // 1/8 dari memoryClass (heap aplikasi, bukan heap perluasan largeHeap) agar
+            // kebijakan memori ikut技术应用 nyata perangkat
+            android.app.ActivityManager am = (android.app.ActivityManager)
+                    context.getSystemService(Context.ACTIVITY_SERVICE);
+            int memoryClassKb = am != null ? am.getMemoryClass() * 1024 : 65536;
+            int cacheSize = Math.max(4096, memoryClassKb / 8); // minimum 4 MB
             memoryCache = new LruCache<String, Bitmap>(cacheSize) {
                 @Override
                 protected int sizeOf(String key, Bitmap bitmap) {
