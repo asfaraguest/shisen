@@ -22,7 +22,36 @@ import okhttp3.Response;
 
 public class HttpClientProvider {
     private static volatile OkHttpClient client;
+    private static volatile okhttp3.Cache diskCache;
     public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+    /** Fase 2.2: panggil sekali dari Application untuk mengaktifkan cache disk HTTP 50MB. */
+    public static void configureCache(java.io.File cacheDir) {
+        if (cacheDir == null) return;
+        if (diskCache == null) {
+            synchronized (HttpClientProvider.class) {
+                if (diskCache == null) {
+                    diskCache = new okhttp3.Cache(cacheDir, 50L * 1024L * 1024L);
+                }
+            }
+        }
+    }
+
+    /** Hook unit test: buang client & cache agar dibangun ulang dari nol. */
+    static void resetForTesting() {
+        synchronized (HttpClientProvider.class) {
+            client = null;
+            diskCache = null;
+        }
+    }
+
+    /** Hook unit test: client cache disk + dedup, TANPA DNS resolver/stack Android. */
+    public static OkHttpClient cacheEnabledClientForTesting(java.io.File dir) {
+        return new okhttp3.OkHttpClient.Builder()
+                .addInterceptor(NetworkTwin.metadataDedupInterceptor())
+                .cache(new okhttp3.Cache(dir, 50L * 1024L * 1024L))
+                .build();
+    }
 
     public static OkHttpClient getClient() {
         if (client == null) {
@@ -184,7 +213,15 @@ public class HttpClientProvider {
             }
         } catch (Exception ignored) {}
 
-        // 5. Logger performa DEBUG-ONLY: hitung total byte jaringan (tanpa menyimpan URL berparameter sensitif)
+        // 5. Fase 2.2: Dedup request GET metadata identik in-flight
+        builder.addInterceptor(NetworkTwin.metadataDedupInterceptor());
+
+        // 6. Fase 2.2: Cache disk OkHttp untuk GET metadata (berlaku bila server kirim header cacheable)
+        if (diskCache != null) {
+            builder.cache(diskCache);
+        }
+
+        // 7. Logger performa DEBUG-ONLY: hitung total byte jaringan (tanpa menyimpan URL berparameter sensitif)
         if (id.shisen.app.BuildConfig.DEBUG) {
             builder.addInterceptor(chain -> {
                 okhttp3.Response r = chain.proceed(chain.request());

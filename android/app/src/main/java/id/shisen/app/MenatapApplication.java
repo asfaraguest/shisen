@@ -31,6 +31,10 @@ public class MenatapApplication extends Application {
 
         // Initialize disk and memory image cache
         ImageLoader.init(this);
+
+        // Fase 2.2: Aktifkan cache disk HTTP 50MB untuk GET metadata
+        id.shisen.app.data.service.HttpClientProvider.configureCache(
+                new java.io.File(getCacheDir(), "http_cache"));
     }
 
     private void setupGlobalExceptionHandler() {
