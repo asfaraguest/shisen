@@ -3,14 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/card_hero"
     android:layout_width="match_parent"
-    android:layout_height="330dp"
-    android:layout_marginHorizontal="12dp"
+    android:layout_height="@dimen/hero_banner_height"
+    android:layout_marginHorizontal="@dimen/card_margin"
     android:layout_marginTop="8dp"
     android:layout_marginBottom="16dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
-    app:cardCornerRadius="18dp"
+    app:cardCornerRadius="@dimen/hero_corner_radius"
     app:cardElevation="4dp"
     app:cardBackgroundColor="@color/frost_surface"
     app:strokeColor="@color/frost_border"
@@ -31,16 +31,16 @@
         <!-- Cinematic Multi-Stop Gradient Scrim (Fade to Deep Nordic Obsidian) -->
         <View
             android:layout_width="match_parent"
-            android:layout_height="220dp"
+            android:layout_height="140dp"
             android:layout_gravity="bottom"
             android:background="@drawable/bg_hero_gradient_scrim" />
 
         <!-- Top Ranking Chip (#1 TREN HARI INI) -->
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="26dp"
+            android:layout_height="24dp"
             android:layout_gravity="top|start"
-            android:layout_margin="14dp"
+            android:layout_margin="12dp"
             android:background="@drawable/bg_badge_frost"
             android:gravity="center_vertical"
             android:paddingHorizontal="10dp">
@@ -72,7 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="14dp">
 
             <!-- Category / Genre Tags -->
             <TextView
@@ -81,7 +81,7 @@
                 android:layout_height="wrap_content"
                 android:text="PETUALANGAN • FANTASI • AKSI"
                 android:textColor="@color/accent_glacial"
-                android:textSize="11sp"
+                android:textSize="10.5sp"
                 android:fontFamily="sans-serif-bold"
                 android:letterSpacing="0.06"
                 android:maxLines="1"
@@ -92,10 +92,10 @@
                 android:id="@+id/tv_hero_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="3dp"
                 android:text="Judul Anime Unggulan"
                 android:textColor="@color/text_frost_bright"
-                android:textSize="21sp"
+                android:textSize="19sp"
                 android:fontFamily="sans-serif-black"
                 android:maxLines="2"
                 android:ellipsize="end"
@@ -107,7 +107,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginTop="6dp">
+                android:layout_marginTop="5dp">
 
                 <TextView
                     android:id="@+id/tv_hero_format"
@@ -154,13 +154,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="14dp">
+                android:layout_marginTop="12dp">
 
                 <!-- Solid Play Button -->
                 <Button
                     android:id="@+id/btn_hero_play"
                     android:layout_width="0dp"
-                    android:layout_height="42dp"
+                    android:layout_height="38dp"
                     android:layout_weight="1"
                     android:text="@string/hero_play_now"
                     android:textColor="#090D16"
@@ -174,7 +174,7 @@
                 <Button
                     android:id="@+id/btn_hero_info"
                     android:layout_width="wrap_content"
-                    android:layout_height="42dp"
+                    android:layout_height="38dp"
                     android:layout_marginStart="10dp"
                     android:text="@string/hero_info_detail"
                     android:textColor="@color/text_frost_bright"

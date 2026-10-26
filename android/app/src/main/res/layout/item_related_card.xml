@@ -4,7 +4,7 @@
     android:id="@+id/card_related_root"
     android:layout_width="105dp"
     android:layout_height="160dp"
-    android:layout_marginEnd="10dp"
+    android:layout_marginEnd="@dimen/card_related_margin_end"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
@@ -39,9 +39,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="top|start"
-            android:layout_margin="6dp"
-            android:paddingHorizontal="7dp"
-            android:paddingVertical="2dp"
+            android:layout_margin="@dimen/card_badge_margin"
+            android:paddingHorizontal="@dimen/card_badge_padding_h"
+            android:paddingVertical="@dimen/card_badge_padding_v"
             android:background="@drawable/bg_badge_frost"
             android:text="Season 1"
             android:textColor="@color/accent_glacial"
@@ -56,8 +56,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:orientation="vertical"
-            android:paddingHorizontal="7dp"
-            android:paddingBottom="6dp">
+            android:paddingHorizontal="@dimen/card_badge_padding_h"
+            android:paddingBottom="@dimen/card_badge_margin">
 
             <TextView
                 android:id="@+id/tv_related_title"

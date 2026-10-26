@@ -10,6 +10,12 @@
     <string name="badge_history">HISTORY</string>
     <string name="badge_favorites">FAVORITES</string>
     <string name="badge_catalog">CATALOG</string>
+    <string name="season_spring">Spring</string>
+    <string name="season_summer">Summer</string>
+    <string name="season_fall">Fall</string>
+    <string name="season_winter">Winter</string>
+    <string name="status_airing">Airing</string>
+    <string name="status_finished">Finished</string>
     <string name="badge_genre">GENRES</string>
     <string name="badge_search">SEARCH</string>
 
@@ -92,6 +98,10 @@
     <string name="detail_favorite">+ Favorite</string>
     <string name="detail_saved">★ Saved</string>
     <string name="detail_not_aired">Not Yet Aired</string>
+    <string name="detail_aired_format">%d Episodes Aired</string>
+    <string name="detail_total_format">(Total %d)</string>
+    <string name="detail_planned_format">(Planned %d Eps)</string>
+    <string name="detail_episode_word">Episodes</string>
     <string name="detail_not_available">Unavailable</string>
     <string name="detail_read_more">Read More ▼</string>
     <string name="detail_hide">Hide ▲</string>
@@ -127,4 +137,55 @@
     <string name="settings_section_system">SYSTEM &amp; UPDATES</string>
     <string name="settings_check_update">🔄 Check for Updates</string>
     <string name="settings_app_version">Shisen v0.1.0-beta.2</string>
+    <string name="settings_close">Close</string>
+
+    <!-- Settings Dialog: Theme Cards -->
+    <string name="settings_theme_shinkai_title">Twilight Shinkai (Your Name)</string>
+    <string name="settings_theme_shinkai_desc">Starry night sky · Glacial Cyan · Iris Violet</string>
+    <string name="settings_theme_sakura_title">Sakura Blossom (Hyouka)</string>
+    <string name="settings_theme_sakura_desc">Midnight Plum · Blossom Pink · Rose Petal</string>
+    <string name="settings_theme_cyber_title">Cyber Neo-Tokyo (Ghost in the Shell)</string>
+    <string name="settings_theme_cyber_desc">Obsidian Void · Electric Cyan · Cyber Purple</string>
+    <string name="settings_theme_ghibli_title">Ghibli Forest (Princess Mononoke)</string>
+    <string name="settings_theme_ghibli_desc">Deep Forest Teal · Emerald Mint · Star Gold</string>
+
+    <!-- Settings Dialog: AI Subtitle Section -->
+    <string name="settings_ai_key_label">API Key / Endpoint URL</string>
+    <string name="settings_ai_key_hint">AIzaSy... / gsk_... / sk-... / ollama URL</string>
+    <string name="settings_ai_model_label">Model Selector</string>
+    <string name="settings_ai_model_desc">Pick a recommended model or type a custom model name:</string>
+    <string name="settings_ai_model_hint">Model name (e.g. gemini-2.5-flash)</string>
+    <string name="settings_ai_prompt_label">Fansub Prompt</string>
+    <string name="settings_ai_prompt_hint">Fansub translation instruction prompt...</string>
+    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama</string>
+    <string name="settings_ai_badge_active">Active: %s</string>
+    <string name="settings_ai_badge_detected">Detected: %s</string>
+
+    <!-- Settings Dialog: System Info & Feedback -->
+    <string name="settings_system_info">⚡ TLS ClientHello Desync DPI-Bypass: Active\n🛡️ Multi-Tier DoH DNS: Cloudflare + Google\n📦 Standalone Native Media3 Runtime (0 Embedded Server)</string>
+    <string name="settings_toast_safe_mode_on">Safe Mode On (Ecchi/Erotica filtered)</string>
+    <string name="settings_toast_safe_mode_off">Safe Mode Off</string>
+    <string name="settings_toast_haptic_on">Haptic Feedback On</string>
+    <string name="settings_toast_haptic_off">Haptic Feedback Off</string>
+    <string name="settings_toast_prompt_reset">Prompt reset to the default anime fansub prompt</string>
+    <string name="settings_toast_key_required">Enter an API Key or Ollama URL</string>
+    <string name="settings_toast_ai_saved">AI settings saved (%s)</string>
+    <string name="settings_toast_ai_cleared">API key &amp; model cleared</string>
+
+    <!-- Added UI labels -->
+    <string name="episode_now_playing">NOW PLAYING</string>
+    <string name="episode_watched">WATCHED</string>
+    <string name="history_start">Start</string>
+    <string name="detail_synopsis_empty">Synopsis not available for this anime.</string>
+    <string name="player_fast_forward">2X Fast >></string>
+    <string name="player_rewind">&lt;&lt; Rewind</string>
+    <string name="player_zoom">Zoom</string>
+    <string name="player_fill">Fill</string>
+    <string name="player_fit">Fit</string>
+    <string name="player_sub_off">Subtitle: Off</string>
+    <string name="player_sub_off_short">Sub: OFF</string>
+    <string name="player_provider">Provider: Gemini / Groq / OpenAI / Ollama</string>
+    <string name="player_minimize">Minimize</string>
+    <string name="player_fullscreen">⛶ Full</string>
+    <string name="main_genre_select">Select Genre...</string>
 </resources>

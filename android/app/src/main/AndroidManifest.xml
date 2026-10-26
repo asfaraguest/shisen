@@ -25,7 +25,6 @@
         <activity
             android:name=".ui.home.MainActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -37,7 +36,6 @@
         <activity
             android:name=".ui.detail.DetailActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden" />
 
         <activity
@@ -59,7 +57,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="id.menatap.app.fileprovider"
+            android:authorities="id.shisen.app.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

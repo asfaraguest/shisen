@@ -104,7 +104,7 @@
                         android:focusable="true"
                         android:gravity="center"
                         android:paddingHorizontal="12dp"
-                        android:text="Terpopuler"
+                        android:text="@string/sort_popular"
                         android:textColor="#FFFFFF"
                         android:textSize="11sp"
                         android:textStyle="bold"

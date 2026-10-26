@@ -10,6 +10,12 @@
     <string name="badge_history">視聴履歴</string>
     <string name="badge_favorites">お気に入り</string>
     <string name="badge_catalog">作品目録</string>
+    <string name="season_spring">春</string>
+    <string name="season_summer">夏</string>
+    <string name="season_fall">秋</string>
+    <string name="season_winter">冬</string>
+    <string name="status_airing">放送中</string>
+    <string name="status_finished">完結</string>
     <string name="badge_genre">ジャンル</string>
     <string name="badge_search">検索結果</string>
 
@@ -92,6 +98,10 @@
     <string name="detail_favorite">+ お気に入り</string>
     <string name="detail_saved">★ 保存済み</string>
     <string name="detail_not_aired">未放送</string>
+    <string name="detail_aired_format">%d話放送済み</string>
+    <string name="detail_total_format">(全%d話)</string>
+    <string name="detail_planned_format">(予定 %d話)</string>
+    <string name="detail_episode_word">話</string>
     <string name="detail_not_available">準備中</string>
     <string name="detail_read_more">続きを読む ▼</string>
     <string name="detail_hide">閉じる ▲</string>
@@ -127,4 +137,55 @@
     <string name="settings_section_system">システム情報</string>
     <string name="settings_check_update">🔄 最新版を確認</string>
     <string name="settings_app_version">Shisen 視線 v0.1.0-beta.2</string>
+    <string name="settings_close">閉じる</string>
+
+    <!-- Settings Dialog: テーマカード -->
+    <string name="settings_theme_shinkai_title">トワイライト新海 (君の名は)</string>
+    <string name="settings_theme_shinkai_desc">満天の星空 · 氷河シアン · アイリス紫</string>
+    <string name="settings_theme_sakura_title">サクラ・ブロッサム (氷菓)</string>
+    <string name="settings_theme_sakura_desc">真夜中のプラム · 桜ピンク · 花びら色</string>
+    <string name="settings_theme_cyber_title">サイバー・ネオ東京 (攻殻機動隊)</string>
+    <string name="settings_theme_cyber_desc">漆黒の虚無 · エレクトリックシアン · サイバーパープル</string>
+    <string name="settings_theme_ghibli_title">ジブリの森 (もののけ姫)</string>
+    <string name="settings_theme_ghibli_desc">深緑のティール · エメラルドミント · スターゴールド</string>
+
+    <!-- Settings Dialog: AI字幕設定 -->
+    <string name="settings_ai_key_label">APIキー / エンドポイントURL</string>
+    <string name="settings_ai_key_hint">AIzaSy... / gsk_... / sk-... / Ollama URL</string>
+    <string name="settings_ai_model_label">モデル選択</string>
+    <string name="settings_ai_model_desc">推奨モデルを選ぶか、カスタムモデル名を入力してください:</string>
+    <string name="settings_ai_model_hint">モデル名 (例: gemini-2.5-flash)</string>
+    <string name="settings_ai_prompt_label">翻訳プロンプト</string>
+    <string name="settings_ai_prompt_hint">翻訳指示プロンプトを入力...</string>
+    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama</string>
+    <string name="settings_ai_badge_active">有効: %s</string>
+    <string name="settings_ai_badge_detected">検出: %s</string>
+
+    <!-- Settings Dialog: システム情報・フィードバック -->
+    <string name="settings_system_info">⚡ TLS ClientHello Desync DPI-Bypass: 有効\n🛡️ 多層 DoH DNS: Cloudflare + Google\n📦 スタンドアロン Media3 ランタイム (埋め込みサーバーなし)</string>
+    <string name="settings_toast_safe_mode_on">セーフモード ON (過激コンテンツを除外)</string>
+    <string name="settings_toast_safe_mode_off">セーフモード OFF</string>
+    <string name="settings_toast_haptic_on">触覚フィードバック ON</string>
+    <string name="settings_toast_haptic_off">触覚フィードバック OFF</string>
+    <string name="settings_toast_prompt_reset">プロンプトを既定の設定に戻しました</string>
+    <string name="settings_toast_key_required">APIキーまたは Ollama URL を入力してください</string>
+    <string name="settings_toast_ai_saved">AI設定を保存しました (%s)</string>
+    <string name="settings_toast_ai_cleared">APIキーとモデルを削除しました</string>
+
+    <!-- Added UI labels -->
+    <string name="episode_now_playing">再生中</string>
+    <string name="episode_watched">視聴済み</string>
+    <string name="history_start">再生</string>
+    <string name="detail_synopsis_empty">この作品のあらすじはまだありません。</string>
+    <string name="player_fast_forward">2倍速 >></string>
+    <string name="player_rewind">&lt;&lt; 巻き戻し</string>
+    <string name="player_zoom">ズーム</string>
+    <string name="player_fill">フィット</string>
+    <string name="player_fit">全体表示</string>
+    <string name="player_sub_off">字幕: OFF</string>
+    <string name="player_sub_off_short">字幕: OFF</string>
+    <string name="player_provider">プロバイダー: Gemini / Groq / OpenAI / Ollama</string>
+    <string name="player_minimize">最小化</string>
+    <string name="player_fullscreen">⛶ 全画面</string>
+    <string name="main_genre_select">ジャンルを選択...</string>
 </resources>

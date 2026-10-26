@@ -45,7 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|start"
-                android:layout_margin="7dp"
+                android:layout_margin="@dimen/card_badge_margin"
                 android:background="@drawable/bg_badge_frost"
                 android:paddingHorizontal="6dp"
                 android:paddingVertical="3dp"
@@ -61,7 +61,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|end"
-                android:layout_margin="7dp"
+                android:layout_margin="@dimen/card_badge_margin"
                 android:background="@drawable/bg_badge_frost"
                 android:paddingHorizontal="6dp"
                 android:paddingVertical="3dp"
@@ -81,7 +81,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|start"
-                android:layout_margin="7dp"
+                android:layout_margin="@dimen/card_badge_margin"
                 android:background="@drawable/bg_badge_frost"
                 android:paddingHorizontal="7dp"
                 android:paddingVertical="3dp"
@@ -96,9 +96,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="10dp"
-            android:paddingTop="9dp"
-            android:paddingBottom="11dp">
+            android:paddingHorizontal="@dimen/card_body_padding_h"
+            android:paddingTop="@dimen/card_body_padding_top"
+            android:paddingBottom="@dimen/card_body_padding_bottom">
 
             <TextView
                 android:id="@+id/tv_title"

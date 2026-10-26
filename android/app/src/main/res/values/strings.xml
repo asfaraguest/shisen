@@ -10,6 +10,12 @@
     <string name="badge_history">RIWAYAT</string>
     <string name="badge_favorites">FAVORIT</string>
     <string name="badge_catalog">KATALOG</string>
+    <string name="season_spring">Semi</string>
+    <string name="season_summer">Panas</string>
+    <string name="season_fall">Gugur</string>
+    <string name="season_winter">Dingin</string>
+    <string name="status_airing">Tayang</string>
+    <string name="status_finished">Tamat</string>
     <string name="badge_genre">GENRE</string>
     <string name="badge_search">PENCARIAN</string>
 
@@ -92,6 +98,10 @@
     <string name="detail_favorite">+ Favorit</string>
     <string name="detail_saved">★ Tersimpan</string>
     <string name="detail_not_aired">Belum Tayang</string>
+    <string name="detail_aired_format">%d Ep Tayang</string>
+    <string name="detail_total_format">(Total %d)</string>
+    <string name="detail_planned_format">(Rencana %d Ep)</string>
+    <string name="detail_episode_word">Episode</string>
     <string name="detail_not_available">Belum Tersedia</string>
     <string name="detail_read_more">Selengkapnya ▼</string>
     <string name="detail_hide">Sembunyikan ▲</string>
@@ -127,4 +137,55 @@
     <string name="settings_section_system">SISTEM &amp; PEMBARUAN</string>
     <string name="settings_check_update">🔄 Cek Pembaruan</string>
     <string name="settings_app_version">Shisen v0.1.0-beta.2</string>
+    <string name="settings_close">Tutup</string>
+
+    <!-- Settings Dialog: Kartu Tema -->
+    <string name="settings_theme_shinkai_title">Twilight Shinkai (君の名は)</string>
+    <string name="settings_theme_shinkai_desc">Langit malam berbintang · Glacial Cyan · Iris Violet</string>
+    <string name="settings_theme_sakura_title">Sakura Blossom (氷菓)</string>
+    <string name="settings_theme_sakura_desc">Midnight Plum · Blossom Pink · Rose Petal</string>
+    <string name="settings_theme_cyber_title">Cyber Neo-Tokyo (攻殻機動隊)</string>
+    <string name="settings_theme_cyber_desc">Obsidian Void · Electric Cyan · Cyber Purple</string>
+    <string name="settings_theme_ghibli_title">Ghibli Forest (もののけ姫)</string>
+    <string name="settings_theme_ghibli_desc">Deep Forest Teal · Emerald Mint · Star Gold</string>
+
+    <!-- Settings Dialog: Bagian AI Subtitle -->
+    <string name="settings_ai_key_label">API Key / Endpoint URL</string>
+    <string name="settings_ai_key_hint">AIzaSy... / gsk_... / sk-... / ollama URL</string>
+    <string name="settings_ai_model_label">Model Selector</string>
+    <string name="settings_ai_model_desc">Pilih model rekomendasi atau ketikkan nama model kustom:</string>
+    <string name="settings_ai_model_hint">Nama model (misal: gemini-2.5-flash)</string>
+    <string name="settings_ai_prompt_label">Prompt Fansub</string>
+    <string name="settings_ai_prompt_hint">Prompt instruksi terjemahan fansub...</string>
+    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama</string>
+    <string name="settings_ai_badge_active">Aktif: %s</string>
+    <string name="settings_ai_badge_detected">Terdeteksi: %s</string>
+
+    <!-- Settings Dialog: Info Sistem & Umpan Balik -->
+    <string name="settings_system_info">⚡ TLS ClientHello Desync DPI-Bypass: Aktif\n🛡️ Multi-Tier DoH DNS: Cloudflare + Google\n📦 Standalone Native Media3 Runtime (0 Server Tertanam)</string>
+    <string name="settings_toast_safe_mode_on">Safe Mode Aktif (Ecchi/Erotica disaring)</string>
+    <string name="settings_toast_safe_mode_off">Safe Mode Nonaktif</string>
+    <string name="settings_toast_haptic_on">Umpan Balik Haptic Aktif</string>
+    <string name="settings_toast_haptic_off">Umpan Balik Haptic Nonaktif</string>
+    <string name="settings_toast_prompt_reset">Prompt direset ke default fansub anime</string>
+    <string name="settings_toast_key_required">Masukkan Kunci API atau URL Ollama</string>
+    <string name="settings_toast_ai_saved">Pengaturan AI berhasil disimpan (%s)</string>
+    <string name="settings_toast_ai_cleared">Kunci API &amp; model telah dibersihkan</string>
+
+    <!-- Added UI labels -->
+    <string name="episode_now_playing">MEMUTAR</string>
+    <string name="episode_watched">DITONTON</string>
+    <string name="history_start">Mulai</string>
+    <string name="detail_synopsis_empty">Sinopsis belum tersedia untuk anime ini.</string>
+    <string name="player_fast_forward">2X Cepat >></string>
+    <string name="player_rewind">&lt;&lt; Putar Mundur</string>
+    <string name="player_zoom">Zoom</string>
+    <string name="player_fill">Fill</string>
+    <string name="player_fit">Fit</string>
+    <string name="player_sub_off">Subtitle: Nonaktif</string>
+    <string name="player_sub_off_short">Sub: OFF</string>
+    <string name="player_provider">Provider: Gemini / Groq / OpenAI / Ollama</string>
+    <string name="player_minimize">Kecilkan</string>
+    <string name="player_fullscreen">⛶ Full</string>
+    <string name="main_genre_select">Pilih Genre...</string>
 </resources>

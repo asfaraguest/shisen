@@ -55,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="2X Cepat >>"
+                android:text="@string/player_fast_forward"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="13sp"
                 android:fontFamily="sans-serif-medium" />

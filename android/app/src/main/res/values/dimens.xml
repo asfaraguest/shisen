@@ -4,6 +4,20 @@
     <dimen name="card_poster_height">210dp</dimen>
     <dimen name="card_margin">6dp</dimen>
     <dimen name="card_corner_radius">12dp</dimen>
+    <!-- Hero menyesuaikan sudut & tepi grid kartu anime agar presisi sejajar -->
+    <dimen name="hero_corner_radius">12dp</dimen>
+    <dimen name="hero_banner_height">170dp</dimen>
+
+    <!-- Card spacing tokens -->
+    <dimen name="card_badge_margin">6dp</dimen>
+    <dimen name="card_badge_padding_h">6dp</dimen>
+    <dimen name="card_badge_padding_v">3dp</dimen>
+    <dimen name="card_body_padding_h">10dp</dimen>
+    <dimen name="card_body_padding_top">8dp</dimen>
+    <dimen name="card_body_padding_bottom">10dp</dimen>
+    <dimen name="card_title_meta_gap">3dp</dimen>
+    <dimen name="card_horizontal_margin">6dp</dimen>
+    <dimen name="card_related_margin_end">6dp</dimen>
 
     <!-- Semantic Typography Scale -->
     <dimen name="text_display_large">22sp</dimen>

@@ -6,13 +6,13 @@
 -keepattributes SourceFile,LineNumberTable,Signature,*Annotation*,InnerClasses,EnclosingMethod
 
 # Menatap Application Packages
--keep class id.menatap.app.MenatapApplication { *; }
--keep class id.menatap.app.data.model.** { *; }
--keep class id.menatap.app.data.db.** { *; }
--keep class id.menatap.app.data.service.** { *; }
--keep class id.menatap.app.data.subtitle.** { *; }
--keep class id.menatap.app.util.** { *; }
--keep class id.menatap.app.ui.** { *; }
+-keep class id.shisen.app.MenatapApplication { *; }
+-keep class id.shisen.app.data.model.** { *; }
+-keep class id.shisen.app.data.db.** { *; }
+-keep class id.shisen.app.data.service.** { *; }
+-keep class id.shisen.app.data.subtitle.** { *; }
+-keep class id.shisen.app.util.** { *; }
+-keep class id.shisen.app.ui.** { *; }
 
 # OkHttp 4.x Configuration
 -keepattributes Signature
