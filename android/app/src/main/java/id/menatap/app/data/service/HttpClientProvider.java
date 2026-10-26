@@ -74,6 +74,7 @@ public class HttpClientProvider {
 
                 String host = original.url().host().toLowerCase(java.util.Locale.US);
                 String path = original.url().encodedPath().toLowerCase(java.util.Locale.US);
+                String fullUrl = original.url().toString().toLowerCase(java.util.Locale.US);
 
                 // Anti-403 CDN Referer/Origin Injection
                 boolean isMegaCdn = host.contains("megaplay") || host.contains("megap.")
@@ -82,17 +83,34 @@ public class HttpClientProvider {
                         || host.contains("nexabloom") || host.contains("ivorysummit")
                         || host.contains("shiora") || host.contains("broforgotsave")
                         || host.contains("eclipseharbor") || host.contains("emeralddrift")
+                        || host.contains("silverhaze") || host.contains("velvet") || host.contains("aurora")
+                        || (host.contains("cdn") && (path.contains("sub") || fullUrl.contains(".vtt") || fullUrl.contains(".srt")))
                         || host.endsWith(".world") || host.endsWith(".buzz")
                         || host.endsWith(".top") || host.endsWith(".xyz")
-                        || path.contains("/subtitles/") || path.contains("/anime/")
-                        || path.endsWith(".vtt") || path.endsWith(".srt");
+                        || host.endsWith(".to") || host.endsWith(".cc") || host.endsWith(".site")
+                        || path.contains("/subtitles/") || path.contains("/subtitle") || path.contains("/caption")
+                        || path.contains("/anime/") || path.contains("/tracks/")
+                        || path.endsWith(".vtt") || path.endsWith(".srt") || fullUrl.contains(".vtt") || fullUrl.contains(".srt");
 
                 if (isMegaCdn) {
-                    if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
-                        rb.header("Referer", "https://megaplay.buzz/");
+                    String determinedReferer = original.header("Referer");
+                    if (determinedReferer == null || determinedReferer.isEmpty()) {
+                        if (host.contains("hianime")) {
+                            determinedReferer = "https://hianime.to/";
+                        } else if (host.contains("zoro") || host.contains("aniwave")) {
+                            determinedReferer = "https://zoro.to/";
+                        } else if (host.contains("zoko")) {
+                            determinedReferer = "https://zokoanime.video/";
+                        } else {
+                            determinedReferer = "https://megaplay.buzz/";
+                        }
+                        rb.header("Referer", determinedReferer);
                     }
                     if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
-                        rb.header("Origin", "https://megaplay.buzz");
+                        String origin = determinedReferer.endsWith("/")
+                                ? determinedReferer.substring(0, determinedReferer.length() - 1)
+                                : determinedReferer;
+                        rb.header("Origin", origin);
                     }
                 } else if (host.contains("dramahot") || host.contains("zokoanime")) {
                     if (original.header("Referer") == null || original.header("Referer").isEmpty()) {

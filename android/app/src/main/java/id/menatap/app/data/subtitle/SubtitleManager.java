@@ -369,9 +369,31 @@ public class SubtitleManager {
         if (preferredReferer != null && !preferredReferer.isEmpty()) {
             refererCandidates.add(preferredReferer);
         }
+        // Coba gunakan host URL itu sendiri sebagai referer/origin
+        try {
+            okhttp3.HttpUrl u = okhttp3.HttpUrl.parse(url);
+            if (u != null) {
+                String scheme = u.scheme();
+                String host = u.host();
+                if (scheme != null && host != null) {
+                    String base = scheme + "://" + host + "/";
+                    if (!refererCandidates.contains(base)) {
+                        refererCandidates.add(base);
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+
         refererCandidates.add("https://megaplay.buzz/");
+        refererCandidates.add("https://hianime.to/");
         refererCandidates.add("https://hianime.at/");
+        refererCandidates.add("https://hianime.sx/");
+        refererCandidates.add("https://hianime.nz/");
+        refererCandidates.add("https://zoro.to/");
+        refererCandidates.add("https://aniwave.to/");
         refererCandidates.add("https://zokoanime.video/");
+        refererCandidates.add("https://kaido.to/");
+        refererCandidates.add("https://animixplay.to/");
         refererCandidates.add(""); // direct request tanpa referer
 
         Exception lastErr = null;
@@ -379,8 +401,9 @@ public class SubtitleManager {
             try {
                 Request.Builder reqB = new Request.Builder().url(url);
                 reqB.header("User-Agent", HttpClientProvider.USER_AGENT);
-                reqB.header("Accept", "text/vtt,text/plain,*/*");
+                reqB.header("Accept", "text/vtt,text/plain,application/x-subrip,*/*;q=0.8");
                 reqB.header("Accept-Language", "en-US,en;q=0.9,id;q=0.8");
+                reqB.header("Connection", "keep-alive");
                 reqB.header("Sec-Fetch-Dest", "empty");
                 reqB.header("Sec-Fetch-Mode", "cors");
                 reqB.header("Sec-Fetch-Site", "cross-site");
@@ -389,17 +412,19 @@ public class SubtitleManager {
                     reqB.header("Referer", ref);
                     String origin = ref.endsWith("/") ? ref.substring(0, ref.length() - 1) : ref;
                     reqB.header("Origin", origin);
+                } else {
+                    reqB.header("Sec-Fetch-Site", "none");
                 }
 
                 try (Response resp = client.newCall(reqB.build()).execute()) {
                     if (resp.isSuccessful() && resp.body() != null) {
                         String content = resp.body().string();
                         List<SubtitleCue> cues = SubtitleParser.parse(content);
-                        if (!cues.isEmpty()) {
+                        if (cues != null && !cues.isEmpty()) {
                             return cues;
                         }
-                    } else if (resp.code() == 403) {
-                        lastErr = new Exception("HTTP 403");
+                    } else if (resp.code() == 403 || resp.code() == 401) {
+                        lastErr = new Exception("HTTP " + resp.code());
                         continue;
                     } else {
                         lastErr = new Exception("HTTP " + resp.code());
