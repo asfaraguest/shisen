@@ -23,7 +23,7 @@
 ## 📱 Unduhan Rilis Resmi (Android Mobile Only)
 
 Unduh berkas rilis resmi bertanda tangan dari [Halaman Rilis GitHub Shisen](https://github.com/asfaraguest/shisen/releases):
-- 📱 **`shisen-release-v0.1.0-beta.2.apk`** (Official Signed Mobile APK via production Keystore)
+- 📱 **`shisen-release-v0.1.0-beta.3.apk`** (Official Signed Mobile APK via production Keystore)
 
 ---
 
@@ -34,4 +34,4 @@ cd android
 ./gradlew assembleRelease
 ```
 Berkas APK bertanda tangan akan tersedia di:
-`android/app/build/outputs/apk/release/shisen-release-v0.1.0-beta.2.apk`
+`android/app/build/outputs/apk/release/shisen-release-v0.1.0-beta.3.apk`
