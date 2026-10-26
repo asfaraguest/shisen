@@ -45,7 +45,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:text="視線"
+                    android:text="@string/app_logo_kanji"
                     android:textColor="@color/anime_iris_violet"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-bold" />
@@ -56,7 +56,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:text="今期アニメ"
+                    android:text="@string/badge_this_season"
                     android:textColor="@color/text_frost_bright"
                     android:background="@drawable/bg_badge_frost"
                     android:textSize="9.5sp"
@@ -101,7 +101,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
-                        android:text="検索 • Cari anime..."
+                        android:text="@string/search_capsule"
                         android:textColor="@color/text_frost_subtle"
                         android:textSize="12sp"
                         android:fontFamily="sans-serif" />
@@ -151,7 +151,7 @@
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
                         android:background="@android:color/transparent"
-                        android:hint="アニメのタイトルを検索..."
+                        android:hint="@string/search_hint"
                         android:textColorHint="@color/text_frost_dim"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="13sp"
@@ -328,7 +328,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="今期アニメ • Musim Ini"
+                android:text="@string/menu_this_season"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
@@ -357,7 +357,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="放送中 • Sedang Tayang"
+                android:text="@string/menu_airing"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
@@ -386,7 +386,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="週間番組表 • Jadwal Rilis"
+                android:text="@string/menu_schedule"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
@@ -415,7 +415,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="視聴履歴 • Riwayat Tontonan"
+                android:text="@string/menu_history"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
@@ -444,7 +444,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="お気に入り • Favorit Saya"
+                android:text="@string/menu_favorites"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
@@ -473,7 +473,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="作品目録 • Katalog Anime"
+                android:text="@string/menu_catalog"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
@@ -502,7 +502,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="ジャンル • Kategori Genre"
+                android:text="@string/menu_genre"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
@@ -530,7 +530,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="設定 • Pengaturan Terpadu"
+                android:text="@string/menu_settings"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
                 android:fontFamily="sans-serif-medium" />
@@ -541,15 +541,15 @@
     <LinearLayout
         android:id="@+id/layout_pagination"
         android:layout_width="wrap_content"
-        android:layout_height="36dp"
+        android:layout_height="48dp"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="22dp"
+        android:layout_marginBottom="20dp"
         android:background="@drawable/bg_floating_pagination"
-        android:elevation="8dp"
-        android:gravity="center"
+        android:elevation="18dp"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="6dp"
-        android:paddingVertical="3dp"
+        android:paddingVertical="4dp"
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone">
@@ -563,11 +563,11 @@
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
             android:gravity="center"
-            android:paddingHorizontal="14dp"
-            android:text="‹ 前へ • Sebelumnya"
+            android:paddingHorizontal="16dp"
+            android:text="@string/page_prev"
             android:textColor="@color/text_frost_bright"
-            android:textSize="11.5sp"
-            android:fontFamily="sans-serif-medium" />
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-bold" />
 
         <TextView
             android:id="@+id/tv_page_indicator"
@@ -576,11 +576,11 @@
             android:layout_marginHorizontal="6dp"
             android:background="@drawable/bg_floating_page_indicator"
             android:gravity="center"
-            android:paddingHorizontal="12dp"
-            android:text="第 1 頁 • Hal 1"
+            android:paddingHorizontal="14dp"
+            android:text="Hal 1"
             android:textColor="@color/accent_glacial"
-            android:textSize="11.5sp"
-            android:fontFamily="sans-serif-medium" />
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-bold" />
 
         <TextView
             android:id="@+id/btn_next_page"
@@ -591,11 +591,11 @@
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
             android:gravity="center"
-            android:paddingHorizontal="14dp"
-            android:text="次へ • Berikutnya ›"
+            android:paddingHorizontal="16dp"
+            android:text="@string/page_next"
             android:textColor="@color/text_frost_bright"
-            android:textSize="11.5sp"
-            android:fontFamily="sans-serif-medium" />
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-bold" />
     </LinearLayout>
 
     <!-- FLOATING MENU TRIGGER BUTTON (Bottom-Right FAB) -->

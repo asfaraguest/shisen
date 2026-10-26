@@ -1,15 +1,22 @@
 package id.menatap.app;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
 
 import id.menatap.app.data.db.MenatapDatabase;
 import id.menatap.app.util.ImageLoader;
+import id.menatap.app.util.LocaleHelper;
 
 public class MenatapApplication extends Application {
 
     private static final String TAG = "MenatapApp";
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(LocaleHelper.onAttach(base));
+    }
 
     @Override
     public void onCreate() {

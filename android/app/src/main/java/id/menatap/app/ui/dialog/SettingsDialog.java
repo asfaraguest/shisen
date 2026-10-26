@@ -28,12 +28,14 @@ import id.menatap.app.util.AnimeThemeManager;
 import id.menatap.app.util.AppSettings;
 import id.menatap.app.util.AppUpdateManager;
 import id.menatap.app.util.HapticHelper;
+import id.menatap.app.util.LocaleHelper;
 
 public class SettingsDialog {
 
     public interface OnSettingsChangeListener {
         void onThemeChanged();
         void onSafeModeChanged(boolean isSafeMode);
+        default void onLanguageChanged() {}
     }
 
     public static void show(Activity activity, OnSettingsChangeListener listener) {
@@ -61,13 +63,16 @@ public class SettingsDialog {
         // 1. Theme Selection
         setupThemeSection(dialogView, activity, listener);
 
-        // 2. Safe Mode & Haptic
+        // 2. Language Selection (Trilingual: ID / EN / JA)
+        setupLanguageSection(dialogView, activity, listener, dialog);
+
+        // 3. Safe Mode & Haptic
         setupSystemSection(dialogView, activity, listener);
 
-        // 3. AI Subtitle & Model Selector
+        // 4. AI Subtitle & Model Selector
         setupAiSubtitleSection(dialogView, activity);
 
-        // 4. About & Update
+        // 5. About & Update
         setupAboutSection(dialogView, activity);
 
         dialog.show();
@@ -120,6 +125,58 @@ public class SettingsDialog {
             updateRadios.run();
             if (listener != null) listener.onThemeChanged();
         });
+    }
+
+    private static void setupLanguageSection(View root, Activity activity, OnSettingsChangeListener listener, AlertDialog dialog) {
+        TextView btnLangId = root.findViewById(R.id.btn_lang_id);
+        TextView btnLangEn = root.findViewById(R.id.btn_lang_en);
+        TextView btnLangJa = root.findViewById(R.id.btn_lang_ja);
+
+        if (btnLangId == null || btnLangEn == null || btnLangJa == null) return;
+
+        Runnable updateChips = () -> {
+            String active = LocaleHelper.getLanguage(activity);
+            boolean isId = LocaleHelper.LANG_ID.equalsIgnoreCase(active);
+            boolean isEn = LocaleHelper.LANG_EN.equalsIgnoreCase(active);
+            boolean isJa = LocaleHelper.LANG_JA.equalsIgnoreCase(active);
+
+            btnLangId.setBackgroundResource(isId ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
+            btnLangId.setTextColor(ContextCompat.getColor(activity, isId ? R.color.accent_glacial : R.color.text_frost_bright));
+
+            btnLangEn.setBackgroundResource(isEn ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
+            btnLangEn.setTextColor(ContextCompat.getColor(activity, isEn ? R.color.accent_glacial : R.color.text_frost_bright));
+
+            btnLangJa.setBackgroundResource(isJa ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
+            btnLangJa.setTextColor(ContextCompat.getColor(activity, isJa ? R.color.accent_glacial : R.color.text_frost_bright));
+        };
+        updateChips.run();
+
+        View.OnClickListener langClickListener = v -> {
+            HapticHelper.performSelection(v);
+            String selectedLang = LocaleHelper.LANG_ID;
+            if (v.getId() == R.id.btn_lang_en) {
+                selectedLang = LocaleHelper.LANG_EN;
+            } else if (v.getId() == R.id.btn_lang_ja) {
+                selectedLang = LocaleHelper.LANG_JA;
+            }
+
+            if (!selectedLang.equalsIgnoreCase(LocaleHelper.getLanguage(activity))) {
+                LocaleHelper.setLocale(activity, selectedLang);
+                updateChips.run();
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+                if (listener != null) {
+                    listener.onLanguageChanged();
+                } else {
+                    activity.recreate();
+                }
+            }
+        };
+
+        btnLangId.setOnClickListener(langClickListener);
+        btnLangEn.setOnClickListener(langClickListener);
+        btnLangJa.setOnClickListener(langClickListener);
     }
 
     private static void setupSystemSection(View root, Activity activity, OnSettingsChangeListener listener) {

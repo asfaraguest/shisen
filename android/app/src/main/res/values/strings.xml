@@ -1,3 +1,112 @@
 <resources>
+    <!-- App Branding -->
     <string name="app_name">Shisen</string>
+    <string name="app_logo_kanji"></string>
+
+    <!-- Navigation Badges -->
+    <string name="badge_this_season">MUSIM INI</string>
+    <string name="badge_airing">SEDANG TAYANG</string>
+    <string name="badge_schedule">JADWAL RILIS</string>
+    <string name="badge_history">RIWAYAT</string>
+    <string name="badge_favorites">FAVORIT</string>
+    <string name="badge_catalog">KATALOG</string>
+    <string name="badge_genre">GENRE</string>
+    <string name="badge_search">PENCARIAN</string>
+
+    <!-- Floating Navigation Menu -->
+    <string name="menu_this_season">Musim Ini</string>
+    <string name="menu_airing">Sedang Tayang</string>
+    <string name="menu_schedule">Jadwal Rilis</string>
+    <string name="menu_history">Riwayat Tontonan</string>
+    <string name="menu_favorites">Favorit Saya</string>
+    <string name="menu_catalog">Katalog Anime</string>
+    <string name="menu_genre">Kategori Genre</string>
+    <string name="menu_settings">Pengaturan Terpadu</string>
+
+    <!-- Search -->
+    <string name="search_capsule">Cari anime...</string>
+    <string name="search_hint">Ketik judul anime...</string>
+
+    <!-- Airing Lanes -->
+    <string name="lane_all">Semua (3 Jalur)</string>
+    <string name="lane_cur">Musim Berjalan</string>
+    <string name="lane_prev">Musim Sebelumnya</string>
+    <string name="lane_long">Serial Panjang</string>
+
+    <!-- Days of Week -->
+    <string name="day_mon">Senin</string>
+    <string name="day_tue">Selasa</string>
+    <string name="day_wed">Rabu</string>
+    <string name="day_thu">Kamis</string>
+    <string name="day_fri">Jumat</string>
+    <string name="day_sat">Sabtu</string>
+    <string name="day_sun">Minggu</string>
+    <string name="day_today_suffix"> (Hari Ini)</string>
+
+    <!-- Pagination -->
+    <string name="page_prev">‹ Sebelumnya</string>
+    <string name="page_next">Berikutnya ›</string>
+    <string name="page_indicator_format">Hal %d</string>
+
+    <!-- Contextual Bar Actions & Labels -->
+    <string name="action_clear_all">Hapus Semua</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_filter">Filter...</string>
+    <string name="action_select_genre">Pilih Genre...</string>
+    <string name="sort_popular">Terpopuler</string>
+    <string name="sort_score">Skor Tertinggi</string>
+    <string name="sort_recent">Terbaru</string>
+    <string name="sort_trending">Trending</string>
+    <string name="sort_alpha">A-Z</string>
+    <string name="sort_favorites">Favorit</string>
+    <string name="label_history_title">Riwayat Tontonan (%d)</string>
+    <string name="label_favorites_title">Anime Favorit (%d)</string>
+    <string name="label_empty_history_title">Riwayat Tontonan Kosong</string>
+    <string name="label_empty_history_desc">Anime yang kamu putar akan tersimpan otomatis di sini.</string>
+    <string name="label_empty_favorites_title">Belum Ada Favorit</string>
+    <string name="label_empty_favorites_desc">Tekan ikon bintang di halaman detail anime untuk menyimpannya.</string>
+    <string name="label_search_results_title">HASIL PENCARIAN: \"%1$s\"%2$s</string>
+    <string name="label_genre_title">GENRE: %s</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_synopsis_title">SINOPSIS ANIME</string>
+    <string name="detail_related_seasons_title">MUSIM &amp; SERI TERKAIT</string>
+    <string name="detail_related_movies_title">FILM &amp; MOVIE TERKAIT</string>
+    <string name="detail_episodes_title">DAFTAR EPISODE</string>
+    <string name="detail_play_ep1">▶ Putar Episode 1</string>
+    <string name="detail_resume_format">▶ Lanjut Episode %d</string>
+    <string name="detail_favorite">+ Favorit</string>
+    <string name="detail_saved">★ Tersimpan</string>
+    <string name="detail_not_aired">Belum Tayang</string>
+    <string name="detail_not_available">Belum Tersedia</string>
+    <string name="detail_read_more">Selengkapnya ▼</string>
+    <string name="detail_hide">Sembunyikan ▲</string>
+
+    <!-- Player Screen -->
+    <string name="player_skip_op">Lewati OP</string>
+    <string name="player_skip_ed">Lewati ED</string>
+    <string name="player_unlock">Buka Kunci</string>
+    <string name="player_episodes_title">DAFTAR EPISODE</string>
+    <string name="player_quality">Kualitas</string>
+    <string name="player_speed">Kecepatan</string>
+    <string name="player_server">Server</string>
+    <string name="player_portrait">Portrait</string>
+
+    <!-- Settings Dialog -->
+    <string name="settings_title">PENGATURAN</string>
+    <string name="settings_subtitle">Konfigurasi Tema, Bahasa, Safe Mode, Haptic, &amp; AI</string>
+    <string name="settings_section_theme">TAMPILAN &amp; TEMA ANIME</string>
+    <string name="settings_section_lang">BAHASA ANTARMUKA</string>
+    <string name="settings_lang_in">🇮🇩 Indonesia</string>
+    <string name="settings_lang_en">🇬🇧 English</string>
+    <string name="settings_lang_ja">🇯🇵 日本語</string>
+    <string name="settings_section_safety">KEAMANAN &amp; HAPTIC</string>
+    <string name="settings_safemode_title">🛡️ Safe Mode Tatap</string>
+    <string name="settings_safemode_desc">Saring judul anime ecchi &amp; erotica dari katalog dan pencarian. (Genre Hentai selalu diblokir 100%).</string>
+    <string name="settings_haptic_title">📳 Getaran Haptic</string>
+    <string name="settings_haptic_desc">Umpan balik getaran halus saat navigasi menu, pagination, dan gesture seek pemutar video.</string>
+    <string name="settings_section_ai">AI SUBTITLE (BYOK)</string>
+    <string name="settings_section_system">SISTEM &amp; PEMBARUAN</string>
+    <string name="settings_check_update">🔄 Cek Pembaruan</string>
+    <string name="settings_app_version">Shisen v0.1.0-beta.2</string>
 </resources>

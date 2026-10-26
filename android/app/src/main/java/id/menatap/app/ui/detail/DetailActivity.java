@@ -1,5 +1,6 @@
 package id.menatap.app.ui.detail;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -40,9 +41,15 @@ import id.menatap.app.ui.player.PlayerActivity;
 import id.menatap.app.util.AnimeThemeManager;
 import id.menatap.app.util.HapticHelper;
 import id.menatap.app.util.ImageLoader;
+import id.menatap.app.util.LocaleHelper;
 import id.menatap.app.util.TitleMatcher;
 
 public class DetailActivity extends AppCompatActivity {
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase));
+    }
 
     private View layoutDetailRoot;
     private ImageView ivBackdrop;
@@ -174,10 +181,10 @@ public class DetailActivity extends AppCompatActivity {
             isSynopsisExpanded = !isSynopsisExpanded;
             if (isSynopsisExpanded) {
                 tvSynopsis.setMaxLines(Integer.MAX_VALUE);
-                tvSynopsisToggle.setText("閉じる • Sembunyikan ▲");
+                tvSynopsisToggle.setText(getString(R.string.detail_hide));
             } else {
                 tvSynopsis.setMaxLines(3);
-                tvSynopsisToggle.setText("続きを読む • Selengkapnya ▼");
+                tvSynopsisToggle.setText(getString(R.string.detail_read_more));
             }
         });
     }
@@ -278,11 +285,11 @@ public class DetailActivity extends AppCompatActivity {
     private void updateBookmarkUI() {
         boolean bookmarked = MenatapDatabase.getInstance(this).isBookmarked(anime.slug);
         if (bookmarked) {
-            btnBookmark.setText("★ 保存済み • Tersimpan");
+            btnBookmark.setText(getString(R.string.detail_saved));
             btnBookmark.setTextColor(ContextCompat.getColor(this, R.color.accent_glacial));
             btnBookmark.setBackgroundColor(Color.parseColor("#17253D"));
         } else {
-            btnBookmark.setText("+ お気に入り • Favorit");
+            btnBookmark.setText(getString(R.string.detail_favorite));
             btnBookmark.setTextColor(ContextCompat.getColor(this, R.color.text_frost_bright));
             btnBookmark.setBackgroundColor(ContextCompat.getColor(this, R.color.frost_elevated));
         }
@@ -308,9 +315,9 @@ public class DetailActivity extends AppCompatActivity {
             boolean isNotYet = "NOT_YET_RELEASED".equalsIgnoreCase(anime.status) ||
                     (("RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status)) && anime.nextAiringEpisode == 1 && anime.airedEpisodesCount == 0);
             if (isNotYet) {
-                btnPlayPrimary.setText("未放送 • Belum Tayang");
+                btnPlayPrimary.setText(getString(R.string.detail_not_aired));
             } else {
-                btnPlayPrimary.setText("準備中 • Belum Tersedia");
+                btnPlayPrimary.setText(getString(R.string.detail_not_available));
             }
             btnPlayPrimary.setEnabled(false);
             btnPlayPrimary.setAlpha(0.5f);
@@ -318,9 +325,9 @@ public class DetailActivity extends AppCompatActivity {
             btnPlayPrimary.setEnabled(true);
             btnPlayPrimary.setAlpha(1.0f);
             if (lastWatchedEp > 0) {
-                btnPlayPrimary.setText("▶ 再生 • Lanjut Episode " + lastWatchedEp);
+                btnPlayPrimary.setText(getString(R.string.detail_resume_format, lastWatchedEp));
             } else {
-                btnPlayPrimary.setText("▶ 再生 • Putar Episode 1");
+                btnPlayPrimary.setText(getString(R.string.detail_play_ep1));
             }
         }
     }

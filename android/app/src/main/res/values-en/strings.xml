@@ -1,0 +1,112 @@
+<resources>
+    <!-- App Branding -->
+    <string name="app_name">Shisen</string>
+    <string name="app_logo_kanji"></string>
+
+    <!-- Navigation Badges -->
+    <string name="badge_this_season">THIS SEASON</string>
+    <string name="badge_airing">AIRING NOW</string>
+    <string name="badge_schedule">SCHEDULE</string>
+    <string name="badge_history">HISTORY</string>
+    <string name="badge_favorites">FAVORITES</string>
+    <string name="badge_catalog">CATALOG</string>
+    <string name="badge_genre">GENRES</string>
+    <string name="badge_search">SEARCH</string>
+
+    <!-- Floating Navigation Menu -->
+    <string name="menu_this_season">This Season</string>
+    <string name="menu_airing">Airing Now</string>
+    <string name="menu_schedule">Release Schedule</string>
+    <string name="menu_history">Watch History</string>
+    <string name="menu_favorites">My Favorites</string>
+    <string name="menu_catalog">Anime Catalog</string>
+    <string name="menu_genre">Anime Genres</string>
+    <string name="menu_settings">Unified Settings</string>
+
+    <!-- Search -->
+    <string name="search_capsule">Search anime...</string>
+    <string name="search_hint">Type anime title...</string>
+
+    <!-- Airing Lanes -->
+    <string name="lane_all">All (3 Tracks)</string>
+    <string name="lane_cur">Current Season</string>
+    <string name="lane_prev">Previous Seasons</string>
+    <string name="lane_long">Long Running</string>
+
+    <!-- Days of Week -->
+    <string name="day_mon">Monday</string>
+    <string name="day_tue">Tuesday</string>
+    <string name="day_wed">Wednesday</string>
+    <string name="day_thu">Thursday</string>
+    <string name="day_fri">Friday</string>
+    <string name="day_sat">Saturday</string>
+    <string name="day_sun">Sunday</string>
+    <string name="day_today_suffix"> (Today)</string>
+
+    <!-- Pagination -->
+    <string name="page_prev">‹ Prev</string>
+    <string name="page_next">Next ›</string>
+    <string name="page_indicator_format">Page %d</string>
+
+    <!-- Contextual Bar Actions & Labels -->
+    <string name="action_clear_all">Clear All</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_filter">Filter...</string>
+    <string name="action_select_genre">Select Genre...</string>
+    <string name="sort_popular">Popular</string>
+    <string name="sort_score">Top Rated</string>
+    <string name="sort_recent">Recent</string>
+    <string name="sort_trending">Trending</string>
+    <string name="sort_alpha">A-Z</string>
+    <string name="sort_favorites">Favorites</string>
+    <string name="label_history_title">Watch History (%d)</string>
+    <string name="label_favorites_title">Favorite Anime (%d)</string>
+    <string name="label_empty_history_title">History is Empty</string>
+    <string name="label_empty_history_desc">Anime you watch will automatically appear here.</string>
+    <string name="label_empty_favorites_title">No Favorites Yet</string>
+    <string name="label_empty_favorites_desc">Tap the star icon on any anime detail page to save it.</string>
+    <string name="label_search_results_title">SEARCH RESULTS: \"%1$s\"%2$s</string>
+    <string name="label_genre_title">GENRE: %s</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_synopsis_title">ANIME SYNOPSIS</string>
+    <string name="detail_related_seasons_title">RELATED SEASONS</string>
+    <string name="detail_related_movies_title">RELATED MOVIES</string>
+    <string name="detail_episodes_title">EPISODE LIST</string>
+    <string name="detail_play_ep1">▶ Watch Episode 1</string>
+    <string name="detail_resume_format">▶ Resume Episode %d</string>
+    <string name="detail_favorite">+ Favorite</string>
+    <string name="detail_saved">★ Saved</string>
+    <string name="detail_not_aired">Not Yet Aired</string>
+    <string name="detail_not_available">Unavailable</string>
+    <string name="detail_read_more">Read More ▼</string>
+    <string name="detail_hide">Hide ▲</string>
+
+    <!-- Player Screen -->
+    <string name="player_skip_op">Skip OP</string>
+    <string name="player_skip_ed">Skip ED</string>
+    <string name="player_unlock">Unlock</string>
+    <string name="player_episodes_title">EPISODE LIST</string>
+    <string name="player_quality">Quality</string>
+    <string name="player_speed">Speed</string>
+    <string name="player_server">Server</string>
+    <string name="player_portrait">Portrait</string>
+
+    <!-- Settings Dialog -->
+    <string name="settings_title">SETTINGS</string>
+    <string name="settings_subtitle">Configure Theme, Language, Safe Mode, Haptics, &amp; AI</string>
+    <string name="settings_section_theme">DISPLAY &amp; THEME</string>
+    <string name="settings_section_lang">APP LANGUAGE</string>
+    <string name="settings_lang_in">🇮🇩 Indonesia</string>
+    <string name="settings_lang_en">🇬🇧 English</string>
+    <string name="settings_lang_ja">🇯🇵 日本語</string>
+    <string name="settings_section_safety">SAFETY &amp; HAPTICS</string>
+    <string name="settings_safemode_title">🛡️ Safe Mode Tatap</string>
+    <string name="settings_safemode_desc">Filter ecchi &amp; erotica anime from catalog and search results. (Hentai genre is always 100% blocked).</string>
+    <string name="settings_haptic_title">📳 Haptic Feedback</string>
+    <string name="settings_haptic_desc">Subtle tactile vibration when navigating menus, pagination, and player gestures.</string>
+    <string name="settings_section_ai">AI SUBTITLE (BYOK)</string>
+    <string name="settings_section_system">SYSTEM &amp; UPDATES</string>
+    <string name="settings_check_update">🔄 Check for Updates</string>
+    <string name="settings_app_version">Shisen v0.1.0-beta.2</string>
+</resources>

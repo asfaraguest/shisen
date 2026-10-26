@@ -98,12 +98,18 @@ import id.menatap.app.data.subtitle.SubtitleParser;
 import id.menatap.app.ui.adapter.EpisodeAdapter;
 import id.menatap.app.ui.dialog.SettingsDialog;
 import id.menatap.app.util.HapticHelper;
+import id.menatap.app.util.LocaleHelper;
 import okhttp3.OkHttpClient;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class PlayerActivity extends AppCompatActivity {
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase));
+    }
 
     private static final int REQUEST_CODE_PICK_SUBTITLE = 4042;
 
@@ -1375,7 +1381,7 @@ public class PlayerActivity extends AppCompatActivity {
                 Toast.makeText(this, "⚡ Melewati Opening Otomatis", Toast.LENGTH_SHORT).show();
                 btnSkipOpEd.setVisibility(View.GONE);
             } else {
-                btnSkipOpEd.setText("Lewati Opening");
+                btnSkipOpEd.setText(getString(R.string.player_skip_op));
                 btnSkipOpEd.setVisibility(View.VISIBLE);
             }
         } else if (currentSkipTimes.outro != null && posSec >= currentSkipTimes.outro.startTime && posSec < currentSkipTimes.outro.endTime) {
@@ -1384,7 +1390,7 @@ public class PlayerActivity extends AppCompatActivity {
                 Toast.makeText(this, "⚡ Melewati Ending Otomatis", Toast.LENGTH_SHORT).show();
                 btnSkipOpEd.setVisibility(View.GONE);
             } else {
-                btnSkipOpEd.setText("Lewati Ending");
+                btnSkipOpEd.setText(getString(R.string.player_skip_ed));
                 btnSkipOpEd.setVisibility(View.VISIBLE);
             }
         } else {

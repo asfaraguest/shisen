@@ -61,8 +61,14 @@ import id.menatap.app.util.AnimeThemeManager;
 import id.menatap.app.ui.adapter.AnimeAdapter;
 import id.menatap.app.util.AppUpdateManager;
 import id.menatap.app.util.HapticHelper;
+import id.menatap.app.util.LocaleHelper;
 
 public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase));
+    }
 
     public enum MainTab {
         MUSIM, AIRING, JADWAL, RIWAYAT, FAVORIT, KATALOG, GENRE
@@ -75,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private FrameLayout layoutAuroraTop;
     private LinearLayout layoutTopNormal;
     private TextView tvAppLogo;
+    private TextView tvAppLogoKanji;
     private TextView tvCurrentMenuBadge;
     private ProgressBar pbLoading;
     private LinearLayout btnSearchTrigger;
@@ -239,7 +246,18 @@ public class MainActivity extends AppCompatActivity {
             new GenreItem("Workplace", "workplace")
     );
 
-    private final String[] DAYS_NAMES = {"月 • Senin", "火 • Selasa", "水 • Rabu", "木 • Kamis", "金 • Jumat", "土 • Sabtu", "日 • Minggu"};
+    private String[] getDayNames() {
+        return new String[]{
+                getString(R.string.day_mon),
+                getString(R.string.day_tue),
+                getString(R.string.day_wed),
+                getString(R.string.day_thu),
+                getString(R.string.day_fri),
+                getString(R.string.day_sat),
+                getString(R.string.day_sun)
+        };
+    }
+
     private final int[] DAYS_CALENDAR = {
             Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
             Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY
@@ -304,6 +322,16 @@ public class MainActivity extends AppCompatActivity {
         layoutAuroraTop = findViewById(R.id.layout_aurora_top);
         layoutTopNormal = findViewById(R.id.layout_top_normal);
         tvAppLogo = findViewById(R.id.tv_app_logo);
+        tvAppLogoKanji = findViewById(R.id.tv_app_logo_kanji);
+        String kanji = getString(R.string.app_logo_kanji);
+        if (tvAppLogoKanji != null) {
+            if (TextUtils.isEmpty(kanji)) {
+                tvAppLogoKanji.setVisibility(View.GONE);
+            } else {
+                tvAppLogoKanji.setText(kanji);
+                tvAppLogoKanji.setVisibility(View.VISIBLE);
+            }
+        }
         tvCurrentMenuBadge = findViewById(R.id.tv_current_menu_badge);
         pbLoading = findViewById(R.id.pb_header_loading);
         btnSearchTrigger = findViewById(R.id.btn_search_trigger);
@@ -684,7 +712,15 @@ public class MainActivity extends AppCompatActivity {
         View[] items = {menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre};
         TextView[] titles = {tvMenuMusim, tvMenuAiring, tvMenuJadwal, tvMenuRiwayat, tvMenuFavorit, tvMenuKatalog, tvMenuGenre};
         MainTab[] tabEnums = {MainTab.MUSIM, MainTab.AIRING, MainTab.JADWAL, MainTab.RIWAYAT, MainTab.FAVORIT, MainTab.KATALOG, MainTab.GENRE};
-        String[] badges = {"今期アニメ", "放送中", "週間番組表", "視聴履歴", "お気に入り", "作品目録", "ジャンル"};
+        String[] badges = {
+                getString(R.string.badge_this_season),
+                getString(R.string.badge_airing),
+                getString(R.string.badge_schedule),
+                getString(R.string.badge_history),
+                getString(R.string.badge_favorites),
+                getString(R.string.badge_catalog),
+                getString(R.string.badge_genre)
+        };
 
         int activeColor = ContextCompat.getColor(this, R.color.accent_glacial);
         int inactiveColor = ContextCompat.getColor(this, R.color.text_frost_bright);
@@ -772,7 +808,12 @@ public class MainActivity extends AppCompatActivity {
             scrollSubFilters.setVisibility(View.VISIBLE);
 
             String[] lanes = {"ALL", "CUR", "PREV", "LONG"};
-            String[] laneLabels = {"全枠 • Semua (3 Jalur)", "今期枠 • Musim Berjalan", "前期枠 • Musim Sebelumnya", "長期枠 • Serial Panjang"};
+            String[] laneLabels = {
+                    getString(R.string.lane_all),
+                    getString(R.string.lane_cur),
+                    getString(R.string.lane_prev),
+                    getString(R.string.lane_long)
+            };
             for (int i = 0; i < lanes.length; i++) {
                 final String l = lanes[i];
                 boolean isSelected = l.equalsIgnoreCase(selectedAiringLane);
@@ -793,11 +834,12 @@ public class MainActivity extends AppCompatActivity {
 
             Calendar wibNow = Calendar.getInstance(TimeZone.getTimeZone("Asia/Jakarta"));
             int todayWib = wibNow.get(Calendar.DAY_OF_WEEK);
+            String[] dayNames = getDayNames();
 
-            for (int i = 0; i < DAYS_NAMES.length; i++) {
+            for (int i = 0; i < dayNames.length; i++) {
                 final int calDay = DAYS_CALENDAR[i];
                 boolean isSelected = (calDay == selectedDayOfWeek);
-                String label = DAYS_NAMES[i] + (calDay == todayWib ? " (本日)" : "");
+                String label = dayNames[i] + (calDay == todayWib ? getString(R.string.day_today_suffix) : "");
 
                 TextView chip = createSubFilterChip(label, isSelected);
                 chip.setOnClickListener(v -> {
@@ -812,12 +854,12 @@ public class MainActivity extends AppCompatActivity {
         } else if (currentTab == MainTab.KATALOG) {
             layoutContextualBar.setVisibility(View.VISIBLE);
             tvContextualTitle.setText(getCatalogFilterSummary());
-            btnClearHistoryAll.setText(isCatalogFilterActive() ? "初期化 • Reset" : "詳細絞り込み...");
+            btnClearHistoryAll.setText(isCatalogFilterActive() ? getString(R.string.action_reset) : getString(R.string.action_filter));
             btnClearHistoryAll.setVisibility(View.VISIBLE);
             scrollSubFilters.setVisibility(View.VISIBLE);
 
             // 1. Primary Action Chip: Open Full Cross-Filter Dialog
-            TextView btnFilterDialog = createSubFilterChip("⚙ 絞り込み • Filter", isCatalogFilterActive());
+            TextView btnFilterDialog = createSubFilterChip("⚙ " + getString(R.string.action_filter), isCatalogFilterActive());
             btnFilterDialog.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 showCatalogFilterDialog();
@@ -837,7 +879,14 @@ public class MainActivity extends AppCompatActivity {
 
             // Quick Sort Chips
             String[] sorts = {"popularity", "score", "latest", "trending", "az", "most_favorite"};
-            String[] sortLabels = {"人気順 • Terpopuler", "高評価 • Skor Tertinggi", "新着順 • Terbaru", "急上昇 • Trending", "五十音 • A-Z", "お気に入り • Favorit"};
+            String[] sortLabels = {
+                    getString(R.string.sort_popular),
+                    getString(R.string.sort_score),
+                    getString(R.string.sort_recent),
+                    getString(R.string.sort_trending),
+                    getString(R.string.sort_alpha),
+                    getString(R.string.sort_favorites)
+            };
             for (int i = 0; i < sorts.length; i++) {
                 final String s = sorts[i];
                 boolean isSelected = s.equalsIgnoreCase(filterCatalogSort);
@@ -854,13 +903,13 @@ public class MainActivity extends AppCompatActivity {
             }
         } else if (currentTab == MainTab.GENRE) {
             layoutContextualBar.setVisibility(View.VISIBLE);
-            tvContextualTitle.setText("ジャンル • GENRE: " + selectedGenre.toUpperCase(Locale.US));
-            btnClearHistoryAll.setText("ジャンル選択 • Pilih Genre...");
+            tvContextualTitle.setText(getString(R.string.label_genre_title, selectedGenre.toUpperCase(Locale.US)));
+            btnClearHistoryAll.setText(getString(R.string.action_select_genre));
             btnClearHistoryAll.setVisibility(View.VISIBLE);
             scrollSubFilters.setVisibility(View.VISIBLE);
 
             // 1. Primary Action Chip: Open Genre Selector Dialog
-            TextView btnPickGenre = createSubFilterChip("🔍 ジャンル選択 • Pilih Genre", true);
+            TextView btnPickGenre = createSubFilterChip("🔍 " + getString(R.string.action_select_genre), true);
             btnPickGenre.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 showGenreSelectorDialog();
@@ -1320,15 +1369,17 @@ public class MainActivity extends AppCompatActivity {
         layoutPagination.setVisibility(View.VISIBLE);
         layoutPagination.setAlpha(1.0f);
         if (tvPageIndicator != null) {
-            tvPageIndicator.setText("第 " + currentPage + " 頁 • Hal " + currentPage);
+            tvPageIndicator.setText(getString(R.string.page_indicator_format, currentPage));
         }
         if (btnPrevPage != null) {
+            btnPrevPage.setText(getString(R.string.page_prev));
             btnPrevPage.setVisibility(View.VISIBLE);
             boolean canPrev = currentPage > 1;
             btnPrevPage.setEnabled(canPrev);
             btnPrevPage.setAlpha(canPrev ? 1.0f : 0.4f);
         }
         if (btnNextPage != null) {
+            btnNextPage.setText(getString(R.string.page_next));
             btnNextPage.setVisibility(View.VISIBLE);
             boolean canNext = hasNextPage;
             btnNextPage.setEnabled(canNext);
@@ -1421,11 +1472,11 @@ public class MainActivity extends AppCompatActivity {
                         final List<Anime> finalPagedList = pagedList;
                         mainHandler.post(() -> {
                             layoutContextualBar.setVisibility(View.VISIBLE);
-                            tvContextualTitle.setText("視聴履歴 • Riwayat Tontonan (" + total + " 作品)");
+                            tvContextualTitle.setText(getString(R.string.label_history_title, total));
                             btnClearHistoryAll.setVisibility(history.isEmpty() ? View.GONE : View.VISIBLE);
                         });
                         boolean hasNextPage = (fromIndex + pageSize) < total;
-                        displayResults(finalPagedList, "視聴履歴がありません • Riwayat Kosong", "Anime yang kamu putar akan tersimpan otomatis di sini.", pageSize, hasNextPage);
+                        displayResults(finalPagedList, getString(R.string.label_empty_history_title), getString(R.string.label_empty_history_desc), pageSize, hasNextPage);
                         if (total <= pageSize) {
                             mainHandler.post(() -> {
                                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
@@ -1447,11 +1498,11 @@ public class MainActivity extends AppCompatActivity {
                         final List<Anime> finalPagedList = pagedList;
                         mainHandler.post(() -> {
                             layoutContextualBar.setVisibility(View.VISIBLE);
-                            tvContextualTitle.setText("お気に入り • Favorit Saya (" + total + " 作品)");
+                            tvContextualTitle.setText(getString(R.string.label_favorites_title, total));
                             btnClearHistoryAll.setVisibility(View.GONE);
                         });
                         boolean hasNextPage = (fromIndex + pageSize) < total;
-                        displayResults(finalPagedList, "お気に入りがありません • Belum Ada Favorit", "Tekan ikon bintang di halaman detail anime untuk menyimpannya.", pageSize, hasNextPage);
+                        displayResults(finalPagedList, getString(R.string.label_empty_favorites_title), getString(R.string.label_empty_favorites_desc), pageSize, hasNextPage);
                         if (total <= pageSize) {
                             mainHandler.post(() -> {
                                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
@@ -1491,9 +1542,10 @@ public class MainActivity extends AppCompatActivity {
     private void performSearch(String query, int page) {
         setLoading(true);
         gridAdapter.setHeroAnime(null);
-        tvCurrentMenuBadge.setText("検索結果");
+        tvCurrentMenuBadge.setText(getString(R.string.badge_search));
         layoutContextualBar.setVisibility(View.VISIBLE);
-        tvContextualTitle.setText("検索結果 • HASIL PENCARIAN: \"" + query + "\"" + (page > 1 ? " (第 " + page + " 頁)" : ""));
+        String pageSuffix = page > 1 ? " (" + getString(R.string.page_indicator_format, page) + ")" : "";
+        tvContextualTitle.setText(getString(R.string.label_search_results_title, query, pageSuffix));
         btnClearHistoryAll.setVisibility(View.GONE);
 
         if (!AppSettings.isSafeQuery(this, query)) {
@@ -1590,6 +1642,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSafeModeChanged(boolean isSafeMode) {
                 loadCurrentFeed();
+            }
+
+            @Override
+            public void onLanguageChanged() {
+                recreate();
             }
         });
     }

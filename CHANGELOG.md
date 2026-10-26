@@ -4,29 +4,28 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 
 ## [0.1.0-beta.2] - 2026-10-25
 
+### Ditambahkan
+- **Sistem Trilingual & Language Switcher di Pengaturan Terpadu (`LocaleHelper.java`, `SettingsDialog.java`, `strings.xml`)**:
+  - **Bahasa Indonesia Bersih Sebagai Default**: Menghilangkan istilah dan karakter kanji/kana Jepang yang sebelumnya terpasang di antarmuka default. Pengguna kini disuguhkan antarmuka Bahasa Indonesia yang bersih, alami, dan mudah dipahami.
+  - **Selector 3 Bahasa (Trilingual)**: Menyediakan selektor bahasa interaktif di dalam modal Pengaturan Terpadu dengan pilihan:
+    1. 🇮🇩 **Bahasa Indonesia** (Default aktif)
+    2. 🇬🇧 **English** (Antarmuka bahasa Inggris penuh)
+    3. 🇯🇵 **日本語** (Antarmuka bahasa Jepang bagi pengguna yang menginginkannya)
+  - **Lokalisasi Menyeluruh**: Seluruh label navigasi melayang, lencana kategori, sub-filter jalur airing, jadwal hari (Senin-Minggu), indikator paginasi, aksi kontekstual, halaman detail anime, kontrol pemutar video, dan dialog pengaturan kini dilokalisasikan secara otomatis via `values/strings.xml`, `values-en/strings.xml`, dan `values-ja/strings.xml`.
+  - **Penerapan Seamless & Persisten**: Preferensi bahasa disimpan di `SharedPreferences` (`tatap_player_prefs`) dan langsung diperbarui via `LocaleHelper` tanpa perlu me-restart perangkat.
+  - **Nama Resmi Aplikasi**: Tetap konsisten mengusung nama resmi **Shisen (視線)**.
+- **Harmonisasi Tampilan Floating Page Navigation Senada Floating Menu Button (`activity_main.xml`, `bg_floating_pagination.xml`)**:
+  - **Proporsi & Penjajaran Sejajar (Horizontal Alignment)**: Menyelaraskan tinggi bilah navigasi paginasi melayang menjadi **48dp** dengan margin bawah **20dp** dan elevasi **18dp**, sehingga sejajar horizontal secara presisi dan senada dengan floating action button menu (`fab_menu_trigger`, tinggi 54dp, margin bawah 20dp, elevasi 18dp).
+  - **Palet Obsidian Frosted Glass Senada**: Mengubah latar belakang `bg_floating_pagination` menggunakan obsidian glass `#E60F1726` dengan stroke sian glasial `1.5dp #8038BDF8` (identik dengan visual `bg_fab_trigger`).
+  - **Ergonomi & Haptic Feedback**: Tombol `‹ Sebelumnya` dan `Berikutnya ›` diperluas dengan padding 16dp, ripple effect sian glasial, teks tebal berukuran 12sp, dan getaran haptic taktil saat ditekan.
+  - **Indikator Halaman Kontras**: Menampilkan indikator pill berlatar `#E617253D` dengan stroke `1.2dp #6638BDF8` dan teks aksen sian glasial (`@color/accent_glacial`) yang dinamis menyesuaikan bahasa aktif (`Hal %d` / `Page %d` / `第 %d 頁`).
+
 ### Diperbaiki
 - **Penghapusan Shortcut Tema di Top Bar (`activity_main.xml`, `MainActivity.java`)**:
   - Menghapus tombol shortcut tema (`btn_theme_trigger` / icon palette) dari header top bar untuk menghilangkan redundansi antarmuka dan memperluas capsule input pencarian (*search trigger capsule*).
   - Penggantian tema anime (Shinkai, Sakura, Cyber, Ghibli) tetap terintegrasi secara seamless melalui modal Pengaturan Terpadu (*SettingsDialog*).
-- **Rebranding UI Estetika Anime Jepang Otentik: Shisen (視線 • シセン)**:
-  - **Identitas Unik "Shisen (視線)"**: Mengubah nama aplikasi menjadi **Shisen** dengan kanji **視線** (artinya *Tatapan / Line of Sight*, padanan kata paling pas dan otentik untuk "Menatap", ringkas 2 suku kata, modern, dan belum pernah digunakan oleh aplikasi anime mana pun).
-  - **Header & Pencarian (`MainActivity`, `activity_main.xml`)**:
-    - Logo: `SHISEN` dengan kanji `視線`.
-    - Lencana kategori aktif: `今期アニメ` (Musim Ini), `放送中` (Sedang Tayang), `週間番組表` (Jadwal), `視聴履歴` (Riwayat), `お気に入り` (Favorit), `作品目録` (Katalog), `ジャンル` (Genre), dan `検索結果` (Pencarian).
-    - Capsule & hint pencarian: `検索 • Cari anime...` dan `アニメのタイトルを検索...`.
-  - **Menu Navigasi Melayang (Floating Folded Nav)**:
-    - Merestrukturisasi label menu menjadi tajuk Jepang otentik: `今期アニメ • Musim Ini`, `放送中 • Sedang Tayang`, `週間番組表 • Jadwal Rilis`, `視聴履歴 • Riwayat Tontonan`, `お気に入り • Favorit Saya`, `作品目録 • Katalog Anime`, `ジャンル • Kategori Genre`, dan `設定 • Pengaturan Terpadu`.
-  - **Sub-Filter & Lencana (Chips & Contextual Bar)**:
-    - Jalur Airing: `全枠 • Semua (3 Jalur)`, `今期枠 • Musim Berjalan`, `前期枠 • Musim Sebelumnya`, dan `長期枠 • Serial Panjang`.
-    - Jadwal 7 Hari: `月 • Senin` s.d. `日 • Minggu` beserta lencana hari ini `(本日)`.
-    - Urutan Katalog: `人気順 • Terpopuler`, `高評価 • Skor Tertinggi`, `新着順 • Terbaru`, `急上昇 • Trending`, `五十音 • A-Z`, dan `お気に入り • Favorit`.
-    - Aksi Bar: `全消去 • Hapus Semua`, `初期化 • Reset`, dan `第 N 頁 • Hal N` pada pagination.
-  - **Halaman Detail Anime (`DetailActivity`, `activity_detail.xml`)**:
-    - Tajuk bagian: `あらすじ • SINOPSIS ANIME`, `関連シリーズ • MUSIM & SERI TERKAIT`, `劇場版・映画 • FILM & MOVIE TERKAIT`, `エピソード一覧 • DAFTAR EPISODE`.
-    - Tombol aksi: `▶ 再生 • Putar Episode 1`, `★ 保存済み • Tersimpan`, `+ お気に入り • Favorit`, `未放送 • Belum Tayang`, `準備中 • Belum Tersedia`, dan `続きを読む • Selengkapnya ▼`.
-  - **Player & Pengaturan (`activity_player.xml`, `dialog_settings.xml`)**:
-    - Player controls: `OP スキップ • Lewati OP`, `ロック解除 • Buka Kunci`, `エピソード一覧 • DAFTAR EPISODE`.
-    - Pengaturan Terpadu: `テーマ設定 • TAMPILAN & TEMA ANIME`, `安心機能 • KEAMANAN & HAPTIC`, `AI 字幕 • AI SUBTITLE (BYOK)`, `システム情報 • SISTEM & PEMBARUAN`, `新海ブルー • Twilight Shinkai (君の名は)`, `桜ブロッサム • Sakura Blossom (氷菓)`, `電脳サイバー • Cyber Neo-Tokyo (攻殻機動隊)`, `ジブリフォレスト • Ghibli Forest (もののけ姫)`, `🔄 最新版を確認 • Cek Pembaruan`.
+- **Identitas Resmi Baru: Shisen (視線 • シセン)**:
+  - Mengubah nama aplikasi menjadi **Shisen** dengan kanji **視線** (artinya *Tatapan / Line of Sight*, padanan kata paling pas dan otentik untuk "Menatap", ringkas 2 suku kata, modern, dan belum pernah digunakan oleh aplikasi anime mana pun).
 - **Isolasi Musiman Ketat & Eliminasi Kebocoran Antar-Musim (`AniListClient.getCurrentSeasonAiring`, `AniListClient.getMasihTayangDualLane`)**:
   - **Pencegahan Kebocoran Musim Sebelumnya ke Beranda ("Musim Ini")**: Menambahkan validasi ketat `cur.season.equalsIgnoreCase(a.season) && cur.year == a.year && !isLongRunning(a)` pada `getCurrentSeasonAiring` dan fallback-nya. Menjamin tidak ada satupun anime carry-over dari musim sebelumnya (misal Summer 2024 ke Fall 2024) atau serial panjang tanpa batas yang bocor ke daftar anime musim berjalan di tab "MUSIM INI".
   - **Restrukturisasi 3-Jalur Eksklusif pada Tab "SEDANG TAYANG" (`AIRING`)**: Membagi anime on-going yang sedang tayang menjadi 3 jalur yang saling lepas (*mutually exclusive*):

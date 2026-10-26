@@ -239,16 +239,31 @@ public class AniListClient {
                     result.addAll(longRunningList);
                 } else {
                     // Tampilan 3-Lane Terstruktur dengan section header pembatas
+                    String lang = Locale.getDefault().getLanguage();
+                    boolean isJa = "ja".equalsIgnoreCase(lang);
+                    boolean isEn = "en".equalsIgnoreCase(lang);
+
+                    String h1Title = isJa ? ("今期放送枠 (" + cur.season + " " + cur.year + ")") :
+                            (isEn ? ("CURRENT SEASON ANIME (" + cur.season + " " + cur.year + ")") :
+                                    ("ANIME MUSIM BERJALAN (" + cur.season + " " + cur.year + ")"));
+                    String h1Tag = isJa ? "放送中" : (isEn ? "AIRING NOW" : "SEDANG TAYANG");
+
+                    String h2Title = isJa ? "前期継続枠" : (isEn ? "PREVIOUS SEASON CONTINUATION" : "LANJUTAN MUSIM SEBELUMNYA");
+                    String h2Tag = isJa ? "継続中" : (isEn ? "CARRY-OVER" : "LANJUTAN TAYANG");
+
+                    String h3Title = isJa ? "長期連載枠" : (isEn ? "CONTINUOUS LONG-RUNNING SERIES" : "SERIAL PANJANG BERKELANJUTAN");
+                    String h3Tag = isJa ? "定番作品" : (isEn ? "LONG RUNNING" : "SERIAL PANJANG");
+
                     if (!currentSeasonList.isEmpty()) {
-                        result.add(Anime.createHeader("今期放送枠 • MUSIM BERJALAN (" + cur.season + " " + cur.year + ")", "放送中"));
+                        result.add(Anime.createHeader(h1Title, h1Tag));
                         result.addAll(currentSeasonList);
                     }
                     if (!prevSeasonList.isEmpty()) {
-                        result.add(Anime.createHeader("前期継続枠 • LANJUTAN MUSIM SEBELUMNYA", "継続中"));
+                        result.add(Anime.createHeader(h2Title, h2Tag));
                         result.addAll(prevSeasonList);
                     }
                     if (!longRunningList.isEmpty()) {
-                        result.add(Anime.createHeader("長期連載枠 • SERIAL PANJANG BERKELANJUTAN", "定番作品"));
+                        result.add(Anime.createHeader(h3Title, h3Tag));
                         result.addAll(longRunningList);
                     }
                 }

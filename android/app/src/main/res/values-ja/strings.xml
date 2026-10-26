@@ -1,0 +1,112 @@
+<resources>
+    <!-- App Branding -->
+    <string name="app_name">Shisen</string>
+    <string name="app_logo_kanji">視線</string>
+
+    <!-- Navigation Badges -->
+    <string name="badge_this_season">今期アニメ</string>
+    <string name="badge_airing">放送中</string>
+    <string name="badge_schedule">週間番組表</string>
+    <string name="badge_history">視聴履歴</string>
+    <string name="badge_favorites">お気に入り</string>
+    <string name="badge_catalog">作品目録</string>
+    <string name="badge_genre">ジャンル</string>
+    <string name="badge_search">検索結果</string>
+
+    <!-- Floating Navigation Menu -->
+    <string name="menu_this_season">今期アニメ</string>
+    <string name="menu_airing">放送中アニメ</string>
+    <string name="menu_schedule">週間番組表</string>
+    <string name="menu_history">視聴履歴</string>
+    <string name="menu_favorites">お気に入り</string>
+    <string name="menu_catalog">作品目録</string>
+    <string name="menu_genre">ジャンル一覧</string>
+    <string name="menu_settings">設定</string>
+
+    <!-- Search -->
+    <string name="search_capsule">アニメを検索...</string>
+    <string name="search_hint">アニメのタイトルを検索...</string>
+
+    <!-- Airing Lanes -->
+    <string name="lane_all">全枠 (3コース)</string>
+    <string name="lane_cur">今期枠</string>
+    <string name="lane_prev">前期枠</string>
+    <string name="lane_long">長期枠</string>
+
+    <!-- Days of Week -->
+    <string name="day_mon">月曜日</string>
+    <string name="day_tue">火曜日</string>
+    <string name="day_wed">水曜日</string>
+    <string name="day_thu">木曜日</string>
+    <string name="day_fri">金曜日</string>
+    <string name="day_sat">土曜日</string>
+    <string name="day_sun">日曜日</string>
+    <string name="day_today_suffix"> (本日)</string>
+
+    <!-- Pagination -->
+    <string name="page_prev">‹ 前へ</string>
+    <string name="page_next">次へ ›</string>
+    <string name="page_indicator_format">第 %d 頁</string>
+
+    <!-- Contextual Bar Actions & Labels -->
+    <string name="action_clear_all">全消去</string>
+    <string name="action_reset">初期化</string>
+    <string name="action_filter">絞り込み...</string>
+    <string name="action_select_genre">ジャンル選択...</string>
+    <string name="sort_popular">人気順</string>
+    <string name="sort_score">高評価</string>
+    <string name="sort_recent">新着順</string>
+    <string name="sort_trending">急上昇</string>
+    <string name="sort_alpha">五十音</string>
+    <string name="sort_favorites">お気に入り</string>
+    <string name="label_history_title">視聴履歴 (%d 作品)</string>
+    <string name="label_favorites_title">お気に入り (%d 作品)</string>
+    <string name="label_empty_history_title">視聴履歴がありません</string>
+    <string name="label_empty_history_desc">再生したアニメが自動的にここに保存されます。</string>
+    <string name="label_empty_favorites_title">お気に入りがありません</string>
+    <string name="label_empty_favorites_desc">作品詳細ページの星アイコンをタップして保存できます。</string>
+    <string name="label_search_results_title">検索結果: \"%1$s\"%2$s</string>
+    <string name="label_genre_title">ジャンル: %s</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_synopsis_title">あらすじ</string>
+    <string name="detail_related_seasons_title">関連シリーズ</string>
+    <string name="detail_related_movies_title">劇場版・映画</string>
+    <string name="detail_episodes_title">エピソード一覧</string>
+    <string name="detail_play_ep1">▶ 第1話 再生</string>
+    <string name="detail_resume_format">▶ 第%d話 再生</string>
+    <string name="detail_favorite">+ お気に入り</string>
+    <string name="detail_saved">★ 保存済み</string>
+    <string name="detail_not_aired">未放送</string>
+    <string name="detail_not_available">準備中</string>
+    <string name="detail_read_more">続きを読む ▼</string>
+    <string name="detail_hide">閉じる ▲</string>
+
+    <!-- Player Screen -->
+    <string name="player_skip_op">OP スキップ</string>
+    <string name="player_skip_ed">ED スキップ</string>
+    <string name="player_unlock">ロック解除</string>
+    <string name="player_episodes_title">エピソード一覧</string>
+    <string name="player_quality">画質</string>
+    <string name="player_speed">速度</string>
+    <string name="player_server">サーバー</string>
+    <string name="player_portrait">縦画面</string>
+
+    <!-- Settings Dialog -->
+    <string name="settings_title">設定</string>
+    <string name="settings_subtitle">テーマ、言語、セーフモード、触覚、AI設定</string>
+    <string name="settings_section_theme">テーマ設定</string>
+    <string name="settings_section_lang">言語設定</string>
+    <string name="settings_lang_in">🇮🇩 インドネシア語</string>
+    <string name="settings_lang_en">🇬🇧 英語</string>
+    <string name="settings_lang_ja">🇯🇵 日本語</string>
+    <string name="settings_section_safety">安心機能・触覚振動</string>
+    <string name="settings_safemode_title">🛡️ セーフモード</string>
+    <string name="settings_safemode_desc">成人向け・過激コンテンツをカタログや検索から除外します。(Hentaiは常に完全遮断)。</string>
+    <string name="settings_haptic_title">📳 触覚振動</string>
+    <string name="settings_haptic_desc">メニュー操作、ページ移動、シーク時の微細な振動フィードバック。</string>
+    <string name="settings_section_ai">AI 字幕 (BYOK)</string>
+    <string name="settings_section_system">システム情報</string>
+    <string name="settings_check_update">🔄 最新版を確認</string>
+    <string name="settings_app_version">Shisen 視線 v0.1.0-beta.2</string>
+</resources>
