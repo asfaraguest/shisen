@@ -53,6 +53,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.media3.common.C;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackParameters;
@@ -501,6 +502,12 @@ public class PlayerActivity extends AppCompatActivity {
         player = new ExoPlayer.Builder(this)
                 .setMediaSourceFactory(mediaSourceFactory)
                 .build();
+
+        // Fase 2.1: Jika pemutaran dilanjutkan dari notifikasi saat layar mati,
+        // tahan wake lock jaringan agar audio tidak tersendat. Tidak ada efek saat fg.
+        try {
+            player.setWakeMode(C.WAKE_MODE_NETWORK);
+        } catch (Throwable ignored) {}
 
         // Logger performa DEBUG-ONLY: first frame, dropped frames, rebuffering
         androidx.media3.exoplayer.analytics.AnalyticsListener perfListener = id.shisen.app.util.PerfLogger.exoPlayerListener();
@@ -2460,6 +2467,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        backgroundStopHandler.removeCallbacks(backgroundStopRunnable);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode()) {
             return;
         }
@@ -2491,7 +2499,36 @@ public class PlayerActivity extends AppCompatActivity {
         }
         stopProgressTracker();
         saveCurrentPlayback(true);
+
+        // Fase 2.1(b): Pause di background lebih dari 3 menit → hentikan service & release player
+        // (menghemat memori/wake lock; sesi media dihentikan, data progres sudah disimpan).
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !isInPictureInPictureMode()) {
+            backgroundStopHandler.postDelayed(backgroundStopRunnable, 3 * 60 * 1000L);
+        }
     }
+
+    private final Handler backgroundStopHandler = new Handler(Looper.getMainLooper());
+
+    private final Runnable backgroundStopRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isActivityRunning) return; // user sudah kembali ke foreground
+            if (player == null || mediaSession == null) return;
+            if (player.isPlaying()) return; // tetap hidup jika ternyata masih memutar
+            try {
+                PlaybackService.setActiveSession(null);
+                mediaSession.release();
+            } catch (Throwable ignored) {}
+            mediaSession = null;
+            try {
+                stopService(new Intent(PlayerActivity.this, PlaybackService.class));
+            } catch (Throwable ignored) {}
+            try {
+                player.release();
+            } catch (Throwable ignored) {}
+            player = null;
+        }
+    };
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
@@ -2536,6 +2573,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        backgroundStopHandler.removeCallbacks(backgroundStopRunnable);
         if (pipReceiver != null) {
             try {
                 unregisterReceiver(pipReceiver);
