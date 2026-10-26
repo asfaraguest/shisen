@@ -188,4 +188,49 @@
     <string name="player_minimize">Kecilkan</string>
     <string name="player_fullscreen">⛶ Full</string>
     <string name="main_genre_select">Pilih Genre...</string>
+
+    <!-- Genre Selector Dialog -->
+    <string name="genre_dialog_title">Pilih Genre Anime</string>
+    <string name="genre_dialog_hint">Cari genre (misal: Action, Romance, Isekai)...</string>
+    <string name="dialog_close">Tutup</string>
+    <string name="filter_reset">Hapus Filter</string>
+
+    <!-- Catalog Cross-Filter Dialog -->
+    <string name="filter_dialog_title">Filter Katalog Anime</string>
+    <string name="filter_dialog_subtitle">Cross Filter: Urutan, Tahun, Musim, Bulan, Tipe &amp; Status</string>
+    <string name="filter_section_sort">URUTAN KATALOG (SORT)</string>
+    <string name="sort_latest">Terbaru</string>
+    <string name="sort_fav">Favorit</string>
+    <string name="filter_section_year">TAHUN RILIS</string>
+    <string name="filter_year_all">Semua Tahun</string>
+    <string name="filter_section_season">MUSIM PENAYANGAN (SEASON)</string>
+    <string name="filter_season_all">Semua Musim</string>
+    <string name="season_spring_full">Musim Semi (Spring)</string>
+    <string name="season_summer_full">Musim Panas (Summer)</string>
+    <string name="season_fall_full">Musim Gugur (Fall)</string>
+    <string name="season_winter_full">Musim Dingin (Winter)</string>
+    <string name="filter_section_month">BULAN RILIS</string>
+    <string name="filter_month_all">Semua Bulan</string>
+    <string name="month_1">Jan (1)</string>
+    <string name="month_2">Feb (2)</string>
+    <string name="month_3">Mar (3)</string>
+    <string name="month_4">Apr (4)</string>
+    <string name="month_5">Mei (5)</string>
+    <string name="month_6">Jun (6)</string>
+    <string name="month_7">Jul (7)</string>
+    <string name="month_8">Agu (8)</string>
+    <string name="month_9">Sep (9)</string>
+    <string name="month_10">Okt (10)</string>
+    <string name="month_11">Nov (11)</string>
+    <string name="month_12">Des (12)</string>
+    <string name="filter_section_type">FORMAT / TIPE</string>
+    <string name="filter_type_all">Semua Format</string>
+    <string name="filter_type_tv">TV Series</string>
+    <string name="filter_type_movie">Movie</string>
+    <string name="filter_type_special">Special</string>
+    <string name="filter_section_status">STATUS PENAYANGAN</string>
+    <string name="filter_status_all">Semua Status</string>
+    <string name="filter_status_airing">Sedang Tayang</string>
+    <string name="filter_status_completed">Sudah Tamat</string>
+    <string name="filter_apply">Terapkan Filter</string>
 </resources>

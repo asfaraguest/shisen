@@ -188,4 +188,49 @@
     <string name="player_minimize">Minimize</string>
     <string name="player_fullscreen">⛶ Full</string>
     <string name="main_genre_select">Select Genre...</string>
+
+    <!-- Genre Selector Dialog -->
+    <string name="genre_dialog_title">Select Anime Genre</string>
+    <string name="genre_dialog_hint">Search genre (e.g. Action, Romance, Isekai)...</string>
+    <string name="dialog_close">Close</string>
+    <string name="filter_reset">Clear Filter</string>
+
+    <!-- Catalog Cross-Filter Dialog -->
+    <string name="filter_dialog_title">Filter Anime Catalog</string>
+    <string name="filter_dialog_subtitle">Cross Filter: Sort, Year, Season, Month, Type &amp; Status</string>
+    <string name="filter_section_sort">CATALOG SORT</string>
+    <string name="sort_latest">Latest</string>
+    <string name="sort_fav">Favorites</string>
+    <string name="filter_section_year">RELEASE YEAR</string>
+    <string name="filter_year_all">All Years</string>
+    <string name="filter_section_season">AIRING SEASON</string>
+    <string name="filter_season_all">All Seasons</string>
+    <string name="season_spring_full">Spring</string>
+    <string name="season_summer_full">Summer</string>
+    <string name="season_fall_full">Fall</string>
+    <string name="season_winter_full">Winter</string>
+    <string name="filter_section_month">RELEASE MONTH</string>
+    <string name="filter_month_all">All Months</string>
+    <string name="month_1">Jan (1)</string>
+    <string name="month_2">Feb (2)</string>
+    <string name="month_3">Mar (3)</string>
+    <string name="month_4">Apr (4)</string>
+    <string name="month_5">May (5)</string>
+    <string name="month_6">Jun (6)</string>
+    <string name="month_7">Jul (7)</string>
+    <string name="month_8">Aug (8)</string>
+    <string name="month_9">Sep (9)</string>
+    <string name="month_10">Oct (10)</string>
+    <string name="month_11">Nov (11)</string>
+    <string name="month_12">Dec (12)</string>
+    <string name="filter_section_type">FORMAT / TYPE</string>
+    <string name="filter_type_all">All Formats</string>
+    <string name="filter_type_tv">TV Series</string>
+    <string name="filter_type_movie">Movie</string>
+    <string name="filter_type_special">Special</string>
+    <string name="filter_section_status">AIRING STATUS</string>
+    <string name="filter_status_all">All Status</string>
+    <string name="filter_status_airing">Currently Airing</string>
+    <string name="filter_status_completed">Finished</string>
+    <string name="filter_apply">Apply Filter</string>
 </resources>

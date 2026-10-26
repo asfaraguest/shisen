@@ -188,4 +188,49 @@
     <string name="player_minimize">最小化</string>
     <string name="player_fullscreen">⛶ 全画面</string>
     <string name="main_genre_select">ジャンルを選択...</string>
+
+    <!-- Genre Selector Dialog -->
+    <string name="genre_dialog_title">ジャンルを選択</string>
+    <string name="genre_dialog_hint">ジャンルを検索 (例: Action, Romance, Isekai)...</string>
+    <string name="dialog_close">閉じる</string>
+    <string name="filter_reset">フィルターを解除</string>
+
+    <!-- Catalog Cross-Filter Dialog -->
+    <string name="filter_dialog_title">カタログをフィルター</string>
+    <string name="filter_dialog_subtitle">クロスフィルター: 並び順・年・シーズン・月・タイプ・ステータス</string>
+    <string name="filter_section_sort">並び順</string>
+    <string name="sort_latest">新着順</string>
+    <string name="sort_fav">お気に入り</string>
+    <string name="filter_section_year">放送年</string>
+    <string name="filter_year_all">全ての年</string>
+    <string name="filter_section_season">シーズン</string>
+    <string name="filter_season_all">全てのシーズン</string>
+    <string name="season_spring_full">春 (Spring)</string>
+    <string name="season_summer_full">夏 (Summer)</string>
+    <string name="season_fall_full">秋 (Fall)</string>
+    <string name="season_winter_full">冬 (Winter)</string>
+    <string name="filter_section_month">放送月</string>
+    <string name="filter_month_all">全ての月</string>
+    <string name="month_1">1月 (1)</string>
+    <string name="month_2">2月 (2)</string>
+    <string name="month_3">3月 (3)</string>
+    <string name="month_4">4月 (4)</string>
+    <string name="month_5">5月 (5)</string>
+    <string name="month_6">6月 (6)</string>
+    <string name="month_7">7月 (7)</string>
+    <string name="month_8">8月 (8)</string>
+    <string name="month_9">9月 (9)</string>
+    <string name="month_10">10月 (10)</string>
+    <string name="month_11">11月 (11)</string>
+    <string name="month_12">12月 (12)</string>
+    <string name="filter_section_type">フォーマット / タイプ</string>
+    <string name="filter_type_all">全ての形式</string>
+    <string name="filter_type_tv">TVシリーズ</string>
+    <string name="filter_type_movie">映画</string>
+    <string name="filter_type_special">スペシャル</string>
+    <string name="filter_section_status">放送ステータス</string>
+    <string name="filter_status_all">全ての状態</string>
+    <string name="filter_status_airing">放送中</string>
+    <string name="filter_status_completed">放送終了</string>
+    <string name="filter_apply">適用</string>
 </resources>
