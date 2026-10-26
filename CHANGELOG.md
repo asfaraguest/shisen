@@ -2,6 +2,18 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [0.1.0-beta.4] - 2026-10-26
+
+### Diperbaiki
+- **Penyelarasan Hero Banner dengan Grid Kartu Anime (`item_netflix_hero.xml`, `dimens.xml`)**:
+  - **Tepi Kiri-Kanan Presisi**: Margin horizontal hero disamakan dengan margin kartu anime (`@dimen/card_margin` = 6dp) sehingga tepi luar hero berada tepat pada garis grid kartu di bawahnya (sebelumnya menjorok 6dp lebih ke dalam dari kolom kartu).
+  - **Sudut Seragam**: `hero_corner_radius` disetel 12dp agar identik dengan `card_corner_radius` kartu anime.
+  - **Proporsi Lebih Ringkas**: Tinggi hero diturunkan ke `@dimen/hero_banner_height` (170dp) dengan skala isi dirampingkan (judul 19sp, padding konten 14dp, CTA 38dp, chip tren 24dp, scrim 140dp) sehingga seluruh konten termasuk judul dua baris tetap muat tanpa terpotong.
+- **Lokalisasi Menyeluruh Dialog Pengaturan Terpadu (`dialog_settings.xml`, `SettingsDialog.java`, `strings.xml`, `values-en/strings.xml`, `values-ja/strings.xml`)**:
+  - Seluruh teks yang sebelumnya hardcoded bahasa Indonesia kini mengikuti bahasa aktif: nama & deskripsi 4 kartu tema, label serta hint `API Key / Endpoint URL`, `Model Selector`, deskripsi & hint pemilihan model, `Prompt Fansub`, hint prompt terjemahan, dan blok info sistem (TLS Desync, DoH, Media3 Runtime).
+  - Teks dinamis di `SettingsDialog.java` (badge `Aktif:` / `Terdeteksi:`, fallback nama provider, serta toast Safe Mode, Haptic, reset prompt, validasi kunci, simpan, dan hapus kunci AI) kini dipanggil via `getString()` sehingga langsung berubah saat bahasa diganti.
+  - 28 string baru ditambahkan lengkap pada ketiga locale (Indonesia, English, 日本語) termasuk judul tema berbahasa Jepang natural (トワイライト新海, サクラ・ブロッサム, サイバー・ネオ東京, ジブリの森).
+
 ## [0.1.0-beta.3] - 2026-10-26
 
 ### Diperbaiki
