@@ -338,20 +338,35 @@
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-medium" />
 
-            <TextView
-                android:id="@+id/btn_lang_ja"
-                android:layout_width="0dp"
-                android:layout_height="38dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_chip_frost_inactive"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="@string/settings_lang_ja"
-                android:textColor="@color/text_frost_bright"
-                android:textSize="12sp"
-                android:fontFamily="sans-serif-medium" />
-        </LinearLayout>
+             <TextView
+                 android:id="@+id/btn_lang_ja"
+                 android:layout_width="0dp"
+                 android:layout_height="38dp"
+                 android:layout_weight="1"
+                 android:background="@drawable/bg_chip_frost_inactive"
+                 android:clickable="true"
+                 android:focusable="true"
+                 android:gravity="center"
+                 android:text="@string/settings_lang_ja"
+                 android:textColor="@color/text_frost_bright"
+                 android:textSize="12sp"
+                 android:fontFamily="sans-serif-medium" />
+
+             <TextView
+                 android:id="@+id/btn_lang_es"
+                 android:layout_width="0dp"
+                 android:layout_height="38dp"
+                 android:layout_weight="1"
+                 android:layout_marginStart="6dp"
+                 android:background="@drawable/bg_chip_frost_inactive"
+                 android:clickable="true"
+                 android:focusable="true"
+                 android:gravity="center"
+                 android:text="@string/settings_lang_es"
+                 android:textColor="@color/text_frost_bright"
+                 android:textSize="12sp"
+                 android:fontFamily="sans-serif-medium" />
+         </LinearLayout>
 
         <View
             android:layout_width="match_parent"

@@ -137,14 +137,16 @@ public class SettingsDialog {
         TextView btnLangId = root.findViewById(R.id.btn_lang_id);
         TextView btnLangEn = root.findViewById(R.id.btn_lang_en);
         TextView btnLangJa = root.findViewById(R.id.btn_lang_ja);
+        TextView btnLangEs = root.findViewById(R.id.btn_lang_es);
 
-        if (btnLangId == null || btnLangEn == null || btnLangJa == null) return;
+        if (btnLangId == null || btnLangEn == null || btnLangJa == null || btnLangEs == null) return;
 
         Runnable updateChips = () -> {
             String active = LocaleHelper.getLanguage(activity);
             boolean isId = LocaleHelper.LANG_ID.equalsIgnoreCase(active);
             boolean isEn = LocaleHelper.LANG_EN.equalsIgnoreCase(active);
             boolean isJa = LocaleHelper.LANG_JA.equalsIgnoreCase(active);
+            boolean isEs = LocaleHelper.LANG_ES.equalsIgnoreCase(active);
 
             int selectedColor = Color.parseColor("#080C14");
             int normalColor = ContextCompat.getColor(activity, R.color.text_frost_bright);
@@ -157,6 +159,9 @@ public class SettingsDialog {
 
             btnLangJa.setBackgroundResource(isJa ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
             btnLangJa.setTextColor(isJa ? selectedColor : normalColor);
+
+            btnLangEs.setBackgroundResource(isEs ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
+            btnLangEs.setTextColor(isEs ? selectedColor : normalColor);
         };
         updateChips.run();
 
@@ -167,6 +172,8 @@ public class SettingsDialog {
                 selectedLang = LocaleHelper.LANG_EN;
             } else if (v.getId() == R.id.btn_lang_ja) {
                 selectedLang = LocaleHelper.LANG_JA;
+            } else if (v.getId() == R.id.btn_lang_es) {
+                selectedLang = LocaleHelper.LANG_ES;
             }
 
             if (!selectedLang.equalsIgnoreCase(LocaleHelper.getLanguage(activity))) {
@@ -186,6 +193,7 @@ public class SettingsDialog {
         btnLangId.setOnClickListener(langClickListener);
         btnLangEn.setOnClickListener(langClickListener);
         btnLangJa.setOnClickListener(langClickListener);
+        btnLangEs.setOnClickListener(langClickListener);
     }
 
     private static void setupSystemSection(View root, Activity activity, OnSettingsChangeListener listener) {

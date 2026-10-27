@@ -128,6 +128,7 @@
     <string name="settings_lang_in">🇮🇩 Indonesia</string>
     <string name="settings_lang_en">🇬🇧 English</string>
     <string name="settings_lang_ja">🇯🇵 日本語</string>
+    <string name="settings_lang_es">🇪🇸 Español</string>
     <string name="settings_section_safety">SAFETY &amp; HAPTICS</string>
     <string name="settings_safemode_title">🛡️ Safe Mode Shisen</string>
     <string name="settings_safemode_desc">Filter ecchi &amp; erotica anime from catalog and search results. (Hentai genre is always 100% blocked).</string>

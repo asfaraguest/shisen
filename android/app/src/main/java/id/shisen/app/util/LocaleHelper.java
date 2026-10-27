@@ -17,6 +17,7 @@ public class LocaleHelper {
     public static final String LANG_ID = "in"; // Bahasa Indonesia (Default)
     public static final String LANG_EN = "en"; // English
     public static final String LANG_JA = "ja"; // 日本語 (Japanese)
+    public static final String LANG_ES = "es"; // Español (Spanish)
 
     public static Context onAttach(Context context) {
         String lang = getLanguage(context);
@@ -38,6 +39,8 @@ public class LocaleHelper {
             locale = Locale.JAPANESE;
         } else if (LANG_EN.equalsIgnoreCase(language)) {
             locale = Locale.ENGLISH;
+        } else if (LANG_ES.equalsIgnoreCase(language)) {
+            locale = new Locale("es", "ES");
         } else {
             locale = new Locale("in", "ID");
         }

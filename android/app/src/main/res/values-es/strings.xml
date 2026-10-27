@@ -1,0 +1,237 @@
+<resources>
+    <!-- App Branding -->
+    <string name="app_name">Shisen</string>
+    <string name="app_logo_kanji"></string>
+
+    <!-- Navigation Badges -->
+    <string name="badge_this_season">ESTE SEASON</string>
+    <string name="badge_airing">EN EMISIÓN</string>
+    <string name="badge_schedule">CALENDARIO</string>
+    <string name="badge_history">HISTORIAL</string>
+    <string name="badge_favorites">FAVORITOS</string>
+    <string name="badge_catalog">CATÁLOGO</string>
+    <string name="season_spring">Primavera</string>
+    <string name="season_summer">Verano</string>
+    <string name="season_fall">Otoño</string>
+    <string name="season_winter">Invierno</string>
+    <string name="status_airing">En emisión</string>
+    <string name="status_finished">Finalizado</string>
+    <string name="badge_genre">GÉNEROS</string>
+    <string name="badge_search">RESULTADOS DE BÚSQUEDA</string>
+
+    <!-- Floating Navigation Menu -->
+    <string name="menu_this_season">Este Season</string>
+    <string name="menu_airing">En Emisión</string>
+    <string name="menu_schedule">Calendario de Estrenos</string>
+    <string name="menu_history">Historial de Visualización</string>
+    <string name="menu_favorites">Mis Favoritos</string>
+    <string name="menu_catalog">Catálogo de Anime</string>
+    <string name="menu_genre">Géneros de Anime</string>
+    <string name="menu_settings">Ajustes Unificados</string>
+
+    <!-- Search -->
+    <string name="search_capsule">Buscar anime...</string>
+    <string name="search_hint">Escribe el título del anime...</string>
+
+    <!-- Airing Lanes -->
+    <string name="lane_all">Todos (3 Pistas)</string>
+    <string name="lane_cur">Season Actual</string>
+    <string name="lane_prev">Season Anteriores</string>
+    <string name="lane_long">Largometrajes</string>
+
+    <!-- Days of Week -->
+    <string name="day_mon">Lunes</string>
+    <string name="day_tue">Martes</string>
+    <string name="day_wed">Miércoles</string>
+    <string name="day_thu">Jueves</string>
+    <string name="day_fri">Viernes</string>
+    <string name="day_sat">Sábado</string>
+    <string name="day_sun">Domingo</string>
+    <string name="day_today_suffix"> (Hoy)</string>
+
+    <!-- Pagination -->
+    <string name="page_prev">‹ Anterior</string>
+    <string name="page_next">Siguiente ›</string>
+    <string name="page_indicator_format">Página %d</string>
+
+    <!-- Hero Card Actions & Badges -->
+    <string name="hero_trending_today">TENDENCIAS HOY</string>
+    <string name="hero_play_now">▶ Reproducir Ahora</string>
+    <string name="hero_info_detail">ℹ Detalles</string>
+
+    <!-- Anime Card Badges & Counters -->
+    <string name="badge_not_yet_aired">Aún no emitido</string>
+    <string name="badge_ongoing">En curso</string>
+    <string name="badge_finished">Finalizado</string>
+    <string name="badge_long_running">Largometraje</string>
+    <string name="card_last_played">Visto por última vez: Ep %d</string>
+    <string name="card_episodes_format">%d Episodios</string>
+    <string name="card_episodes_finished_format">%d Eps (Finalizado)</string>
+
+    <!-- Contextual Bar Actions & Labels -->
+    <string name="action_clear_all">Borrar Todo</string>
+    <string name="action_reset">Reiniciar</string>
+    <string name="action_filter">Filtrar...</string>
+    <string name="action_select_genre">Seleccionar Género...</string>
+    <string name="sort_popular">Populares</string>
+    <string name="sort_score">Mejor valorados</string>
+    <string name="sort_recent">Recientes</string>
+    <string name="sort_trending">Trending</string>
+    <string name="sort_alpha">A-Z</string>
+    <string name="sort_favorites">Favoritos</string>
+    <string name="label_history_title">Historial (%d)</string>
+    <string name="label_favorites_title">Anime Favoritos (%d)</string>
+    <string name="label_empty_history_title">Historial Vacío</string>
+    <string name="label_empty_history_desc">Los anime que veas aparecerán automáticamente aquí.</string>
+    <string name="label_empty_favorites_title">Aún no hay Favoritos</string>
+    <string name="label_empty_favorites_desc">Toca el icono de estrella en la página de detalles para guardar.</string>
+    <string name="label_search_results_title">RESULTADOS: \"%1$s\"%2$s</string>
+    <string name="label_genre_title">GÉNERO: %s</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_synopsis_title">SINOPSIS</string>
+    <string name="detail_related_seasons_title">SEASONS RELACIONADOS</string>
+    <string name="detail_related_movies_title">PELÍCULAS RELACIONADAS</string>
+    <string name="detail_episodes_title">LISTA DE EPISODIOS</string>
+    <string name="detail_play_ep1">▶ Ver Episodio 1</string>
+    <string name="detail_resume_format">▶ Continuar Episodio %d</string>
+    <string name="detail_favorite">+ Favorito</string>
+    <string name="detail_saved">★ Guardado</string>
+    <string name="detail_not_aired">Aún no emitido</string>
+    <string name="detail_aired_format">%d episodios emitidos</string>
+    <string name="detail_total_format">(Total %d eps)</string>
+    <string name="detail_planned_format">(Pendiente %d eps)</string>
+    <string name="detail_episode_word">episodio</string>
+    <string name="detail_not_available">Disponible pronto</string>
+    <string name="detail_read_more">Leer más ▼</string>
+    <string name="detail_hide">Cerrar ▲</string>
+
+    <!-- Player Screen -->
+    <string name="player_skip_op">SALTAR OP</string>
+    <string name="player_skip_ed">SALTAR ED</string>
+    <string name="player_unlock">DESBLOQUEAR</string>
+    <string name="player_episodes_title">LISTA DE EPISODIOS</string>
+    <string name="player_quality">Calidad</string>
+    <string name="player_speed">Velocidad</string>
+    <string name="player_server">Servidor</string>
+    <string name="player_portrait">Retrato</string>
+
+    <string name="action_clear_key">Borrar clave</string>
+    <string name="action_save_ai">Guardar ajustes IA</string>
+    <string name="action_reset_prompt">Reiniciar</string>
+
+    <!-- Settings Dialog -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_subtitle">Tema, idioma, modo seguro, tactil, ajustes IA</string>
+    <string name="settings_section_theme">Ajustes de Tema</string>
+    <string name="settings_section_lang">Ajustes de Idioma</string>
+    <string name="settings_lang_in">🇮🇩 Indonesio</string>
+    <string name="settings_lang_en">🇬🇧 Inglés</string>
+    <string name="settings_lang_ja">🇯🇵 Japonés</string>
+    <string name="settings_lang_es">🇪🇸 Español</string>
+    <string name="settings_section_safety">Seguridad y Táctil</string>
+    <string name="settings_safemode_title">🛡️ Modo Seguro Shisen</string>
+    <string name="settings_safemode_desc">Excluir contenido adulto/excesivo del catálogo y búsqueda. (Hentai siempre bloqueado).</string>
+    <string name="settings_haptic_title">📳 Vibración Táctil</string>
+    <string name="settings_haptic_desc">Vibración sutil al operar menús, páginas, seek.</string>
+    <string name="settings_section_ai">IA Subtítulos (BYOK)</string>
+    <string name="settings_section_system">Información del Sistema</string>
+    <string name="settings_check_update">🔄 Comprobar actualización</string>
+    <string name="settings_app_version">Shisen 視線 v0.1.0-beta.6</string>
+    <string name="settings_close">Cerrar</string>
+
+    <!-- Settings Dialog: Tema Cards -->
+    <string name="settings_theme_shinkai_title">Twilight Shinsei (Kimi no Na wa)</string>
+    <string name="settings_theme_shinkai_desc">Cielo estrellado · Cian Glacial · Morado Iris</string>
+    <string name="settings_theme_sakura_title">Sakura Blossom (Kanikoku)</string>
+    <string name="settings_theme_sakura_desc">Almendro medianoche · Rosa Sakura · Color Pétalo</string>
+    <string name="settings_theme_cyber_title">Cyber NeoTokyo (Ghost in the Shell)</string>
+    <string name="settings_theme_cyber_desc">Vacio Oscuro · Cian Eléctrico · Cíber Morado</string>
+    <string name="settings_theme_ghibli_title">Bosque Ghibli (Mononoke Hime)</string>
+    <string name="settings_theme_ghibli_desc">Verde Oscuro · Menta Esmeralda · Oro Estrella</string>
+
+    <!-- Settings Dialog: AI Subtitle Settings -->
+    <string name="settings_ai_key_label">API Key / Endpoint URL</string>
+    <string name="settings_ai_key_hint">AIzaSy... / gsk_... / sk-... / Ollama URL</string>
+    <string name="settings_ai_model_label">Seleccionar Modelo</string>
+    <string name="settings_ai_model_desc">Elige un modelo recomendado o ingresa un nombre personalizado:</string>
+    <string name="settings_ai_model_hint">Nombre del modelo (ej: gemini-2.5-flash)</string>
+    <string name="settings_ai_prompt_label">Prompt de Traducción</string>
+    <string name="settings_ai_prompt_hint">Ingresa instrucciones para traducción...</string>
+    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama</string>
+    <string name="settings_ai_badge_active">Activo: %s</string>
+    <string name="settings_ai_badge_detected">Detectado: %s</string>
+
+    <!-- Settings Dialog: System Info & Feedback -->
+    <string name="settings_system_info">⚡ TLS ClientHello Desync DPI-Bypass: Activo\n🛡️ DoH DNS Multi-capas: Cloudflare + Google\n📦 Media3 Runtime independiente (sin servidor embebido)</string>
+    <string name="settings_toast_safe_mode_on">Modo Seguro ACTIVADO (excluye contenido excesivo)</string>
+    <string name="settings_toast_safe_mode_off">Modo Seguro DESACTIVADO</string>
+    <string name="settings_toast_haptic_on">Vibración Táctil ACTIVADA</string>
+    <string name="settings_toast_haptic_off">Vibración Táctil DESACTIVADA</string>
+    <string name="settings_toast_prompt_reset">Prompt restaurado a valor por defecto</string>
+    <string name="settings_toast_key_required">Ingresa API Key o URL de Ollama</string>
+    <string name="settings_toast_ai_saved">Ajustes IA guardados (%s)</string>
+    <string name="settings_toast_ai_cleared">API Key y modelo eliminados</string>
+
+    <!-- Added UI labels -->
+    <string name="episode_now_playing">Reproduciendo</string>
+    <string name="episode_watched">Visto</string>
+    <string name="history_start">Reproducir</string>
+    <string name="detail_synopsis_empty">Sinopsis aún no disponible para esta obra.</string>
+    <string name="player_fast_forward">2x más rápido >></string>
+    <string name="player_rewind">&lt;&lt; Retroceder</string>
+    <string name="player_zoom">Zoom</string>
+    <string name="player_fill">Rellenar</string>
+    <string name="player_fit">Ajustar</string>
+    <string name="player_sub_off">Subtítulos: OFF</string>
+    <string name="player_sub_off_short">Subtítulos: OFF</string>
+    <string name="player_provider">Proveedor: Gemini / Groq / OpenAI / Ollama</string>
+    <string name="player_minimize">Minimizar</string>
+    <string name="player_fullscreen">⛶ Pantalla completa</string>
+    <string name="main_genre_select">Seleccionar Género...</string>
+
+    <!-- Genre Selector Dialog -->
+    <string name="genre_dialog_title">Seleccionar Género</string>
+    <string name="genre_dialog_hint">Buscar género (ej: Acción, Romance, Isekai)...</string>
+    <string name="dialog_close">Cerrar</string>
+    <string name="filter_reset">Resetear filtro</string>
+
+    <!-- Catalog Cross-Filter Dialog -->
+    <string name="filter_dialog_title">Filtrar Catálogo</string>
+    <string name="filter_dialog_subtitle">Filtro cruzado: Orden · Año · Season · Mes · Tipo · Estado</string>
+    <string name="filter_section_sort">Ordenar</string>
+    <string name="sort_latest">Recientes</string>
+    <string name="sort_fav">Favoritos</string>
+    <string name="filter_section_year">Año de emisión</string>
+    <string name="filter_year_all">Todos los años</string>
+    <string name="filter_section_season">Season</string>
+    <string name="filter_season_all">Todas las seasons</string>
+    <string name="season_spring_full">Primavera (Spring)</string>
+    <string name="season_summer_full">Verano (Summer)</string>
+    <string name="season_fall_full">Otoño (Fall)</string>
+    <string name="season_winter_full">Invierno (Winter)</string>
+    <string name="filter_section_month">Mes de emisión</string>
+    <string name="filter_month_all">Todos los meses</string>
+    <string name="month_1">Enero (1)</string>
+    <string name="month_2">Febrero (2)</string>
+    <string name="month_3">Marzo (3)</string>
+    <string name="month_4">Abril (4)</string>
+    <string name="month_5">Mayo (5)</string>
+    <string name="month_6">Junio (6)</string>
+    <string name="month_7">Julio (7)</string>
+    <string name="month_8">Agosto (8)</string>
+    <string name="month_9">Septiembre (9)</string>
+    <string name="month_10">Octubre (10)</string>
+    <string name="month_11">Noviembre (11)</string>
+    <string name="month_12">Diciembre (12)</string>
+    <string name="filter_section_type">Formato / Tipo</string>
+    <string name="filter_type_all">Todos los formatos</string>
+    <string name="filter_type_tv">Series TV</string>
+    <string name="filter_type_movie">Película</string>
+    <string name="filter_type_special">Especial</string>
+    <string name="filter_section_status">Estado de emisión</string>
+    <string name="filter_status_all">Todos los estados</string>
+    <string name="filter_status_airing">En emisión</string>
+    <string name="filter_status_completed">Emisión finalizada</string>
+    <string name="filter_apply">Aplicar</string>
+</resources>
