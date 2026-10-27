@@ -13,8 +13,7 @@ import androidx.media3.exoplayer.analytics.AnalyticsListener;
 
 import id.shisen.app.BuildConfig;
 
-/**
- * Logger performa DEBUG-ONLY (tag SHISEN_PERF). Seluruh metode no-op di build release.
+/** Logger performa DEBUG-ONLY (tag SHISEN_PERF). Seluruh metode no-op di build release.
  * Metrik: cold start→reportFullyDrawn, tap episode→onRenderedFirstFrame,
  * dropped frames, durasi/kejadian rebuffering, total byte jaringan, puncak memori.
  * Tidak ada URL berparameter sensitif yang dibaca — hanya total byte dan nama host publik.
@@ -32,7 +31,10 @@ public final class PerfLogger {
     private static volatile long droppedFrames = 0L;
     private static volatile boolean fullyDrawnLogged = false;
 
-    private PerfLogger() {}
+    // --- AniList request counters (DEBUG-ONLY) ---
+    private static volatile int anilistRequestCount = 0;
+    private static volatile int anilistRequestCacheHit = 0;
+    private PerfLogger() { }
 
     private static boolean enabled() {
         return BuildConfig.DEBUG;
@@ -57,6 +59,41 @@ public final class PerfLogger {
             firstFrameLogged = false;
             Log.i(TAG, "episode_tap");
         }
+    }
+
+    /** Catat request AniList (DEBUG-ONLY). */
+    public static void anilistRequest() {
+        if (!enabled()) return;
+        anilistRequestCount++;
+    }
+
+    /** Catat cache hit AniList (DEBUG-ONLY). */
+    public static void anilistCacheHit() {
+        if (!enabled()) return;
+        anilistRequestCacheHit++;
+    }
+
+    /** Reset counter request (DEBUG). */
+    public static void resetAnilistCount() {
+        if (!enabled()) return;
+        anilistRequestCount = 0;
+        anilistRequestCacheHit = 0;
+    }
+
+    /** Dapatkan jumlah request AniList (DEBUG). */
+    public static int getAnilistRequestCount() {
+        return anilistRequestCount;
+    }
+
+    /** Dapatkan jumlah cache hit AniList (DEBUG). */
+    public static int getAnilistCacheHitCount() {
+        return anilistRequestCacheHit;
+    }
+
+    /** Dapatkan ringkasan AniList (DEBUG). */
+    public static String anilistSummary() {
+        if (!enabled()) return "";
+        return "anilist_requests=" + anilistRequestCount + " cache_hits=" + anilistRequestCacheHit;
     }
 
     /** Listener untuk player: first frame, dropped frames, rebuffering, puncak memori terpantau via sampler. */
@@ -106,8 +143,7 @@ public final class PerfLogger {
         };
     }
 
-    /**
-     * Botol dipanggil dari interceptor network — hanya total byte disimpan,
+    /** Botol dipanggil dari interceptor network — hanya total byte disimpan,
      * tanpa URL berparameter sensitif.
      */
     public static void addNetworkBytes(long requestBytes, long responseBytes) {
@@ -123,7 +159,8 @@ public final class PerfLogger {
                 + " rebuffer_ms=" + rebufferTotalMs
                 + " network_bytes=" + totalNetworkBytes
                 + " peak_memory_kb=" + (peakMemoryBytes / 1024)
-                + " session_ms=" + runtimeMs);
+                + " session_ms=" + runtimeMs
+                + " " + anilistSummary());
     }
 
     /** Sampel memory saat ini; interval aman akses thread. */

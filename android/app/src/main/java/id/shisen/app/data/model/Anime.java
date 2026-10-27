@@ -10,6 +10,7 @@ import java.util.List;
 public class Anime implements Serializable {
     public int id;
     public int idMal = 0;
+    public int anilistId = 0;
     public String slug = "";
     public String title = "";
     public String romajiTitle = "";

@@ -13,9 +13,10 @@ import java.util.List;
 
 import id.shisen.app.data.model.Anime;
 
+/** Database SQLite untuk Menatap (100% Pure Native Java). */
 public class MenatapDatabase extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "menatap.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // Dinaikkan karena migrasi kolom
 
     private static volatile MenatapDatabase instance;
 
@@ -52,7 +53,10 @@ public class MenatapDatabase extends SQLiteOpenHelper {
                 "score REAL, " +
                 "format TEXT, " +
                 "eps_counter TEXT, " +
-                "created_at INTEGER)");
+                "created_at INTEGER, " +
+                "anilist_id INTEGER DEFAULT 0, " +   // BARU: ID AniList
+                "mal_id INTEGER DEFAULT 0) " +         // BARU: MAL ID
+                ")");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS cache_kv (" +
                 "key TEXT PRIMARY KEY, " +
@@ -67,6 +71,12 @@ public class MenatapDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion < 2) {
+            // Migrasi: tambah kolom anilist_id dan mal_id ke bookmarks
+            try { db.execSQL("ALTER TABLE bookmarks ADD COLUMN anilist_id INTEGER DEFAULT 0"); } catch (Exception ignored) {}
+            try { db.execSQL("ALTER TABLE bookmarks ADD COLUMN mal_id INTEGER DEFAULT 0"); } catch (Exception ignored) {}
+        }
+        // Lakukan upgrade tabel lainnya
         db.execSQL("DROP TABLE IF EXISTS history");
         db.execSQL("DROP TABLE IF EXISTS bookmarks");
         db.execSQL("DROP TABLE IF EXISTS cache_kv");
@@ -75,6 +85,7 @@ public class MenatapDatabase extends SQLiteOpenHelper {
     }
 
     // --- History Methods ---
+
     public void saveHistory(String slug, String title, String poster, int ep, long progressMs, long durationMs) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -86,14 +97,20 @@ public class MenatapDatabase extends SQLiteOpenHelper {
         cv.put("duration_ms", durationMs);
         cv.put("updated_at", System.currentTimeMillis());
         db.insertWithOnConflict("history", null, cv, SQLiteDatabase.CONFLICT_REPLACE);
-
-        // Mark episode watched
         markEpisodeWatched(slug, ep);
     }
 
     public void clearAllHistory() {
         SQLiteDatabase db = getWritableDatabase();
         db.delete("history", null, null);
+    }
+
+    public void markEpisodeWatched(String slug, int ep) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("slug", slug);
+        cv.put("ep", ep);
+        db.insertWithOnConflict("watched_eps", null, cv, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
     public List<Anime> getHistoryList() {
@@ -108,14 +125,15 @@ public class MenatapDatabase extends SQLiteOpenHelper {
                 a.poster = c.getString(2);
                 a.lastPlayedEp = c.getInt(3);
                 a.lastPlayedProgressMs = c.getLong(4);
-                long dur = c.getLong(5);
-                a.epsCounter = "Ep " + a.lastPlayedEp;
+                a.epsCounter = "Ep " + c.getInt(3);
                 list.add(a);
             }
             c.close();
         }
         return list;
     }
+
+    // --- Watched Episode Methods ---
 
     public int getLastWatchedEpisode(String slug) {
         SQLiteDatabase db = getReadableDatabase();
@@ -130,15 +148,6 @@ public class MenatapDatabase extends SQLiteOpenHelper {
         return ep;
     }
 
-    // --- Watched Episodes ---
-    public void markEpisodeWatched(String slug, int ep) {
-        SQLiteDatabase db = getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("slug", slug);
-        cv.put("ep", ep);
-        db.insertWithOnConflict("watched_eps", null, cv, SQLiteDatabase.CONFLICT_IGNORE);
-    }
-
     public boolean isEpisodeWatched(String slug, int ep) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery("SELECT 1 FROM watched_eps WHERE slug = ? AND ep = ?", new String[]{slug, String.valueOf(ep)});
@@ -148,6 +157,7 @@ public class MenatapDatabase extends SQLiteOpenHelper {
     }
 
     // --- Bookmarks Methods ---
+
     public void toggleBookmark(Anime anime) {
         if (isBookmarked(anime.slug)) {
             removeBookmark(anime.slug);
@@ -166,6 +176,8 @@ public class MenatapDatabase extends SQLiteOpenHelper {
         cv.put("format", anime.format);
         cv.put("eps_counter", anime.epsCounter);
         cv.put("created_at", System.currentTimeMillis());
+        if (anime.anilistId > 0) cv.put("anilist_id", anime.anilistId);
+        if (anime.idMal > 0) cv.put("mal_id", anime.idMal);
         db.insertWithOnConflict("bookmarks", null, cv, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
@@ -204,6 +216,7 @@ public class MenatapDatabase extends SQLiteOpenHelper {
     }
 
     // --- Key-Value Cache with TTL ---
+
     public void setCache(String key, String value, long ttlMs) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -226,5 +239,64 @@ public class MenatapDatabase extends SQLiteOpenHelper {
             c.close();
         }
         return null;
+    }
+
+    // --- AniList Mapping Methods ---
+
+    /** Simpan mapping slug -> anilist_id dan mal_id (saat pertama berhasil dari AniList) */
+    public void saveAniListMapping(String slug, int anilistId, int malId) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("anilist_id", anilistId);
+        cv.put("mal_id", malId);
+        // Update jika sudah ada, atau insert jika belum
+        int rows = db.update("bookmarks", cv, "slug = ?", new String[]{slug});
+        if (rows == 0) {
+            // Insert baru karena slug belum ada
+            ContentValues insertCv = new ContentValues();
+            insertCv.put("slug", slug);
+            insertCv.put("title", ""); // placeholder title
+            insertCv.put("poster", "");
+            insertCv.put("score", 0.0);
+            insertCv.put("format", "TV");
+            insertCv.put("eps_counter", "-");
+            insertCv.put("created_at", System.currentTimeMillis());
+            insertCv.put("anilist_id", anilistId);
+            insertCv.put("mal_id", malId);
+            db.insertWithOnConflict("bookmarks", null, insertCv, SQLiteDatabase.CONFLICT_REPLACE);
+        }
+    }
+
+    /** Dapatkan anilist_id dari slug */
+    public int getAniListId(String slug) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT anilist_id FROM bookmarks WHERE slug = ?", new String[]{slug});
+        int id = 0;
+        if (c != null) {
+            if (c.moveToFirst()) {
+                id = c.getInt(0);
+            }
+            c.close();
+        }
+        return id;
+    }
+
+    /** Dapatkan mal_id dari slug */
+    public int getMalId(String slug) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT mal_id FROM bookmarks WHERE slug = ?", new String[]{slug});
+        int id = 0;
+        if (c != null) {
+            if (c.moveToFirst()) {
+                id = c.getInt(0);
+            }
+            c.close();
+        }
+        return id;
+    }
+
+    /** Cek apakah ada mapping AniList untuk slug */
+    public boolean hasAniListMapping(String slug) {
+        return getAniListId(slug) > 0;
     }
 }
