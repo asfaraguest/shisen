@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import id.shisen.app.data.db.MenatapDatabase;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -30,6 +31,21 @@ public class AniSkipClient {
     public interface Callback {
         void onSuccess(SkipResult result);
         void onError(Throwable t);
+    }
+
+    /** Dapatkan skip times dengan fallback mapping slug→malId.
+     *  Cek mapping lokal dulu, jika tidak ada return empty SkipResult (bukan error). */
+    public static void getSkipTimesWithFallback(android.content.Context context, String slug, int malIdHint, int episodeNum, double durationSec, Callback callback) {
+        int malId = malIdHint;
+        if (malId <= 0 && slug != null && !slug.isEmpty()) {
+            malId = MenatapDatabase.getInstance(context).getMalId(slug);
+        }
+        if (malId > 0) {
+            getSkipTimes(malId, episodeNum, durationSec, callback);
+        } else {
+            // Tidak ada malId -> return empty (tanpa skip times, bukan error)
+            callback.onSuccess(new SkipResult());
+        }
     }
 
     public static void getSkipTimes(int malId, int episodeNum, double durationSec, Callback callback) {

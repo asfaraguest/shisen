@@ -19,6 +19,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import id.shisen.app.data.db.MenatapDatabase;
 import id.shisen.app.data.model.Episode;
 import id.shisen.app.data.model.StreamSource;
 import id.shisen.app.data.model.SubtitleTrack;
@@ -43,6 +44,20 @@ public class AniChanClient {
     public interface Callback<T> {
         void onSuccess(T result);
         void onError(Throwable t);
+    }
+
+    /** Dapatkan episodes dengan fallback mapping slug→anilistId.
+     *  Cek mapping lokal dulu, jika belum ada panggil AniList untuk resolve. */
+    public static void getEpisodesWithFallback(android.content.Context context, String slug, int anilistIdHint, Callback<List<Episode>> callback) {
+        int anilistId = anilistIdHint;
+        if (anilistId <= 0 && slug != null && !slug.isEmpty()) {
+            anilistId = MenatapDatabase.getInstance(context).getAniListId(slug);
+        }
+        if (anilistId > 0) {
+            getEpisodes(anilistId, callback);
+        } else {
+            callback.onError(new IOException("AniList ID tidak ditemukan di cache untuk slug: " + slug));
+        }
     }
 
     public static void getEpisodes(int anilistId, Callback<List<Episode>> callback) {
