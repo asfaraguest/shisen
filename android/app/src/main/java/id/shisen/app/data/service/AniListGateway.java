@@ -245,6 +245,23 @@ public class AniListGateway {
         return null;
     }
 
+    /** Ambil dari cache termasuk yang expired (stale-while-revalidate).
+     *  @param key key cache
+     *  @return value JSON string atau null jika tidak ada */
+    public static String getFromCacheStale(String key) {
+        if (key == null || key.isEmpty()) return null;
+        SQLiteDatabase db = MenatapDatabase.getInstance(null).getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT value FROM cache_kv WHERE key = ?", new String[]{key});
+        if (c != null && c.moveToFirst()) {
+            String val = c.getString(0);
+            c.close();
+            PerfLogger.anilistCacheHit();
+            return val;
+        }
+        if (c != null) c.close();
+        return null;
+    }
+
     /** Hapus entri cache yang kedaluwarsa > 14 hari. */
     public static void cleanupOldCache() {
         long cutoff = System.currentTimeMillis() - 14L * 24L * 60L * 60L * 1000L;
@@ -274,48 +291,56 @@ public class AniListGateway {
             Priority priority,
             Callback<String> callback) {
 
-        // 1. Cek cooldown 429 -> jika blok, sertakan error rate-limited dari cache/kosong
+        // 1. Cek cache fresh terlebih dahulu
+        String cached = getFromCache(operationKey);
+        if (cached != null) {
+            callback.onSuccess(cached);
+            return;
+        }
+
+        // 2. Cache expired/tidak ada, cek apakah bisa request
         if (isBlocked()) {
-            // Coba ambil dari cache terlebih dahulu (termasuk yang "expired" tapi masih bisa tampil)
-            String cached = getFromCache(operationKey);
-            if (cached != null) {
-                // Tampilkan cache (stale-while-revalidate) dan coba refresh di background
-                callback.onSuccess(cached);
-                // Refresh di background jika bucket tidak kosong dan tidak cooldown
-                maybeRefreshBackground(operationKey, ttlMs);
+            // Cooldown 429 -> ambil stale cache atau fail
+            String stale = getFromCacheStale(operationKey);
+            if (stale != null) {
+                callback.onSuccess(stale);
                 return;
             }
-            // Tidak ada cache -> error rate limited
             callback.onRateLimited(getBlockedUntil());
             return;
         }
 
-        // 2. Cek dedup in-flight: jika ada request identik yang sedang berjalan, jadikan satu
+        // 3. Dedup in-flight
         if (pendingOp != null && pendingOp.operationKey.equals(operationKey)) {
-            // Pending request yang sama, callback akan dipicu saat selesai
-            // Untuk sekarang, coba ambil cache
-            String cached = getFromCache(operationKey);
-            if (cached != null) {
-                callback.onSuccess(cached);
+            String stale = getFromCacheStale(operationKey);
+            if (stale != null) {
+                callback.onSuccess(stale);
                 return;
             }
-            // Tidak ada cache, tunggu request selesai nanti (caller handle)
-            return;
+            return; // tunggu request selesai
         }
 
-        // 3. Ambil token bucket
+        // 4. Token bucket
         if (!tryAcquire(priority)) {
-            // Token kosong, coba cache dulu
-            String cached = getFromCache(operationKey);
-            if (cached != null) {
-                callback.onSuccess(cached);
+            // Token habis -> pakai stale
+            String stale = getFromCacheStale(operationKey);
+            if (stale != null) {
+                callback.onSuccess(stale);
+                // Background refresh jika bukan PREFETCH
+                if (priority != Priority.PREFETCH) {
+                    maybeRefreshBackground(operationKey, query, variables, ttlMs, priority);
+                }
                 return;
             }
-            callback.onError(new RateLimitedException("Token bucket kosong, cooldown belum masuk tapi limit tercapai"));
+            if (priority == Priority.PREFETCH) {
+                // PREFETCH dibuang
+                return;
+            }
+            callback.onError(new RateLimitedException("Token bucket kosong"));
             return;
         }
 
-        // 4. Jalankan request ke AniList
+        // 5. Request ke AniList
         executeRequest(operationKey, query, variables, ttlMs, priority, callback);
     }
 
@@ -428,15 +453,25 @@ public class AniListGateway {
     }
 
     /** Mungkin refresh background jika bucket tidak kosong dan tidak cooldown. */
-    private static void maybeRefreshBackground(String operationKey, long ttlMs) {
-        // Jika tidak cooldown dan bucket ada, refresh di thread latar
+    /** Mungkin refresh background jika bucket tidak kosong dan tidak cooldown. */
+    private static void maybeRefreshBackground(String operationKey, String query, String variables, long ttlMs, Priority priority) {
         new Thread(() -> {
             try {
-                // Jeda sebelum refresh (jangan terlalu sering)
-                Thread.sleep(5000L);
-                // Lakukan request refresh (delegate ke AniListClient)
-                // Untuk saat ini, hanya log
-            } catch (InterruptedException ignored) { }
+                Thread.sleep(1000L);
+                if (isBlocked() || !tryAcquire(Priority.VISIBLE)) {
+                    return;
+                }
+                executeRequest(operationKey, query, variables, ttlMs, Priority.VISIBLE, new Callback<String>() {
+                    @Override
+                    public void onSuccess(String result) {
+                        // Cache sudah disimpan di executeRequest
+                    }
+                    @Override
+                    public void onError(Throwable t) {}
+                    @Override
+                    public void onRateLimited(long retryAtMillis) {}
+                });
+            } catch (InterruptedException ignored) {}
         }).start();
     }
 
