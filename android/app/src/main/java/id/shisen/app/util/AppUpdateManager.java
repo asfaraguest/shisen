@@ -195,7 +195,7 @@ public class AppUpdateManager {
     }
 
     private void showUpdateDialog(Activity activity, String latestVer, String notes, String downloadUrl, long sizeBytes) {
-        if (activity == null || activity.isFinishing()) return;
+        if (activity == null || activity.isFinishing() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed())) return;
 
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);

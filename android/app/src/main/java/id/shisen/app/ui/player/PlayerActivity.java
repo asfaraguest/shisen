@@ -191,6 +191,9 @@ public class PlayerActivity extends AppCompatActivity {
     private static final int PIP_ACTION_PLAY_PAUSE = 2;
     private static final int PIP_ACTION_FORWARD = 3;
     private BroadcastReceiver pipReceiver;
+    private boolean pipReceiverRegistered = false;
+    private BroadcastReceiver timeTickReceiver;
+    private boolean timeTickReceiverRegistered = false;
 
     // ExoPlayer Built-in Controller Buttons (Tatap OG Parity)
     private View btnExoPlayPause;
@@ -836,6 +839,7 @@ public class PlayerActivity extends AppCompatActivity {
             } else {
                 registerReceiver(pipReceiver, filter);
             }
+            pipReceiverRegistered = true;
         }
     }
 
@@ -944,7 +948,9 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void setupPortraitRecycler() {
         episodeAdapter = new EpisodeAdapter(this);
-        GridLayoutManager glm = new GridLayoutManager(this, getResources().getDisplayMetrics().widthPixels / (int)getResources().getDisplayMetrics().density >= 600 ? 5 : 4);
+        float density = Math.max(1.0f, getResources().getDisplayMetrics().density);
+        int spanCount = (int) (getResources().getDisplayMetrics().widthPixels / density) >= 600 ? 5 : 4;
+        GridLayoutManager glm = new GridLayoutManager(this, spanCount);
         rvPortraitEpisodes.setLayoutManager(glm);
         rvPortraitEpisodes.setAdapter(episodeAdapter);
 
@@ -1644,6 +1650,25 @@ public class PlayerActivity extends AppCompatActivity {
 
     // --- SUBTITLE ENGINE MULTI-SOURCE & DIALOGS (Tatap OG Parity) ---
 
+    private int getCurrentEpisodeNumberSafe() {
+        if (episodeList != null && currentIndex >= 0 && currentIndex < episodeList.size()) {
+            Episode ep = episodeList.get(currentIndex);
+            if (ep != null) return ep.number;
+        }
+        return 1;
+    }
+
+    private String getSafeAnimeTitle() {
+        if (anime == null) return "";
+        if (anime.title != null && !anime.title.trim().isEmpty()) {
+            return anime.title.trim();
+        }
+        if (anime.romajiTitle != null && !anime.romajiTitle.trim().isEmpty()) {
+            return anime.romajiTitle.trim();
+        }
+        return "";
+    }
+
     private SubtitleTrack findEnglishTrack(List<SubtitleTrack> tracks) {
         if (tracks == null) return null;
         for (SubtitleTrack t : tracks) {
@@ -1673,8 +1698,7 @@ public class PlayerActivity extends AppCompatActivity {
             subtitleManager.setSubEnabled(true);
             subtitleManager.setMode("id", "smart_merge"); // Set state SEBELUM load
             if (currentStreamSource != null) {
-                String safeTitle = (anime.title != null && !anime.title.isEmpty()) ? anime.title : anime.romajiTitle;
-                subtitleManager.loadFromTracks(currentStreamSource.subtitles, safeTitle, episodeList.get(currentIndex).number, false);
+                subtitleManager.loadFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), false);
             }
         });
 
@@ -1736,8 +1760,7 @@ public class PlayerActivity extends AppCompatActivity {
             actions.add(() -> {
                 Toast.makeText(this, "Menerjemahkan ulang subtitle dari awal...", Toast.LENGTH_SHORT).show();
                 if (currentStreamSource != null) {
-                    String safeTitle = (anime.title != null && !anime.title.isEmpty()) ? anime.title : anime.romajiTitle;
-                    subtitleManager.loadFromTracks(currentStreamSource.subtitles, safeTitle, episodeList.get(currentIndex).number, true);
+                    subtitleManager.loadFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), true);
                 }
             });
         }
@@ -1785,8 +1808,8 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void showOpenSubtitlesSearchDialog() {
         Toast.makeText(this, "Mencari subtitle di AnimeTosho & OpenSubtitles...", Toast.LENGTH_SHORT).show();
-        String safeTitle = (anime.title != null && !anime.title.isEmpty()) ? anime.title : anime.romajiTitle;
-        int epNumber = episodeList.get(currentIndex).number;
+        String safeTitle = getSafeAnimeTitle();
+        int epNumber = getCurrentEpisodeNumberSafe();
 
         AnimeToshoClient.searchIndonesianAsync(safeTitle, epNumber, new AnimeToshoClient.SearchCallback() {
             @Override
@@ -2424,7 +2447,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
-        if (isPipSupported() && player != null && player.isPlaying()) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && isPipSupported() && player != null && player.isPlaying()) {
             enterPipMode();
         }
     }
@@ -2574,15 +2597,26 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         backgroundStopHandler.removeCallbacks(backgroundStopRunnable);
-        if (pipReceiver != null) {
+        if (pipReceiverRegistered && pipReceiver != null) {
             try {
                 unregisterReceiver(pipReceiver);
-            } catch (Throwable ignored) {}
+            } catch (IllegalArgumentException ignored) {}
+            pipReceiverRegistered = false;
             pipReceiver = null;
+        }
+        if (timeTickReceiverRegistered && timeTickReceiver != null) {
+            try {
+                unregisterReceiver(timeTickReceiver);
+            } catch (IllegalArgumentException ignored) {}
+            timeTickReceiverRegistered = false;
+            timeTickReceiver = null;
         }
         isActivityRunning = false;
         subtitleHandler.removeCallbacks(subtitleSyncRunnable);
         stopProgressTracker();
+        if (player != null) {
+            saveCurrentPlayback(true);
+        }
         if (mediaSession != null) {
             PlaybackService.setActiveSession(null);
             try {

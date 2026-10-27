@@ -35,14 +35,14 @@ import okhttp3.Response;
 public class HiAnimeClient {
     public static final String HI_BASE = "https://hianime.at";
 
-    // Static Megaplay AES-128-CBC keys
+    // Static Megaplay AES-256-CBC keys (32 bytes key, 16 bytes IV)
     private static final byte[] MEGA_KEY = new byte[32];
     private static final byte[] MEGA_IV = "W0;27ToaUpl_P%'c".getBytes(StandardCharsets.UTF_8);
 
     static {
         byte[] keyPart = "i?LMTAx0Q6,:}50U".getBytes(StandardCharsets.UTF_8);
         System.arraycopy(keyPart, 0, MEGA_KEY, 0, Math.min(keyPart.length, 16));
-        // Remaining 16 bytes are 0x00
+        // Remaining 16 bytes are 0x00 for 256-bit AES
     }
 
     public interface Callback<T> {
@@ -51,9 +51,16 @@ public class HiAnimeClient {
     }
 
     public static void searchAnime(String query, Callback<List<Anime>> callback) {
+        if (query == null || query.trim().isEmpty()) {
+            callback.onSuccess(Collections.emptyList());
+            return;
+        }
         new Thread(() -> {
             try {
-                String cleanQ = query.replaceAll("[^\\w\\s-]", "").trim();
+                String cleanQ = query.replaceAll("[^\\p{L}\\p{N}\\s-]", "").trim();
+                if (cleanQ.isEmpty()) {
+                    cleanQ = query.trim();
+                }
                 String url = HI_BASE + "/search?keyword=" + URLEncoder.encode(cleanQ, "UTF-8");
                 String html = fetchString(url, HI_BASE + "/");
 

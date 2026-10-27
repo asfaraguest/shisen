@@ -55,8 +55,7 @@ public class MenatapDatabase extends SQLiteOpenHelper {
                 "eps_counter TEXT, " +
                 "created_at INTEGER, " +
                 "anilist_id INTEGER DEFAULT 0, " +   // BARU: ID AniList
-                "mal_id INTEGER DEFAULT 0) " +         // BARU: MAL ID
-                ")");
+                "mal_id INTEGER DEFAULT 0)");        // BARU: MAL ID
 
         db.execSQL("CREATE TABLE IF NOT EXISTS cache_kv (" +
                 "key TEXT PRIMARY KEY, " +
@@ -67,13 +66,38 @@ public class MenatapDatabase extends SQLiteOpenHelper {
                 "slug TEXT, " +
                 "ep INTEGER, " +
                 "PRIMARY KEY(slug, ep))");
+
+        // Optimal Indexes untuk lookup cepat
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_history_slug ON history (slug)");
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_bookmarks_slug ON bookmarks (slug)");
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_bookmarks_anilist_id ON bookmarks (anilist_id)");
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_bookmarks_mal_id ON bookmarks (mal_id)");
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_watched_eps_slug ON watched_eps (slug)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 2) {
-            try { db.execSQL("ALTER TABLE bookmarks ADD COLUMN anilist_id INTEGER DEFAULT 0"); } catch (Exception ignored) {}
-            try { db.execSQL("ALTER TABLE bookmarks ADD COLUMN mal_id INTEGER DEFAULT 0"); } catch (Exception ignored) {}
+        db.beginTransaction();
+        try {
+            if (oldVersion < 2) {
+                try {
+                    db.execSQL("ALTER TABLE bookmarks ADD COLUMN anilist_id INTEGER DEFAULT 0");
+                } catch (Exception e) {
+                    android.util.Log.w("MenatapDatabase", "Gagal menambahkan kolom anilist_id: " + e.getMessage());
+                }
+                try {
+                    db.execSQL("ALTER TABLE bookmarks ADD COLUMN mal_id INTEGER DEFAULT 0");
+                } catch (Exception e) {
+                    android.util.Log.w("MenatapDatabase", "Gagal menambahkan kolom mal_id: " + e.getMessage());
+                }
+                try {
+                    db.execSQL("CREATE INDEX IF NOT EXISTS idx_bookmarks_anilist_id ON bookmarks (anilist_id)");
+                    db.execSQL("CREATE INDEX IF NOT EXISTS idx_bookmarks_mal_id ON bookmarks (mal_id)");
+                } catch (Exception ignored) {}
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
         }
     }
 

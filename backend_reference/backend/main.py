@@ -14,7 +14,17 @@ from api import aniskip
 from api import anichan
 import httpx
 
+MAX_FAILOVER_CACHE_SIZE = 500
 _ANIME_FAILOVER_CACHE: dict = {}
+
+def _set_failover_cache(slug: str, source: str):
+    if len(_ANIME_FAILOVER_CACHE) >= MAX_FAILOVER_CACHE_SIZE and slug not in _ANIME_FAILOVER_CACHE:
+        try:
+            oldest_key = next(iter(_ANIME_FAILOVER_CACHE))
+            _ANIME_FAILOVER_CACHE.pop(oldest_key, None)
+        except StopIteration:
+            pass
+    _ANIME_FAILOVER_CACHE[slug] = source
 
 frontend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend")
 
@@ -123,60 +133,65 @@ async def check_update(force: bool = False):
     out_payload = None
     err_detail = None
 
-    # TIER 1: GitHub REST API
-    try:
-        url_api = "https://api.github.com/repos/asfaraguest/tatap/releases/latest"
-        async with httpx.AsyncClient(timeout=12.0, follow_redirects=True) as client:
-            resp = await client.get(url_api, headers=headers)
-        if resp.status_code == 200:
-            rel_data = resp.json()
-            tag_name = (rel_data.get("tag_name") or "").strip()
-            latest_clean = re.sub(r"^v", "", tag_name)
-            has_update = False
-            try:
-                has_update = parse_ver(latest_clean) > parse_ver(curr_clean)
-            except Exception:
-                has_update = latest_clean != curr_clean and bool(latest_clean)
+    # TIER 1: GitHub REST API (Shisen primary, Menatap fallback)
+    update_apis = [
+        "https://api.github.com/repos/asfaraguest/shisen/releases/latest",
+        "https://api.github.com/repos/asfaraguest/menatap/releases/latest"
+    ]
+    for url_api in update_apis:
+        try:
+            async with httpx.AsyncClient(timeout=12.0, follow_redirects=True) as client:
+                resp = await client.get(url_api, headers=headers)
+            if resp.status_code == 200:
+                rel_data = resp.json()
+                tag_name = (rel_data.get("tag_name") or "").strip()
+                latest_clean = re.sub(r"^v", "", tag_name)
+                has_update = False
+                try:
+                    has_update = parse_ver(latest_clean) > parse_ver(curr_clean)
+                except Exception:
+                    has_update = latest_clean != curr_clean and bool(latest_clean)
 
-            assets_out = {
-                "android": "",
-                "android_tv": "",
-                "windows": "",
-                "linux": ""
-            }
-            raw_assets = rel_data.get("assets") or []
-            for a in raw_assets:
-                fname = (a.get("name") or "").lower()
-                dl_url = a.get("browser_download_url") or ""
-                if "tatap-tv-release-" in fname and fname.endswith(".apk") and not fname.endswith(".idsig"):
-                    assets_out["android_tv"] = dl_url
-                elif "tatap-release-" in fname and fname.endswith(".apk") and not fname.endswith(".idsig"):
-                    assets_out["android"] = dl_url
-                elif "windows" in fname and fname.endswith(".zip"):
-                    assets_out["windows"] = dl_url
-                elif fname.endswith(".appimage"):
-                    assets_out["linux"] = dl_url
+                assets_out = {
+                    "android": "",
+                    "android_tv": "",
+                    "windows": "",
+                    "linux": ""
+                }
+                raw_assets = rel_data.get("assets") or []
+                for a in raw_assets:
+                    fname = (a.get("name") or "").lower()
+                    dl_url = a.get("browser_download_url") or ""
+                    if "tv" in fname and fname.endswith(".apk") and not fname.endswith(".idsig"):
+                        assets_out["android_tv"] = dl_url
+                    elif fname.endswith(".apk") and not fname.endswith(".idsig"):
+                        assets_out["android"] = dl_url
+                    elif "windows" in fname and fname.endswith(".zip"):
+                        assets_out["windows"] = dl_url
+                    elif fname.endswith(".appimage"):
+                        assets_out["linux"] = dl_url
 
-            if not assets_out["android"]:
-                assets_out = build_official_assets(latest_clean)
+                if not assets_out["android"]:
+                    assets_out = build_official_assets(latest_clean)
 
-            notes_body = rel_data.get("body") or ""
-            out_payload = {
-                "current_version": CURRENT_VERSION,
-                "latest_version": latest_clean or tag_name,
-                "tag_name": tag_name,
-                "has_update": has_update,
-                "release_name": rel_data.get("name") or tag_name,
-                "notes": notes_body,
-                "body": notes_body,
-                "published_at": rel_data.get("published_at") or "",
-                "release_url": rel_data.get("html_url") or f"https://github.com/asfaraguest/tatap/releases/tag/{tag_name}",
-                "assets": assets_out
-            }
-        else:
-            err_detail = f"GitHub API HTTP {resp.status_code}"
-    except Exception as e:
-        err_detail = f"API: {str(e)}"
+                notes_body = rel_data.get("body") or ""
+                out_payload = {
+                    "current_version": CURRENT_VERSION,
+                    "latest_version": latest_clean or tag_name,
+                    "tag_name": tag_name,
+                    "has_update": has_update,
+                    "release_name": rel_data.get("name") or tag_name,
+                    "notes": notes_body,
+                    "body": notes_body,
+                    "published_at": rel_data.get("published_at") or "",
+                    "release_url": rel_data.get("html_url") or f"https://github.com/asfaraguest/shisen/releases/tag/{tag_name}",
+                    "assets": assets_out
+                }
+                break
+            else:
+                err_detail = f"GitHub API HTTP {resp.status_code}"
+        except Exception as e:
+            err_detail = f"API: {str(e)}"
 
     # TIER 2: GitHub Web Releases Redirect (Bypasses API rate-limits 403 on CGNAT / cellular)
     if not out_payload:
@@ -1802,7 +1817,7 @@ async def resolve(slug: str = Query(""), ep: int = Query(1), mode: str = Query("
                             cache_slug = f"anichan:{slug}"
                             is_failover = True
                             failover_from = "otakudesu"
-                            _ANIME_FAILOVER_CACHE[slug] = "anichan"
+                            _set_failover_cache(slug, "anichan")
                         except Exception:
                             pass
         else:
@@ -1828,7 +1843,7 @@ async def resolve(slug: str = Query(""), ep: int = Query(1), mode: str = Query("
                             cache_slug = f"anichan:{slug}"
                             is_failover = True
                             failover_from = "hianime"
-                            _ANIME_FAILOVER_CACHE[slug] = "anichan"
+                            _set_failover_cache(slug, "anichan")
                         except Exception as anichan_err:
                             last_error = anichan_err
 

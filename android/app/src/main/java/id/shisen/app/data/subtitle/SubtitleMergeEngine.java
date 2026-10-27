@@ -74,7 +74,10 @@ public class SubtitleMergeEngine {
         if (builtinCues == null || builtinCues.isEmpty()) {
             List<SubtitleCue> shifted = new ArrayList<>();
             for (SubtitleCue c : externalCues) {
-                shifted.add(new SubtitleCue(Math.max(0, c.startMs + offsetMs), Math.max(100, c.endMs + offsetMs), c.text));
+                if (c == null || c.text == null || c.text.trim().isEmpty()) continue;
+                long os = Math.max(0, c.startMs + offsetMs);
+                long oe = Math.max(os + 100, c.endMs + offsetMs);
+                shifted.add(new SubtitleCue(os, oe, c.text));
             }
             return new MergeResult(shifted, offsetMs, 0, 0);
         }
@@ -85,10 +88,10 @@ public class SubtitleMergeEngine {
         Set<Integer> matchedBuiltinIndices = new HashSet<>();
 
         for (SubtitleCue oc : externalCues) {
+            if (oc == null || oc.text == null || oc.text.trim().isEmpty()) continue;
             long os = Math.max(0, oc.startMs + offsetMs);
             long oe = Math.max(os + 100, oc.endMs + offsetMs);
             String txt = oc.text;
-            if (txt.isEmpty()) continue;
 
             // Cari cue bawaan terdekat
             int bestIdx = -1;

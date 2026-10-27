@@ -715,4 +715,12 @@ public class DetailActivity extends AppCompatActivity {
         intent.putExtra("selectedIndex", index);
         startActivity(intent);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isFinishing()) {
+            DetailDataHolder.clear();
+        }
+    }
 }

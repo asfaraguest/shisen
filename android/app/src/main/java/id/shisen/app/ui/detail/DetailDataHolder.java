@@ -14,9 +14,7 @@ public final class DetailDataHolder {
     private DetailDataHolder() {}
 
     public static synchronized void setAnime(Anime anime) {
-        if (anime != null) {
-            activeAnime = anime;
-        }
+        activeAnime = anime;
     }
 
     public static synchronized Anime getAnime() {

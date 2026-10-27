@@ -175,34 +175,49 @@ public class StreamResolver {
 
     private static String pickBestSlug(List<Anime> candidates, Anime anime, String target, String alt) {
         if (candidates == null || candidates.isEmpty()) return null;
+        boolean hasAlt = alt != null && !alt.isEmpty();
+        boolean hasTarget = target != null && !target.isEmpty();
         for (Anime c : candidates) {
+            if (c == null || c.title == null) continue;
             if (TitleMatcher.isMatchAny(anime, c)) {
                 return c.slug;
             }
-            if (TitleMatcher.isTitleMatch(target, c.title) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, c.title))) {
+            if ((hasTarget && TitleMatcher.isTitleMatch(target, c.title)) || (hasAlt && TitleMatcher.isTitleMatch(alt, c.title))) {
                 return c.slug;
             }
             if (c.romajiTitle != null && !c.romajiTitle.isEmpty()) {
-                if (TitleMatcher.isTitleMatch(target, c.romajiTitle) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, c.romajiTitle))) {
+                if ((hasTarget && TitleMatcher.isTitleMatch(target, c.romajiTitle)) || (hasAlt && TitleMatcher.isTitleMatch(alt, c.romajiTitle))) {
                     return c.slug;
                 }
             }
         }
         // Season-aware fallback on search candidates
-        int sTarget = TitleMatcher.extractSeasonNumber(target);
+        if (hasTarget) {
+            int sTarget = TitleMatcher.extractSeasonNumber(target);
+            for (Anime c : candidates) {
+                if (c == null || c.title == null) continue;
+                int sCandidate = TitleMatcher.extractSeasonNumber(c.title);
+                if (sTarget == sCandidate) {
+                    return c.slug;
+                }
+            }
+        }
         for (Anime c : candidates) {
-            int sCandidate = TitleMatcher.extractSeasonNumber(c.title);
-            if (sTarget == sCandidate) {
+            if (c != null && c.slug != null && !c.slug.isEmpty()) {
                 return c.slug;
             }
         }
-        return candidates.get(0).slug;
+        return candidates.get(0) != null ? candidates.get(0).slug : null;
     }
 
     private static void fetchHiAnimeEpAndResolve(String slug, Episode episode, Callback callback) {
         HiAnimeClient.getEpisodes(slug, new HiAnimeClient.Callback<List<Episode>>() {
             @Override
             public void onSuccess(List<Episode> episodes) {
+                if (episodes == null || episodes.isEmpty()) {
+                    callback.onError(new IOException("Daftar episode kosong di HiAnime"));
+                    return;
+                }
                 for (Episode ep : episodes) {
                     if (ep.number == episode.number) {
                         episode.epId = ep.epId;

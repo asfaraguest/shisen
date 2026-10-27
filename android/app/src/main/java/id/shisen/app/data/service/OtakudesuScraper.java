@@ -78,9 +78,16 @@ public class OtakudesuScraper {
     }
 
     public static void searchAnime(String query, Callback<List<Anime>> callback) {
+        if (query == null || query.trim().isEmpty()) {
+            callback.onSuccess(Collections.emptyList());
+            return;
+        }
         new Thread(() -> {
             try {
-                String cleanQ = query.replaceAll("[^\\w\\s-]", "").trim();
+                String cleanQ = query.replaceAll("[^\\p{L}\\p{N}\\s-]", "").trim();
+                if (cleanQ.isEmpty()) {
+                    cleanQ = query.trim();
+                }
                 String searchUrl = BASE_URL + "/?s=" + URLEncoder.encode(cleanQ, "UTF-8") + "&post_type=anime";
                 Document doc = fetchDoc(searchUrl, BASE_URL + "/");
                 List<Anime> results = new ArrayList<>();
