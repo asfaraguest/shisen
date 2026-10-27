@@ -1272,6 +1272,10 @@ public class AniListClient {
         try {
             JSONObject parsed = new JSONObject(jsonBody);
             queryString = parsed.optString("query", "");
+            if (queryString.isEmpty()) {
+                callback.onError(new IOException("Empty query string from jsonBody"));
+                return;
+            }
             if (queryString.contains("query ")) {
                 String[] parts = queryString.split("query ");
                 if (parts.length > 1) {
@@ -1283,7 +1287,10 @@ public class AniListClient {
                 }
             }
             if (parsed.has("variables")) variables = parsed.getJSONObject("variables").toString();
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            callback.onError(e);
+            return;
+        }
 
         String cacheKey = AniListGateway.generateCacheKey(operationName, variables);
         long ttl = 6 * 60 * 60 * 1000L;

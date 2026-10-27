@@ -413,6 +413,11 @@ public class AniListGateway {
                 if (variables != null && !variables.isEmpty()) {
                     body.put("variables", new org.json.JSONObject(variables));
                 }
+                
+                if (id.shisen.app.BuildConfig.DEBUG) {
+                    android.util.Log.d("AniListGateway", "Request body: " + body.toString());
+                }
+                
                 okhttp3.RequestBody reqBody = okhttp3.RequestBody.create(
                         body.toString(),
                         okhttp3.MediaType.get("application/json; charset=utf-8"));
@@ -438,8 +443,11 @@ public class AniListGateway {
                 }
 
                 if (!resp.isSuccessful()) {
+                    String errorBody = "";
+                    try { errorBody = resp.body().string(); } catch (Exception ignored) {}
                     resp.close();
-                    callback.onError(new java.io.IOException("AniList HTTP " + code));
+                    android.util.Log.e("AniListGateway", "HTTP " + code + " body: " + errorBody);
+                    callback.onError(new java.io.IOException("AniList HTTP " + code + ": " + errorBody));
                     return;
                 }
 
