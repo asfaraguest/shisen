@@ -614,9 +614,9 @@ public class MainActivity extends AppCompatActivity {
                 if (searchDebounceRunnable != null) {
                     mainHandler.removeCallbacks(searchDebounceRunnable);
                 }
-                if (!q.isEmpty()) {
+                if (!q.isEmpty() && q.length() >= 3) {
                     searchDebounceRunnable = () -> performSearch(q);
-                    mainHandler.postDelayed(searchDebounceRunnable, 450);
+                    mainHandler.postDelayed(searchDebounceRunnable, 500);
                 } else if (before > 0 && q.isEmpty()) {
                     loadCurrentFeed();
                 }
