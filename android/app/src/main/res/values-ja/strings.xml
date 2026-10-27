@@ -234,4 +234,106 @@
     <string name="filter_status_airing">放送中</string>
     <string name="filter_status_completed">放送終了</string>
     <string name="filter_apply">適用</string>
+<!-- Dialog General -->
+    <string name="dialog_cancel">キャンセル</string>
+    <string name="dialog_done">完了</string>
+    <string name="dialog_load">読み込む</string>
+    <string name="action_see_all">すべて見る ›</string>
+
+    <!-- Empty States -->
+    <string name="empty_state_title">作品が見つかりません</string>
+    <string name="empty_state_desc">下にスワイプして再読み込み</string>
+
+    <!-- History Confirmation & Errors -->
+    <string name="dialog_clear_history_title">視聴履歴を削除</string>
+    <string name="dialog_clear_history_msg">すべての視聴履歴を削除してもよろしいですか？</string>
+    <string name="toast_history_cleared">視聴履歴が正常に削除されました</string>
+    <string name="toast_last_page">最後のページ</string>
+    <string name="error_load_season">今期アニメの読み込みに失敗しました: %s</string>
+    <string name="error_load_airing">放送中アニメの読み込みに失敗しました</string>
+    <string name="error_load_schedule">アニメスケジュールの読み込みに失敗しました</string>
+    <string name="error_load_catalog">アニメ目録の読み込みに失敗しました</string>
+    <string name="error_load_genre">ジャンル %s の読み込みに失敗しました</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_loading_synopsis">あらすじを読み込み中...</string>
+    <string name="detail_loading_episodes">エピソード一覧を読み込み中...</string>
+    <string name="detail_series_count_format">%d シリーズ</string>
+    <string name="detail_movies_count_format">%d 映画</string>
+
+    <!-- Player Screen & Dialogs -->
+    <string name="player_preparing_stream">配信を準備中...</string>
+    <string name="player_loading_video">動画を読み込み中...</string>
+    <string name="player_subtitle_auto">字幕: 自動 (日本語)</string>
+    <string name="player_now_playing_default">第1話を再生中</string>
+    <string name="player_order_asc">順序: 1 - N</string>
+    <string name="player_order_desc">順序: N - 1</string>
+    <string name="player_dialog_quality_title">画質を選択</string>
+    <string name="player_dialog_server_title">サーバーを選択</string>
+    <string name="player_dialog_speed_title">再生速度</string>
+    <string name="player_dialog_sub_title">字幕と翻訳の設定</string>
+    <string name="player_dialog_fansub_title">ファンサブ字幕を選択</string>
+    <string name="player_dialog_custom_sub_title">字幕URLを入力</string>
+    <string name="player_dialog_sub_style_title">字幕の表示設定</string>
+    <string name="player_dialog_sub_pos_title">字幕の位置を選択</string>
+    <string name="player_dialog_sub_bg_title">字幕の背景を選択</string>
+    <string name="player_dialog_sub_size_title">字幕の文字サイズを選択</string>
+    <string name="player_dialog_sub_offset_title">字幕タイミング同期 (オフセット)</string>
+    <string name="player_dialog_main_title">プレーヤー設定</string>
+
+    <!-- Player Toasts -->
+    <string name="player_toast_no_episodes">エピソードデータが見つかりません</string>
+    <string name="player_toast_stream_failed">ストリームの再生に失敗しました: %s</string>
+    <string name="player_toast_pip_failed">PiPモードに入れません: %s</string>
+    <string name="player_toast_auto_op">⚡ オープニングを自動スキップ</string>
+    <string name="player_toast_auto_ed">⚡ エンディングを自動スキップ</string>
+    <string name="player_toast_next_ep">次のエピソードを再生中...</string>
+    <string name="player_toast_prev_ep">前のエピソードを再生中...</string>
+    <string name="player_toast_screen_locked">🔒 画面ロック中</string>
+    <string name="player_toast_screen_unlocked">🔓 画面ロック解除</string>
+    <string name="player_toast_lock_fullscreen_only">画面ロックは全画面横向き表示時のみ利用可能です</string>
+    <string name="player_toast_lock_hint">画面がロックされています。「ロック解除」をタップしてください。</string>
+    <string name="player_toast_auto_skip">自動スキップ %s</string>
+    <string name="label_enabled">有効</string>
+    <string name="label_disabled">無効</string>
+    <string name="player_toast_server_switching">%s に切り替え中...</string>
+    <string name="player_toast_quality_changed">画質を %s に変更しました</string>
+    <string name="player_toast_retranslating">最初から字幕を再翻訳しています...</string>
+    <string name="player_toast_searching_subs">AnimeToshoとOpenSubtitlesで字幕を検索中...</string>
+    <string name="player_toast_subs_not_found">このエピソードのファンサブ字幕は見つかりませんでした</string>
+    <string name="player_toast_downloading_sub">字幕 %s をダウンロード中...</string>
+    <string name="player_toast_sub_loaded">字幕を正常に読み込みました (%d 行)</string>
+    <string name="player_toast_sub_empty">字幕ファイルが空か、形式が対応していません</string>
+    <string name="player_toast_sub_style_reset">字幕表示をデフォルトに戻しました</string>
+    <string name="player_toast_offset">字幕オフセット: %s</string>
+
+    <!-- App Update & Downloader -->
+    <string name="update_dialog_title">Shisen (視線) の更新があります</string>
+    <string name="update_new_version_available">新バージョンが利用可能です</string>
+    <string name="update_release_notes_label">リリースノートと更新内容</string>
+    <string name="update_loading_notes">リリースノートを読み込み中...</string>
+    <string name="update_later">あとで</string>
+    <string name="update_now">今すぐ更新</string>
+    <string name="update_browser_fallback">またはブラウザでリリースページを開く</string>
+    <string name="update_downloading_title">Shisen (視線) の更新をダウンロード中</string>
+    <string name="update_connecting">GitHubに接続中...</string>
+    <string name="update_toast_checking">更新を確認中...</string>
+    <string name="update_toast_latest">Shisen は最新バージョンです (v%s)</string>
+    <string name="update_toast_in_progress">ダウンロードが進行中です...</string>
+    <string name="update_toast_cancelled">ダウンロードがキャンセルされました</string>
+    <string name="update_toast_failed">APKのダウンロードに失敗しました: %s</string>
+    <string name="update_permission_title">アプリのインストール許可</string>
+    <string name="update_permission_desc">Shisen は署名済み公式APKから直接更新をインストールする権限が必要です。設定画面で「この提供元のアプリを許可」を有効にしてください。</string>
+    <string name="update_open_settings">設定を開く</string>
+
+    <!-- Theme Dialog -->
+    <string name="theme_dialog_title">アニメテーマと背景</string>
+    <string name="theme_dialog_desc">Shisen のキャンバス背景とカラーパレットを選択してください。</string>
+
+    <!-- AI Subtitle Dialog -->
+    <string name="ai_dialog_title">AI字幕 (BYOK)</string>
+    <string name="ai_dialog_keystore_notice">APIキーは Android Hardware Keystore (AES-256-GCM) に安全に保管され、送信または共有されることはありません。</string>
+    <string name="ai_dialog_prompt_title">カスタム翻訳プロンプト (ファンサブ)</string>
+    <string name="ai_dialog_prompt_desc">文体、ペルソナ、ファンサブ規則を指示します。空欄の場合はデフォルトのファンサブプロンプトが使用されます。</string>
+    <string name="ai_dialog_save">設定を保存</string>
 </resources>

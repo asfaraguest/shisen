@@ -234,4 +234,106 @@
     <string name="filter_status_airing">Sedang Tayang</string>
     <string name="filter_status_completed">Sudah Tamat</string>
     <string name="filter_apply">Terapkan Filter</string>
+<!-- Dialog General -->
+    <string name="dialog_cancel">Batal</string>
+    <string name="dialog_done">Selesai</string>
+    <string name="dialog_load">Muat</string>
+    <string name="action_see_all">Lihat Semua ›</string>
+
+    <!-- Empty States -->
+    <string name="empty_state_title">Tidak Ada Anime</string>
+    <string name="empty_state_desc">Tarik ke bawah untuk memuat ulang</string>
+
+    <!-- History Confirmation & Errors -->
+    <string name="dialog_clear_history_title">Hapus Riwayat Tontonan</string>
+    <string name="dialog_clear_history_msg">Apakah kamu yakin ingin menghapus seluruh riwayat tontonan?</string>
+    <string name="toast_history_cleared">Riwayat tontonan berhasil dibersihkan</string>
+    <string name="toast_last_page">Halaman terakhir</string>
+    <string name="error_load_season">Gagal memuat anime musim ini: %s</string>
+    <string name="error_load_airing">Gagal memuat anime sedang tayang</string>
+    <string name="error_load_schedule">Gagal memuat jadwal anime</string>
+    <string name="error_load_catalog">Gagal memuat katalog anime</string>
+    <string name="error_load_genre">Gagal memuat genre %s</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_loading_synopsis">Memuat sinopsis anime...</string>
+    <string name="detail_loading_episodes">Memuat daftar episode...</string>
+    <string name="detail_series_count_format">%d Seri</string>
+    <string name="detail_movies_count_format">%d Film</string>
+
+    <!-- Player Screen & Dialogs -->
+    <string name="player_preparing_stream">MENYIAPKAN STREAM...</string>
+    <string name="player_loading_video">Memuat Video...</string>
+    <string name="player_subtitle_auto">Subtitle: Auto (Indonesia)</string>
+    <string name="player_now_playing_default">Memutar Episode 1</string>
+    <string name="player_order_asc">Urutan: 1 - N</string>
+    <string name="player_order_desc">Urutan: N - 1</string>
+    <string name="player_dialog_quality_title">Pilih Resolusi Video</string>
+    <string name="player_dialog_server_title">Pilih Sumber / Server Video</string>
+    <string name="player_dialog_speed_title">Kecepatan Pemutaran</string>
+    <string name="player_dialog_sub_title">Pengaturan Subtitle &amp; Terjemahan</string>
+    <string name="player_dialog_fansub_title">Pilih Subtitle Fansub</string>
+    <string name="player_dialog_custom_sub_title">Masukkan URL Subtitle</string>
+    <string name="player_dialog_sub_style_title">Pengaturan Tampilan Subtitle</string>
+    <string name="player_dialog_sub_pos_title">Pilih Posisi Subtitle</string>
+    <string name="player_dialog_sub_bg_title">Pilih Latar Belakang Subtitle</string>
+    <string name="player_dialog_sub_size_title">Pilih Ukuran Huruf Subtitle</string>
+    <string name="player_dialog_sub_offset_title">Sinkronisasi Waktu Subtitle (Offset)</string>
+    <string name="player_dialog_main_title">Pengaturan Pemutar Video</string>
+
+    <!-- Player Toasts -->
+    <string name="player_toast_no_episodes">Data episode tidak ditemukan</string>
+    <string name="player_toast_stream_failed">Stream gagal diputar: %s</string>
+    <string name="player_toast_pip_failed">Tidak dapat masuk mode PiP: %s</string>
+    <string name="player_toast_auto_op">⚡ Melewati Opening Otomatis</string>
+    <string name="player_toast_auto_ed">⚡ Melewati Ending Otomatis</string>
+    <string name="player_toast_next_ep">Memutar episode selanjutnya...</string>
+    <string name="player_toast_prev_ep">Memutar episode sebelumnya...</string>
+    <string name="player_toast_screen_locked">🔒 Layar Terkunci</string>
+    <string name="player_toast_screen_unlocked">🔓 Layar Terbuka</string>
+    <string name="player_toast_lock_fullscreen_only">Kunci Layar hanya tersedia di mode Fullscreen Landscape</string>
+    <string name="player_toast_lock_hint">Layar Terkunci. Ketuk "Buka Kunci Layar" untuk membuka.</string>
+    <string name="player_toast_auto_skip">Auto-Skip %s</string>
+    <string name="label_enabled">Diaktifkan</string>
+    <string name="label_disabled">Dimatikan</string>
+    <string name="player_toast_server_switching">Mengalihkan ke %s...</string>
+    <string name="player_toast_quality_changed">Resolusi diubah ke %s</string>
+    <string name="player_toast_retranslating">Menerjemahkan ulang subtitle dari awal...</string>
+    <string name="player_toast_searching_subs">Mencari subtitle di AnimeTosho &amp; OpenSubtitles...</string>
+    <string name="player_toast_subs_not_found">Tidak ditemukan subtitle fansub untuk episode ini</string>
+    <string name="player_toast_downloading_sub">Mengunduh subtitle %s...</string>
+    <string name="player_toast_sub_loaded">Subtitle berhasil dimuat (%d baris)</string>
+    <string name="player_toast_sub_empty">Berkas subtitle kosong atau format tidak didukung</string>
+    <string name="player_toast_sub_style_reset">Tampilan subtitle direset ke default</string>
+    <string name="player_toast_offset">Offset subtitle: %s</string>
+
+    <!-- App Update & Downloader -->
+    <string name="update_dialog_title">Pembaruan Shisen (視線) Tersedia</string>
+    <string name="update_new_version_available">Versi Baru Tersedia</string>
+    <string name="update_release_notes_label">CATATAN RILIS &amp; PEMBARUAN</string>
+    <string name="update_loading_notes">Memuat catatan rilis...</string>
+    <string name="update_later">Nanti</string>
+    <string name="update_now">Perbarui Sekarang</string>
+    <string name="update_browser_fallback">Atau buka tautan rilis di browser</string>
+    <string name="update_downloading_title">Mengunduh Pembaruan Shisen (視線)</string>
+    <string name="update_connecting">Menghubungkan ke GitHub...</string>
+    <string name="update_toast_checking">Memeriksa pembaruan rilis...</string>
+    <string name="update_toast_latest">Shisen sudah dalam versi terbaru (v%s)</string>
+    <string name="update_toast_in_progress">Pengunduhan sedang berlangsung...</string>
+    <string name="update_toast_cancelled">Pengunduhan dibatalkan</string>
+    <string name="update_toast_failed">Gagal mengunduh APK: %s</string>
+    <string name="update_permission_title">Izin Pemasangan Aplikasi</string>
+    <string name="update_permission_desc">Shisen memerlukan izin untuk memasang pembaruan langsung dari berkas APK resmi bertanda tangan. Silakan aktifkan "Izinkan dari sumber ini" pada layar pengaturan.</string>
+    <string name="update_open_settings">Buka Pengaturan</string>
+
+    <!-- Theme Dialog -->
+    <string name="theme_dialog_title">TEMA &amp; BACKGROUND ANIME</string>
+    <string name="theme_dialog_desc">Pilih suasana latar belakang kanvas &amp; palet warna anime khas Shisen (視線).</string>
+
+    <!-- AI Subtitle Dialog -->
+    <string name="ai_dialog_title">AI Subtitle (BYOK)</string>
+    <string name="ai_dialog_keystore_notice">Kunci API Anda disimpan aman di Android Hardware Keystore (AES-256-GCM) dan tidak pernah dicatat atau dibagikan.</string>
+    <string name="ai_dialog_prompt_title">Prompt Terjemahan Kustom (Fansub)</string>
+    <string name="ai_dialog_prompt_desc">Instruksikan gaya bahasa, persona terjemahan, atau aturan penulisan fansub. Kosongkan untuk menggunakan prompt default fansub.</string>
+    <string name="ai_dialog_save">Simpan Pengaturan</string>
 </resources>

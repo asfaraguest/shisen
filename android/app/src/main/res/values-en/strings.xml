@@ -234,4 +234,106 @@
     <string name="filter_status_airing">Currently Airing</string>
     <string name="filter_status_completed">Finished</string>
     <string name="filter_apply">Apply Filter</string>
+<!-- Dialog General -->
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_done">Done</string>
+    <string name="dialog_load">Load</string>
+    <string name="action_see_all">See All ›</string>
+
+    <!-- Empty States -->
+    <string name="empty_state_title">No Anime Found</string>
+    <string name="empty_state_desc">Pull down to refresh</string>
+
+    <!-- History Confirmation & Errors -->
+    <string name="dialog_clear_history_title">Clear Watch History</string>
+    <string name="dialog_clear_history_msg">Are you sure you want to clear your entire watch history?</string>
+    <string name="toast_history_cleared">Watch history cleared successfully</string>
+    <string name="toast_last_page">Last page</string>
+    <string name="error_load_season">Failed to load seasonal anime: %s</string>
+    <string name="error_load_airing">Failed to load airing anime</string>
+    <string name="error_load_schedule">Failed to load anime schedule</string>
+    <string name="error_load_catalog">Failed to load anime catalog</string>
+    <string name="error_load_genre">Failed to load genre %s</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_loading_synopsis">Loading anime synopsis...</string>
+    <string name="detail_loading_episodes">Loading episode list...</string>
+    <string name="detail_series_count_format">%d Series</string>
+    <string name="detail_movies_count_format">%d Movies</string>
+
+    <!-- Player Screen & Dialogs -->
+    <string name="player_preparing_stream">PREPARING STREAM...</string>
+    <string name="player_loading_video">Loading Video...</string>
+    <string name="player_subtitle_auto">Subtitle: Auto (English)</string>
+    <string name="player_now_playing_default">Playing Episode 1</string>
+    <string name="player_order_asc">Order: 1 - N</string>
+    <string name="player_order_desc">Order: N - 1</string>
+    <string name="player_dialog_quality_title">Select Video Quality</string>
+    <string name="player_dialog_server_title">Select Video Server</string>
+    <string name="player_dialog_speed_title">Playback Speed</string>
+    <string name="player_dialog_sub_title">Subtitle &amp; Translation Settings</string>
+    <string name="player_dialog_fansub_title">Select Fansub Subtitle</string>
+    <string name="player_dialog_custom_sub_title">Enter Subtitle URL</string>
+    <string name="player_dialog_sub_style_title">Subtitle Appearance Settings</string>
+    <string name="player_dialog_sub_pos_title">Select Subtitle Position</string>
+    <string name="player_dialog_sub_bg_title">Select Subtitle Background</string>
+    <string name="player_dialog_sub_size_title">Select Subtitle Font Size</string>
+    <string name="player_dialog_sub_offset_title">Subtitle Time Sync (Offset)</string>
+    <string name="player_dialog_main_title">Video Player Settings</string>
+
+    <!-- Player Toasts -->
+    <string name="player_toast_no_episodes">Episode data not found</string>
+    <string name="player_toast_stream_failed">Failed to play stream: %s</string>
+    <string name="player_toast_pip_failed">Cannot enter PiP mode: %s</string>
+    <string name="player_toast_auto_op">⚡ Auto Skipping Opening</string>
+    <string name="player_toast_auto_ed">⚡ Auto Skipping Ending</string>
+    <string name="player_toast_next_ep">Playing next episode...</string>
+    <string name="player_toast_prev_ep">Playing previous episode...</string>
+    <string name="player_toast_screen_locked">🔒 Screen Locked</string>
+    <string name="player_toast_screen_unlocked">🔓 Screen Unlocked</string>
+    <string name="player_toast_lock_fullscreen_only">Screen Lock is only available in Fullscreen Landscape</string>
+    <string name="player_toast_lock_hint">Screen Locked. Tap "Unlock" to unlock.</string>
+    <string name="player_toast_auto_skip">Auto-Skip %s</string>
+    <string name="label_enabled">Enabled</string>
+    <string name="label_disabled">Disabled</string>
+    <string name="player_toast_server_switching">Switching to %s...</string>
+    <string name="player_toast_quality_changed">Quality changed to %s</string>
+    <string name="player_toast_retranslating">Retranslating subtitles from scratch...</string>
+    <string name="player_toast_searching_subs">Searching subtitles on AnimeTosho &amp; OpenSubtitles...</string>
+    <string name="player_toast_subs_not_found">No fansub subtitles found for this episode</string>
+    <string name="player_toast_downloading_sub">Downloading subtitle %s...</string>
+    <string name="player_toast_sub_loaded">Subtitle loaded successfully (%d cues)</string>
+    <string name="player_toast_sub_empty">Subtitle file is empty or format unsupported</string>
+    <string name="player_toast_sub_style_reset">Subtitle appearance reset to default</string>
+    <string name="player_toast_offset">Subtitle offset: %s</string>
+
+    <!-- App Update & Downloader -->
+    <string name="update_dialog_title">Shisen Update Available</string>
+    <string name="update_new_version_available">New Version Available</string>
+    <string name="update_release_notes_label">RELEASE NOTES &amp; UPDATES</string>
+    <string name="update_loading_notes">Loading release notes...</string>
+    <string name="update_later">Later</string>
+    <string name="update_now">Update Now</string>
+    <string name="update_browser_fallback">Or open release page in browser</string>
+    <string name="update_downloading_title">Downloading Shisen Update</string>
+    <string name="update_connecting">Connecting to GitHub...</string>
+    <string name="update_toast_checking">Checking for updates...</string>
+    <string name="update_toast_latest">Shisen is up to date (v%s)</string>
+    <string name="update_toast_in_progress">Download in progress...</string>
+    <string name="update_toast_cancelled">Download cancelled</string>
+    <string name="update_toast_failed">Failed to download APK: %s</string>
+    <string name="update_permission_title">Install Permission Required</string>
+    <string name="update_permission_desc">Shisen requires permission to install updates directly from official APKs. Please enable "Allow from this source" in settings.</string>
+    <string name="update_open_settings">Open Settings</string>
+
+    <!-- Theme Dialog -->
+    <string name="theme_dialog_title">ANIME THEMES &amp; BACKGROUNDS</string>
+    <string name="theme_dialog_desc">Choose your favorite anime ambiance &amp; canvas color palette for Shisen.</string>
+
+    <!-- AI Subtitle Dialog -->
+    <string name="ai_dialog_title">AI Subtitle (BYOK)</string>
+    <string name="ai_dialog_keystore_notice">Your API keys are stored securely in Android Hardware Keystore (AES-256-GCM) and are never logged or shared.</string>
+    <string name="ai_dialog_prompt_title">Custom Translation Prompt (Fansub)</string>
+    <string name="ai_dialog_prompt_desc">Instruct style, tone, or fansub rules. Leave empty to use default fansub prompt.</string>
+    <string name="ai_dialog_save">Save Settings</string>
 </resources>

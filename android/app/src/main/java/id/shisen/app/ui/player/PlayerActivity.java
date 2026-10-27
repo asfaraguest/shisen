@@ -308,7 +308,7 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         if (anime == null || episodeList.isEmpty()) {
-            Toast.makeText(this, "Data episode tidak ditemukan", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.player_toast_no_episodes, Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -607,7 +607,7 @@ public class PlayerActivity extends AppCompatActivity {
             public void onPlayerError(@NonNull androidx.media3.common.PlaybackException error) {
                 if (layoutBuffering != null) layoutBuffering.setVisibility(View.GONE);
                 String msg = error.getCause() != null ? error.getCause().getMessage() : error.getMessage();
-                Toast.makeText(PlayerActivity.this, "Stream gagal diputar: " + msg, Toast.LENGTH_LONG).show();
+                Toast.makeText(PlayerActivity.this, getString(R.string.player_toast_stream_failed, msg), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -941,7 +941,7 @@ public class PlayerActivity extends AppCompatActivity {
                     enterPictureInPictureMode(params);
                 }
             } catch (Throwable t) {
-                Toast.makeText(this, "Tidak dapat masuk mode PiP: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.player_toast_pip_failed, t.getMessage()), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -1407,7 +1407,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (currentSkipTimes.intro != null && posSec >= currentSkipTimes.intro.startTime && posSec < currentSkipTimes.intro.endTime) {
             if (autoSkip) {
                 player.seekTo((long) (currentSkipTimes.intro.endTime * 1000));
-                Toast.makeText(this, "⚡ Melewati Opening Otomatis", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.player_toast_auto_op, Toast.LENGTH_SHORT).show();
                 btnSkipOpEd.setVisibility(View.GONE);
             } else {
                 btnSkipOpEd.setText(getString(R.string.player_skip_op));
@@ -1416,7 +1416,7 @@ public class PlayerActivity extends AppCompatActivity {
         } else if (currentSkipTimes.outro != null && posSec >= currentSkipTimes.outro.startTime && posSec < currentSkipTimes.outro.endTime) {
             if (autoSkip) {
                 player.seekTo((long) (currentSkipTimes.outro.endTime * 1000));
-                Toast.makeText(this, "⚡ Melewati Ending Otomatis", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.player_toast_auto_ed, Toast.LENGTH_SHORT).show();
                 btnSkipOpEd.setVisibility(View.GONE);
             } else {
                 btnSkipOpEd.setText(getString(R.string.player_skip_ed));
@@ -1471,14 +1471,14 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void playNextEpisode() {
         if (currentIndex + 1 < episodeList.size()) {
-            Toast.makeText(this, "Memutar episode selanjutnya...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.player_toast_next_ep, Toast.LENGTH_SHORT).show();
             playEpisode(currentIndex + 1);
         }
     }
 
     private void playPrevEpisode() {
         if (currentIndex - 1 >= 0) {
-            Toast.makeText(this, "Memutar episode sebelumnya...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.player_toast_prev_ep, Toast.LENGTH_SHORT).show();
             playEpisode(currentIndex - 1);
         }
     }
@@ -1523,7 +1523,7 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Pilih Resolusi Video")
+                .setTitle(R.string.player_dialog_quality_title)
                 .setSingleChoiceItems(qualities, selectedIndex, (dialog, which) -> {
                     String key = qKeys[which];
                     String label = qualities[which].toString().split(" ")[0];
@@ -1532,10 +1532,10 @@ public class PlayerActivity extends AppCompatActivity {
                     applyHlsTrackSelection(key);
                     getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
                             .edit().putString("pref_quality", key).apply();
-                    Toast.makeText(this, "Resolusi diubah ke " + label, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.player_toast_quality_changed, label), Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                 })
-                .setNegativeButton("Batal", null)
+                .setNegativeButton(R.string.dialog_cancel, null)
                 .show();
     }
 
@@ -1617,16 +1617,16 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Pilih Sumber / Server Video")
+                .setTitle(R.string.player_dialog_server_title)
                 .setSingleChoiceItems(servers, selectedIdx, (dialog, which) -> {
                     preferredServer = serverKeys[which];
                     dialog.dismiss();
-                    Toast.makeText(this, "Mengalihkan ke " + servers[which].toString().split(" ")[0] + "...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.player_toast_server_switching, servers[which].toString().split(" ")[0]), Toast.LENGTH_SHORT).show();
                     if (!episodeList.isEmpty() && currentIndex < episodeList.size()) {
                         playEpisodeWithServer(currentIndex, preferredServer);
                     }
                 })
-                .setNegativeButton("Batal", null)
+                .setNegativeButton(R.string.dialog_cancel, null)
                 .show();
     }
 
@@ -1635,7 +1635,7 @@ public class PlayerActivity extends AppCompatActivity {
         float[] speedVals = {0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f};
 
         new AlertDialog.Builder(this)
-                .setTitle("Kecepatan Pemutaran")
+                .setTitle(R.string.player_dialog_speed_title)
                 .setItems(speeds, (dialog, which) -> {
                     currentSpeed = speedVals[which];
                     if (player != null) {
@@ -1682,7 +1682,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void showSubtitleSelectorDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Pengaturan Subtitle & Terjemahan");
+        builder.setTitle(R.string.player_dialog_sub_title);
 
         List<String> options = new ArrayList<>();
         List<Runnable> actions = new ArrayList<>();
@@ -1758,7 +1758,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (isSubOn && "id".equals(curLang)) {
             options.add("[Refresh] Terjemahkan Ulang Subtitle (Hapus Cache)");
             actions.add(() -> {
-                Toast.makeText(this, "Menerjemahkan ulang subtitle dari awal...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.player_toast_retranslating, Toast.LENGTH_SHORT).show();
                 if (currentStreamSource != null) {
                     subtitleManager.loadFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), true);
                 }
@@ -1807,7 +1807,7 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void showOpenSubtitlesSearchDialog() {
-        Toast.makeText(this, "Mencari subtitle di AnimeTosho & OpenSubtitles...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.player_toast_searching_subs, Toast.LENGTH_SHORT).show();
         String safeTitle = getSafeAnimeTitle();
         int epNumber = getCurrentEpisodeNumberSafe();
 
@@ -1819,7 +1819,7 @@ public class PlayerActivity extends AppCompatActivity {
                     public void onSuccess(List<OpenSubtitlesClient.SubtitleSearchResult> osResults) {
                         runOnUiThread(() -> {
                             if (atResults.isEmpty() && osResults.isEmpty()) {
-                                Toast.makeText(PlayerActivity.this, "Tidak ditemukan subtitle fansub untuk episode ini", Toast.LENGTH_LONG).show();
+                                Toast.makeText(PlayerActivity.this, R.string.player_toast_subs_not_found, Toast.LENGTH_LONG).show();
                                 return;
                             }
 
@@ -1837,13 +1837,13 @@ public class PlayerActivity extends AppCompatActivity {
                             }
 
                             new AlertDialog.Builder(PlayerActivity.this)
-                                    .setTitle("Pilih Subtitle Bahasa Indonesia")
+                                    .setTitle(R.string.player_dialog_fansub_title)
                                     .setItems(labels.toArray(new String[0]), (dialog, which) -> {
                                         if (which >= 0 && which < itemActions.size()) {
                                             itemActions.get(which).run();
                                         }
                                     })
-                                    .setNegativeButton("Batal", null)
+                                    .setNegativeButton(R.string.dialog_cancel, null)
                                     .show();
                         });
                     }
@@ -1863,13 +1863,13 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void downloadAndApplyAnimeToshoSub(String url, String filename) {
-        Toast.makeText(this, "Mengunduh subtitle " + filename + "...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.player_toast_downloading_sub, filename), Toast.LENGTH_SHORT).show();
         AnimeToshoClient.downloadAndParseAsync(url, new AnimeToshoClient.DownloadCallback() {
             @Override
             public void onSuccess(List<SubtitleCue> cues) {
                 runOnUiThread(() -> {
                     subtitleManager.setCustomCues(cues, "[AnimeTosho] " + filename);
-                    Toast.makeText(PlayerActivity.this, "Subtitle berhasil dimuat (" + cues.size() + " baris)", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PlayerActivity.this, getString(R.string.player_toast_sub_loaded, cues.size()), Toast.LENGTH_SHORT).show();
                 });
             }
 
@@ -1881,13 +1881,13 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void downloadAndApplyOpenSubtitlesSub(String url, String filename) {
-        Toast.makeText(this, "Mengunduh subtitle " + filename + "...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.player_toast_downloading_sub, filename), Toast.LENGTH_SHORT).show();
         OpenSubtitlesClient.downloadAndParseAsync(url, new OpenSubtitlesClient.DownloadCallback() {
             @Override
             public void onSuccess(List<SubtitleCue> cues) {
                 runOnUiThread(() -> {
                     subtitleManager.setCustomCues(cues, "[OpenSubtitles] " + filename);
-                    Toast.makeText(PlayerActivity.this, "Subtitle berhasil dimuat (" + cues.size() + " baris)", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PlayerActivity.this, getString(R.string.player_toast_sub_loaded, cues.size()), Toast.LENGTH_SHORT).show();
                 });
             }
 
@@ -1941,13 +1941,13 @@ public class PlayerActivity extends AppCompatActivity {
 
                 List<SubtitleCue> cues = SubtitleParser.parse(sb.toString());
                 if (cues.isEmpty()) {
-                    runOnUiThread(() -> Toast.makeText(this, "Berkas subtitle kosong atau format tidak didukung", Toast.LENGTH_LONG).show());
+                    runOnUiThread(() -> Toast.makeText(this, R.string.player_toast_sub_empty, Toast.LENGTH_LONG).show());
                     return;
                 }
 
                 runOnUiThread(() -> {
                     subtitleManager.setCustomCues(cues, "Subtitle Lokal");
-                    Toast.makeText(this, "Subtitle lokal berhasil dimuat (" + cues.size() + " baris)", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.player_toast_sub_loaded, cues.size()), Toast.LENGTH_SHORT).show();
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> Toast.makeText(this, "Gagal memuat berkas subtitle: " + e.getMessage(), Toast.LENGTH_LONG).show());
@@ -1957,20 +1957,20 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void showCustomSubtitleUrlDialog() {
         AlertDialog.Builder b = new AlertDialog.Builder(this);
-        b.setTitle("Masukkan URL Subtitle");
+        b.setTitle(R.string.player_dialog_custom_sub_title);
         final EditText input = new EditText(this);
         input.setHint("https://example.com/sub.vtt atau .srt");
         input.setSingleLine(true);
         input.setPadding(40, 30, 40, 30);
         b.setView(input);
 
-        b.setPositiveButton("Muat", (dialog, which) -> {
+        b.setPositiveButton(R.string.dialog_load, (dialog, which) -> {
             String url = input.getText().toString().trim();
             if (!url.isEmpty()) {
                 subtitleManager.loadRawTrack(url, "Kustom URL", "custom");
             }
         });
-        b.setNegativeButton("Batal", null);
+        b.setNegativeButton(R.string.dialog_cancel, null);
         b.show();
     }
 
@@ -1996,7 +1996,7 @@ public class PlayerActivity extends AppCompatActivity {
         };
 
         new AlertDialog.Builder(this)
-                .setTitle("Pengaturan Tampilan Subtitle")
+                .setTitle(R.string.player_dialog_sub_style_title)
                 .setItems(menu, (dialog, which) -> {
                     if (which == 0) {
                         showPositionPicker(sp);
@@ -2010,10 +2010,10 @@ public class PlayerActivity extends AppCompatActivity {
                         subtitleManager.setSubtitleOffsetMs(0L);
                         sp.edit().putString("sub_pos", "low").putString("sub_bg", "subtle").putString("sub_size", "medium").apply();
                         applySubtitleStyle();
-                        Toast.makeText(this, "Tampilan subtitle direset ke default", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.player_toast_sub_style_reset, Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNegativeButton("Tutup", null)
+                .setNegativeButton(R.string.dialog_close, null)
                 .show();
     }
 
@@ -2023,14 +2023,14 @@ public class PlayerActivity extends AppCompatActivity {
         int checked = "high".equals(cur) ? 2 : ("mid".equals(cur) ? 1 : 0);
 
         new AlertDialog.Builder(this)
-                .setTitle("Pilih Posisi Subtitle")
+                .setTitle(R.string.player_dialog_sub_pos_title)
                 .setSingleChoiceItems(options, checked, (dialog, which) -> {
                     String val = which == 2 ? "high" : (which == 1 ? "mid" : "low");
                     sp.edit().putString("sub_pos", val).apply();
                     applySubtitleStyle();
                     dialog.dismiss();
                 })
-                .setNegativeButton("Batal", null)
+                .setNegativeButton(R.string.dialog_cancel, null)
                 .show();
     }
 
@@ -2040,14 +2040,14 @@ public class PlayerActivity extends AppCompatActivity {
         int checked = "dark".equals(cur) ? 3 : ("medium".equals(cur) ? 2 : ("transparent".equals(cur) ? 0 : 1));
 
         new AlertDialog.Builder(this)
-                .setTitle("Pilih Latar Belakang Subtitle")
+                .setTitle(R.string.player_dialog_sub_bg_title)
                 .setSingleChoiceItems(options, checked, (dialog, which) -> {
                     String val = which == 3 ? "dark" : (which == 2 ? "medium" : (which == 0 ? "transparent" : "subtle"));
                     sp.edit().putString("sub_bg", val).apply();
                     applySubtitleStyle();
                     dialog.dismiss();
                 })
-                .setNegativeButton("Batal", null)
+                .setNegativeButton(R.string.dialog_cancel, null)
                 .show();
     }
 
@@ -2057,14 +2057,14 @@ public class PlayerActivity extends AppCompatActivity {
         int checked = "xlarge".equals(cur) ? 3 : ("large".equals(cur) ? 2 : ("small".equals(cur) ? 0 : 1));
 
         new AlertDialog.Builder(this)
-                .setTitle("Pilih Ukuran Huruf Subtitle")
+                .setTitle(R.string.player_dialog_sub_size_title)
                 .setSingleChoiceItems(options, checked, (dialog, which) -> {
                     String val = which == 3 ? "xlarge" : (which == 2 ? "large" : (which == 0 ? "small" : "medium"));
                     sp.edit().putString("sub_size", val).apply();
                     applySubtitleStyle();
                     dialog.dismiss();
                 })
-                .setNegativeButton("Batal", null)
+                .setNegativeButton(R.string.dialog_cancel, null)
                 .show();
     }
 
@@ -2198,15 +2198,15 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Sinkronisasi Waktu Subtitle (Offset)")
+                .setTitle(R.string.player_dialog_sub_offset_title)
                 .setSingleChoiceItems(labels, checked, (dialog, which) -> {
                     if (which >= 0 && which < offsets.length) {
                         subtitleManager.setSubtitleOffsetMs(offsets[which]);
-                        Toast.makeText(this, "Offset subtitle: " + labels[which], Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.player_toast_offset, labels[which]), Toast.LENGTH_SHORT).show();
                     }
                     dialog.dismiss();
                 })
-                .setNegativeButton("Batal", null)
+                .setNegativeButton(R.string.dialog_cancel, null)
                 .show();
     }
 
@@ -2272,7 +2272,7 @@ public class PlayerActivity extends AppCompatActivity {
         };
 
         new AlertDialog.Builder(this)
-                .setTitle("Pengaturan Pemutar Video")
+                .setTitle(R.string.player_dialog_main_title)
                 .setItems(menu, (dialog, which) -> {
                     switch (which) {
                         case 0: showSubtitleSelectorDialog(); break;
@@ -2284,7 +2284,7 @@ public class PlayerActivity extends AppCompatActivity {
                             boolean newAuto = !autoSkip;
                             getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
                                     .edit().putBoolean("pref_auto_skip", newAuto).apply();
-                            Toast.makeText(this, "Auto-Skip " + (newAuto ? "Diaktifkan" : "Dimatikan"), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, getString(R.string.player_toast_auto_skip, (newAuto ? getString(R.string.label_enabled) : getString(R.string.label_disabled))), Toast.LENGTH_SHORT).show();
                             break;
                         case 6: showSpeedDialog(); break;
                         case 7: cycleAspectRatio(); break;
@@ -2292,7 +2292,7 @@ public class PlayerActivity extends AppCompatActivity {
                         case 9: enterPipMode(); break;
                     }
                 })
-                .setNegativeButton("Tutup", null)
+                .setNegativeButton(R.string.dialog_close, null)
                 .show();
     }
 
@@ -2320,7 +2320,7 @@ public class PlayerActivity extends AppCompatActivity {
             return;
         }
         if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
-            Toast.makeText(this, "Kunci Layar hanya tersedia di mode Fullscreen Landscape", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.player_toast_lock_fullscreen_only, Toast.LENGTH_SHORT).show();
             return;
         }
         isScreenLocked = true;
@@ -2336,7 +2336,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (btnSkipOpEd != null) btnSkipOpEd.setVisibility(View.GONE);
         showSafetyUnlockPill();
         HapticHelper.performClick(layoutSafetyUnlock != null ? layoutSafetyUnlock : playerView);
-        Toast.makeText(this, "🔒 Layar Terkunci", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.player_toast_screen_locked, Toast.LENGTH_SHORT).show();
     }
 
     private void unlockScreen(boolean showFeedback) {
@@ -2361,7 +2361,7 @@ public class PlayerActivity extends AppCompatActivity {
         }
         if (showFeedback) {
             HapticHelper.performClick(layoutSafetyUnlock != null ? layoutSafetyUnlock : playerView);
-            Toast.makeText(this, "🔓 Layar Terbuka", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.player_toast_screen_unlocked, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -2377,7 +2377,7 @@ public class PlayerActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (isScreenLocked) {
             showSafetyUnlockPill();
-            Toast.makeText(this, "Layar Terkunci. Ketuk 'Buka Kunci Layar' untuk membuka.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.player_toast_lock_hint, Toast.LENGTH_SHORT).show();
             return;
         }
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {

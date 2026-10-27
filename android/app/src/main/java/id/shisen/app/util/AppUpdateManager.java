@@ -93,14 +93,14 @@ public class AppUpdateManager {
 
         if (isChecking) {
             if (isManual) {
-                Toast.makeText(activity, "Pemeriksaan pembaruan sedang berjalan...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, R.string.update_toast_checking, Toast.LENGTH_SHORT).show();
             }
             return;
         }
 
         isChecking = true;
         if (isManual) {
-            Toast.makeText(activity, "Memeriksa pembaruan rilis...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, R.string.update_toast_checking, Toast.LENGTH_SHORT).show();
         }
 
         new Thread(() -> {
@@ -189,7 +189,7 @@ public class AppUpdateManager {
             if (hasUpdate) {
                 showUpdateDialog(activity, latestVer, notes, downloadUrl, sizeBytes);
             } else if (isManual) {
-                Toast.makeText(activity, "Shisen sudah dalam versi terbaru (v" + getInstalledVersion(activity) + ")", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, activity.getString(R.string.update_toast_latest, getInstalledVersion(activity)), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -258,7 +258,7 @@ public class AppUpdateManager {
         if (activity == null || activity.isFinishing()) return;
 
         if (isDownloading) {
-            Toast.makeText(activity, "Pengunduhan sedang berlangsung...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, R.string.update_toast_in_progress, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -301,7 +301,7 @@ public class AppUpdateManager {
                 }
                 downloadDialog.dismiss();
                 isDownloading = false;
-                Toast.makeText(activity, "Pengunduhan dibatalkan", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, R.string.update_toast_cancelled, Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -395,7 +395,7 @@ public class AppUpdateManager {
                         downloadDialog.dismiss();
                     }
                     if (!isDownloadCancelled) {
-                        Toast.makeText(activity, "Gagal mengunduh APK: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(activity, activity.getString(R.string.update_toast_failed, e.getMessage()), Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -412,9 +412,9 @@ public class AppUpdateManager {
             if (!activity.getPackageManager().canRequestPackageInstalls()) {
                 this.pendingApkFile = apkFile;
                 new AlertDialog.Builder(activity)
-                        .setTitle("Izin Pemasangan Aplikasi")
-                        .setMessage("Shisen memerlukan izin untuk memasang pembaruan langsung dari berkas APK resmi bertanda tangan. Silakan aktifkan 'Izinkan dari sumber ini' pada layar pengaturan.")
-                        .setPositiveButton("Buka Pengaturan", (d, w) -> {
+                        .setTitle(R.string.update_permission_title)
+                        .setMessage(R.string.update_permission_desc)
+                        .setPositiveButton(R.string.update_open_settings, (d, w) -> {
                             try {
                                 Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
                                 intent.setData(Uri.parse("package:" + activity.getPackageName()));
@@ -426,7 +426,7 @@ public class AppUpdateManager {
                                 } catch (Exception ignored) {}
                             }
                         })
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(R.string.dialog_cancel, null)
                         .show();
                 return;
             }

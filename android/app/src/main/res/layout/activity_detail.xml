@@ -222,7 +222,7 @@
                             android:fontFamily="sans-serif"
                             android:maxLines="3"
                             android:ellipsize="end"
-                            android:text="Memuat sinopsis anime..." />
+                            android:text="@string/detail_loading_synopsis" />
 
                         <TextView
                             android:id="@+id/tv_synopsis_toggle"

@@ -188,7 +188,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="視聴履歴 • Riwayat Tontonan"
+                android:text="@string/menu_history"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-bold" />
@@ -201,7 +201,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:text="全消去 • Hapus Semua"
+                android:text="@string/action_clear_all"
                 android:textColor="#EF4444"
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-bold"
@@ -262,7 +262,7 @@
                         android:id="@+id/tv_empty_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="作品が見つかりません • Tidak Ada Anime"
+                        android:text="@string/empty_state_title"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="@dimen/text_headline"
                         android:fontFamily="sans-serif-bold" />
@@ -272,7 +272,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="下へスワイプして再読み込み • Tarik untuk memuat ulang"
+                        android:text="@string/empty_state_desc"
                         android:textColor="@color/text_frost_subtle"
                         android:textSize="@dimen/text_body"
                         android:gravity="center" />
@@ -577,7 +577,7 @@
             android:background="@drawable/bg_floating_page_indicator"
             android:gravity="center"
             android:paddingHorizontal="14dp"
-            android:text="Hal 1"
+            android:text=""
             android:textColor="@color/accent_glacial"
             android:textSize="12sp"
             android:fontFamily="sans-serif-bold" />

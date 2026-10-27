@@ -649,18 +649,18 @@ public class MainActivity extends AppCompatActivity {
             HapticHelper.performClick(v);
             if (currentTab == MainTab.RIWAYAT) {
                 new AlertDialog.Builder(this)
-                        .setTitle("Hapus Riwayat Tontonan")
-                        .setMessage("Apakah kamu yakin ingin menghapus seluruh riwayat tontonan?")
-                        .setPositiveButton("Hapus Semua", (dialog, which) -> {
+                        .setTitle(R.string.dialog_clear_history_title)
+                        .setMessage(R.string.dialog_clear_history_msg)
+                        .setPositiveButton(R.string.action_clear_all, (dialog, which) -> {
                             new Thread(() -> {
                                 MenatapDatabase.getInstance(this).clearAllHistory();
                                 mainHandler.post(() -> {
-                                    Toast.makeText(this, "Riwayat tontonan berhasil dibersihkan", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, R.string.toast_history_cleared, Toast.LENGTH_SHORT).show();
                                     loadCurrentFeed();
                                 });
                             }).start();
                         })
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(R.string.dialog_cancel, null)
                         .show();
             } else if (currentTab == MainTab.KATALOG) {
                 resetCatalogFilterState();
@@ -1510,7 +1510,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             if (currentPage > 1) {
                                 currentPage--;
-                                Toast.makeText(MainActivity.this, "Halaman terakhir", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, R.string.toast_last_page, Toast.LENGTH_SHORT).show();
                                 updatePaginationUI(0, 35, false);
                             } else {
                                 gridAdapter.setHeroAnime(null);
@@ -1526,7 +1526,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onError(Throwable t) {
                     mainHandler.post(() -> {
                         setLoading(false);
-                        Toast.makeText(MainActivity.this, "Gagal memuat anime musim ini: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, getString(R.string.error_load_season, t.getMessage()), Toast.LENGTH_SHORT).show();
                     });
                 }
             });
@@ -1538,12 +1538,12 @@ public class MainActivity extends AppCompatActivity {
                 case AIRING:
                     layoutContextualBar.setVisibility(View.GONE);
                     // MASIH TAYANG: Dual-Lane (Anime musiman berjalan + serial panjang berkelanjutan)
-                    AniListClient.getMasihTayangDualLane(currentPage, 35, selectedAiringLane, createPagedCallback("Gagal Memuat Masih Tayang", 35));
+                    AniListClient.getMasihTayangDualLane(currentPage, 35, selectedAiringLane, createPagedCallback(getString(R.string.error_load_airing), 35));
                     break;
                 case JADWAL:
                     layoutContextualBar.setVisibility(View.GONE);
                     if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
-                    AniListClient.getSchedule(selectedDayOfWeek, createCallback("Gagal Memuat Jadwal", 100));
+                    AniListClient.getSchedule(selectedDayOfWeek, createCallback(getString(R.string.error_load_schedule), 100));
                     break;
                 case RIWAYAT:
                     new Thread(() -> {
@@ -1605,15 +1605,15 @@ public class MainActivity extends AppCompatActivity {
                     AniListClient.getCatalogCrossFiltered(
                             filterCatalogSort, filterCatalogYear, filterCatalogSeason, filterCatalogMonth,
                             filterCatalogType, filterCatalogStatus, currentPage, 40,
-                            createPagedCallback("目録の読み込みに失敗しました • Gagal Memuat Katalog", 40)
+                            createPagedCallback(getString(R.string.error_load_catalog), 40)
                     );
                     break;
                 case GENRE:
                     layoutContextualBar.setVisibility(View.VISIBLE);
-                    tvContextualTitle.setText("ジャンル • GENRE: " + selectedGenre.toUpperCase(Locale.US));
+                    tvContextualTitle.setText(getString(R.string.label_genre_title, selectedGenre.toUpperCase(Locale.US)));
                     btnClearHistoryAll.setText(R.string.action_select_genre);
                     btnClearHistoryAll.setVisibility(View.VISIBLE);
-                    AniListClient.getByGenre(selectedGenre, currentPage, 40, createPagedCallback("ジャンル読み込み失敗 • Gagal Memuat " + selectedGenre, 40));
+                    AniListClient.getByGenre(selectedGenre, currentPage, 40, createPagedCallback(getString(R.string.error_load_genre, selectedGenre), 40));
                     break;
                 default:
                     break;
@@ -1693,7 +1693,7 @@ public class MainActivity extends AppCompatActivity {
             if (list == null || list.isEmpty()) {
                 if (currentPage > 1) {
                     currentPage--;
-                    Toast.makeText(MainActivity.this, "Halaman terakhir", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.toast_last_page, Toast.LENGTH_SHORT).show();
                     updatePaginationUI(0, pageSize, false);
                 } else {
                     gridAdapter.setHeroAnime(null);

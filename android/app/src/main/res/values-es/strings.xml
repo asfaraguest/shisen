@@ -234,4 +234,106 @@
     <string name="filter_status_airing">En emisión</string>
     <string name="filter_status_completed">Emisión finalizada</string>
     <string name="filter_apply">Aplicar</string>
+<!-- Dialog General -->
+    <string name="dialog_cancel">Cancelar</string>
+    <string name="dialog_done">Listo</string>
+    <string name="dialog_load">Cargar</string>
+    <string name="action_see_all">Ver Todo ›</string>
+
+    <!-- Empty States -->
+    <string name="empty_state_title">No se encontraron animes</string>
+    <string name="empty_state_desc">Desliza hacia abajo para recargar</string>
+
+    <!-- History Confirmation & Errors -->
+    <string name="dialog_clear_history_title">Borrar historial de reproducción</string>
+    <string name="dialog_clear_history_msg">¿Estás seguro de que deseas borrar todo el historial de reproducción?</string>
+    <string name="toast_history_cleared">Historial de reproducción borrado con éxito</string>
+    <string name="toast_last_page">Última página</string>
+    <string name="error_load_season">Error al cargar el anime de la temporada: %s</string>
+    <string name="error_load_airing">Error al cargar animes en emisión</string>
+    <string name="error_load_schedule">Error al cargar el horario de emisión</string>
+    <string name="error_load_catalog">Error al cargar el catálogo de animes</string>
+    <string name="error_load_genre">Error al cargar el género %s</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_loading_synopsis">Cargando sinopsis del anime...</string>
+    <string name="detail_loading_episodes">Cargando lista de episodios...</string>
+    <string name="detail_series_count_format">%d Series</string>
+    <string name="detail_movies_count_format">%d Películas</string>
+
+    <!-- Player Screen & Dialogs -->
+    <string name="player_preparing_stream">PREPARANDO TRANSMISIÓN...</string>
+    <string name="player_loading_video">Cargando Video...</string>
+    <string name="player_subtitle_auto">Subtítulo: Auto (Español)</string>
+    <string name="player_now_playing_default">Reproduciendo Episodio 1</string>
+    <string name="player_order_asc">Orden: 1 - N</string>
+    <string name="player_order_desc">Orden: N - 1</string>
+    <string name="player_dialog_quality_title">Seleccionar calidad de video</string>
+    <string name="player_dialog_server_title">Seleccionar servidor de video</string>
+    <string name="player_dialog_speed_title">Velocidad de reproducción</string>
+    <string name="player_dialog_sub_title">Ajustes de subtítulos y traducción</string>
+    <string name="player_dialog_fansub_title">Seleccionar subtítulo de fansub</string>
+    <string name="player_dialog_custom_sub_title">Introducir URL del subtítulo</string>
+    <string name="player_dialog_sub_style_title">Ajustes de apariencia de subtítulos</string>
+    <string name="player_dialog_sub_pos_title">Seleccionar posición del subtítulo</string>
+    <string name="player_dialog_sub_bg_title">Seleccionar fondo del subtítulo</string>
+    <string name="player_dialog_sub_size_title">Seleccionar tamaño de fuente del subtítulo</string>
+    <string name="player_dialog_sub_offset_title">Sincronización de subtítulos (Offset)</string>
+    <string name="player_dialog_main_title">Ajustes del reproductor</string>
+
+    <!-- Player Toasts -->
+    <string name="player_toast_no_episodes">Datos de episodios no encontrados</string>
+    <string name="player_toast_stream_failed">Error al reproducir transmisión: %s</string>
+    <string name="player_toast_pip_failed">No se puede entrar en modo PiP: %s</string>
+    <string name="player_toast_auto_op">⚡ Omitiendo opening automáticamente</string>
+    <string name="player_toast_auto_ed">⚡ Omitiendo ending automáticamente</string>
+    <string name="player_toast_next_ep">Reproduciendo siguiente episodio...</string>
+    <string name="player_toast_prev_ep">Reproduciendo episodio anterior...</string>
+    <string name="player_toast_screen_locked">🔒 Pantalla bloqueada</string>
+    <string name="player_toast_screen_unlocked">🔓 Pantalla desbloqueada</string>
+    <string name="player_toast_lock_fullscreen_only">El bloqueo de pantalla solo está disponible en pantalla completa horizontal</string>
+    <string name="player_toast_lock_hint">Pantalla bloqueada. Toca "Desbloquear" para desbloquear.</string>
+    <string name="player_toast_auto_skip">Auto-Skip %s</string>
+    <string name="label_enabled">Activado</string>
+    <string name="label_disabled">Desactivado</string>
+    <string name="player_toast_server_switching">Cambiando a %s...</string>
+    <string name="player_toast_quality_changed">Calidad cambiada a %s</string>
+    <string name="player_toast_retranslating">Retraduciendo subtítulos desde el principio...</string>
+    <string name="player_toast_searching_subs">Buscando subtítulos en AnimeTosho y OpenSubtitles...</string>
+    <string name="player_toast_subs_not_found">No se encontraron subtítulos fansub para este episodio</string>
+    <string name="player_toast_downloading_sub">Descargando subtítulo %s...</string>
+    <string name="player_toast_sub_loaded">Subtítulo cargado con éxito (%d líneas)</string>
+    <string name="player_toast_sub_empty">El archivo de subtítulos está vacío o el formato no es compatible</string>
+    <string name="player_toast_sub_style_reset">Apariencia de subtítulos restablecida a valores predeterminados</string>
+    <string name="player_toast_offset">Offset de subtítulo: %s</string>
+
+    <!-- App Update & Downloader -->
+    <string name="update_dialog_title">Actualización de Shisen disponible</string>
+    <string name="update_new_version_available">Nueva versión disponible</string>
+    <string name="update_release_notes_label">NOTAS DE LA VERSIÓN Y ACTUALIZACIONES</string>
+    <string name="update_loading_notes">Cargando notas de la versión...</string>
+    <string name="update_later">Más tarde</string>
+    <string name="update_now">Actualizar ahora</string>
+    <string name="update_browser_fallback">O abrir enlace de la versión en el navegador</string>
+    <string name="update_downloading_title">Descargando actualización de Shisen</string>
+    <string name="update_connecting">Conectando a GitHub...</string>
+    <string name="update_toast_checking">Buscando actualizaciones...</string>
+    <string name="update_toast_latest">Shisen ya está en la versión más reciente (v%s)</string>
+    <string name="update_toast_in_progress">Descarga en curso...</string>
+    <string name="update_toast_cancelled">Descarga cancelada</string>
+    <string name="update_toast_failed">Error al descargar el APK: %s</string>
+    <string name="update_permission_title">Permiso de instalación de aplicaciones</string>
+    <string name="update_permission_desc">Shisen necesita permiso para instalar actualizaciones directamente desde el APK oficial. Activa "Permitir desde esta fuente" en ajustes.</string>
+    <string name="update_open_settings">Abrir Ajustes</string>
+
+    <!-- Theme Dialog -->
+    <string name="theme_dialog_title">TEMAS Y FONDOS DE ANIME</string>
+    <string name="theme_dialog_desc">Elige el ambiente de fondo y la paleta de colores para Shisen.</string>
+
+    <!-- AI Subtitle Dialog -->
+    <string name="ai_dialog_title">Subtítulo IA (BYOK)</string>
+    <string name="ai_dialog_keystore_notice">Tu clave API se almacena de forma segura en Android Hardware Keystore (AES-256-GCM) y nunca se comparte.</string>
+    <string name="ai_dialog_prompt_title">Prompt de traducción personalizado (Fansub)</string>
+    <string name="ai_dialog_prompt_desc">Instruye el estilo, tono o reglas de fansub. Deja en blanco para usar el prompt por defecto.</string>
+    <string name="ai_dialog_save">Guardar Ajustes</string>
 </resources>

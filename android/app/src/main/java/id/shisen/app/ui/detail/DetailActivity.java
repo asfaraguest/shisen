@@ -657,7 +657,7 @@ public class DetailActivity extends AppCompatActivity {
                     if (result != null && result.seasons != null && !result.seasons.isEmpty()) {
                         seasonsAdapter.setData(result.seasons);
                         if (tvRelatedSeasonsCount != null) {
-                            tvRelatedSeasonsCount.setText(result.seasons.size() + " Seri");
+                            tvRelatedSeasonsCount.setText(getString(R.string.detail_series_count_format, result.seasons.size()));
                         }
                         if (layoutRelatedSeasons != null) {
                             layoutRelatedSeasons.setVisibility(View.VISIBLE);
@@ -669,7 +669,7 @@ public class DetailActivity extends AppCompatActivity {
                     if (result != null && result.movies != null && !result.movies.isEmpty()) {
                         moviesAdapter.setData(result.movies);
                         if (tvRelatedMoviesCount != null) {
-                            tvRelatedMoviesCount.setText(result.movies.size() + " Film");
+                            tvRelatedMoviesCount.setText(getString(R.string.detail_movies_count_format, result.movies.size()));
                         }
                         if (layoutRelatedMovies != null) {
                             layoutRelatedMovies.setVisibility(View.VISIBLE);
@@ -692,7 +692,7 @@ public class DetailActivity extends AppCompatActivity {
 
     private void startPlaybackAtLastOrFirst() {
         if (episodeList.isEmpty()) {
-            Toast.makeText(this, "Memuat daftar episode...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.detail_loading_episodes, Toast.LENGTH_SHORT).show();
             return;
         }
 
