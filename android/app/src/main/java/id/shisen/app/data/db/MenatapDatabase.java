@@ -72,16 +72,9 @@ public class MenatapDatabase extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 2) {
-            // Migrasi: tambah kolom anilist_id dan mal_id ke bookmarks
             try { db.execSQL("ALTER TABLE bookmarks ADD COLUMN anilist_id INTEGER DEFAULT 0"); } catch (Exception ignored) {}
             try { db.execSQL("ALTER TABLE bookmarks ADD COLUMN mal_id INTEGER DEFAULT 0"); } catch (Exception ignored) {}
         }
-        // Lakukan upgrade tabel lainnya
-        db.execSQL("DROP TABLE IF EXISTS history");
-        db.execSQL("DROP TABLE IF EXISTS bookmarks");
-        db.execSQL("DROP TABLE IF EXISTS cache_kv");
-        db.execSQL("DROP TABLE IF EXISTS watched_eps");
-        onCreate(db);
     }
 
     // --- History Methods ---
