@@ -1266,14 +1266,14 @@ public class AniListClient {
     }
 
     private static void executePostCustom(String jsonBody, Callback<JSONObject> callback) {
-        // Parse operationName dari jsonBody untuk cache key
         String operationName = "query";
+        String queryString = "";
         String variables = "";
         try {
             JSONObject parsed = new JSONObject(jsonBody);
-            String query = parsed.optString("query", "");
-            if (query.contains("query ")) {
-                String[] parts = query.split("query ");
+            queryString = parsed.optString("query", "");
+            if (queryString.contains("query ")) {
+                String[] parts = queryString.split("query ");
                 if (parts.length > 1) {
                     String rest = parts[1].trim();
                     int paren = rest.indexOf('(');
@@ -1286,9 +1286,9 @@ public class AniListClient {
         } catch (Exception ignored) {}
 
         String cacheKey = AniListGateway.generateCacheKey(operationName, variables);
-        long ttl = 6 * 60 * 60 * 1000L; // 6 jam default
+        long ttl = 6 * 60 * 60 * 1000L;
 
-        AniListGateway.execute(cacheKey, jsonBody, variables, ttl, AniListGateway.Priority.USER,
+        AniListGateway.execute(cacheKey, queryString, variables, ttl, AniListGateway.Priority.USER,
             new AniListGateway.Callback<String>() {
                 @Override
                 public void onSuccess(String result) {
