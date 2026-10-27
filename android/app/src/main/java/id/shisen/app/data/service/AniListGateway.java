@@ -333,22 +333,98 @@ public class AniListGateway {
 
         PerfLogger.anilistRequest();
 
-        // Gunakan AniListClient untuk request nyata
-        // (delegate ke AniListClient.execute dengan error handling 429)
-        // Mock untuk saat ini: simpan ke cache dan kembalikan error/success
-        // TODO: Integrasi dengan AniListClient yang sudah ada
-        // Saat ini, simpan dummy ke cache dan panggil callback sukses
-        String dummyResult = "{\"data\":{\"Media\":{\"id\":1,\"title\":{\"romaji\":\"Test\"}}}}";
+        // Delegate ke HTTP call
+        performHttpCall(query, variables, new HttpCallback() {
+            @Override
+            public void onSuccess(String responseJson) {
+                saveToCache(operationKey, responseJson, ttlMs);
+                callback.onSuccess(responseJson);
+                releaseToken(priority);
+                pendingOp = null;
+                resetCooldown(); // sukses -> reset cooldown 429
+            }
 
-        // Simpan ke cache persisten
-        saveToCache(operationKey, dummyResult, ttlMs);
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+                releaseToken(priority);
+                pendingOp = null;
+            }
 
-        // Panggil callback
-        callback.onSuccess(dummyResult);
+            @Override
+            public void on429(long retryAfterSeconds, String xRateLimitReset) {
+                long baseMs = INITIAL_COOLDOWN_MS;
+                if (retryAfterSeconds > 0) {
+                    baseMs = retryAfterSeconds * 1000L;
+                } else if (xRateLimitReset != null) {
+                    try {
+                        long resetAt = Long.parseLong(xRateLimitReset) * 1000L;
+                        long now = clock.millisNow();
+                        if (resetAt > now) baseMs = resetAt - now;
+                    } catch (NumberFormatException ignored) {}
+                }
+                setBlockedAfter429(baseMs);
+                callback.onRateLimited(getBlockedUntil());
+                releaseToken(priority);
+                pendingOp = null;
+            }
+        });
+    }
 
-        // Release token
-        releaseToken(priority);
-        pendingOp = null;
+    /** HTTP callback internal. */
+    private interface HttpCallback {
+        void onSuccess(String responseJson);
+        void onError(Throwable t);
+        void on429(long retryAfterSeconds, String xRateLimitReset);
+    }
+
+    /** Lakukan HTTP POST ke AniList. */
+    private static void performHttpCall(String query, String variables, HttpCallback callback) {
+        new Thread(() -> {
+            try {
+                okhttp3.OkHttpClient client = id.shisen.app.data.service.HttpClientProvider.getClient();
+                org.json.JSONObject body = new org.json.JSONObject();
+                body.put("query", query);
+                if (variables != null && !variables.isEmpty()) {
+                    body.put("variables", new org.json.JSONObject(variables));
+                }
+                okhttp3.RequestBody reqBody = okhttp3.RequestBody.create(
+                        body.toString(),
+                        okhttp3.MediaType.get("application/json; charset=utf-8"));
+                okhttp3.Request req = new okhttp3.Request.Builder()
+                        .url("https://graphql.anilist.co")
+                        .post(reqBody)
+                        .header("User-Agent", id.shisen.app.data.service.HttpClientProvider.USER_AGENT)
+                        .build();
+
+                okhttp3.Response resp = client.newCall(req).execute();
+                int code = resp.code();
+
+                if (code == 429) {
+                    String retryAfter = resp.header("Retry-After");
+                    String xReset = resp.header("X-RateLimit-Reset");
+                    long retrySeconds = 0;
+                    if (retryAfter != null) {
+                        try { retrySeconds = Long.parseLong(retryAfter); } catch (NumberFormatException ignored) {}
+                    }
+                    resp.close();
+                    callback.on429(retrySeconds, xReset);
+                    return;
+                }
+
+                if (!resp.isSuccessful()) {
+                    resp.close();
+                    callback.onError(new java.io.IOException("AniList HTTP " + code));
+                    return;
+                }
+
+                String json = resp.body().string();
+                resp.close();
+                callback.onSuccess(json);
+            } catch (Exception e) {
+                callback.onError(e);
+            }
+        }).start();
     }
 
     /** Mungkin refresh background jika bucket tidak kosong dan tidak cooldown. */
