@@ -1,37 +1,49 @@
-# Shisen (視線) — Pure Native Java Mobile Anime Streaming
+# Shisen (視線) — Android Native Anime Streaming App
 
-**Shisen (視線 • シセン)** adalah aplikasi pemutar dan agregator anime mandiri yang dirancang khusus untuk platform **Android Mobile**. Dibangun dengan arsitektur **100% Pure Native Java** (tanpa dependensi Python runtime atau server lokal), Shisen menghadirkan performa secepat kilat, efisiensi konsumsi daya baterai, dan ukuran unduhan yang sangat ringkas (~4.8 MB).
-
----
-
-## ❄ Karakteristik Utama
-
-- **100% Pure Native Java Stack:** Menghilangkan overhead runtime Python Chaquopy, memangkas penggunaan RAM hingga 80% dan mempercepat cold start (< 180ms).
-- **Paritas Penuh Backend Tatap:** Mengadopsi seluruh 7 menu utama Tatap (*今期アニメ • Musim Ini, 放送中 • Sedang Tayang, 週間番組表 • Jadwal Rilis, 視聴履歴 • Riwayat, お気に入り • Favorit, 作品目録 • Katalog Lengkap, dan ジャンル • 14 Kategori Genre*).
-- **Multi-Source Streaming & Smart Fallback 3-Tier:**
-  1. 🥇 **HiAnime (`hianime.at`):** Master HLS CDN kualitas tinggi dengan dekripsi AES-128-CBC Megaplay dan multi-subtitle.
-  2. 🥈 **AniChan (`anichan.to`):** Direct HLS Stream resolver menggunakan AniList ID + dekripsi AES-GCM.
-  3. 🥉 **Otakudesu (`otakudesu.cloud`):** Hardsub Indonesia via dekripsi Putarin AES-256-GCM sebagai safety net cadangan.
-- **Pencegahan Bug Episode On-going:** Menampilkan daftar episode riil yang sudah tayang, dibatasi oleh `nextAiringEpisode.episode - 1` dari AniList (zero un-aired phantom episodes).
-- **Cold-Frost & Deep Obsidian Design:** Antarmuka modern yang tenang dan elegan dengan kanvas obsidian dalam (`#080C14`), permukaan kaca es (`#0F1726`), aksen sian glasial (`#00F2FE` -> `#4FACFE`), dan pendaran lavender es (`#818CF8`).
-- **Ikon Aplikasi Khas Hyouka:** Visual tatapan mata anime ekspresif dengan color grading Kyoto Animation (kilau pupil kristal Amethyst & Emerald dengan pencahayaan sinematik lembut).
-- **Auto-Skip Intro/Outro (AniSkip v2):** Deteksi dan lewati opening/ending secara otomatis atau via floating frosted button (`OP スキップ`).
-- **Media3 ExoPlayer High-Performance Video:** Dukungan streaming HLS, gesture swipe volume/brightness dengan float accumulator, Watch Portrait View, dan Picture-in-Picture (PiP).
+**Shisen (視線 • シセン)** adalah aplikasi streaming anime native Android (100% Pure Java) dengan arsitektur modular, multi-source fallback, dan UI minimalis.
 
 ---
 
-## 📱 Unduhan Rilis Resmi (Android Mobile Only)
+## Kredit
 
-Unduh berkas rilis resmi bertanda tangan dari [Halaman Rilis GitHub Shisen](https://github.com/asfaraguest/shisen/releases):
-- 📱 **`shisen-release-v0.1.0-beta.5.apk`** (Official Signed Mobile APK via production Keystore)
+- **Backend referensi:** [Tatap](https://github.com/asfaraguest/tatap) — untuk struktur menu & logika backend
+- **Sumber konten:** HiAnime, AniChan, Otakudesu, AniList, AniSkip, AnimeTosho, OpenSubtitles
+- **Library utama:** Media3 ExoPlayer, OkHttp, jsoup, SQLite (Android native)
 
 ---
 
-## 🛠 Panduan Build Lokal
+## Fitur Utama
+
+- **Pure Native Java** — tanpa Python runtime/Chaquopy; APK ~5 MB
+- **Multi-source 3-tier** — HiAnime → AniChan → Otakudesu (smart fallback)
+- **Paritas menu Tatap** — Musim Ini, Sedang Tayang, Jadwal Rilis, Riwayat, Favorit, Katalog, Genre
+- **AniList integration** — jadwal rilis, relasi musim/film, auto-skip (AniSkip v2)
+- **Guest-only** — tanpa login, tanpa telemetri
+- **Edge-to-edge UI** — transparent system bars, insets-aware
+- **Trilingual** — Indonesia / English / 日本語 / Español (via LocaleHelper)
+
+---
+
+## Unduhan
+
+APK rilis resmi (signed, production keystore):
+- [GitHub Releases](https://github.com/asfaraguest/shisen/releases) — `shisen-release-v0.1.0-beta.6.apk`
+
+> Hanya asset `shisen-release-*.apk` yang dipublikasikan. `menatap-release-*.apk` tidak di-upload.
+
+---
+
+## Build Lokal
 
 ```bash
 cd android
 ./gradlew assembleRelease
 ```
-Berkas APK bertanda tangan akan tersedia di:
-`android/app/build/outputs/apk/release/shisen-release-v0.1.0-beta.5.apk`
+
+Output: `android/app/build/outputs/apk/release/shisen-release-v0.1.0-beta.6.apk`
+
+---
+
+## Topics
+
+`android` `java` `anime` `streaming` `media3` `exoplayer` `okhttp` `jsoup` `anilist` `native` `kotlin-free`
