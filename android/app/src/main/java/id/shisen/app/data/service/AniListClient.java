@@ -1266,57 +1266,35 @@ public class AniListClient {
     }
 
     private static void executePostCustom(String jsonBody, Callback<JSONObject> callback) {
-        String operationName = "query";
-        String queryString = "";
-        String variables = "";
-        try {
-            JSONObject parsed = new JSONObject(jsonBody);
-            queryString = parsed.optString("query", "");
-            if (queryString.isEmpty()) {
-                callback.onError(new IOException("Empty query string from jsonBody"));
-                return;
+        OkHttpClient client = HttpClientProvider.getClient();
+        RequestBody reqBody = RequestBody.create(jsonBody, JSON_MEDIA);
+        Request request = new Request.Builder()
+                .url(ANILIST_URL)
+                .post(reqBody)
+                .header("User-Agent", HttpClientProvider.USER_AGENT)
+                .build();
+
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+                callback.onError(e);
             }
-            if (queryString.contains("query ")) {
-                String[] parts = queryString.split("query ");
-                if (parts.length > 1) {
-                    String rest = parts[1].trim();
-                    int paren = rest.indexOf('(');
-                    int space = rest.indexOf(' ');
-                    int end = (paren > 0 && space > 0) ? Math.min(paren, space) : (paren > 0 ? paren : space);
-                    if (end > 0) operationName = rest.substring(0, end).trim();
+
+            @Override
+            public void onResponse(okhttp3.Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    callback.onError(new IOException("AniList HTTP error: " + response.code()));
+                    return;
+                }
+                try {
+                    String respStr = response.body().string();
+                    JSONObject root = new JSONObject(respStr);
+                    callback.onSuccess(root);
+                } catch (Exception e) {
+                    callback.onError(e);
                 }
             }
-            if (parsed.has("variables")) variables = parsed.getJSONObject("variables").toString();
-        } catch (Exception e) {
-            callback.onError(e);
-            return;
-        }
-
-        String cacheKey = AniListGateway.generateCacheKey(operationName, variables);
-        long ttl = 6 * 60 * 60 * 1000L;
-
-        AniListGateway.execute(cacheKey, queryString, variables, ttl, AniListGateway.Priority.USER,
-            new AniListGateway.Callback<String>() {
-                @Override
-                public void onSuccess(String result) {
-                    try {
-                        JSONObject root = new JSONObject(result);
-                        callback.onSuccess(root);
-                    } catch (Exception e) {
-                        callback.onError(e);
-                    }
-                }
-
-                @Override
-                public void onError(Throwable t) {
-                    callback.onError(t);
-                }
-
-                @Override
-                public void onRateLimited(long retryAtMillis) {
-                    callback.onError(new IOException("AniList rate limited, retry at " + retryAtMillis));
-                }
-            });
+        });
     }
 
     public static String optSafeString(JSONObject obj, String key, String fallback) {
