@@ -42,7 +42,7 @@ public class AniListClient {
             "id idMal title { romaji english native } coverImage { extraLarge large } " +
             "bannerImage averageScore status format episodes duration season seasonYear " +
             "description(asHtml: false) genres studios(isMain: true) { nodes { name } } " +
-            "nextAiringEpisode { episode timeUntilAiring }";
+            "nextAiringEpisode { episode airingAt timeUntilAiring }";
 
     public static class SeasonPair {
         public final String season; // "WINTER", "SPRING", "SUMMER", "FALL"
@@ -1379,6 +1379,7 @@ public class AniListClient {
         if (nextEpObj != null) {
             a.nextAiringEpisode = nextEpObj.optInt("episode", 0);
             a.nextAiringTime = nextEpObj.optInt("timeUntilAiring", 0);
+            a.airingAt = nextEpObj.optLong("airingAt", 0L);
             if (a.nextAiringEpisode > 1) {
                 a.airedEpisodesCount = a.nextAiringEpisode - 1;
             } else if (a.nextAiringEpisode == 1) {

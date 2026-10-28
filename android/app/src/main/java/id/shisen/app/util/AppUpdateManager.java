@@ -200,12 +200,7 @@ public class AppUpdateManager {
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_app_update);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            int width = (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.90f);
-            dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
+        SystemUiHelper.setupDialogBounds(dialog, activity);
 
         TextView tvTitle = dialog.findViewById(R.id.tv_update_title);
         TextView tvVersionBadge = dialog.findViewById(R.id.tv_update_version_badge);
@@ -266,12 +261,7 @@ public class AppUpdateManager {
         downloadDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         downloadDialog.setContentView(R.layout.dialog_app_download);
         downloadDialog.setCancelable(false);
-
-        if (downloadDialog.getWindow() != null) {
-            downloadDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            int width = (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.90f);
-            downloadDialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
+        SystemUiHelper.setupDialogBounds(downloadDialog, activity);
 
         TextView tvTarget = downloadDialog.findViewById(R.id.tv_download_target_version);
         ProgressBar pbHorizontal = downloadDialog.findViewById(R.id.pb_download_horizontal);

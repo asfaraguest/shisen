@@ -24,6 +24,7 @@ public class Anime implements Serializable {
     public int airedEpisodesCount = 0;
     public int nextAiringEpisode = 0;
     public int nextAiringTime = 0;
+    public long airingAt = 0L; // UNIX epoch timestamp dalam detik rilis episode berikutnya
     public String airingDay = "";
     public String epsCounter = "";
     public String season = "";
@@ -92,6 +93,11 @@ public class Anime implements Serializable {
         a.status = safeStr(json, "status", "");
         a.format = safeStr(json, "type", safeStr(json, "format", "TV"));
         a.episodesCount = json.optInt("eps", json.optInt("episodes", 0));
+        a.airedEpisodesCount = json.optInt("aired_eps", 0);
+        a.nextAiringEpisode = json.optInt("next_ep", 0);
+        a.nextAiringTime = json.optInt("time_until_airing", 0);
+        a.airingAt = json.optLong("airing_at", 0L);
+        a.airingDay = safeStr(json, "airing_day", "");
         a.epsCounter = safeStr(json, "eps_counter", "");
         a.season = safeStr(json, "season", "");
         a.year = json.optInt("year", 0);
@@ -99,6 +105,11 @@ public class Anime implements Serializable {
         a.studio = safeStr(json, "studio", "");
         a.relationType = safeStr(json, "relation_type", "");
         a.relationLabel = safeStr(json, "relation_label", "");
+        a.isHeader = json.optBoolean("is_header", false);
+        a.headerType = safeStr(json, "header_type", "");
+        a.headerTitle = safeStr(json, "header_title", "");
+        a.headerSubtitle = safeStr(json, "header_subtitle", "");
+        a.isLongRunning = json.optBoolean("is_long_running", false);
         
         JSONArray gArr = json.optJSONArray("genres");
         if (gArr != null) {
@@ -125,6 +136,11 @@ public class Anime implements Serializable {
             json.put("status", status);
             json.put("type", format);
             json.put("eps", episodesCount);
+            json.put("aired_eps", airedEpisodesCount);
+            json.put("next_ep", nextAiringEpisode);
+            json.put("time_until_airing", nextAiringTime);
+            json.put("airing_at", airingAt);
+            json.put("airing_day", airingDay);
             json.put("eps_counter", epsCounter);
             json.put("season", season);
             json.put("year", year);
@@ -132,6 +148,11 @@ public class Anime implements Serializable {
             json.put("studio", studio);
             json.put("relation_type", relationType);
             json.put("relation_label", relationLabel);
+            json.put("is_header", isHeader);
+            json.put("header_type", headerType);
+            json.put("header_title", headerTitle);
+            json.put("header_subtitle", headerSubtitle);
+            json.put("is_long_running", isLongRunning);
             JSONArray gArr = new JSONArray();
             for (String g : genres) {
                 gArr.put(g);
@@ -139,5 +160,28 @@ public class Anime implements Serializable {
             json.put("genres", gArr);
         } catch (Exception ignored) {}
         return json;
+    }
+
+    /**
+     * Membandingkan apakah dua objek Anime memiliki representasi visual yang sama persis
+     * untuk mencegah rebind/flicker yang tidak perlu di RecyclerView Adapter.
+     */
+    public boolean isVisuallyEquivalent(Anime o) {
+        if (o == null) return false;
+        if (this == o) return true;
+        return this.id == o.id &&
+                Double.compare(this.score, o.score) == 0 &&
+                this.airedEpisodesCount == o.airedEpisodesCount &&
+                this.nextAiringEpisode == o.nextAiringEpisode &&
+                this.isHeader == o.isHeader &&
+                this.isLongRunning == o.isLongRunning &&
+                java.util.Objects.equals(this.slug, o.slug) &&
+                java.util.Objects.equals(this.title, o.title) &&
+                java.util.Objects.equals(this.poster, o.poster) &&
+                java.util.Objects.equals(this.status, o.status) &&
+                java.util.Objects.equals(this.epsCounter, o.epsCounter) &&
+                java.util.Objects.equals(this.airingDay, o.airingDay) &&
+                java.util.Objects.equals(this.headerTitle, o.headerTitle) &&
+                java.util.Objects.equals(this.headerSubtitle, o.headerSubtitle);
     }
 }

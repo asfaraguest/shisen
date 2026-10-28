@@ -713,6 +713,21 @@
                 android:fontFamily="sans-serif-bold"
                 android:textAllCaps="false"
                 app:cornerRadius="8dp" />
+
+            <Button
+                android:id="@+id/btn_settings_clear_cache"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/frost_elevated"
+                app:strokeColor="@color/frost_border"
+                app:strokeWidth="1dp"
+                android:text="@string/settings_clear_cache"
+                android:textColor="@color/text_frost_subtle"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium"
+                android:textAllCaps="false"
+                app:cornerRadius="8dp" />
         </LinearLayout>
 
     </LinearLayout>

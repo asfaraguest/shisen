@@ -48,6 +48,44 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         notifyDataSetChanged();
     }
 
+    /**
+     * Memperbarui feed (hero + grid items) secara atomik bebas kedipan.
+     * Jika data identik dengan tampilan saat ini, operasi diabaikan (0 layout pass, 0 flicker).
+     */
+    public void updateFeed(Anime newHero, List<Anime> newItems) {
+        if (isFeedIdentical(newHero, newItems)) {
+            return;
+        }
+
+        this.heroAnime = newHero;
+        this.items.clear();
+        if (newItems != null) {
+            this.items.addAll(newItems);
+        }
+        notifyDataSetChanged();
+    }
+
+    public boolean isFeedIdentical(Anime newHero, List<Anime> newItems) {
+        if (this.heroAnime == null && newHero != null) return false;
+        if (this.heroAnime != null && newHero == null) return false;
+        if (this.heroAnime != null && !this.heroAnime.isVisuallyEquivalent(newHero)) return false;
+
+        int currentSize = this.items.size();
+        int newSize = newItems != null ? newItems.size() : 0;
+        if (currentSize != newSize) return false;
+
+        if (newItems != null) {
+            for (int i = 0; i < currentSize; i++) {
+                Anime a = this.items.get(i);
+                Anime b = newItems.get(i);
+                if (a == null && b != null) return false;
+                if (a != null && b == null) return false;
+                if (a != null && !a.isVisuallyEquivalent(b)) return false;
+            }
+        }
+        return true;
+    }
+
     public void appendData(List<Anime> newItems) {
         if (newItems == null || newItems.isEmpty()) return;
         int startPos = items.size() + (heroAnime != null ? 1 : 0);

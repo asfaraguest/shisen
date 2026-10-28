@@ -137,6 +137,8 @@
     <string name="settings_section_ai">IA Subtítulos (BYOK)</string>
     <string name="settings_section_system">Información del Sistema</string>
     <string name="settings_check_update">🔄 Comprobar actualización</string>
+    <string name="settings_clear_cache">🗑️ Limpiar caché de la app</string>
+    <string name="settings_cache_cleared">Caché de la aplicación eliminada con éxito</string>
     <string name="settings_app_version">Shisen 視線 v0.1.0-beta.6</string>
     <string name="settings_close">Cerrar</string>
 

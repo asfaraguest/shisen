@@ -444,6 +444,8 @@
                     android:fontFamily="sans-serif-medium"
                     android:textColor="@color/text_frost_bright"
                     android:backgroundTint="@color/frost_elevated"
+                    android:singleLine="true"
+                    android:ellipsize="end"
                     app:cornerRadius="17dp"
                     app:strokeColor="@color/frost_border"
                     app:strokeWidth="1dp" />
@@ -470,6 +472,8 @@
                     android:fontFamily="sans-serif-medium"
                     android:textColor="@color/text_frost_bright"
                     android:backgroundTint="@color/frost_elevated"
+                    android:singleLine="true"
+                    android:ellipsize="end"
                     app:cornerRadius="17dp"
                     app:strokeColor="@color/frost_border"
                     app:strokeWidth="1dp" />
@@ -496,6 +500,8 @@
                     android:fontFamily="sans-serif-medium"
                     android:textColor="@color/text_frost_bright"
                     android:backgroundTint="@color/frost_elevated"
+                    android:singleLine="true"
+                    android:ellipsize="end"
                     app:cornerRadius="17dp"
                     app:strokeColor="@color/frost_border"
                     app:strokeWidth="1dp" />
@@ -522,6 +528,8 @@
                     android:fontFamily="sans-serif-medium"
                     android:textColor="@color/text_frost_bright"
                     android:backgroundTint="@color/frost_elevated"
+                    android:singleLine="true"
+                    android:ellipsize="end"
                     app:icon="@drawable/ic_pip"
                     app:iconTint="@color/accent_glacial"
                     app:iconSize="12.5dp"
@@ -552,6 +560,8 @@
                     android:fontFamily="sans-serif-medium"
                     android:textColor="@color/accent_glacial"
                     android:backgroundTint="#16233B"
+                    android:singleLine="true"
+                    android:ellipsize="end"
                     app:cornerRadius="17dp"
                     app:strokeColor="@color/accent_glacial"
                     app:strokeWidth="1dp" />

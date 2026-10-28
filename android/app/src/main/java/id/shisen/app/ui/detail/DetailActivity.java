@@ -16,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 
 import id.shisen.app.R;
+import id.shisen.app.data.cache.FeedCache;
 import id.shisen.app.data.db.MenatapDatabase;
 import id.shisen.app.data.model.Anime;
 import id.shisen.app.data.model.Episode;
@@ -353,13 +355,37 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    public static int calculateEpisodeSpan(int widthPixels, float density) {
+        float safeDensity = Math.max(1.0f, density);
+        int widthDp = (int) (widthPixels / safeDensity);
+        if (widthDp >= 900) return 6;
+        if (widthDp >= 600) return 4;
+        return 3;
+    }
+
+    private int calculateEpisodeSpan() {
+        return calculateEpisodeSpan(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().density);
+    }
+
     private void setupEpisodeRecycler() {
         episodeAdapter = new EpisodeAdapter(this);
-        GridLayoutManager glm = new GridLayoutManager(this, getResources().getDisplayMetrics().widthPixels / (int)getResources().getDisplayMetrics().density >= 600 ? 4 : 3);
+        GridLayoutManager glm = new GridLayoutManager(this, calculateEpisodeSpan());
         rvEpisodes.setLayoutManager(glm);
         rvEpisodes.setAdapter(episodeAdapter);
 
         episodeAdapter.setListener((episode, position) -> launchPlayer(position));
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull android.content.res.Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (rvEpisodes != null && rvEpisodes.getLayoutManager() instanceof GridLayoutManager) {
+            ((GridLayoutManager) rvEpisodes.getLayoutManager()).setSpanCount(calculateEpisodeSpan());
+            episodeAdapter.notifyDataSetChanged();
+        }
+        if (layoutDetailRoot != null) {
+            layoutDetailRoot.requestApplyInsets();
+        }
     }
 
     private void refreshWatchedStates() {
@@ -403,6 +429,28 @@ public class DetailActivity extends AppCompatActivity {
             return;
         }
 
+        List<Episode> cachedEps = FeedCache.getInstance(this).getCachedEpisodes(anime.slug);
+        boolean hasCachedEps = (cachedEps != null && !cachedEps.isEmpty());
+        if (hasCachedEps) {
+            episodeList.clear();
+            episodeList.addAll(cachedEps);
+            anime.airedEpisodesCount = cachedEps.size();
+            refreshWatchedStates();
+            episodeAdapter.setData(episodeList);
+            if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
+
+            // Jika anime tamat (FINISHED), episode tidak akan bertambah -> skip scraping 100%!
+            if ("FINISHED".equalsIgnoreCase(anime.status)) {
+                return;
+            }
+
+            // Jika anime on-going dan belum jam rilis episode berikutnya -> data masih up-to-date!
+            long nowSec = System.currentTimeMillis() / 1000L;
+            if (anime.airingAt > 0 && nowSec < anime.airingAt) {
+                return;
+            }
+        }
+
         // Safe airing count (anti-overflow on on-going anime)
         int safeAiredCount = 1;
         if (isReleasing) {
@@ -425,16 +473,17 @@ public class DetailActivity extends AppCompatActivity {
             }
         }
 
-        episodeList.clear();
-        for (int i = 1; i <= safeAiredCount; i++) {
-            Episode ep = new Episode(i);
-            ep.slug = anime.slug + "-episode-" + i;
-            episodeList.add(ep);
+        if (!hasCachedEps) {
+            episodeList.clear();
+            for (int i = 1; i <= safeAiredCount; i++) {
+                Episode ep = new Episode(i);
+                ep.slug = anime.slug + "-episode-" + i;
+                episodeList.add(ep);
+            }
+            refreshWatchedStates();
+            episodeAdapter.setData(episodeList);
+            if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.VISIBLE);
         }
-        refreshWatchedStates();
-        episodeAdapter.setData(episodeList);
-
-        if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.VISIBLE);
 
         // TIER 1: HiAnime Search & Accurate Episode Fetch
         String primaryTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
@@ -453,14 +502,7 @@ public class DetailActivity extends AppCompatActivity {
                         public void onSuccess(List<Episode> hiEpisodes) {
                             List<Episode> filtered = filterAccurateEpisodes(hiEpisodes);
                             if (!filtered.isEmpty()) {
-                                mainHandler.post(() -> {
-                                    if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
-                                    episodeList.clear();
-                                    episodeList.addAll(filtered);
-                                    anime.airedEpisodesCount = filtered.size();
-                                    refreshWatchedStates();
-                                    episodeAdapter.setData(episodeList);
-                                });
+                                applyLoadedEpisodes(filtered);
                                 return;
                             }
                             fetchAniChanFallback();
@@ -482,14 +524,7 @@ public class DetailActivity extends AppCompatActivity {
                                     public void onSuccess(List<Episode> hiEps) {
                                         List<Episode> filtered = filterAccurateEpisodes(hiEps);
                                         if (!filtered.isEmpty()) {
-                                            mainHandler.post(() -> {
-                                                if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
-                                                episodeList.clear();
-                                                episodeList.addAll(filtered);
-                                                anime.airedEpisodesCount = filtered.size();
-                                                refreshWatchedStates();
-                                                episodeAdapter.setData(episodeList);
-                                            });
+                                            applyLoadedEpisodes(filtered);
                                             return;
                                         }
                                         fetchAniChanFallback();
@@ -586,14 +621,7 @@ public class DetailActivity extends AppCompatActivity {
             public void onSuccess(List<Episode> aniChanEps) {
                 List<Episode> filtered = filterAccurateEpisodes(aniChanEps);
                 if (!filtered.isEmpty()) {
-                    mainHandler.post(() -> {
-                        if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
-                        episodeList.clear();
-                        episodeList.addAll(filtered);
-                        anime.airedEpisodesCount = filtered.size();
-                        refreshWatchedStates();
-                        episodeAdapter.setData(episodeList);
-                    });
+                    applyLoadedEpisodes(filtered);
                     return;
                 }
                 fetchOtakudesuFallback();
@@ -657,13 +685,51 @@ public class DetailActivity extends AppCompatActivity {
         });
     }
 
+    private void applyLoadedEpisodes(List<Episode> filtered) {
+        if (filtered == null || filtered.isEmpty()) return;
+        FeedCache.getInstance(this).saveEpisodeList(anime.slug, filtered);
+        mainHandler.post(() -> {
+            if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
+            episodeList.clear();
+            episodeList.addAll(filtered);
+            anime.airedEpisodesCount = filtered.size();
+            refreshWatchedStates();
+            episodeAdapter.setData(episodeList);
+        });
+    }
+
     private void loadRelations() {
+        AniListClient.RelationsResult cachedRel = FeedCache.getInstance(this).getCachedRelations(anime.id);
+        if (cachedRel != null) {
+            if (cachedRel.seasons != null && !cachedRel.seasons.isEmpty()) {
+                seasonsAdapter.setData(cachedRel.seasons);
+                if (tvRelatedSeasonsCount != null) {
+                    tvRelatedSeasonsCount.setText(getString(R.string.detail_series_count_format, cachedRel.seasons.size()));
+                }
+                if (layoutRelatedSeasons != null) {
+                    layoutRelatedSeasons.setVisibility(View.VISIBLE);
+                }
+            }
+            if (cachedRel.movies != null && !cachedRel.movies.isEmpty()) {
+                moviesAdapter.setData(cachedRel.movies);
+                if (tvRelatedMoviesCount != null) {
+                    tvRelatedMoviesCount.setText(getString(R.string.detail_movies_count_format, cachedRel.movies.size()));
+                }
+                if (layoutRelatedMovies != null) {
+                    layoutRelatedMovies.setVisibility(View.VISIBLE);
+                }
+            }
+        }
+
         String queryTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
                 ? anime.title : anime.romajiTitle;
 
         AniListClient.getRelations(anime.id, queryTitle, new AniListClient.Callback<AniListClient.RelationsResult>() {
             @Override
             public void onSuccess(AniListClient.RelationsResult result) {
+                if (result != null) {
+                    FeedCache.getInstance(DetailActivity.this).saveRelations(anime.id, result);
+                }
                 mainHandler.post(() -> {
                     if (isFinishing() || isDestroyed()) return;
 
@@ -675,7 +741,7 @@ public class DetailActivity extends AppCompatActivity {
                         if (layoutRelatedSeasons != null) {
                             layoutRelatedSeasons.setVisibility(View.VISIBLE);
                         }
-                    } else if (layoutRelatedSeasons != null) {
+                    } else if (layoutRelatedSeasons != null && cachedRel == null) {
                         layoutRelatedSeasons.setVisibility(View.GONE);
                     }
 
@@ -687,7 +753,7 @@ public class DetailActivity extends AppCompatActivity {
                         if (layoutRelatedMovies != null) {
                             layoutRelatedMovies.setVisibility(View.VISIBLE);
                         }
-                    } else if (layoutRelatedMovies != null) {
+                    } else if (layoutRelatedMovies != null && cachedRel == null) {
                         layoutRelatedMovies.setVisibility(View.GONE);
                     }
                 });
@@ -696,8 +762,10 @@ public class DetailActivity extends AppCompatActivity {
             @Override
             public void onError(Throwable t) {
                 mainHandler.post(() -> {
-                    if (layoutRelatedSeasons != null) layoutRelatedSeasons.setVisibility(View.GONE);
-                    if (layoutRelatedMovies != null) layoutRelatedMovies.setVisibility(View.GONE);
+                    if (cachedRel == null) {
+                        if (layoutRelatedSeasons != null) layoutRelatedSeasons.setVisibility(View.GONE);
+                        if (layoutRelatedMovies != null) layoutRelatedMovies.setVisibility(View.GONE);
+                    }
                 });
             }
         });

@@ -50,6 +50,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -274,6 +276,9 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         isActivityRunning = true;
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        }
         SystemUiHelper.applySystemBarsTheme(this);
         setContentView(R.layout.activity_player);
 
@@ -382,6 +387,32 @@ public class PlayerActivity extends AppCompatActivity {
         rvPortraitEpisodes = findViewById(R.id.rv_portrait_episodes);
 
         setupClickListeners();
+        setupWindowInsets();
+    }
+
+    private void setupWindowInsets() {
+        View root = findViewById(R.id.layout_player_root);
+        if (root == null) return;
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            int orientation = getResources().getConfiguration().orientation;
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                if (layoutTopBar != null) {
+                    int padH = (int) dpToPx(16);
+                    int padTop = (int) dpToPx(14);
+                    int padBottom = (int) dpToPx(20);
+                    layoutTopBar.setPadding(padH + insets.left, padTop + insets.top, padH + insets.right, padBottom);
+                }
+            } else {
+                if (rvPortraitEpisodes != null) {
+                    Insets navInsets = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars());
+                    int padH = (int) dpToPx(12);
+                    int padBottom = (int) dpToPx(20) + navInsets.bottom;
+                    rvPortraitEpisodes.setPadding(padH, 0, padH, padBottom);
+                }
+            }
+            return windowInsets;
+        });
     }
 
     private void setupSubtitleManager() {
@@ -946,10 +977,20 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
+    public static int calculatePortraitEpisodeSpan(int widthPixels, float density) {
+        float safeDensity = Math.max(1.0f, density);
+        int widthDp = (int) (widthPixels / safeDensity);
+        if (widthDp >= 900) return 6;
+        if (widthDp >= 600) return 5;
+        return 4;
+    }
+
     private void setupPortraitRecycler() {
         episodeAdapter = new EpisodeAdapter(this);
-        float density = Math.max(1.0f, getResources().getDisplayMetrics().density);
-        int spanCount = (int) (getResources().getDisplayMetrics().widthPixels / density) >= 600 ? 5 : 4;
+        int spanCount = calculatePortraitEpisodeSpan(
+                getResources().getDisplayMetrics().widthPixels,
+                getResources().getDisplayMetrics().density
+        );
         GridLayoutManager glm = new GridLayoutManager(this, spanCount);
         rvPortraitEpisodes.setLayoutManager(glm);
         rvPortraitEpisodes.setAdapter(episodeAdapter);
@@ -1833,7 +1874,9 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
         builder.setNegativeButton("Tutup", null);
-        builder.show();
+        AlertDialog dialog = builder.create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void showOpenSubtitlesSearchDialog() {
@@ -2216,6 +2259,7 @@ public class PlayerActivity extends AppCompatActivity {
             autoSaveTask.run();
             dialog.dismiss();
         });
+        SystemUiHelper.setupDialogBounds(dialog, this);
         dialog.show();
     }
 
@@ -2436,6 +2480,20 @@ public class PlayerActivity extends AppCompatActivity {
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         updateOrientationLayout(newConfig.orientation);
+        if (rvPortraitEpisodes != null && rvPortraitEpisodes.getLayoutManager() instanceof GridLayoutManager) {
+            int span = calculatePortraitEpisodeSpan(
+                    getResources().getDisplayMetrics().widthPixels,
+                    getResources().getDisplayMetrics().density
+            );
+            ((GridLayoutManager) rvPortraitEpisodes.getLayoutManager()).setSpanCount(span);
+            if (episodeAdapter != null) {
+                episodeAdapter.notifyDataSetChanged();
+            }
+        }
+        View root = findViewById(R.id.layout_player_root);
+        if (root != null) {
+            root.requestApplyInsets();
+        }
     }
 
     private void updateOrientationLayout(int orientation) {

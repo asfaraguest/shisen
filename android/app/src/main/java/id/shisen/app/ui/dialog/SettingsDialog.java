@@ -24,6 +24,7 @@ import java.util.List;
 
 import id.shisen.app.BuildConfig;
 import id.shisen.app.R;
+import id.shisen.app.data.cache.FeedCache;
 import id.shisen.app.data.subtitle.AiSubtitleService;
 import id.shisen.app.util.AnimeThemeManager;
 import id.shisen.app.util.AppSettings;
@@ -77,6 +78,7 @@ public class SettingsDialog {
         // 5. About & Update
         setupAboutSection(dialogView, activity);
 
+        SystemUiHelper.setupDialogBounds(dialog, activity);
         dialog.show();
     }
 
@@ -395,6 +397,15 @@ public class SettingsDialog {
             btnCheckUpdate.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 AppUpdateManager.getInstance().checkUpdate(activity, true);
+            });
+        }
+
+        Button btnClearCache = root.findViewById(R.id.btn_settings_clear_cache);
+        if (btnClearCache != null) {
+            btnClearCache.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                FeedCache.getInstance(activity).clearAllCache();
+                Toast.makeText(activity, R.string.settings_cache_cleared, Toast.LENGTH_SHORT).show();
             });
         }
     }

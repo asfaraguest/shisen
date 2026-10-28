@@ -55,4 +55,23 @@ public class SystemUiHelper {
     public static void applySystemBarsTheme(Activity activity, String themeKey) {
         applyEdgeToEdge(activity);
     }
+
+    public static int calculateDialogWidth(int screenWidth, float density) {
+        float safeDensity = Math.max(1.0f, density);
+        int maxWidth = (int) (520 * safeDensity);
+        int desired = (int) (screenWidth * 0.92f);
+        return Math.min(desired, maxWidth);
+    }
+
+    public static void setupDialogBounds(android.app.Dialog dialog, android.content.Context context) {
+        if (dialog == null || context == null) return;
+        Window window = dialog.getWindow();
+        if (window == null) return;
+
+        window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+        android.util.DisplayMetrics dm = context.getResources().getDisplayMetrics();
+        int width = calculateDialogWidth(dm.widthPixels, dm.density);
+        window.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+    }
 }

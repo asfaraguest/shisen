@@ -101,13 +101,7 @@ public class AnimeThemeManager {
 
         View view = LayoutInflater.from(activity).inflate(R.layout.dialog_anime_theme_selector, null);
         dialog.setContentView(view);
-
-        Window window = dialog.getWindow();
-        if (window != null) {
-            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            window.setLayout((int) (activity.getResources().getDisplayMetrics().widthPixels * 0.92f),
-                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
+        SystemUiHelper.setupDialogBounds(dialog, activity);
 
         RadioGroup rgThemes = view.findViewById(R.id.rg_anime_themes);
         RadioButton rbShinkai = view.findViewById(R.id.rb_theme_shinkai);

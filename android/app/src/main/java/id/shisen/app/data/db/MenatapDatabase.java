@@ -258,6 +258,30 @@ public class MenatapDatabase extends SQLiteOpenHelper {
         return null;
     }
 
+    public String getCacheStale(String key) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT value FROM cache_kv WHERE key = ?", new String[]{key});
+        if (c != null && c.moveToFirst()) {
+            String val = c.getString(0);
+            c.close();
+            return val;
+        }
+        if (c != null) c.close();
+        return null;
+    }
+
+    public void cleanupOldCache(long cutoffMs) {
+        try {
+            getWritableDatabase().delete("cache_kv", "expires_at < ?", new String[]{String.valueOf(cutoffMs)});
+        } catch (Exception ignored) {}
+    }
+
+    public void clearCacheTable() {
+        try {
+            getWritableDatabase().delete("cache_kv", null, null);
+        } catch (Exception ignored) {}
+    }
+
     // --- AniList Mapping Methods ---
 
     /** Simpan mapping slug -> anilist_id dan mal_id (saat pertama berhasil dari AniList) */

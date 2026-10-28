@@ -137,6 +137,8 @@
     <string name="settings_section_ai">AI SUBTITLE (BYOK)</string>
     <string name="settings_section_system">SYSTEM &amp; UPDATES</string>
     <string name="settings_check_update">🔄 Check for Updates</string>
+    <string name="settings_clear_cache">🗑️ Clear App Cache</string>
+    <string name="settings_cache_cleared">App cache cleared successfully</string>
     <string name="settings_app_version">Shisen v0.1.0-beta.2</string>
     <string name="settings_close">Close</string>
 

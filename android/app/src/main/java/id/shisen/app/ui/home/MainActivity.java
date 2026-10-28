@@ -52,6 +52,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import id.shisen.app.R;
+import id.shisen.app.data.cache.FeedCache;
 import id.shisen.app.data.db.MenatapDatabase;
 import id.shisen.app.ui.dialog.SettingsDialog;
 import id.shisen.app.util.AppSettings;
@@ -284,6 +285,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Bersihkan sisa APK pembaruan lama di subfolder updates/ cache
         AppUpdateManager.cleanupAtStart(this);
+        // Bersihkan entri cache lama (> 14 hari) di latar belakang
+        FeedCache.getInstance(this).cleanupOldCache();
 
         MainTab targetTab = MainTab.MUSIM;
         if (savedInstanceState != null) {
@@ -1089,10 +1092,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupDialogWindowBounds(Dialog dialog) {
-        if (dialog == null || dialog.getWindow() == null) return;
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.94f);
-        dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+        SystemUiHelper.setupDialogBounds(dialog, this);
     }
 
     private void showCatalogFilterDialog() {
@@ -1474,6 +1474,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private String getCurrentCacheKey() {
+        String searchQuery = etSearch.getText().toString().trim();
+        if (!searchQuery.isEmpty()) {
+            return "feed_search_" + searchQuery.toLowerCase(Locale.US).trim() + "_p" + currentPage;
+        }
+        if (currentTab == MainTab.MUSIM) {
+            return "feed_musim_p" + currentPage;
+        } else if (currentTab == MainTab.AIRING) {
+            return "feed_airing_" + selectedAiringLane + "_p" + currentPage;
+        } else if (currentTab == MainTab.JADWAL) {
+            return "feed_jadwal_" + selectedDayOfWeek;
+        } else if (currentTab == MainTab.KATALOG) {
+            return "feed_katalog_" + filterCatalogSort + "_" + filterCatalogYear + "_" + filterCatalogSeason +
+                    "_" + filterCatalogMonth + "_" + filterCatalogType + "_" + filterCatalogStatus + "_p" + currentPage;
+        } else if (currentTab == MainTab.GENRE) {
+            return "feed_genre_" + selectedGenre + "_p" + currentPage;
+        }
+        return null;
+    }
+
+    private void renderFeedList(List<Anime> rawList, boolean hasNextPage, int pageSize) {
+        final List<Anime> result = AppSettings.filterSafe(this, rawList);
+        if (result != null && !result.isEmpty()) {
+            layoutEmpty.setVisibility(View.GONE);
+            rvGrid.setVisibility(View.VISIBLE);
+
+            if (currentTab == MainTab.MUSIM && currentPage == 1) {
+                Anime hero = result.get(0);
+                List<Anime> gridList = (result.size() > 1) ? result.subList(1, result.size()) : new ArrayList<>();
+                gridAdapter.updateFeed(hero, gridList);
+            } else {
+                gridAdapter.updateFeed(null, result);
+            }
+
+            if (currentTab != MainTab.JADWAL) {
+                updatePaginationUI(result.size(), pageSize, hasNextPage);
+            } else {
+                if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+            }
+        }
+    }
+
     private void loadCurrentFeed() {
         String searchQuery = etSearch.getText().toString().trim();
         if (!searchQuery.isEmpty()) {
@@ -1481,7 +1523,29 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        setLoading(true);
+        final String cacheKey = getCurrentCacheKey();
+        FeedCache.CachePayload cached = null;
+        if (cacheKey != null) {
+            cached = FeedCache.getInstance(this).getImmediate(cacheKey);
+            if (cached != null && !cached.items.isEmpty()) {
+                // TAMPILKAN SEKETIKA DARI CACHE (0ms, TANPA LOADER)!
+                renderFeedList(cached.items, cached.hasNextPage, currentTab == MainTab.MUSIM ? 35 : 40);
+
+                // Cek apakah jadwal tayang anime terdekat sudah tiba / perlu revalidasi
+                boolean isUserPullToRefresh = swipeRefresh.isRefreshing();
+                boolean needsRevalidate = isUserPullToRefresh || FeedCache.isRevalidationNeeded(cached);
+                if (!needsRevalidate) {
+                    // Data masih valid dan belum jam rilis anime, hemat baterai & jaringan!
+                    swipeRefresh.setRefreshing(false);
+                    return;
+                }
+            }
+        }
+
+        final boolean hasStaleData = (cached != null && !cached.items.isEmpty());
+        if (!hasStaleData) {
+            setLoading(true);
+        }
 
         if (currentTab == MainTab.MUSIM) {
             layoutContextualBar.setVisibility(View.GONE);
@@ -1490,6 +1554,9 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(List<Anime> rawResult, boolean hasNextPage, int total) {
                     final List<Anime> result = AppSettings.filterSafe(MainActivity.this, rawResult);
+                    if (cacheKey != null && result != null && !result.isEmpty()) {
+                        FeedCache.getInstance(MainActivity.this).put(cacheKey, result, hasNextPage, total);
+                    }
                     mainHandler.post(() -> {
                         setLoading(false);
                         if (result != null && !result.isEmpty()) {
@@ -1499,22 +1566,21 @@ public class MainActivity extends AppCompatActivity {
                             if (currentPage == 1) {
                                 Anime hero = result.get(0);
                                 List<Anime> gridList = (result.size() > 1) ? result.subList(1, result.size()) : new ArrayList<>();
-                                gridAdapter.setHeroAnime(hero);
-                                gridAdapter.setData(gridList);
+                                gridAdapter.updateFeed(hero, gridList);
                             } else {
-                                gridAdapter.setHeroAnime(null);
-                                gridAdapter.setData(result);
+                                gridAdapter.updateFeed(null, result);
                             }
-                            rvGrid.scrollToPosition(0);
+                            if (!hasStaleData) {
+                                rvGrid.scrollToPosition(0);
+                            }
                             updatePaginationUI(result.size(), 35, hasNextPage);
                         } else {
                             if (currentPage > 1) {
                                 currentPage--;
                                 Toast.makeText(MainActivity.this, R.string.toast_last_page, Toast.LENGTH_SHORT).show();
                                 updatePaginationUI(0, 35, false);
-                            } else {
-                                gridAdapter.setHeroAnime(null);
-                                gridAdapter.setData(new ArrayList<>());
+                            } else if (!hasStaleData) {
+                                gridAdapter.updateFeed(null, new ArrayList<>());
                                 layoutEmpty.setVisibility(View.VISIBLE);
                                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
                             }
@@ -1526,24 +1592,24 @@ public class MainActivity extends AppCompatActivity {
                 public void onError(Throwable t) {
                     mainHandler.post(() -> {
                         setLoading(false);
-                        Toast.makeText(MainActivity.this, getString(R.string.error_load_season, t.getMessage()), Toast.LENGTH_SHORT).show();
+                        if (!hasStaleData) {
+                            Toast.makeText(MainActivity.this, getString(R.string.error_load_season, t.getMessage()), Toast.LENGTH_SHORT).show();
+                        }
                     });
                 }
             });
 
         } else {
-            gridAdapter.setHeroAnime(null);
-
             switch (currentTab) {
                 case AIRING:
                     layoutContextualBar.setVisibility(View.GONE);
                     // MASIH TAYANG: Dual-Lane (Anime musiman berjalan + serial panjang berkelanjutan)
-                    AniListClient.getMasihTayangDualLane(currentPage, 35, selectedAiringLane, createPagedCallback(getString(R.string.error_load_airing), 35));
+                    AniListClient.getMasihTayangDualLane(currentPage, 35, selectedAiringLane, createPagedCallback(getString(R.string.error_load_airing), 35, cacheKey, hasStaleData));
                     break;
                 case JADWAL:
                     layoutContextualBar.setVisibility(View.GONE);
                     if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
-                    AniListClient.getSchedule(selectedDayOfWeek, createCallback(getString(R.string.error_load_schedule), 100));
+                    AniListClient.getSchedule(selectedDayOfWeek, createCallback(getString(R.string.error_load_schedule), 100, cacheKey, hasStaleData));
                     break;
                 case RIWAYAT:
                     new Thread(() -> {
@@ -1563,7 +1629,7 @@ public class MainActivity extends AppCompatActivity {
                             btnClearHistoryAll.setVisibility(history.isEmpty() ? View.GONE : View.VISIBLE);
                         });
                         boolean hasNextPage = (fromIndex + pageSize) < total;
-                        displayResults(finalPagedList, getString(R.string.label_empty_history_title), getString(R.string.label_empty_history_desc), pageSize, hasNextPage);
+                        displayResults(finalPagedList, getString(R.string.label_empty_history_title), getString(R.string.label_empty_history_desc), pageSize, hasNextPage, false);
                         if (total <= pageSize) {
                             mainHandler.post(() -> {
                                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
@@ -1589,7 +1655,7 @@ public class MainActivity extends AppCompatActivity {
                             btnClearHistoryAll.setVisibility(View.GONE);
                         });
                         boolean hasNextPage = (fromIndex + pageSize) < total;
-                        displayResults(finalPagedList, getString(R.string.label_empty_favorites_title), getString(R.string.label_empty_favorites_desc), pageSize, hasNextPage);
+                        displayResults(finalPagedList, getString(R.string.label_empty_favorites_title), getString(R.string.label_empty_favorites_desc), pageSize, hasNextPage, false);
                         if (total <= pageSize) {
                             mainHandler.post(() -> {
                                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
@@ -1605,7 +1671,7 @@ public class MainActivity extends AppCompatActivity {
                     AniListClient.getCatalogCrossFiltered(
                             filterCatalogSort, filterCatalogYear, filterCatalogSeason, filterCatalogMonth,
                             filterCatalogType, filterCatalogStatus, currentPage, 40,
-                            createPagedCallback(getString(R.string.error_load_catalog), 40)
+                            createPagedCallback(getString(R.string.error_load_catalog), 40, cacheKey, hasStaleData)
                     );
                     break;
                 case GENRE:
@@ -1613,7 +1679,7 @@ public class MainActivity extends AppCompatActivity {
                     tvContextualTitle.setText(getString(R.string.label_genre_title, selectedGenre.toUpperCase(Locale.US)));
                     btnClearHistoryAll.setText(R.string.action_select_genre);
                     btnClearHistoryAll.setVisibility(View.VISIBLE);
-                    AniListClient.getByGenre(selectedGenre, currentPage, 40, createPagedCallback(getString(R.string.error_load_genre, selectedGenre), 40));
+                    AniListClient.getByGenre(selectedGenre, currentPage, 40, createPagedCallback(getString(R.string.error_load_genre, selectedGenre), 40, cacheKey, hasStaleData));
                     break;
                 default:
                     break;
@@ -1627,8 +1693,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void performSearch(String query, int page) {
-        setLoading(true);
-        gridAdapter.setHeroAnime(null);
+        final String cacheKey = "feed_search_" + query.toLowerCase(Locale.US).trim() + "_p" + page;
+        FeedCache.CachePayload cached = FeedCache.getInstance(this).getImmediate(cacheKey);
+        final boolean hasStaleData = (cached != null && !cached.items.isEmpty());
+
+        if (hasStaleData) {
+            renderFeedList(cached.items, cached.hasNextPage, 40);
+        } else {
+            setLoading(true);
+        }
+
         tvCurrentMenuBadge.setText(getString(R.string.badge_search));
         layoutContextualBar.setVisibility(View.VISIBLE);
         String pageSuffix = page > 1 ? " (" + getString(R.string.page_indicator_format, page) + ")" : "";
@@ -1638,55 +1712,61 @@ public class MainActivity extends AppCompatActivity {
         if (!AppSettings.isSafeQuery(this, query)) {
             setLoading(false);
             if (query.toLowerCase().contains("hentai")) {
-                displayResults(new ArrayList<>(), "Konten Diblokir", "Genre Hentai diblokir secara permanen oleh kebijakan aplikasi.", 40, false);
+                displayResults(new ArrayList<>(), "Konten Diblokir", "Genre Hentai diblokir secara permanen oleh kebijakan aplikasi.", 40, false, false);
             } else {
-                displayResults(new ArrayList<>(), "Safe Mode Aktif", "Pencarian konten dewasa dibatasi oleh Safe Mode. Anda dapat menyesuaikannya di Pengaturan.", 40, false);
+                displayResults(new ArrayList<>(), "Safe Mode Aktif", "Pencarian konten dewasa dibatasi oleh Safe Mode. Anda dapat menyesuaikannya di Pengaturan.", 40, false, false);
             }
             return;
         }
 
-        AniListClient.search(query, page, 40, createPagedCallback("Pencarian gagal", 40));
+        AniListClient.search(query, page, 40, createPagedCallback("Pencarian gagal", 40, cacheKey, hasStaleData));
     }
 
-    private AniListClient.PagedCallback<List<Anime>> createPagedCallback(String errorPrefix, int pageSize) {
+    private AniListClient.PagedCallback<List<Anime>> createPagedCallback(String errorPrefix, int pageSize, String cacheKey, boolean hasStaleData) {
         return new AniListClient.PagedCallback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
-                displayResults(result, "Tidak Ada Data", "Konten belum tersedia untuk kategori ini.", pageSize, hasNextPage);
+                if (cacheKey != null && result != null && !result.isEmpty()) {
+                    FeedCache.getInstance(MainActivity.this).put(cacheKey, result, hasNextPage, total);
+                }
+                displayResults(result, "Tidak Ada Data", "Konten belum tersedia untuk kategori ini.", pageSize, hasNextPage, hasStaleData);
             }
 
             @Override
             public void onError(Throwable t) {
                 mainHandler.post(() -> {
                     setLoading(false);
-                    Toast.makeText(MainActivity.this, errorPrefix + ": " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    if (!hasStaleData) {
+                        Toast.makeText(MainActivity.this, errorPrefix + ": " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 });
             }
         };
     }
 
-    private AniListClient.Callback<List<Anime>> createCallback(String errorPrefix, int pageSize) {
+    private AniListClient.Callback<List<Anime>> createCallback(String errorPrefix, int pageSize, String cacheKey, boolean hasStaleData) {
         return new AniListClient.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> result) {
-                displayResults(result, "Tidak Ada Data", "Konten belum tersedia untuk kategori ini.", pageSize);
+                if (cacheKey != null && result != null && !result.isEmpty()) {
+                    FeedCache.getInstance(MainActivity.this).put(cacheKey, result, result.size() >= pageSize, result.size());
+                }
+                displayResults(result, "Tidak Ada Data", "Konten belum tersedia untuk kategori ini.", pageSize, result != null && result.size() >= pageSize, hasStaleData);
             }
 
             @Override
             public void onError(Throwable t) {
                 mainHandler.post(() -> {
                     setLoading(false);
-                    Toast.makeText(MainActivity.this, errorPrefix + ": " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    if (!hasStaleData) {
+                        Toast.makeText(MainActivity.this, errorPrefix + ": " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 });
             }
         };
     }
 
-    private void displayResults(List<Anime> list, String emptyTitle, String emptyDesc, int pageSize) {
-        displayResults(list, emptyTitle, emptyDesc, pageSize, list != null && list.size() >= pageSize);
-    }
-
-    private void displayResults(List<Anime> rawList, String emptyTitle, String emptyDesc, int pageSize, boolean hasNextPage) {
+    private void displayResults(List<Anime> rawList, String emptyTitle, String emptyDesc, int pageSize, boolean hasNextPage, boolean hasStaleData) {
         final List<Anime> list = AppSettings.filterSafe(this, rawList);
         mainHandler.post(() -> {
             setLoading(false);
@@ -1695,9 +1775,8 @@ public class MainActivity extends AppCompatActivity {
                     currentPage--;
                     Toast.makeText(MainActivity.this, R.string.toast_last_page, Toast.LENGTH_SHORT).show();
                     updatePaginationUI(0, pageSize, false);
-                } else {
-                    gridAdapter.setHeroAnime(null);
-                    gridAdapter.setData(new ArrayList<>());
+                } else if (!hasStaleData) {
+                    gridAdapter.updateFeed(null, new ArrayList<>());
                     layoutEmpty.setVisibility(View.VISIBLE);
                     tvEmptyTitle.setText(emptyTitle);
                     tvEmptyDesc.setText(emptyDesc);
@@ -1706,9 +1785,10 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 layoutEmpty.setVisibility(View.GONE);
                 rvGrid.setVisibility(View.VISIBLE);
-                gridAdapter.setHeroAnime(null);
-                gridAdapter.setData(list);
-                rvGrid.scrollToPosition(0);
+                gridAdapter.updateFeed(null, list);
+                if (!hasStaleData) {
+                    rvGrid.scrollToPosition(0);
+                }
                 if (currentTab != MainTab.JADWAL) {
                     updatePaginationUI(list.size(), pageSize, hasNextPage);
                 } else {
