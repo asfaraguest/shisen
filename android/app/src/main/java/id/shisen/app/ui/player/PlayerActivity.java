@@ -510,6 +510,13 @@ public class PlayerActivity extends AppCompatActivity {
             layoutSafetyUnlock.setOnClickListener(v -> unlockScreen(true));
         }
 
+        if (layoutTopBar != null) {
+            layoutTopBar.setOnClickListener(v -> {
+                if (playerView != null) playerView.hideController();
+                hideTopBar(true);
+            });
+        }
+
         btnSkipOpEd.setOnClickListener(v -> {
             HapticHelper.performClick(v);
             if (player == null || currentSkipTimes == null) return;
@@ -642,11 +649,76 @@ public class PlayerActivity extends AppCompatActivity {
 
         // Controller visibility listener to sync landscape top bar
         playerView.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> {
-            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && !isScreenLocked) {
-                layoutTopBar.setVisibility(visibility == View.VISIBLE ? View.VISIBLE : View.GONE);
-                btnScreenLock.setVisibility(visibility == View.VISIBLE ? View.VISIBLE : View.GONE);
+            boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+            if (isLandscape && !isScreenLocked) {
+                if (visibility == View.VISIBLE) {
+                    showTopBar(true);
+                } else {
+                    hideTopBar(true);
+                }
+            } else {
+                hideTopBar(false);
             }
         });
+    }
+
+    private final Runnable hideTopBarRunnable = () -> hideTopBar(true);
+
+    private void showTopBar(boolean animate) {
+        if (layoutTopBar == null) return;
+        mainHandler.removeCallbacks(hideTopBarRunnable);
+        boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+        if (!isLandscape || isScreenLocked) {
+            layoutTopBar.setVisibility(View.GONE);
+            if (btnScreenLock != null) btnScreenLock.setVisibility(View.GONE);
+            return;
+        }
+
+        boolean isInPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode();
+        if (btnScreenLock != null) {
+            btnScreenLock.setVisibility(!isInPip ? View.VISIBLE : View.GONE);
+            if (animate && !isInPip) {
+                btnScreenLock.animate().cancel();
+                btnScreenLock.animate().alpha(1f).setDuration(180).start();
+            } else if (!isInPip) {
+                btnScreenLock.setAlpha(1f);
+            }
+        }
+
+        layoutTopBar.setVisibility(View.VISIBLE);
+        if (animate) {
+            layoutTopBar.animate().cancel();
+            layoutTopBar.animate().alpha(1f).setDuration(180).start();
+        } else {
+            layoutTopBar.setAlpha(1f);
+        }
+
+        // Backup auto-hide fallback matching ExoPlayer timeout (3500ms)
+        mainHandler.postDelayed(hideTopBarRunnable, 3500);
+    }
+
+    private void hideTopBar(boolean animate) {
+        mainHandler.removeCallbacks(hideTopBarRunnable);
+        if (layoutTopBar == null) return;
+        if (animate && layoutTopBar.getVisibility() == View.VISIBLE) {
+            layoutTopBar.animate().cancel();
+            layoutTopBar.animate().alpha(0f).setDuration(220).withEndAction(() -> {
+                if (layoutTopBar != null) layoutTopBar.setVisibility(View.GONE);
+            }).start();
+            if (btnScreenLock != null && btnScreenLock.getVisibility() == View.VISIBLE) {
+                btnScreenLock.animate().cancel();
+                btnScreenLock.animate().alpha(0f).setDuration(220).withEndAction(() -> {
+                    if (btnScreenLock != null) btnScreenLock.setVisibility(View.GONE);
+                }).start();
+            }
+        } else {
+            layoutTopBar.setVisibility(View.GONE);
+            layoutTopBar.setAlpha(0f);
+            if (btnScreenLock != null) {
+                btnScreenLock.setVisibility(View.GONE);
+                btnScreenLock.setAlpha(0f);
+            }
+        }
     }
 
     private void bindExoControlButtons() {
@@ -959,7 +1031,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (playerView != null) {
             playerView.hideController();
         }
-        if (layoutTopBar != null) layoutTopBar.setVisibility(View.GONE);
+        hideTopBar(false);
         if (layoutPortraitBottom != null) layoutPortraitBottom.setVisibility(View.GONE);
         if (btnScreenLock != null) btnScreenLock.setVisibility(View.GONE);
 
@@ -1065,12 +1137,14 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
                 if (isScreenLocked) return false;
-                if (playerView != null) {
-                    if (playerView.isControllerFullyVisible()) {
-                        playerView.hideController();
-                    } else {
-                        playerView.showController();
-                    }
+                boolean isControlsShowing = (layoutTopBar != null && layoutTopBar.getVisibility() == View.VISIBLE)
+                        || (playerView != null && playerView.isControllerFullyVisible());
+                if (isControlsShowing) {
+                    if (playerView != null) playerView.hideController();
+                    hideTopBar(true);
+                } else {
+                    if (playerView != null) playerView.showController();
+                    showTopBar(true);
                 }
                 return true;
             }
@@ -2457,7 +2531,7 @@ public class PlayerActivity extends AppCompatActivity {
             playerView.hideController();
             playerView.setUseController(false);
         }
-        if (layoutTopBar != null) layoutTopBar.setVisibility(View.GONE);
+        hideTopBar(false);
         if (btnSkipOpEd != null) btnSkipOpEd.setVisibility(View.GONE);
         showSafetyUnlockPill();
         HapticHelper.performClick(layoutSafetyUnlock != null ? layoutSafetyUnlock : playerView);
@@ -2482,7 +2556,7 @@ public class PlayerActivity extends AppCompatActivity {
             playerView.showController();
         }
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            if (layoutTopBar != null) layoutTopBar.setVisibility(View.VISIBLE);
+            showTopBar(true);
         }
         if (showFeedback) {
             HapticHelper.performClick(layoutSafetyUnlock != null ? layoutSafetyUnlock : playerView);
@@ -2547,9 +2621,13 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             layoutPortraitBottom.setVisibility(View.GONE);
-            layoutTopBar.setVisibility(!isScreenLocked ? View.VISIBLE : View.GONE);
             boolean isInPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode();
-            btnScreenLock.setVisibility(!isInPip && !isScreenLocked ? View.VISIBLE : View.GONE);
+            if (!isScreenLocked && !isInPip) {
+                showTopBar(false);
+                if (playerView != null) playerView.showController();
+            } else {
+                hideTopBar(false);
+            }
             btnPortraitFullscreen.setText(R.string.player_minimize);
 
             flPlayerWrapper.setLayoutParams(new LinearLayout.LayoutParams(
@@ -2570,8 +2648,7 @@ public class PlayerActivity extends AppCompatActivity {
                 layoutSafetyUnlock.setVisibility(View.GONE);
             }
             layoutPortraitBottom.setVisibility(View.VISIBLE);
-            layoutTopBar.setVisibility(View.GONE);
-            btnScreenLock.setVisibility(View.GONE);
+            hideTopBar(false);
             btnPortraitFullscreen.setText("⛶ Full");
 
             int screenWidth = getResources().getDisplayMetrics().widthPixels;
@@ -2615,7 +2692,7 @@ public class PlayerActivity extends AppCompatActivity {
                 playerView.hideController();
                 playerView.setUseController(false);
             }
-            if (layoutTopBar != null) layoutTopBar.setVisibility(View.GONE);
+            hideTopBar(false);
             if (layoutPortraitBottom != null) layoutPortraitBottom.setVisibility(View.GONE);
             if (btnScreenLock != null) btnScreenLock.setVisibility(View.GONE);
             if (hudOsd != null) hudOsd.setVisibility(View.GONE);
@@ -2745,6 +2822,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mainHandler.removeCallbacks(hideTopBarRunnable);
         backgroundStopHandler.removeCallbacks(backgroundStopRunnable);
         if (pipReceiverRegistered && pipReceiver != null) {
             try {
