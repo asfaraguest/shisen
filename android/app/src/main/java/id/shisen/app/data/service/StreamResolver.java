@@ -2,13 +2,30 @@ package id.shisen.app.data.service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import id.shisen.app.data.model.Anime;
 import id.shisen.app.data.model.Episode;
 import id.shisen.app.data.model.StreamSource;
+import id.shisen.app.ui.player.PlaybackDataHolder;
 import id.shisen.app.util.TitleMatcher;
 
 public class StreamResolver {
+
+    private static final Map<String, String> slugCache = new ConcurrentHashMap<>();
+
+    public static void cacheSlug(String key, String hiAnimeSlug) {
+        if (key != null && hiAnimeSlug != null && !hiAnimeSlug.isEmpty()) {
+            slugCache.put(key.toLowerCase(Locale.US).trim(), hiAnimeSlug);
+        }
+    }
+
+    public static String getCachedSlug(String key) {
+        if (key == null) return null;
+        return slugCache.get(key.toLowerCase(Locale.US).trim());
+    }
 
     public interface Callback {
         void onSuccess(StreamSource source);
@@ -113,6 +130,7 @@ public class StreamResolver {
     }
 
     private static void tryHiAnime(Anime anime, Episode episode, Callback callback) {
+        // Fast-path 1: Jika episode sudah memiliki epId HiAnime, selesaikan langsung (<500ms)
         if (episode.epId != null && !episode.epId.isEmpty() && "hianime".equalsIgnoreCase(episode.provider)) {
             HiAnimeClient.resolveStream(episode.epId, new HiAnimeClient.Callback<StreamSource>() {
                 @Override
@@ -125,6 +143,16 @@ public class StreamResolver {
                     callback.onError(t);
                 }
             });
+            return;
+        }
+
+        // Fast-path 2: Jika slug HiAnime untuk anime ini sudah pernah dicocokkan & dicache
+        String cachedSlug = getCachedSlug(anime.slug);
+        if (cachedSlug == null && anime.id > 0) {
+            cachedSlug = getCachedSlug(String.valueOf(anime.id));
+        }
+        if (cachedSlug != null) {
+            fetchHiAnimeEpAndResolve(cachedSlug, anime, episode, callback);
             return;
         }
 
@@ -143,14 +171,18 @@ public class StreamResolver {
             public void onSuccess(List<Anime> results) {
                 String pickedSlug = pickBestSlug(results, anime, targetTitle, altTitle);
                 if (pickedSlug != null) {
-                    fetchHiAnimeEpAndResolve(pickedSlug, episode, callback);
+                    cacheSlug(anime.slug, pickedSlug);
+                    if (anime.id > 0) cacheSlug(String.valueOf(anime.id), pickedSlug);
+                    fetchHiAnimeEpAndResolve(pickedSlug, anime, episode, callback);
                 } else if (!altTitle.isEmpty() && !altTitle.equalsIgnoreCase(targetTitle)) {
                     HiAnimeClient.searchAnime(altTitle, new HiAnimeClient.Callback<List<Anime>>() {
                         @Override
                         public void onSuccess(List<Anime> res2) {
                             String picked2 = pickBestSlug(res2, anime, targetTitle, altTitle);
                             if (picked2 != null) {
-                                fetchHiAnimeEpAndResolve(picked2, episode, callback);
+                                cacheSlug(anime.slug, picked2);
+                                if (anime.id > 0) cacheSlug(String.valueOf(anime.id), picked2);
+                                fetchHiAnimeEpAndResolve(picked2, anime, episode, callback);
                             } else {
                                 callback.onError(new IOException("Judul tidak cocok di HiAnime"));
                             }
@@ -177,12 +209,14 @@ public class StreamResolver {
         if (candidates == null || candidates.isEmpty()) return null;
         boolean hasAlt = alt != null && !alt.isEmpty();
         boolean hasTarget = target != null && !target.isEmpty();
+
+        // Pass 1: Cocokkan terhadap model dan judul (Inggris / Romaji / Slug)
         for (Anime c : candidates) {
-            if (c == null || c.title == null) continue;
+            if (c == null) continue;
             if (TitleMatcher.isMatchAny(anime, c)) {
                 return c.slug;
             }
-            if ((hasTarget && TitleMatcher.isTitleMatch(target, c.title)) || (hasAlt && TitleMatcher.isTitleMatch(alt, c.title))) {
+            if (c.title != null && ((hasTarget && TitleMatcher.isTitleMatch(target, c.title)) || (hasAlt && TitleMatcher.isTitleMatch(alt, c.title)))) {
                 return c.slug;
             }
             if (c.romajiTitle != null && !c.romajiTitle.isEmpty()) {
@@ -190,8 +224,14 @@ public class StreamResolver {
                     return c.slug;
                 }
             }
+            if (c.slug != null && !c.slug.isEmpty()) {
+                if ((hasTarget && TitleMatcher.isTitleMatch(target, c.slug)) || (hasAlt && TitleMatcher.isTitleMatch(alt, c.slug))) {
+                    return c.slug;
+                }
+            }
         }
-        // Season-consistent match: only if season matches AND title also matches target or alt!
+
+        // Pass 2: Season-consistent match jika musim sama dan judul relevan
         if (hasTarget || hasAlt) {
             int sTarget = hasTarget ? TitleMatcher.extractSeasonNumber(target) : TitleMatcher.extractSeasonNumber(alt);
             for (Anime c : candidates) {
@@ -204,10 +244,22 @@ public class StreamResolver {
                 }
             }
         }
+
+        // Pass 3: Fallback aman kandidat pertama dari pencarian spesifik (jika musim identik & tanpa kontradiksi)
+        Anime first = candidates.get(0);
+        if (first != null && first.slug != null && !first.slug.isEmpty() && first.title != null) {
+            String q = hasTarget ? target : alt;
+            int sQ = TitleMatcher.extractSeasonNumber(q);
+            int sFirst = TitleMatcher.extractSeasonNumber(first.title);
+            if (sQ == sFirst && !TitleMatcher.hasContradictoryKeywords(q, first.title)) {
+                return first.slug;
+            }
+        }
+
         return null;
     }
 
-    private static void fetchHiAnimeEpAndResolve(String slug, Episode episode, Callback callback) {
+    private static void fetchHiAnimeEpAndResolve(String slug, Anime anime, Episode episode, Callback callback) {
         HiAnimeClient.getEpisodes(slug, new HiAnimeClient.Callback<List<Episode>>() {
             @Override
             public void onSuccess(List<Episode> episodes) {
@@ -215,6 +267,24 @@ public class StreamResolver {
                     callback.onError(new IOException("Daftar episode kosong di HiAnime"));
                     return;
                 }
+
+                // Perkaya saudara-saudara episode di PlaybackDataHolder agar episode selanjutnya 0ms resolve
+                if (PlaybackDataHolder.hasData()) {
+                    List<Episode> holderEps = PlaybackDataHolder.getEpisodes();
+                    if (holderEps != null) {
+                        for (Episode he : holderEps) {
+                            if (he.epId != null && !he.epId.isEmpty()) continue;
+                            for (Episode fe : episodes) {
+                                if (he.number == fe.number) {
+                                    he.epId = fe.epId;
+                                    he.provider = "hianime";
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 for (Episode ep : episodes) {
                     if (ep.number == episode.number) {
                         episode.epId = ep.epId;

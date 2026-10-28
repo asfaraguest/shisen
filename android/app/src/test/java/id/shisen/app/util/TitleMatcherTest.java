@@ -172,5 +172,14 @@ public class TitleMatcherTest {
 
         assertTrue("Dandadan should match stylized or sluggified",
                 TitleMatcher.isTitleMatch("DAN DA DAN", "dandadan"));
+
+        assertTrue("Dandadan should match HiAnime title with qualifier",
+                TitleMatcher.isTitleMatch("Dandadan", "DAN DA DAN (TV)"));
+
+        assertTrue("Dandadan should match HiAnime slug with ID",
+                TitleMatcher.isTitleMatch("Dandadan", "dan-da-dan-19319"));
+
+        assertTrue("Bleach should match Bleach (TV)",
+                TitleMatcher.isTitleMatch("Bleach", "Bleach (TV)"));
     }
 }

@@ -69,9 +69,20 @@ public class SystemUiHelper {
         if (window == null) return;
 
         window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-        android.util.DisplayMetrics dm = context.getResources().getDisplayMetrics();
-        int width = calculateDialogWidth(dm.widthPixels, dm.density);
-        window.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+        Runnable applyBounds = () -> {
+            Window win = dialog.getWindow();
+            if (win == null) return;
+            android.util.DisplayMetrics dm = context.getResources().getDisplayMetrics();
+            int width = calculateDialogWidth(dm.widthPixels, dm.density);
+            win.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+        };
+
+        if (dialog.isShowing()) {
+            applyBounds.run();
+        } else {
+            dialog.setOnShowListener(d -> applyBounds.run());
+        }
     }
 }

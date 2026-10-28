@@ -46,6 +46,31 @@ public class TitleMatcher {
             {"gakkou", "enmusubi"}
     };
 
+    public static boolean hasContradictoryKeywords(String a, String b) {
+        if (a == null || b == null) return false;
+        Set<String> tokensA = cleanTitleTokens(a);
+        Set<String> tokensB = cleanTitleTokens(b);
+        for (String[] pair : CONTRADICTORY_PAIRS) {
+            String word1 = pair[0];
+            String word2 = pair[1];
+            if ((tokensA.contains(word1) && tokensB.contains(word2)) ||
+                (tokensA.contains(word2) && tokensB.contains(word1))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String stripQualifiers(String s) {
+        if (s == null) return "";
+        return s.replaceAll("(?i)\\b(tv|sub|dub|uncensored|censored)\\b|\\((?:tv|sub|dub|uncensored|censored)\\)", "").trim();
+    }
+
+    public static String cleanSlug(String slug) {
+        if (slug == null) return "";
+        return slug.replaceAll("-\\d+$", "").trim();
+    }
+
     public static String normalize(String s) {
         if (s == null) return "";
         String clean = s.toLowerCase(Locale.US).replace("&", "and");
@@ -134,19 +159,24 @@ public class TitleMatcher {
             return true;
         }
 
-        // Substring normalized check if one is full slug or contains complete title (min 10 chars)
-        if (normA.length() >= 10 && normB.length() >= 10) {
-            if (normA.contains(normB) || normB.contains(normA)) {
-                int sA = extractSeasonNumber(target);
-                int sB = extractSeasonNumber(candidate);
-                if (sA == sB) {
-                    int yA = extractYear(target);
-                    int yB = extractYear(candidate);
-                    if (yA == -1 || yB == -1 || yA == yB) {
-                        return true;
-                    }
-                }
-            }
+        // 1b. Stripped qualifiers match (e.g. "Dan Da Dan (TV)" == "Dan Da Dan")
+        String strippedA = normalize(stripQualifiers(target));
+        String strippedB = normalize(stripQualifiers(candidate));
+        if (!strippedA.isEmpty() && strippedA.equals(strippedB)) {
+            return true;
+        }
+
+        // 1c. Clean slug match (e.g. "dan-da-dan-19319" stripped to "dan-da-dan" == "dandadan")
+        String cleanSlugA = normalize(cleanSlug(target));
+        String cleanSlugB = normalize(cleanSlug(candidate));
+        if (!cleanSlugA.isEmpty() && cleanSlugA.equals(cleanSlugB)) {
+            return true;
+        }
+        if (!normA.isEmpty() && normA.equals(cleanSlugB)) {
+            return true;
+        }
+        if (!normB.isEmpty() && normB.equals(cleanSlugA)) {
+            return true;
         }
 
         // 2. Strict season consistency (prevent S2 matching S1, S3 matching S2)
@@ -161,6 +191,22 @@ public class TitleMatcher {
         int yB = extractYear(candidate);
         if (yA != -1 && yB != -1 && yA != yB) {
             return false;
+        }
+
+        // 3b. Contradictory Keyword Check before substring comparison
+        if (hasContradictoryKeywords(target, candidate)) {
+            return false;
+        }
+
+        // Substring normalized check if one contains the other (min 5 chars)
+        if (normA.length() >= 5 && normB.length() >= 5) {
+            if (normA.contains(normB) || normB.contains(normA)) {
+                if (sA == sB) {
+                    if (yA == -1 || yB == -1 || yA == yB) {
+                        return true;
+                    }
+                }
+            }
         }
 
         Set<String> tokensA = cleanTitleTokens(target);

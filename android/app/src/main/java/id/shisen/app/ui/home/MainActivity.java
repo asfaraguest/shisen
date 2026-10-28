@@ -1785,7 +1785,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 layoutEmpty.setVisibility(View.GONE);
                 rvGrid.setVisibility(View.VISIBLE);
-                gridAdapter.updateFeed(null, list);
+                if (currentTab == MainTab.MUSIM && currentPage == 1) {
+                    Anime hero = list.get(0);
+                    List<Anime> gridList = (list.size() > 1) ? list.subList(1, list.size()) : new ArrayList<>();
+                    gridAdapter.updateFeed(hero, gridList);
+                } else {
+                    gridAdapter.updateFeed(null, list);
+                }
                 if (!hasStaleData) {
                     rvGrid.scrollToPosition(0);
                 }

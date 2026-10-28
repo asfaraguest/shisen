@@ -276,9 +276,6 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         isActivityRunning = true;
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-        }
         SystemUiHelper.applySystemBarsTheme(this);
         setContentView(R.layout.activity_player);
 
@@ -407,8 +404,9 @@ public class PlayerActivity extends AppCompatActivity {
                 if (rvPortraitEpisodes != null) {
                     Insets navInsets = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars());
                     int padH = (int) dpToPx(12);
+                    int padTop = (int) dpToPx(4);
                     int padBottom = (int) dpToPx(20) + navInsets.bottom;
-                    rvPortraitEpisodes.setPadding(padH, 0, padH, padBottom);
+                    rvPortraitEpisodes.setPadding(padH, padTop, padH, padBottom);
                 }
             }
             return windowInsets;
@@ -2498,6 +2496,16 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void updateOrientationLayout(int orientation) {
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            } else {
+                lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+            }
+            getWindow().setAttributes(lp);
+        }
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             layoutPortraitBottom.setVisibility(View.GONE);

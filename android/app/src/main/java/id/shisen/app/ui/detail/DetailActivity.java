@@ -39,6 +39,7 @@ import id.shisen.app.data.service.AniChanClient;
 import id.shisen.app.data.service.AniListClient;
 import id.shisen.app.data.service.HiAnimeClient;
 import id.shisen.app.data.service.OtakudesuScraper;
+import id.shisen.app.data.service.StreamResolver;
 import id.shisen.app.ui.adapter.AnimeAdapter;
 import id.shisen.app.ui.adapter.EpisodeAdapter;
 import id.shisen.app.ui.adapter.RelatedAnimeAdapter;
@@ -431,7 +432,14 @@ public class DetailActivity extends AppCompatActivity {
 
         List<Episode> cachedEps = FeedCache.getInstance(this).getCachedEpisodes(anime.slug);
         boolean hasCachedEps = (cachedEps != null && !cachedEps.isEmpty());
+        boolean hasValidEpIds = false;
         if (hasCachedEps) {
+            for (Episode ep : cachedEps) {
+                if (ep != null && ep.epId != null && !ep.epId.isEmpty()) {
+                    hasValidEpIds = true;
+                    break;
+                }
+            }
             episodeList.clear();
             episodeList.addAll(cachedEps);
             anime.airedEpisodesCount = cachedEps.size();
@@ -439,14 +447,14 @@ public class DetailActivity extends AppCompatActivity {
             episodeAdapter.setData(episodeList);
             if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
 
-            // Jika anime tamat (FINISHED), episode tidak akan bertambah -> skip scraping 100%!
-            if ("FINISHED".equalsIgnoreCase(anime.status)) {
+            // Jika anime tamat (FINISHED) dan memiliki provider epId valid -> skip scraping 100%!
+            if ("FINISHED".equalsIgnoreCase(anime.status) && hasValidEpIds) {
                 return;
             }
 
-            // Jika anime on-going dan belum jam rilis episode berikutnya -> data masih up-to-date!
+            // Jika anime on-going dan belum jam rilis episode berikutnya serta memiliki provider epId valid -> skip!
             long nowSec = System.currentTimeMillis() / 1000L;
-            if (anime.airingAt > 0 && nowSec < anime.airingAt) {
+            if (anime.airingAt > 0 && nowSec < anime.airingAt && hasValidEpIds) {
                 return;
             }
         }
@@ -502,7 +510,7 @@ public class DetailActivity extends AppCompatActivity {
                         public void onSuccess(List<Episode> hiEpisodes) {
                             List<Episode> filtered = filterAccurateEpisodes(hiEpisodes);
                             if (!filtered.isEmpty()) {
-                                applyLoadedEpisodes(filtered);
+                                applyLoadedEpisodes(matchedSlug, filtered);
                                 return;
                             }
                             fetchAniChanFallback();
@@ -524,7 +532,7 @@ public class DetailActivity extends AppCompatActivity {
                                     public void onSuccess(List<Episode> hiEps) {
                                         List<Episode> filtered = filterAccurateEpisodes(hiEps);
                                         if (!filtered.isEmpty()) {
-                                            applyLoadedEpisodes(filtered);
+                                            applyLoadedEpisodes(matched2, filtered);
                                             return;
                                         }
                                         fetchAniChanFallback();
@@ -582,28 +590,47 @@ public class DetailActivity extends AppCompatActivity {
 
     private String pickBestSlug(List<Anime> list, String target, String alt) {
         if (list == null || list.isEmpty()) return null;
+        boolean hasAlt = alt != null && !alt.isEmpty();
+        boolean hasTarget = target != null && !target.isEmpty();
+
         for (Anime a : list) {
+            if (a == null) continue;
             if (TitleMatcher.isMatchAny(anime, a)) {
                 return a.slug;
             }
-            if (TitleMatcher.isTitleMatch(target, a.title) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, a.title))) {
+            if (a.title != null && ((hasTarget && TitleMatcher.isTitleMatch(target, a.title)) || (hasAlt && TitleMatcher.isTitleMatch(alt, a.title)))) {
                 return a.slug;
             }
             if (a.romajiTitle != null && !a.romajiTitle.isEmpty()) {
-                if (TitleMatcher.isTitleMatch(target, a.romajiTitle) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, a.romajiTitle))) {
+                if ((hasTarget && TitleMatcher.isTitleMatch(target, a.romajiTitle)) || (hasAlt && TitleMatcher.isTitleMatch(alt, a.romajiTitle))) {
+                    return a.slug;
+                }
+            }
+            if (a.slug != null && !a.slug.isEmpty()) {
+                if ((hasTarget && TitleMatcher.isTitleMatch(target, a.slug)) || (hasAlt && TitleMatcher.isTitleMatch(alt, a.slug))) {
                     return a.slug;
                 }
             }
         }
         // Season-consistent match
-        int sTarget = TitleMatcher.extractSeasonNumber(target);
-        if (sTarget <= 1 && !alt.isEmpty()) {
-            sTarget = TitleMatcher.extractSeasonNumber(alt);
+        if (hasTarget || hasAlt) {
+            int sTarget = hasTarget ? TitleMatcher.extractSeasonNumber(target) : TitleMatcher.extractSeasonNumber(alt);
+            for (Anime a : list) {
+                if (a == null || a.title == null) continue;
+                int sCandidate = TitleMatcher.extractSeasonNumber(a.title);
+                if (sTarget == sCandidate && ((hasTarget && TitleMatcher.isTitleMatch(target, a.title)) || (hasAlt && TitleMatcher.isTitleMatch(alt, a.title)))) {
+                    return a.slug;
+                }
+            }
         }
-        for (Anime a : list) {
-            int sCandidate = TitleMatcher.extractSeasonNumber(a.title);
-            if (sTarget == sCandidate && (TitleMatcher.isTitleMatch(target, a.title) || (!alt.isEmpty() && TitleMatcher.isTitleMatch(alt, a.title)))) {
-                return a.slug;
+        // Fallback: candidate 0 if season matches and no contradictory terms
+        Anime first = list.get(0);
+        if (first != null && first.slug != null && !first.slug.isEmpty() && first.title != null) {
+            String q = hasTarget ? target : alt;
+            int sQ = TitleMatcher.extractSeasonNumber(q);
+            int sFirst = TitleMatcher.extractSeasonNumber(first.title);
+            if (sQ == sFirst && !TitleMatcher.hasContradictoryKeywords(q, first.title)) {
+                return first.slug;
             }
         }
         return null;
@@ -621,7 +648,7 @@ public class DetailActivity extends AppCompatActivity {
             public void onSuccess(List<Episode> aniChanEps) {
                 List<Episode> filtered = filterAccurateEpisodes(aniChanEps);
                 if (!filtered.isEmpty()) {
-                    applyLoadedEpisodes(filtered);
+                    applyLoadedEpisodes(null, filtered);
                     return;
                 }
                 fetchOtakudesuFallback();
@@ -685,8 +712,12 @@ public class DetailActivity extends AppCompatActivity {
         });
     }
 
-    private void applyLoadedEpisodes(List<Episode> filtered) {
+    private void applyLoadedEpisodes(String matchedSlug, List<Episode> filtered) {
         if (filtered == null || filtered.isEmpty()) return;
+        if (matchedSlug != null && !matchedSlug.isEmpty()) {
+            StreamResolver.cacheSlug(anime.slug, matchedSlug);
+            if (anime.id > 0) StreamResolver.cacheSlug(String.valueOf(anime.id), matchedSlug);
+        }
         FeedCache.getInstance(this).saveEpisodeList(anime.slug, filtered);
         mainHandler.post(() -> {
             if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
@@ -695,6 +726,11 @@ public class DetailActivity extends AppCompatActivity {
             anime.airedEpisodesCount = filtered.size();
             refreshWatchedStates();
             episodeAdapter.setData(episodeList);
+
+            if (PlaybackDataHolder.hasData() && PlaybackDataHolder.getAnime() != null &&
+                    (PlaybackDataHolder.getAnime().id == anime.id || anime.slug.equals(PlaybackDataHolder.getAnime().slug))) {
+                PlaybackDataHolder.set(anime, episodeList, PlaybackDataHolder.getIndex());
+            }
         });
     }
 
