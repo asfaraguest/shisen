@@ -13,7 +13,7 @@
   </p>
 
   <p>
-    <a href="https://github.com/asfaraguest/shisen/releases/latest/download/shisen-release-v0.1.0-beta.7.apk"><img src="https://img.shields.io/badge/Download-Android%20APK-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android APK"></a>
+    <a href="https://github.com/asfaraguest/shisen/releases/latest"><img src="https://img.shields.io/badge/Download-Android%20APK-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android APK"></a>
   </p>
 
   <p>
@@ -60,7 +60,7 @@ Integrasi backend mengikuti paritas menu dari [Tatap](https://github.com/asfarag
 
 APK rilis resmi (signed, production keystore):
 
-- [GitHub Releases](https://github.com/asfaraguest/shisen/releases) — `shisen-release-v0.1.0-beta.7.apk`
+- [GitHub Releases](https://github.com/asfaraguest/shisen/releases) — `shisen-release-v0.1.0-beta.8.apk`
 
 > Hanya asset `shisen-release-*.apk` yang dipublikasikan. `menatap-release-*.apk` tidak di-upload.
 
@@ -74,7 +74,7 @@ cd android
 ```
 
 Output akan tersedia di:
-`android/app/build/outputs/apk/release/shisen-release-v0.1.0-beta.7.apk`
+`android/app/build/outputs/apk/release/shisen-release-v0.1.0-beta.8.apk`
 
 ---
 
