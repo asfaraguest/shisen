@@ -158,7 +158,7 @@
     <string name="settings_ai_model_hint">モデル名 (例: gemini-2.5-flash)</string>
     <string name="settings_ai_prompt_label">翻訳プロンプト</string>
     <string name="settings_ai_prompt_hint">翻訳指示プロンプトを入力...</string>
-    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama</string>
+    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama / OpenRouter</string>
     <string name="settings_ai_badge_active">有効: %s</string>
     <string name="settings_ai_badge_detected">検出: %s</string>
 
@@ -336,6 +336,10 @@
     <string name="ai_dialog_prompt_title">カスタム翻訳プロンプト (ファンサブ)</string>
     <string name="ai_dialog_prompt_desc">文体、ペルソナ、ファンサブ規則を指示します。空欄の場合はデフォルトのファンサブプロンプトが使用されます。</string>
     <string name="ai_dialog_save">設定を保存</string>
+    <string name="player_sub_option_ai">[AI] インドネシア語 (AI Fansub LLM)</string>
+    <string name="player_sub_ai_not_configured">LLM APIキーが設定されていません。先に設定してください。</string>
+    <string name="player_sub_option_refresh_ai">[Refresh] AI字幕を再翻訳 (キャッシュ消去)</string>
+    <string name="player_sub_ai_loading">AIで翻訳中 (%d%%)...</string>
 
     <!-- 3-Lane Section Headers (Airing) -->
     <string name="lane_header_current_season">今期アニメ (%1$s %2$d)</string>

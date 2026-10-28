@@ -1702,7 +1702,24 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
-        // 2. [ID] Asli / Bawaan (jika tersedia di track asli)
+        // 2. [AI] Bahasa Indonesia (AI Fansub LLM)
+        boolean isAiSelected = isSubOn && "id".equals(curLang) && "ai".equals(curEngine);
+        options.add(getString(R.string.player_sub_option_ai) + (isAiSelected ? " [Aktif]" : ""));
+        actions.add(() -> {
+            String aiKey = AiSubtitleService.getKey(this);
+            if (aiKey == null || aiKey.trim().isEmpty()) {
+                Toast.makeText(this, R.string.player_sub_ai_not_configured, Toast.LENGTH_LONG).show();
+                showAiSubtitleSettingsDialog();
+                return;
+            }
+            subtitleManager.setSubEnabled(true);
+            subtitleManager.setMode("id", "ai");
+            if (currentStreamSource != null) {
+                subtitleManager.loadAiSubtitleFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), false);
+            }
+        });
+
+        // 3. [ID] Asli / Bawaan (jika tersedia di track asli)
         if (currentStreamSource != null && currentStreamSource.subtitles != null) {
             for (SubtitleTrack st : currentStreamSource.subtitles) {
                 if (st.lang.toLowerCase().contains("id") || st.label.toLowerCase().contains("indonesia")) {
@@ -1717,15 +1734,15 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
 
-        // 3. AI Subtitle BYOK & Custom Prompt Quick Configuration
+        // 4. AI Subtitle BYOK & Custom Prompt Quick Configuration
         String aiKey = AiSubtitleService.getKey(this);
         String aiLabel = (aiKey != null && !aiKey.isEmpty())
                 ? "✨ Pengaturan AI Subtitle & Prompt [" + AiSubtitleService.Provider.detect(aiKey).displayName + "]"
-                : "✨ Pengaturan AI Subtitle (Gemini / Groq / OpenAI)...";
+                : "✨ Pengaturan AI Subtitle (Gemini / Groq / OpenAI / Ollama)...";
         options.add(aiLabel);
         actions.add(this::showAiSubtitleSettingsDialog);
 
-        // 3. [EN] English (Original)
+        // 5. [EN] English (Original)
         boolean isEnSelected = isSubOn && "en".equals(curLang) && "raw".equals(curEngine);
         options.add("[EN] English (Original / Asli)" + (isEnSelected ? " [Aktif]" : ""));
         actions.add(() -> {
@@ -1741,7 +1758,7 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
-        // 4. Other tracks from stream
+        // 6. Other tracks from stream
         if (currentStreamSource != null && currentStreamSource.subtitles != null) {
             for (SubtitleTrack st : currentStreamSource.subtitles) {
                 String l = st.lang.toLowerCase();
@@ -1754,15 +1771,25 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
 
-        // 5. Refresh / Re-translate (Bypass Cache)
+        // 7. Refresh / Re-translate (Bypass Cache)
         if (isSubOn && "id".equals(curLang)) {
-            options.add("[Refresh] Terjemahkan Ulang Subtitle (Hapus Cache)");
-            actions.add(() -> {
-                Toast.makeText(this, R.string.player_toast_retranslating, Toast.LENGTH_SHORT).show();
-                if (currentStreamSource != null) {
-                    subtitleManager.loadFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), true);
-                }
-            });
+            if ("ai".equals(curEngine)) {
+                options.add(getString(R.string.player_sub_option_refresh_ai));
+                actions.add(() -> {
+                    Toast.makeText(this, R.string.player_toast_retranslating, Toast.LENGTH_SHORT).show();
+                    if (currentStreamSource != null) {
+                        subtitleManager.loadAiSubtitleFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), true);
+                    }
+                });
+            } else {
+                options.add("[Refresh] Terjemahkan Ulang Subtitle (Hapus Cache)");
+                actions.add(() -> {
+                    Toast.makeText(this, R.string.player_toast_retranslating, Toast.LENGTH_SHORT).show();
+                    if (currentStreamSource != null) {
+                        subtitleManager.loadFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), true);
+                    }
+                });
+            }
         }
 
         // 6. Search AnimeTosho & OpenSubtitles
@@ -2126,7 +2153,7 @@ public class PlayerActivity extends AppCompatActivity {
                 if (!input.isEmpty()) {
                     tvBadge.setText("Terdeteksi: " + p.displayName);
                 } else {
-                    tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
+                    tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama / OpenRouter");
                 }
                 SettingsDialog.populateModelChips(layoutChips, PlayerActivity.this, p, etModel);
                 if (etModel != null && etModel.getText().toString().trim().isEmpty()) {
@@ -2166,7 +2193,7 @@ public class PlayerActivity extends AppCompatActivity {
             if (etCustomPrompt != null) {
                 etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
             }
-            tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama");
+            tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama / OpenRouter");
             Toast.makeText(this, "Kunci API dan pengaturan telah dihapus", Toast.LENGTH_SHORT).show();
         });
 

@@ -158,7 +158,7 @@
     <string name="settings_ai_model_hint">Nombre del modelo (ej: gemini-2.5-flash)</string>
     <string name="settings_ai_prompt_label">Prompt de Traducción</string>
     <string name="settings_ai_prompt_hint">Ingresa instrucciones para traducción...</string>
-    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama</string>
+    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama / OpenRouter</string>
     <string name="settings_ai_badge_active">Activo: %s</string>
     <string name="settings_ai_badge_detected">Detectado: %s</string>
 
@@ -336,6 +336,10 @@
     <string name="ai_dialog_prompt_title">Prompt de traducción personalizado (Fansub)</string>
     <string name="ai_dialog_prompt_desc">Instruye el estilo, tono o reglas de fansub. Deja en blanco para usar el prompt por defecto.</string>
     <string name="ai_dialog_save">Guardar Ajustes</string>
+    <string name="player_sub_option_ai">[AI] Indonesio (AI Fansub LLM)</string>
+    <string name="player_sub_ai_not_configured">Clave API de LLM no configurada. Por favor configúrela primero.</string>
+    <string name="player_sub_option_refresh_ai">[Refresh] Retraducir subtítulo IA (Borrar caché)</string>
+    <string name="player_sub_ai_loading">Traduciendo con IA (%d%%)...</string>
 
     <!-- 3-Lane Section Headers (Airing) -->
     <string name="lane_header_current_season">ANIME DE LA TEMPORADA ACTUAL (%1$s %2$d)</string>

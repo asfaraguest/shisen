@@ -158,7 +158,7 @@
     <string name="settings_ai_model_hint">Nama model (misal: gemini-2.5-flash)</string>
     <string name="settings_ai_prompt_label">Prompt Fansub</string>
     <string name="settings_ai_prompt_hint">Prompt instruksi terjemahan fansub...</string>
-    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama</string>
+    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama / OpenRouter</string>
     <string name="settings_ai_badge_active">Aktif: %s</string>
     <string name="settings_ai_badge_detected">Terdeteksi: %s</string>
 
@@ -336,6 +336,10 @@
     <string name="ai_dialog_prompt_title">Prompt Terjemahan Kustom (Fansub)</string>
     <string name="ai_dialog_prompt_desc">Instruksikan gaya bahasa, persona terjemahan, atau aturan penulisan fansub. Kosongkan untuk menggunakan prompt default fansub.</string>
     <string name="ai_dialog_save">Simpan Pengaturan</string>
+    <string name="player_sub_option_ai">[AI] Bahasa Indonesia (AI Fansub LLM)</string>
+    <string name="player_sub_ai_not_configured">Kunci API LLM belum dikonfigurasi. Silakan atur terlebih dahulu.</string>
+    <string name="player_sub_option_refresh_ai">[Refresh] Terjemahkan Ulang Subtitle AI (Hapus Cache)</string>
+    <string name="player_sub_ai_loading">Menerjemahkan dengan AI (%d%%)...</string>
 
     <!-- 3-Lane Section Headers (Airing) -->
     <string name="lane_header_current_season">ANIME MUSIM BERJALAN (%1$s %2$d)</string>

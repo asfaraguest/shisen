@@ -44,6 +44,15 @@ public class AiSubtitleServiceTest {
         assertEquals(AiSubtitleService.Provider.OPENAI,
                 AiSubtitleService.Provider.detect("sk-standard-token-xyz"));
 
+        assertEquals(AiSubtitleService.Provider.OPENROUTER,
+                AiSubtitleService.Provider.detect("sk-or-v1-abcdef1234567890"));
+
+        assertEquals(AiSubtitleService.Provider.OLLAMA,
+                AiSubtitleService.Provider.detect("ollama_secret_token_123"));
+
+        assertEquals(AiSubtitleService.Provider.OLLAMA,
+                AiSubtitleService.Provider.detect("afd1045dafd1045dafd1045dafd1045d.TYA04secret"));
+
         assertEquals(AiSubtitleService.Provider.OLLAMA,
                 AiSubtitleService.Provider.detect("http://192.168.1.50:11434"));
 
@@ -205,7 +214,7 @@ public class AiSubtitleServiceTest {
     @Test
     public void testDefaultCustomPromptConstant() {
         assertNotNull(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
-        assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("Bahasa Indonesia"));
+        assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.toLowerCase().contains("bahasa indonesia"));
         assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("fansub"));
         assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("honorifik"));
     }
@@ -215,7 +224,8 @@ public class AiSubtitleServiceTest {
         assertEquals("gemini-2.5-flash", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GEMINI));
         assertEquals("llama-3.3-70b-versatile", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GROQ));
         assertEquals("gpt-4o-mini", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENAI));
-        assertEquals("llama3.2", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OLLAMA));
+        assertEquals("google/gemini-2.0-flash-exp:free", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENROUTER));
+        assertEquals("gpt-oss:20b", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OLLAMA));
 
         java.util.List<String> geminiModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.GEMINI);
         assertTrue(geminiModels.size() >= 3);
@@ -286,5 +296,29 @@ public class AiSubtitleServiceTest {
         RecordedRequest req = server.takeRequest();
         String body = req.getBody().readUtf8();
         assertTrue(body.contains("\"model\":\"mixtral-8x7b-32768\""));
+    }
+
+    @Test
+    public void testPrepLineTokenization() {
+        assertEquals("Hello <br> World", AiSubtitleService.prepLine("Hello\nWorld"));
+        assertEquals("First line <br> Second line", AiSubtitleService.prepLine("First line\r\nSecond line\n"));
+        assertEquals("", AiSubtitleService.prepLine(null));
+        assertEquals("", AiSubtitleService.prepLine("   \n   "));
+    }
+
+    @Test
+    public void testParseIdLinesWithThinkTagsAndMarkdown() {
+        String llmOutput = "<think>\nThinking about translation...\n</think>\n" +
+                "```text\n" +
+                "1|Yang Mulia, prajurit telah tiba.\n" +
+                "2|Incaranmu tinggi juga ya?<br>Nibutani, kan?\n" +
+                "3|Hello World|Halo Dunia!\n" +
+                "```";
+
+        java.util.Map<Integer, String> parsed = AiSubtitleService.parseIdLines(llmOutput, 5);
+        assertEquals(3, parsed.size());
+        assertEquals("Yang Mulia, prajurit telah tiba.", parsed.get(1));
+        assertEquals("Incaranmu tinggi juga ya?\nNibutani, kan?", parsed.get(2));
+        assertEquals("Halo Dunia!", parsed.get(3));
     }
 }
