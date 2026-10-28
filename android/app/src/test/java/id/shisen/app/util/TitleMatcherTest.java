@@ -127,4 +127,50 @@ public class TitleMatcherTest {
                         "Attack on Titan OVA",
                         "Attack on Titan Season 1"));
     }
+
+    @Test
+    public void testSeasonalAnimeDistinctTitlesDoNotMatch() {
+        // Fall/Seasonal 2024: Blue Box vs Blue Lock (must never cross-match)
+        assertFalse("Blue Box must NOT match Blue Lock",
+                TitleMatcher.isTitleMatch("Blue Box", "Blue Lock"));
+        assertFalse("Blue Box must NOT match Blue Lock S2",
+                TitleMatcher.isTitleMatch("Blue Box", "Blue Lock vs. U-20 JAPAN"));
+
+        // Dungeon People vs Dungeon Meshi
+        assertFalse("Dungeon People must NOT match Dungeon Meshi",
+                TitleMatcher.isTitleMatch("Dungeon People", "Dungeon Meshi"));
+
+        // Dragon Ball Daima vs Super
+        assertFalse("Dragon Ball Daima must NOT match Dragon Ball Super",
+                TitleMatcher.isTitleMatch("Dragon Ball Daima", "Dragon Ball Super"));
+
+        // Remake year isolation: Ranma 1/2 (2024) vs Ranma 1/2 (1989)
+        assertFalse("Ranma (2024) must NOT match Ranma (1989)",
+                TitleMatcher.isTitleMatch("Ranma 1/2 (2024)", "Ranma 1/2 (1989)"));
+
+        // Generic word sharing must not trigger match
+        assertFalse("Amagami-san Chi no Enmusubi must NOT match Amagami SS",
+                TitleMatcher.isTitleMatch("Amagami-san Chi no Enmusubi", "Amagami SS"));
+
+        assertFalse("Tasokare Hotel must NOT match random hotel anime",
+                TitleMatcher.isTitleMatch("Tasokare Hotel", "Hazurewaku no Joutai Ijou"));
+
+        assertFalse("Youkai Gakkou must NOT match Gakkou Gurashi",
+                TitleMatcher.isTitleMatch("Youkai Gakkou no Sensei Hajimemashita!", "Gakkou Gurashi!"));
+
+        assertFalse("Kanojo mo Kanojo must NOT match Kanojo Okarishimasu",
+                TitleMatcher.isTitleMatch("Kanojo mo Kanojo", "Kanojo, Okarishimasu"));
+    }
+
+    @Test
+    public void testValidSeasonalSlugAndExactMatches() {
+        assertTrue("Dragon Ball Daima should match sluggified form",
+                TitleMatcher.isTitleMatch("Dragon Ball Daima", "dragon-ball-daima"));
+
+        assertTrue("Blue Box should match exact normalized form",
+                TitleMatcher.isTitleMatch("Blue Box", "blue-box"));
+
+        assertTrue("Dandadan should match stylized or sluggified",
+                TitleMatcher.isTitleMatch("DAN DA DAN", "dandadan"));
+    }
 }

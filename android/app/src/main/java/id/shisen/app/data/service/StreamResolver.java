@@ -191,23 +191,20 @@ public class StreamResolver {
                 }
             }
         }
-        // Season-aware fallback on search candidates
-        if (hasTarget) {
-            int sTarget = TitleMatcher.extractSeasonNumber(target);
+        // Season-consistent match: only if season matches AND title also matches target or alt!
+        if (hasTarget || hasAlt) {
+            int sTarget = hasTarget ? TitleMatcher.extractSeasonNumber(target) : TitleMatcher.extractSeasonNumber(alt);
             for (Anime c : candidates) {
                 if (c == null || c.title == null) continue;
                 int sCandidate = TitleMatcher.extractSeasonNumber(c.title);
                 if (sTarget == sCandidate) {
-                    return c.slug;
+                    if ((hasTarget && TitleMatcher.isTitleMatch(target, c.title)) || (hasAlt && TitleMatcher.isTitleMatch(alt, c.title))) {
+                        return c.slug;
+                    }
                 }
             }
         }
-        for (Anime c : candidates) {
-            if (c != null && c.slug != null && !c.slug.isEmpty()) {
-                return c.slug;
-            }
-        }
-        return candidates.get(0) != null ? candidates.get(0).slug : null;
+        return null;
     }
 
     private static void fetchHiAnimeEpAndResolve(String slug, Episode episode, Callback callback) {
@@ -281,13 +278,14 @@ public class StreamResolver {
 
                 String otakuSlug = null;
                 for (Anime r : results) {
-                    if (TitleMatcher.isTitleMatch(searchQ, r.title)) {
+                    if (TitleMatcher.isTitleMatch(searchQ, r.title) || TitleMatcher.isMatchAny(anime, r)) {
                         otakuSlug = r.slug;
                         break;
                     }
                 }
                 if (otakuSlug == null) {
-                    otakuSlug = results.get(0).slug;
+                    callback.onError(new IOException("Judul tidak cocok di Otakudesu"));
+                    return;
                 }
 
                 OtakudesuScraper.getEpisodes(otakuSlug, new OtakudesuScraper.Callback<List<Episode>>() {

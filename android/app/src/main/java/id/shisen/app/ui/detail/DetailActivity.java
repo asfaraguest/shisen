@@ -610,16 +610,23 @@ public class DetailActivity extends AppCompatActivity {
     private void fetchOtakudesuFallback() {
         String cleanTitle = (anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
                 ? anime.romajiTitle : anime.title;
-        cleanTitle = cleanTitle.replaceAll("(?i)(season|part|s\\d+|2nd|3rd|4th)\\b", "").trim();
+        final String searchTitle = cleanTitle.replaceAll("(?i)(season|part|s\\d+|2nd|3rd|4th)\\b", "").trim();
 
-        OtakudesuScraper.searchAnime(cleanTitle, new OtakudesuScraper.Callback<List<Anime>>() {
+        OtakudesuScraper.searchAnime(searchTitle, new OtakudesuScraper.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> results) {
                 mainHandler.post(() -> {
                     if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
                 });
                 if (results != null && !results.isEmpty()) {
-                    String matchedSlug = results.get(0).slug;
+                    String matchedSlug = null;
+                    for (Anime r : results) {
+                        if (TitleMatcher.isTitleMatch(searchTitle, r.title) || TitleMatcher.isMatchAny(anime, r)) {
+                            matchedSlug = r.slug;
+                            break;
+                        }
+                    }
+                    if (matchedSlug == null) return;
                     OtakudesuScraper.getEpisodes(matchedSlug, new OtakudesuScraper.Callback<List<Episode>>() {
                         @Override
                         public void onSuccess(List<Episode> otakuEpisodes) {

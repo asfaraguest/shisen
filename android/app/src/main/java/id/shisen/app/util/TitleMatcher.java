@@ -13,7 +13,8 @@ public class TitleMatcher {
 
     private static final Set<String> STOPWORDS = new HashSet<>(Arrays.asList(
             "the", "a", "an", "of", "in", "to", "and", "und", "der", "die", "das",
-            "no", "wa", "ga", "ni", "de", "series", "season", "s"
+            "no", "wa", "ga", "ni", "de", "series", "season", "s", "part", "cour",
+            "1st", "2nd", "3rd", "4th", "5th", "1", "2", "3", "4", "5"
     ));
 
     private static final Set<String> MOVIE_KEYWORDS = new HashSet<>(Arrays.asList(
@@ -24,11 +25,42 @@ public class TitleMatcher {
             "ova", "special", "oad"
     ));
 
+    private static final Set<String> GENERIC_ANIME_WORDS = new HashSet<>(Arrays.asList(
+            "blue", "sword", "dungeon", "hero", "heroes", "lord", "king", "witch", "girl", "girls",
+            "magic", "magical", "academy", "battle", "world", "game", "life", "isekai", "level",
+            "reincarnated", "reincarnation", "master", "shinobi", "ninja", "monster", "monsters",
+            "chronicles", "chronicle", "story", "stories", "tales", "tale", "legend", "legends",
+            "war", "wars", "star", "stars", "dark", "blood", "gate", "zero", "devil", "demon",
+            "demons", "exorcist", "prince", "princess", "knight", "knights", "danjo", "people",
+            "meshi", "lock", "box", "super", "daima", "shikkaku", "online", "piece", "adventure",
+            "order", "fate", "high", "live", "code", "fire", "city", "gold", "time", "dead"
+    ));
+
+    // Pairs of mutually exclusive franchise/subtitle keywords that must never cross-match
+    private static final String[][] CONTRADICTORY_PAIRS = {
+            {"box", "lock"},
+            {"daima", "super"},
+            {"daima", "kai"},
+            {"people", "meshi"},
+            {"brotherhood", "shamballa"},
+            {"gakkou", "enmusubi"}
+    };
+
     public static String normalize(String s) {
         if (s == null) return "";
         String clean = s.toLowerCase(Locale.US).replace("&", "and");
         clean = clean.replaceAll("\\bund\\b", "and");
         return clean.replaceAll("[^a-zA-Z0-9]", "");
+    }
+
+    public static int extractYear(String title) {
+        if (title == null || title.isEmpty()) return -1;
+        Pattern p = Pattern.compile("\\b(19\\d{2}|20\\d{2})\\b");
+        Matcher m = p.matcher(title);
+        if (m.find()) {
+            try { return Integer.parseInt(m.group(1)); } catch (Exception ignored) {}
+        }
+        return -1;
     }
 
     public static int extractSeasonNumber(String title) {
@@ -102,10 +134,32 @@ public class TitleMatcher {
             return true;
         }
 
-        // 2. Strict season consistency (prevent S2 matching S1)
+        // Substring normalized check if one is full slug or contains complete title (min 10 chars)
+        if (normA.length() >= 10 && normB.length() >= 10) {
+            if (normA.contains(normB) || normB.contains(normA)) {
+                int sA = extractSeasonNumber(target);
+                int sB = extractSeasonNumber(candidate);
+                if (sA == sB) {
+                    int yA = extractYear(target);
+                    int yB = extractYear(candidate);
+                    if (yA == -1 || yB == -1 || yA == yB) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // 2. Strict season consistency (prevent S2 matching S1, S3 matching S2)
         int sA = extractSeasonNumber(target);
         int sB = extractSeasonNumber(candidate);
         if ((sA > 1 || sB > 1) && sA != sB) {
+            return false;
+        }
+
+        // 3. Strict year consistency if both explicitly provide a year (e.g. 2024 remake vs 1989 original)
+        int yA = extractYear(target);
+        int yB = extractYear(candidate);
+        if (yA != -1 && yB != -1 && yA != yB) {
             return false;
         }
 
@@ -113,21 +167,31 @@ public class TitleMatcher {
         Set<String> tokensB = cleanTitleTokens(candidate);
         if (tokensA.isEmpty() || tokensB.isEmpty()) return false;
 
-        // 3. Isolate Movie/Film vs TV Series
+        // 4. Isolate Movie/Film vs TV Series
         boolean isMovieA = false;
         for (String m : MOVIE_KEYWORDS) { if (tokensA.contains(m)) { isMovieA = true; break; } }
         boolean isMovieB = false;
         for (String m : MOVIE_KEYWORDS) { if (tokensB.contains(m)) { isMovieB = true; break; } }
         if (isMovieA != isMovieB) return false;
 
-        // 4. Isolate OVA/Special vs TV Series
+        // 5. Isolate OVA/Special vs TV Series
         boolean isOvaA = false;
         for (String o : OVA_KEYWORDS) { if (tokensA.contains(o)) { isOvaA = true; break; } }
         boolean isOvaB = false;
         for (String o : OVA_KEYWORDS) { if (tokensB.contains(o)) { isOvaB = true; break; } }
         if (isOvaA != isOvaB) return false;
 
-        // 5. Significant token overlap calculation
+        // 6. Contradictory Keyword Check (e.g. "box" vs "lock", "daima" vs "super")
+        for (String[] pair : CONTRADICTORY_PAIRS) {
+            String word1 = pair[0];
+            String word2 = pair[1];
+            if ((tokensA.contains(word1) && tokensB.contains(word2)) ||
+                (tokensA.contains(word2) && tokensB.contains(word1))) {
+                return false;
+            }
+        }
+
+        // 7. Significant token overlap calculation
         Set<String> common = new HashSet<>(tokensA);
         common.retainAll(tokensB);
         common.removeAll(STOPWORDS);
@@ -138,22 +202,56 @@ public class TitleMatcher {
         Set<String> sigB = new HashSet<>(tokensB);
         sigB.removeAll(STOPWORDS);
 
-        // If there is a substantive shared keyword of length >= 4 (e.g. "frieren", "dandadan", "jujutsu"),
-        // and season/format checks passed above, it is a valid match!
-        for (String tok : common) {
-            if (tok.length() >= 4 && !STOPWORDS.contains(tok)) {
-                return true;
-            }
-        }
-
         if (sigA.isEmpty() || sigB.isEmpty()) {
             Set<String> allCommon = new HashSet<>(tokensA);
             allCommon.retainAll(tokensB);
-            return ((double) allCommon.size() / Math.max(tokensA.size(), tokensB.size())) >= 0.60;
+            return ((double) allCommon.size() / Math.max(tokensA.size(), tokensB.size())) >= 0.75;
         }
 
+        // Special handling for prominent multi-word signature franchises like "Re:Zero"
+        if (tokensA.contains("re") && tokensA.contains("zero") &&
+            tokensB.contains("re") && tokensB.contains("zero") && sA == sB) {
+            return true;
+        }
+
+        // Count non-generic common words
+        int nonGenericCommon = 0;
+        for (String tok : common) {
+            if (!GENERIC_ANIME_WORDS.contains(tok)) {
+                nonGenericCommon++;
+            }
+        }
+
+        // Short titles (<= 2 significant words like "Blue Box", "Blue Lock", "Amagami SS")
+        if (sigA.size() <= 2 || sigB.size() <= 2) {
+            double ratio = (double) common.size() / Math.max(sigA.size(), sigB.size());
+            if (ratio >= 0.99) {
+                // If 100% matched, require at least one non-generic word or 2 words minimum
+                return nonGenericCommon >= 1 || common.size() >= 2;
+            }
+            // For subset match in short title (e.g. "Frieren" in "Sousou no Frieren"):
+            // Must have a strong non-generic distinctive name
+            boolean aInB = sigB.containsAll(sigA);
+            boolean bInA = sigA.containsAll(sigB);
+            if ((aInB || bInA) && nonGenericCommon >= 1 && common.size() >= 2) {
+                return true;
+            }
+            return false;
+        }
+
+        // Long titles (>= 3 significant words):
+        // Require high token overlap (>= 70%) and at least one non-generic distinctive token
         double overlap = (double) common.size() / Math.max(sigA.size(), sigB.size());
-        return overlap >= 0.40;
+        if (overlap >= 0.70 && (nonGenericCommon >= 1 || common.size() >= 3)) {
+            return true;
+        }
+
+        // Full subset match for long titles
+        if ((sigA.containsAll(sigB) || sigB.containsAll(sigA)) && common.size() >= 3 && (nonGenericCommon >= 1 || common.size() >= 4)) {
+            return true;
+        }
+
+        return false;
     }
 
     public static boolean isMatchAny(Anime anime, Anime candidate) {
