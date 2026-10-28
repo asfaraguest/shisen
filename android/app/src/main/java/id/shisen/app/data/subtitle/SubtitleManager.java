@@ -35,7 +35,7 @@ public class SubtitleManager {
     private int currentLoadId = 0;
 
     public SubtitleManager(Context context) {
-        this.context = context.getApplicationContext();
+        this.context = context != null ? context.getApplicationContext() : null;
     }
 
     public void setListener(SubtitleStateListener listener) {
@@ -49,7 +49,10 @@ public class SubtitleManager {
     public void setSubEnabled(boolean enabled) {
         this.subEnabled = enabled;
         if (!enabled) {
-            clearCues();
+            synchronized (this) {
+                ++currentLoadId;
+                clearCues();
+            }
         }
     }
 
@@ -82,8 +85,18 @@ public class SubtitleManager {
         this.subtitleOffsetMs = offsetMs;
     }
 
+    public synchronized int getCurrentLoadId() {
+        return currentLoadId;
+    }
+
+    public synchronized int getActiveCuesCount() {
+        return activeCues != null ? activeCues.size() : 0;
+    }
+
     public synchronized void clearCues() {
         activeCues = new ArrayList<>();
+        sourceEnglishCues = new ArrayList<>();
+        lastCueIndex = -1;
     }
 
     /**
@@ -150,6 +163,11 @@ public class SubtitleManager {
         // 1. Ambil track English terlebih dahulu
         final SubtitleTrack sourceEn = (enTrack != null) ? enTrack : tracks.get(0);
         final int loadId = ++currentLoadId;
+        synchronized (this) {
+            activeLanguage = "id";
+            activeEngine = "smart_merge";
+            clearCues();
+        }
 
         if (listener != null) listener.onSubtitleLoading("Menyiapkan subtitle...");
 
@@ -376,6 +394,11 @@ public class SubtitleManager {
         }
         final SubtitleTrack sourceEn = (enTrack != null) ? enTrack : tracks.get(0);
         final int loadId = ++currentLoadId;
+        synchronized (this) {
+            activeLanguage = "id";
+            activeEngine = "ai";
+            clearCues();
+        }
 
         if (listener != null) listener.onSubtitleLoading("Menyiapkan sumber subtitle English...");
 
@@ -447,6 +470,11 @@ public class SubtitleManager {
 
     public void loadRawTrack(String url, String label, String lang, String referer) {
         final int loadId = ++currentLoadId;
+        synchronized (this) {
+            activeLanguage = lang != null ? lang : "en";
+            activeEngine = "raw";
+            clearCues();
+        }
         if (listener != null) listener.onSubtitleLoading("Memuat track: " + label);
 
         new Thread(() -> {
@@ -479,6 +507,11 @@ public class SubtitleManager {
 
     public void setCustomCues(List<SubtitleCue> cues, String label) {
         synchronized (this) {
+            ++currentLoadId;
+            activeLanguage = "custom";
+            activeEngine = "custom";
+            clearCues();
+
             List<SubtitleCue> target = cues != null ? cues : new ArrayList<>();
             if (label != null && label.toLowerCase().contains("indo")) {
                 List<SubtitleCue> lexCues = new ArrayList<>(target.size());
@@ -489,8 +522,6 @@ public class SubtitleManager {
             }
             activeCues = target;
             activeLabel = label;
-            activeLanguage = "custom";
-            activeEngine = "custom";
             subEnabled = true;
             if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
         }

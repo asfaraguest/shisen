@@ -1727,6 +1727,7 @@ public class PlayerActivity extends AppCompatActivity {
                     options.add("[ID] Bahasa Indonesia (Asli Bawaan)" + (isIdRawSelected ? " [Aktif]" : ""));
                     actions.add(() -> {
                         subtitleManager.setSubEnabled(true);
+                        subtitleManager.setMode("id", "raw");
                         subtitleManager.loadRawTrack(st.url, st.label, "id", st.referer);
                     });
                     break;
@@ -1747,6 +1748,7 @@ public class PlayerActivity extends AppCompatActivity {
         options.add("[EN] English (Original / Asli)" + (isEnSelected ? " [Aktif]" : ""));
         actions.add(() -> {
             subtitleManager.setSubEnabled(true);
+            subtitleManager.setMode("en", "raw");
             if (currentStreamSource != null) {
                 SubtitleTrack enTrack = findEnglishTrack(currentStreamSource.subtitles);
                 if (enTrack != null) {
@@ -1766,6 +1768,7 @@ public class PlayerActivity extends AppCompatActivity {
                 options.add(st.label);
                 actions.add(() -> {
                     subtitleManager.setSubEnabled(true);
+                    subtitleManager.setMode(st.lang, "raw");
                     subtitleManager.loadRawTrack(st.url, st.label, st.lang, st.referer);
                 });
             }
