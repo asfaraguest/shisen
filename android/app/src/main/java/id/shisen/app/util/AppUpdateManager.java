@@ -200,7 +200,7 @@ public class AppUpdateManager {
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_app_update);
-        SystemUiHelper.setupDialogBounds(dialog, activity);
+        SystemUiHelper.setupCustomDialogBounds(dialog, activity);
 
         TextView tvTitle = dialog.findViewById(R.id.tv_update_title);
         TextView tvVersionBadge = dialog.findViewById(R.id.tv_update_version_badge);
@@ -261,7 +261,7 @@ public class AppUpdateManager {
         downloadDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         downloadDialog.setContentView(R.layout.dialog_app_download);
         downloadDialog.setCancelable(false);
-        SystemUiHelper.setupDialogBounds(downloadDialog, activity);
+        SystemUiHelper.setupCustomDialogBounds(downloadDialog, activity);
 
         TextView tvTarget = downloadDialog.findViewById(R.id.tv_download_target_version);
         ProgressBar pbHorizontal = downloadDialog.findViewById(R.id.pb_download_horizontal);

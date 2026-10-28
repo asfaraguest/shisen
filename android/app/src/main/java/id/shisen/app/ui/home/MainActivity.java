@@ -1092,7 +1092,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupDialogWindowBounds(Dialog dialog) {
-        SystemUiHelper.setupDialogBounds(dialog, this);
+        SystemUiHelper.setupCustomDialogBounds(dialog, this);
     }
 
     private void showCatalogFilterDialog() {

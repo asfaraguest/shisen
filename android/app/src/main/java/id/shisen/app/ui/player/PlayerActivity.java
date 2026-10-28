@@ -1561,9 +1561,9 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.player_dialog_quality_title)
-                .setSingleChoiceItems(qualities, selectedIndex, (dialog, which) -> {
+                .setSingleChoiceItems(qualities, selectedIndex, (d, which) -> {
                     String key = qKeys[which];
                     String label = qualities[which].toString().split(" ")[0];
                     btnQuality.setText(label);
@@ -1572,10 +1572,12 @@ public class PlayerActivity extends AppCompatActivity {
                     getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
                             .edit().putString("pref_quality", key).apply();
                     Toast.makeText(this, getString(R.string.player_toast_quality_changed, label), Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
+                    d.dismiss();
                 })
                 .setNegativeButton(R.string.dialog_cancel, null)
-                .show();
+                .create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void applyHlsTrackSelection(String quality) {
@@ -1655,27 +1657,29 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.player_dialog_server_title)
-                .setSingleChoiceItems(servers, selectedIdx, (dialog, which) -> {
+                .setSingleChoiceItems(servers, selectedIdx, (d, which) -> {
                     preferredServer = serverKeys[which];
-                    dialog.dismiss();
+                    d.dismiss();
                     Toast.makeText(this, getString(R.string.player_toast_server_switching, servers[which].toString().split(" ")[0]), Toast.LENGTH_SHORT).show();
                     if (!episodeList.isEmpty() && currentIndex < episodeList.size()) {
                         playEpisodeWithServer(currentIndex, preferredServer);
                     }
                 })
                 .setNegativeButton(R.string.dialog_cancel, null)
-                .show();
+                .create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void showSpeedDialog() {
         CharSequence[] speeds = {"0.5x", "0.75x", "1.0x (Normal)", "1.25x", "1.5x", "2.0x"};
         float[] speedVals = {0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f};
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.player_dialog_speed_title)
-                .setItems(speeds, (dialog, which) -> {
+                .setItems(speeds, (d, which) -> {
                     currentSpeed = speedVals[which];
                     if (player != null) {
                         player.setPlaybackParameters(new PlaybackParameters(currentSpeed));
@@ -1683,8 +1687,11 @@ public class PlayerActivity extends AppCompatActivity {
                     String label = String.format(Locale.US, "%.1fx", currentSpeed);
                     btnPortraitSpeed.setText(label);
                     btnSpeed.setText(label);
+                    d.dismiss();
                 })
-                .show();
+                .create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     // --- SUBTITLE ENGINE MULTI-SOURCE & DIALOGS (Tatap OG Parity) ---
@@ -1900,15 +1907,17 @@ public class PlayerActivity extends AppCompatActivity {
                                 itemActions.add(() -> downloadAndApplyOpenSubtitlesSub(os.downloadUrl, os.filename));
                             }
 
-                            new AlertDialog.Builder(PlayerActivity.this)
+                            AlertDialog dialog = new AlertDialog.Builder(PlayerActivity.this)
                                     .setTitle(R.string.player_dialog_fansub_title)
-                                    .setItems(labels.toArray(new String[0]), (dialog, which) -> {
+                                    .setItems(labels.toArray(new String[0]), (d, which) -> {
                                         if (which >= 0 && which < itemActions.size()) {
                                             itemActions.get(which).run();
                                         }
                                     })
                                     .setNegativeButton(R.string.dialog_cancel, null)
-                                    .show();
+                                    .create();
+                            SystemUiHelper.setupDialogBounds(dialog, PlayerActivity.this);
+                            dialog.show();
                         });
                     }
 
@@ -2035,7 +2044,9 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
         b.setNegativeButton(R.string.dialog_cancel, null);
-        b.show();
+        AlertDialog dialog = b.create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void showSubtitleStyleDialog() {
@@ -2059,9 +2070,9 @@ public class PlayerActivity extends AppCompatActivity {
                 "Reset ke Default"
         };
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.player_dialog_sub_style_title)
-                .setItems(menu, (dialog, which) -> {
+                .setItems(menu, (d, which) -> {
                     if (which == 0) {
                         showPositionPicker(sp);
                     } else if (which == 1) {
@@ -2078,7 +2089,9 @@ public class PlayerActivity extends AppCompatActivity {
                     }
                 })
                 .setNegativeButton(R.string.dialog_close, null)
-                .show();
+                .create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void showPositionPicker(SharedPreferences sp) {
@@ -2086,16 +2099,18 @@ public class PlayerActivity extends AppCompatActivity {
         String cur = sp.getString("sub_pos", "low");
         int checked = "high".equals(cur) ? 2 : ("mid".equals(cur) ? 1 : 0);
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.player_dialog_sub_pos_title)
-                .setSingleChoiceItems(options, checked, (dialog, which) -> {
+                .setSingleChoiceItems(options, checked, (d, which) -> {
                     String val = which == 2 ? "high" : (which == 1 ? "mid" : "low");
                     sp.edit().putString("sub_pos", val).apply();
                     applySubtitleStyle();
-                    dialog.dismiss();
+                    d.dismiss();
                 })
                 .setNegativeButton(R.string.dialog_cancel, null)
-                .show();
+                .create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void showBackgroundPicker(SharedPreferences sp) {
@@ -2103,16 +2118,18 @@ public class PlayerActivity extends AppCompatActivity {
         String cur = sp.getString("sub_bg", "subtle");
         int checked = "dark".equals(cur) ? 3 : ("medium".equals(cur) ? 2 : ("transparent".equals(cur) ? 0 : 1));
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.player_dialog_sub_bg_title)
-                .setSingleChoiceItems(options, checked, (dialog, which) -> {
+                .setSingleChoiceItems(options, checked, (d, which) -> {
                     String val = which == 3 ? "dark" : (which == 2 ? "medium" : (which == 0 ? "transparent" : "subtle"));
                     sp.edit().putString("sub_bg", val).apply();
                     applySubtitleStyle();
-                    dialog.dismiss();
+                    d.dismiss();
                 })
                 .setNegativeButton(R.string.dialog_cancel, null)
-                .show();
+                .create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void showSizePicker(SharedPreferences sp) {
@@ -2120,16 +2137,18 @@ public class PlayerActivity extends AppCompatActivity {
         String cur = sp.getString("sub_size", "medium");
         int checked = "xlarge".equals(cur) ? 3 : ("large".equals(cur) ? 2 : ("small".equals(cur) ? 0 : 1));
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.player_dialog_sub_size_title)
-                .setSingleChoiceItems(options, checked, (dialog, which) -> {
+                .setSingleChoiceItems(options, checked, (d, which) -> {
                     String val = which == 3 ? "xlarge" : (which == 2 ? "large" : (which == 0 ? "small" : "medium"));
                     sp.edit().putString("sub_size", val).apply();
                     applySubtitleStyle();
-                    dialog.dismiss();
+                    d.dismiss();
                 })
                 .setNegativeButton(R.string.dialog_cancel, null)
-                .show();
+                .create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void showAiSubtitleSettingsDialog() {
@@ -2250,7 +2269,7 @@ public class PlayerActivity extends AppCompatActivity {
             autoSaveTask.run();
             dialog.dismiss();
         });
-        SystemUiHelper.setupDialogBounds(dialog, this);
+        SystemUiHelper.setupCustomDialogBounds(dialog, this);
         dialog.show();
     }
 
@@ -2277,17 +2296,19 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.player_dialog_sub_offset_title)
-                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                .setSingleChoiceItems(labels, checked, (d, which) -> {
                     if (which >= 0 && which < offsets.length) {
                         subtitleManager.setSubtitleOffsetMs(offsets[which]);
                         Toast.makeText(this, getString(R.string.player_toast_offset, labels[which]), Toast.LENGTH_SHORT).show();
                     }
-                    dialog.dismiss();
+                    d.dismiss();
                 })
                 .setNegativeButton(R.string.dialog_cancel, null)
-                .show();
+                .create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void applySubtitleStyle() {
@@ -2351,9 +2372,9 @@ public class PlayerActivity extends AppCompatActivity {
                 "Picture-in-Picture (PiP)"
         };
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.player_dialog_main_title)
-                .setItems(menu, (dialog, which) -> {
+                .setItems(menu, (d, which) -> {
                     switch (which) {
                         case 0: showSubtitleSelectorDialog(); break;
                         case 1: showSubtitleStyleDialog(); break;
@@ -2373,7 +2394,9 @@ public class PlayerActivity extends AppCompatActivity {
                     }
                 })
                 .setNegativeButton(R.string.dialog_close, null)
-                .show();
+                .create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void showSafetyUnlockPill() {

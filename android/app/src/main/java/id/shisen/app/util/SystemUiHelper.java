@@ -9,6 +9,8 @@ import android.view.WindowManager;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
+import id.shisen.app.R;
+
 /**
  * SystemUiHelper - Menyelaraskan pewarnaan System UI (Status Bar & Navigation Bar)
  * secara Edge-to-Edge murni tanpa bilah hitam di atas, serta menjamin indikator sistem
@@ -64,11 +66,25 @@ public class SystemUiHelper {
     }
 
     public static void setupDialogBounds(android.app.Dialog dialog, android.content.Context context) {
+        setupDialogBounds(dialog, context, false);
+    }
+
+    public static void setupCustomDialogBounds(android.app.Dialog dialog, android.content.Context context) {
+        setupDialogBounds(dialog, context, true);
+    }
+
+    public static void setupDialogBounds(android.app.Dialog dialog, android.content.Context context, boolean isCustomViewWithBackground) {
         if (dialog == null || context == null) return;
         Window window = dialog.getWindow();
         if (window == null) return;
 
-        window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+        if (isCustomViewWithBackground) {
+            window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+        } else {
+            // Untuk AlertDialog atau dialog standar tanpa layout kustom berlatar:
+            // Pasang bg_dialog_frost agar memiliki latar belakang solid frost_surface yang elegan dan tidak transparan!
+            window.setBackgroundDrawableResource(R.drawable.bg_dialog_frost);
+        }
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         Runnable applyBounds = () -> {

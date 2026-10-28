@@ -78,7 +78,7 @@ public class SettingsDialog {
         // 5. About & Update
         setupAboutSection(dialogView, activity);
 
-        SystemUiHelper.setupDialogBounds(dialog, activity);
+        SystemUiHelper.setupCustomDialogBounds(dialog, activity);
         dialog.show();
     }
 
