@@ -146,22 +146,11 @@ public class SubtitleManager {
             return;
         }
 
-        SubtitleTrack enTrack = null;
-        SubtitleTrack idTrack = null;
-
-        for (SubtitleTrack t : tracks) {
-            String l = t.lang.toLowerCase();
-            if (enTrack == null && (l.contains("en") || t.label.toLowerCase().contains("english"))) {
-                enTrack = t;
-            }
-            if (idTrack == null && (l.contains("id") || l.contains("ind") || t.label.toLowerCase().contains("indonesia"))) {
-                idTrack = t;
-            }
+        final SubtitleTrack sourceEn = SubtitleTrack.findEnglishTrack(tracks);
+        if (sourceEn == null) {
+            if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan");
+            return;
         }
-
-        // Mode Smart Fansub & Merge (Bahasa Indonesia):
-        // 1. Ambil track English terlebih dahulu
-        final SubtitleTrack sourceEn = (enTrack != null) ? enTrack : tracks.get(0);
         final int loadId = ++currentLoadId;
         synchronized (this) {
             activeLanguage = "id";
@@ -385,14 +374,11 @@ public class SubtitleManager {
             return;
         }
 
-        SubtitleTrack enTrack = null;
-        for (SubtitleTrack t : tracks) {
-            String l = t.lang.toLowerCase();
-            if (enTrack == null && (l.contains("en") || t.label.toLowerCase().contains("english"))) {
-                enTrack = t;
-            }
+        final SubtitleTrack sourceEn = SubtitleTrack.findEnglishTrack(tracks);
+        if (sourceEn == null) {
+            if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan untuk AI Fansub");
+            return;
         }
-        final SubtitleTrack sourceEn = (enTrack != null) ? enTrack : tracks.get(0);
         final int loadId = ++currentLoadId;
         synchronized (this) {
             activeLanguage = "id";

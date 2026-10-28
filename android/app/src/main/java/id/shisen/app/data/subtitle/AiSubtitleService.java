@@ -728,9 +728,12 @@ Output:
                     try {
                         String jsonStr = readFile(cacheFile);
                         List<SubtitleCue> cachedCues = deserializeCues(jsonStr);
-                        if (!cachedCues.isEmpty()) {
+                        if (!cachedCues.isEmpty() && !containsDominantArabicScript(cachedCues)) {
                             if (callback != null) callback.onSuccess(cachedCues);
                             return;
+                        } else if (containsDominantArabicScript(cachedCues)) {
+                            // Hapus cache korup berbahasa Arab dari versi sebelumnya
+                            cacheFile.delete();
                         }
                     } catch (Exception ignored) {}
                 }
@@ -815,10 +818,12 @@ Output:
                     return;
                 }
 
-                // 3. Simpan ke Cache Disk
-                try {
-                    writeFile(cacheFile, serializeCues(translatedAll));
-                } catch (Exception ignored) {}
+                // 3. Simpan ke Cache Disk HANYA jika bukan kontaminasi bahasa Arab saat target Bahasa Indonesia
+                if (!containsDominantArabicScript(translatedAll)) {
+                    try {
+                        writeFile(cacheFile, serializeCues(translatedAll));
+                    } catch (Exception ignored) {}
+                }
 
                 if (callback != null) {
                     callback.onSuccess(translatedAll);
@@ -952,6 +957,30 @@ Output:
             }
         }
         return out;
+    }
+
+    public static boolean containsDominantArabicScript(List<SubtitleCue> cues) {
+        if (cues == null || cues.isEmpty()) return false;
+        int arabicCharCount = 0;
+        int totalCharCount = 0;
+        for (SubtitleCue c : cues) {
+            if (c == null || c.text == null) continue;
+            for (char ch : c.text.toCharArray()) {
+                if (Character.isWhitespace(ch)) continue;
+                totalCharCount++;
+                // Aksara Arab Unicode: 0600-06FF, 0750-077F, 08A0-08FF, FB50-FDFF, FE70-FEFF
+                if ((ch >= '\u0600' && ch <= '\u06FF') ||
+                        (ch >= '\u0750' && ch <= '\u077F') ||
+                        (ch >= '\u08A0' && ch <= '\u08FF') ||
+                        (ch >= '\uFB50' && ch <= '\uFDFF') ||
+                        (ch >= '\uFE70' && ch <= '\uFEFF')) {
+                    arabicCharCount++;
+                }
+            }
+        }
+        if (totalCharCount == 0) return false;
+        // Jika lebih dari 20% karakter non-whitespace adalah aksara Arab, anggap terkontaminasi teks Arab
+        return (arabicCharCount * 100 / totalCharCount) >= 20;
     }
 
     public static String prepLine(String text) {

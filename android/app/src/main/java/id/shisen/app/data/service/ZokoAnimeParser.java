@@ -125,7 +125,7 @@ public class ZokoAnimeParser {
                 String label = sObj.optString("label", "English");
                 boolean isDefault = sObj.optBoolean("default", false);
                 if (!url.isEmpty()) {
-                    String lang = label.toLowerCase().contains("indonesia") ? "id" : "en";
+                    String lang = SubtitleTrack.inferLanguage(label, sObj.optString("lang", ""));
                     streamSource.subtitles.add(new SubtitleTrack(url, lang, label, isDefault, referer));
                 }
             }

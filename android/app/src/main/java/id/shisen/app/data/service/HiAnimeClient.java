@@ -301,7 +301,7 @@ public class HiAnimeClient {
                     String file = tr.optString("file", "");
                     String label = tr.optString("label", "English");
                     boolean isDef = tr.optBoolean("default", false);
-                    String lang = label.toLowerCase().contains("indonesia") ? "id" : "en";
+                    String lang = SubtitleTrack.inferLanguage(label, tr.optString("lang", ""));
                     if (!file.isEmpty()) {
                         streamSource.subtitles.add(new SubtitleTrack(file, lang, label, isDef, subReferer));
                     }

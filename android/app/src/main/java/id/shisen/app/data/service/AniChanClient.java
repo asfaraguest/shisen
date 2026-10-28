@@ -199,7 +199,8 @@ public class AniChanClient {
                                 if (!sUrl.isEmpty()) {
                                     if (sUrl.startsWith("/")) sUrl = ANICHAN_BASE + sUrl;
                                     String lang = sub.optString("lang", "English");
-                                    source.subtitles.add(new SubtitleTrack(sUrl, lang.toLowerCase().contains("indonesia") ? "id" : "en", lang, false));
+                                    String parsedLang = SubtitleTrack.inferLanguage(lang, "");
+                                    source.subtitles.add(new SubtitleTrack(sUrl, parsedLang, lang, false));
                                 }
                             }
                         }

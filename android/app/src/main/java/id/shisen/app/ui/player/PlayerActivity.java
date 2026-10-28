@@ -1709,14 +1709,7 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private SubtitleTrack findEnglishTrack(List<SubtitleTrack> tracks) {
-        if (tracks == null) return null;
-        for (SubtitleTrack t : tracks) {
-            String l = t.lang.toLowerCase();
-            if (l.contains("en") || t.label.toLowerCase().contains("english")) {
-                return t;
-            }
-        }
-        return null;
+        return SubtitleTrack.findEnglishTrack(tracks);
     }
 
     private void showSubtitleSelectorDialog() {

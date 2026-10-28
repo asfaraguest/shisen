@@ -62,9 +62,11 @@ public class GtxTranslator {
                     try {
                         String jsonStr = readFile(cacheFile);
                         List<SubtitleCue> cachedCues = deserializeCues(jsonStr);
-                        if (!cachedCues.isEmpty()) {
+                        if (!cachedCues.isEmpty() && !AiSubtitleService.containsDominantArabicScript(cachedCues)) {
                             if (callback != null) callback.onSuccess(cachedCues);
                             return;
+                        } else if (AiSubtitleService.containsDominantArabicScript(cachedCues)) {
+                            cacheFile.delete();
                         }
                     } catch (Exception ignored) {}
                 }
@@ -105,7 +107,7 @@ public class GtxTranslator {
     boolean translationSuccessful = cues.isEmpty()
             || (sameCount * 100 / cues.size()) <= 80;
 
-    if (translationSuccessful) {
+    if (translationSuccessful && !AiSubtitleService.containsDominantArabicScript(sanitizedCues)) {
         try {
             String jsonOut = serializeCues(sanitizedCues);
             writeFile(cacheFile, jsonOut);
