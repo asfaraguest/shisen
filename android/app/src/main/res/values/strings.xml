@@ -350,4 +350,81 @@
     <string name="lane_tag_prev_season">MUSIM LALU</string>
     <string name="lane_header_long_running">SERIAL PANJANG BERKELANJUTAN</string>
     <string name="lane_tag_long_running">SERIAL PANJANG</string>
+
+    <!-- Player Subtitle Options & Labels -->
+    <string name="player_badge_active">[Aktif]</string>
+    <string name="player_sub_option_smart_id">[ID] Bahasa Indonesia (Smart Fansub &amp; Lexicon)</string>
+    <string name="player_sub_option_native_id">[ID] Bahasa Indonesia (Asli Bawaan)</string>
+    <string name="player_sub_option_native_en">[EN] English (Original / Asli)</string>
+    <string name="player_sub_option_ai_fmt">✨ Pengaturan AI Subtitle &amp; Prompt [%s]</string>
+    <string name="player_sub_option_ai_default">✨ Pengaturan AI Subtitle (Gemini / Groq / OpenAI / Ollama)...</string>
+    <string name="player_sub_option_refresh_gtx">[Refresh] Terjemahkan Ulang Subtitle (Hapus Cache)</string>
+    <string name="player_sub_option_search_online">[+] Cari Subtitle Bahasa Indonesia (AnimeTosho &amp; OpenSubtitles)...</string>
+    <string name="player_sub_option_pick_local">[+] Pilih File Subtitle Lokal (.srt / .vtt / .ass)...</string>
+    <string name="player_sub_option_custom_url">[+] Masukkan URL Subtitle Kustom...</string>
+    <string name="player_sub_option_sync_offset">[Sync] Sinkronisasi Waktu Subtitle (%s)...</string>
+    <string name="player_sub_option_appearance">Pengaturan Tampilan (Posisi, Latar Belakang &amp; Ukuran)...</string>
+    <string name="player_sub_option_disable">Matikan Subtitle</string>
+    <string name="player_sub_status_lines">%1$s (%2$d baris)</string>
+    <string name="player_speed_normal_item">1.0x (Normal)</string>
+
+    <!-- Player Quality Dialog Items -->
+    <string name="player_quality_auto_item">Auto (Paling Pas)</string>
+    <string name="player_quality_1080_item">1080p Full HD</string>
+    <string name="player_quality_720_item">720p HD</string>
+    <string name="player_quality_480_item">480p SD</string>
+    <string name="player_quality_360_item">360p Hemat</string>
+
+    <!-- Player Server Dialog Items -->
+    <string name="player_server_hianime_item">HiAnime (Utama · Multi-Audio &amp; Subtitle HD)</string>
+    <string name="player_server_anichan_item">AniChan (Cepat · Direct HLS Stream)</string>
+    <string name="player_server_otakudesu_item">Otakudesu (Cadangan · Hardsub Indonesia)</string>
+
+    <!-- Player Unified Settings Menu -->
+    <string name="player_settings_item_sub">Pilihan Subtitle &amp; Terjemahan (%s)</string>
+    <string name="player_settings_item_style">Pengaturan Tampilan Subtitle</string>
+    <string name="player_settings_item_offset">Sinkronisasi Waktu Subtitle (Offset)</string>
+    <string name="player_settings_item_quality">Kualitas Video (%s)</string>
+    <string name="player_settings_item_server">Pilihan Server / Sumber Video (%s)</string>
+    <string name="player_settings_item_autoskip">Auto-Skip Opening/Ending (%s)</string>
+    <string name="player_settings_item_speed">Kecepatan Pemutaran (%s)</string>
+    <string name="player_settings_item_aspect">Skala Layar (%s)</string>
+    <string name="player_settings_item_lock">Kunci Layar (%s)</string>
+    <string name="player_settings_item_pip">Picture-in-Picture (PiP)</string>
+    <string name="player_status_disabled">Mati</string>
+    <string name="player_status_locked">Terkunci</string>
+    <string name="player_status_unlocked">Terbuka</string>
+
+    <!-- Player Subtitle Style & Offset Options -->
+    <string name="player_sub_style_pos_fmt">Posisi Subtitle: %s</string>
+    <string name="player_sub_style_bg_fmt">Latar Belakang: %s</string>
+    <string name="player_sub_style_size_fmt">Ukuran Huruf: %s</string>
+    <string name="player_sub_style_offset_fmt">Sinkronisasi Waktu (Offset): %s</string>
+    <string name="player_sub_reset_default">Reset ke Default</string>
+    <string name="player_sub_pos_low">Bawah (22dp) [Pas]</string>
+    <string name="player_sub_pos_mid">Sedang (36dp)</string>
+    <string name="player_sub_pos_high">Tinggi (54dp)</string>
+    <string name="player_sub_bg_transparent">Transparan (Tanpa Box)</string>
+    <string name="player_sub_bg_subtle">Samar / Lembut (30%)</string>
+    <string name="player_sub_bg_medium">Sedang (55%)</string>
+    <string name="player_sub_bg_dark">Pekat (80%)</string>
+    <string name="player_sub_size_small">Kecil (14sp)</string>
+    <string name="player_sub_size_medium">Sedang (17sp) [Standar HP]</string>
+    <string name="player_sub_size_large">Besar (21sp)</string>
+    <string name="player_sub_size_xlarge">Sangat Besar (25sp)</string>
+
+    <string name="player_sub_offset_earlier_2s">-2.0s (Lebih Cepat 2 Detik)</string>
+    <string name="player_sub_offset_earlier_1s">-1.0s (Lebih Cepat 1 Detik)</string>
+    <string name="player_sub_offset_earlier_05s">-0.5s (Lebih Cepat 0.5 Detik)</string>
+    <string name="player_sub_offset_earlier_025s">-0.25s (Lebih Cepat 0.25 Detik)</string>
+    <string name="player_sub_offset_synced">0.0s (Normal / Pas)</string>
+    <string name="player_sub_offset_later_025s">+0.25s (Lebih Lambat 0.25 Detik)</string>
+    <string name="player_sub_offset_later_05s">+0.5s (Lebih Lambat 0.5 Detik)</string>
+    <string name="player_sub_offset_later_1s">+1.0s (Lebih Lambat 1 Detik)</string>
+    <string name="player_sub_offset_later_2s">+2.0s (Lebih Lambat 2 Detik)</string>
+
+    <!-- Player Aspect Ratio Toasts -->
+    <string name="player_toast_aspect_zoom">Mode: Zoom (Penuh Layar)</string>
+    <string name="player_toast_aspect_fill">Mode: Fill (Rentang Rasio)</string>
+    <string name="player_toast_aspect_fit">Mode: Fit (Asli 16:9)</string>
 </resources>

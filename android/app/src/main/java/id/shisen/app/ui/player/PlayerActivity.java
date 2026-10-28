@@ -418,7 +418,7 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onSubtitleLoaded(String label, int count) {
                 runOnUiThread(() -> {
-                    tvSubStatus.setText(label + " (" + count + " baris)");
+                    tvSubStatus.setText(getString(R.string.player_sub_status_lines, label, count));
                     btnPortraitSub.setText(label.contains("Indo") ? "Sub: ID" : (label.contains("Eng") ? "Sub: EN" : "Sub: ON"));
                     btnPortraitSub.setAlpha(1.0f);
                     updateExoSubButtonState(true);
@@ -1535,21 +1535,27 @@ public class PlayerActivity extends AppCompatActivity {
         if (currentResizeMode == AspectRatioFrameLayout.RESIZE_MODE_FIT) {
             currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
             btnAspect.setText("Zoom");
-            Toast.makeText(this, "Mode: Zoom (Penuh Layar)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.player_toast_aspect_zoom, Toast.LENGTH_SHORT).show();
         } else if (currentResizeMode == AspectRatioFrameLayout.RESIZE_MODE_ZOOM) {
             currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL;
             btnAspect.setText("Fill");
-            Toast.makeText(this, "Mode: Fill (Rentang Rasio)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.player_toast_aspect_fill, Toast.LENGTH_SHORT).show();
         } else {
             currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
             btnAspect.setText("Fit");
-            Toast.makeText(this, "Mode: Fit (Asli 16:9)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.player_toast_aspect_fit, Toast.LENGTH_SHORT).show();
         }
         playerView.setResizeMode(currentResizeMode);
     }
 
     private void showQualityDialog() {
-        CharSequence[] qualities = {"Auto (Paling Pas)", "1080p Full HD", "720p HD", "480p SD", "360p Hemat"};
+        CharSequence[] qualities = {
+                getString(R.string.player_quality_auto_item),
+                getString(R.string.player_quality_1080_item),
+                getString(R.string.player_quality_720_item),
+                getString(R.string.player_quality_480_item),
+                getString(R.string.player_quality_360_item)
+        };
         String[] qKeys = {"auto", "1080", "720", "480", "360"};
 
         int selectedIndex = 0;
@@ -1643,9 +1649,9 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void showServerSelectorDialog() {
         CharSequence[] servers = {
-                "HiAnime (Utama · Multi-Audio & Subtitle HD)",
-                "AniChan (Cepat · Direct HLS Stream)",
-                "Otakudesu (Cadangan · Hardsub Indonesia)"
+                getString(R.string.player_server_hianime_item),
+                getString(R.string.player_server_anichan_item),
+                getString(R.string.player_server_otakudesu_item)
         };
         String[] serverKeys = {"hianime", "anichan", "otakudesu"};
 
@@ -1674,7 +1680,7 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void showSpeedDialog() {
-        CharSequence[] speeds = {"0.5x", "0.75x", "1.0x (Normal)", "1.25x", "1.5x", "2.0x"};
+        CharSequence[] speeds = {"0.5x", "0.75x", getString(R.string.player_speed_normal_item), "1.25x", "1.5x", "2.0x"};
         float[] speedVals = {0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f};
 
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -1730,9 +1736,11 @@ public class PlayerActivity extends AppCompatActivity {
         String curLang = subtitleManager.getActiveLanguage();
         String curEngine = subtitleManager.getActiveEngine();
 
+        String activeBadge = " " + getString(R.string.player_badge_active);
+
         // 1. [ID] Smart Fansub & Merge (AnimeTosho ID + Google Translate GTX + Smart Lexicon)
         boolean isSmartIdSelected = isSubOn && "id".equals(curLang) && "smart_merge".equals(curEngine);
-        options.add("[ID] Bahasa Indonesia (Smart Fansub & Lexicon)" + (isSmartIdSelected ? " [Aktif]" : ""));
+        options.add(getString(R.string.player_sub_option_smart_id) + (isSmartIdSelected ? activeBadge : ""));
         actions.add(() -> {
             subtitleManager.setSubEnabled(true);
             subtitleManager.setMode("id", "smart_merge"); // Set state SEBELUM load
@@ -1743,7 +1751,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         // 2. [AI] Bahasa Indonesia (AI Fansub LLM)
         boolean isAiSelected = isSubOn && "id".equals(curLang) && "ai".equals(curEngine);
-        options.add(getString(R.string.player_sub_option_ai) + (isAiSelected ? " [Aktif]" : ""));
+        options.add(getString(R.string.player_sub_option_ai) + (isAiSelected ? activeBadge : ""));
         actions.add(() -> {
             String aiKey = AiSubtitleService.getKey(this);
             if (aiKey == null || aiKey.trim().isEmpty()) {
@@ -1763,7 +1771,7 @@ public class PlayerActivity extends AppCompatActivity {
             for (SubtitleTrack st : currentStreamSource.subtitles) {
                 if (st.lang.toLowerCase().contains("id") || st.label.toLowerCase().contains("indonesia")) {
                     boolean isIdRawSelected = isSubOn && "id".equals(curLang) && "raw".equals(curEngine);
-                    options.add("[ID] Bahasa Indonesia (Asli Bawaan)" + (isIdRawSelected ? " [Aktif]" : ""));
+                    options.add(getString(R.string.player_sub_option_native_id) + (isIdRawSelected ? activeBadge : ""));
                     actions.add(() -> {
                         subtitleManager.setSubEnabled(true);
                         subtitleManager.setMode("id", "raw");
@@ -1777,14 +1785,14 @@ public class PlayerActivity extends AppCompatActivity {
         // 4. AI Subtitle BYOK & Custom Prompt Quick Configuration
         String aiKey = AiSubtitleService.getKey(this);
         String aiLabel = (aiKey != null && !aiKey.isEmpty())
-                ? "✨ Pengaturan AI Subtitle & Prompt [" + AiSubtitleService.Provider.detect(aiKey).displayName + "]"
-                : "✨ Pengaturan AI Subtitle (Gemini / Groq / OpenAI / Ollama)...";
+                ? getString(R.string.player_sub_option_ai_fmt, AiSubtitleService.Provider.detect(aiKey).displayName)
+                : getString(R.string.player_sub_option_ai_default);
         options.add(aiLabel);
         actions.add(this::showAiSubtitleSettingsDialog);
 
         // 5. [EN] English (Original)
         boolean isEnSelected = isSubOn && "en".equals(curLang) && "raw".equals(curEngine);
-        options.add("[EN] English (Original / Asli)" + (isEnSelected ? " [Aktif]" : ""));
+        options.add(getString(R.string.player_sub_option_native_en) + (isEnSelected ? activeBadge : ""));
         actions.add(() -> {
             subtitleManager.setSubEnabled(true);
             subtitleManager.setMode("en", "raw");
@@ -1824,7 +1832,7 @@ public class PlayerActivity extends AppCompatActivity {
                     }
                 });
             } else {
-                options.add("[Refresh] Terjemahkan Ulang Subtitle (Hapus Cache)");
+                options.add(getString(R.string.player_sub_option_refresh_gtx));
                 actions.add(() -> {
                     Toast.makeText(this, R.string.player_toast_retranslating, Toast.LENGTH_SHORT).show();
                     if (currentStreamSource != null) {
@@ -1835,34 +1843,34 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         // 6. Search AnimeTosho & OpenSubtitles
-        options.add("[+] Cari Subtitle Bahasa Indonesia (AnimeTosho & OpenSubtitles)...");
+        options.add(getString(R.string.player_sub_option_search_online));
         actions.add(this::showOpenSubtitlesSearchDialog);
 
         // 7. Local Subtitle File Picker
-        options.add("[+] Pilih File Subtitle Lokal (.srt / .vtt / .ass)...");
+        options.add(getString(R.string.player_sub_option_pick_local));
         actions.add(this::openSubtitleFilePicker);
 
         // 8. Custom Subtitle URL
-        options.add("[+] Masukkan URL Subtitle Kustom...");
+        options.add(getString(R.string.player_sub_option_custom_url));
         actions.add(this::showCustomSubtitleUrlDialog);
 
         // 9. Time Sync (Offset)
         long curOff = subtitleManager.getSubtitleOffsetMs();
-        String offStr = curOff == 0L ? "0.0s (Normal)" : String.format(Locale.US, "%+.2fs", curOff / 1000.0);
-        options.add("[Sync] Sinkronisasi Waktu Subtitle (" + offStr + ")...");
+        String offStr = curOff == 0L ? getString(R.string.player_sub_offset_synced) : String.format(Locale.US, "%+.2fs", curOff / 1000.0);
+        options.add(getString(R.string.player_sub_option_sync_offset, offStr));
         actions.add(this::showSubtitleOffsetPicker);
 
         // 10. Styling / Appearance
-        options.add("Pengaturan Tampilan (Posisi, Latar Belakang & Ukuran)...");
+        options.add(getString(R.string.player_sub_option_appearance));
         actions.add(this::showSubtitleStyleDialog);
 
         // 11. Disable Subtitles
-        options.add("Matikan Subtitle" + (!isSubOn ? " [Aktif]" : ""));
+        options.add(getString(R.string.player_sub_option_disable) + (!isSubOn ? activeBadge : ""));
         actions.add(() -> {
             subtitleManager.setSubEnabled(false);
-            btnPortraitSub.setText("Sub: OFF");
+            btnPortraitSub.setText(R.string.player_sub_off_short);
             btnPortraitSub.setAlpha(0.6f);
-            tvSubStatus.setText("Subtitle: Nonaktif");
+            tvSubStatus.setText(R.string.player_sub_off);
             updateExoSubButtonState(false);
         });
 
@@ -1871,7 +1879,7 @@ public class PlayerActivity extends AppCompatActivity {
                 actions.get(which).run();
             }
         });
-        builder.setNegativeButton("Tutup", null);
+        builder.setNegativeButton(R.string.dialog_close, null);
         AlertDialog dialog = builder.create();
         SystemUiHelper.setupDialogBounds(dialog, this);
         dialog.show();
@@ -2055,19 +2063,19 @@ public class PlayerActivity extends AppCompatActivity {
         String curBg = sp.getString("sub_bg", "subtle");
         String curSize = sp.getString("sub_size", "medium");
 
-        String posLabel = "low".equals(curPos) ? "Bawah (22dp) [Pas]" : ("mid".equals(curPos) ? "Sedang (36dp)" : "Tinggi (54dp)");
-        String bgLabel = "transparent".equals(curBg) ? "Transparan (Tanpa Box)" : ("subtle".equals(curBg) ? "Samar / Lembut (30%)" : ("medium".equals(curBg) ? "Sedang (55%)" : "Pekat (80%)"));
-        String sizeLabel = "small".equals(curSize) ? "Kecil (14sp)" : ("large".equals(curSize) ? "Besar (21sp)" : ("xlarge".equals(curSize) ? "Sangat Besar (25sp)" : "Sedang (17sp) [Standar HP]"));
+        String posLabel = "low".equals(curPos) ? getString(R.string.player_sub_pos_low) : ("mid".equals(curPos) ? getString(R.string.player_sub_pos_mid) : getString(R.string.player_sub_pos_high));
+        String bgLabel = "transparent".equals(curBg) ? getString(R.string.player_sub_bg_transparent) : ("subtle".equals(curBg) ? getString(R.string.player_sub_bg_subtle) : ("medium".equals(curBg) ? getString(R.string.player_sub_bg_medium) : getString(R.string.player_sub_bg_dark)));
+        String sizeLabel = "small".equals(curSize) ? getString(R.string.player_sub_size_small) : ("large".equals(curSize) ? getString(R.string.player_sub_size_large) : ("xlarge".equals(curSize) ? getString(R.string.player_sub_size_xlarge) : getString(R.string.player_sub_size_medium)));
 
         long curOff = subtitleManager.getSubtitleOffsetMs();
-        String offLabel = curOff == 0L ? "0.0s (Normal)" : String.format(Locale.US, "%+.2fs", curOff / 1000.0);
+        String offLabel = curOff == 0L ? getString(R.string.player_sub_offset_synced) : String.format(Locale.US, "%+.2fs", curOff / 1000.0);
 
         String[] menu = new String[]{
-                "Posisi Subtitle: " + posLabel,
-                "Latar Belakang: " + bgLabel,
-                "Ukuran Huruf: " + sizeLabel,
-                "Sinkronisasi Waktu (Offset): " + offLabel,
-                "Reset ke Default"
+                getString(R.string.player_sub_style_pos_fmt, posLabel),
+                getString(R.string.player_sub_style_bg_fmt, bgLabel),
+                getString(R.string.player_sub_style_size_fmt, sizeLabel),
+                getString(R.string.player_sub_style_offset_fmt, offLabel),
+                getString(R.string.player_sub_reset_default)
         };
 
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -2095,7 +2103,11 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void showPositionPicker(SharedPreferences sp) {
-        String[] options = {"Bawah (22dp) [Direkomendasikan]", "Sedang (36dp)", "Tinggi (54dp)"};
+        String[] options = {
+                getString(R.string.player_sub_pos_low),
+                getString(R.string.player_sub_pos_mid),
+                getString(R.string.player_sub_pos_high)
+        };
         String cur = sp.getString("sub_pos", "low");
         int checked = "high".equals(cur) ? 2 : ("mid".equals(cur) ? 1 : 0);
 
@@ -2114,7 +2126,12 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void showBackgroundPicker(SharedPreferences sp) {
-        String[] options = {"Transparan (Tanpa Box / Shadow)", "Samar (30% Alpha) [Rekomendasi]", "Sedang (55% Alpha)", "Pekat (80% Alpha)"};
+        String[] options = {
+                getString(R.string.player_sub_bg_transparent),
+                getString(R.string.player_sub_bg_subtle),
+                getString(R.string.player_sub_bg_medium),
+                getString(R.string.player_sub_bg_dark)
+        };
         String cur = sp.getString("sub_bg", "subtle");
         int checked = "dark".equals(cur) ? 3 : ("medium".equals(cur) ? 2 : ("transparent".equals(cur) ? 0 : 1));
 
@@ -2133,7 +2150,12 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void showSizePicker(SharedPreferences sp) {
-        String[] options = {"Kecil (14sp)", "Sedang (17sp) [Standar HP]", "Besar (21sp)", "Sangat Besar (25sp)"};
+        String[] options = {
+                getString(R.string.player_sub_size_small),
+                getString(R.string.player_sub_size_medium),
+                getString(R.string.player_sub_size_large),
+                getString(R.string.player_sub_size_xlarge)
+        };
         String cur = sp.getString("sub_size", "medium");
         int checked = "xlarge".equals(cur) ? 3 : ("large".equals(cur) ? 2 : ("small".equals(cur) ? 0 : 1));
 
@@ -2276,15 +2298,15 @@ public class PlayerActivity extends AppCompatActivity {
     private void showSubtitleOffsetPicker() {
         final long[] offsets = {-2000L, -1000L, -500L, -250L, 0L, 250L, 500L, 1000L, 2000L};
         final String[] labels = {
-                "-2.0s (Lebih Cepat 2 Detik)",
-                "-1.0s (Lebih Cepat 1 Detik)",
-                "-0.5s (Lebih Cepat 0.5 Detik)",
-                "-0.25s (Lebih Cepat 0.25 Detik)",
-                "0.0s (Normal / Pas)",
-                "+0.25s (Lebih Lambat 0.25 Detik)",
-                "+0.5s (Lebih Lambat 0.5 Detik)",
-                "+1.0s (Lebih Lambat 1 Detik)",
-                "+2.0s (Lebih Lambat 2 Detik)"
+                getString(R.string.player_sub_offset_earlier_2s),
+                getString(R.string.player_sub_offset_earlier_1s),
+                getString(R.string.player_sub_offset_earlier_05s),
+                getString(R.string.player_sub_offset_earlier_025s),
+                getString(R.string.player_sub_offset_synced),
+                getString(R.string.player_sub_offset_later_025s),
+                getString(R.string.player_sub_offset_later_05s),
+                getString(R.string.player_sub_offset_later_1s),
+                getString(R.string.player_sub_offset_later_2s)
         };
 
         long curOff = subtitleManager.getSubtitleOffsetMs();
@@ -2355,21 +2377,21 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void showPlayerUnifiedSettingsDialog() {
-        String subLabel = subtitleManager.isSubEnabled() ? subtitleManager.getActiveLanguage().toUpperCase() : "Mati";
+        String subLabel = subtitleManager.isSubEnabled() ? subtitleManager.getActiveLanguage().toUpperCase() : getString(R.string.player_status_disabled);
         boolean autoSkip = getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
                 .getBoolean("pref_auto_skip", false);
 
         String[] menu = {
-                "Pilihan Subtitle & Terjemahan (" + subLabel + ")",
-                "Pengaturan Tampilan Subtitle",
-                "Sinkronisasi Waktu Subtitle (Offset)",
-                "Kualitas Video (" + btnQuality.getText() + ")",
-                "Pilihan Server / Sumber Video (" + preferredServer.toUpperCase() + ")",
-                "Auto-Skip Opening/Ending (" + (autoSkip ? "Aktif" : "Mati") + ")",
-                "Kecepatan Pemutaran (" + btnSpeed.getText() + ")",
-                "Skala Layar (" + btnAspect.getText() + ")",
-                "Kunci Layar (" + (isScreenLocked ? "Terkunci" : "Terbuka") + ")",
-                "Picture-in-Picture (PiP)"
+                getString(R.string.player_settings_item_sub, subLabel),
+                getString(R.string.player_settings_item_style),
+                getString(R.string.player_settings_item_offset),
+                getString(R.string.player_settings_item_quality, btnQuality.getText()),
+                getString(R.string.player_settings_item_server, preferredServer.toUpperCase()),
+                getString(R.string.player_settings_item_autoskip, (autoSkip ? getString(R.string.label_enabled) : getString(R.string.label_disabled))),
+                getString(R.string.player_settings_item_speed, btnSpeed.getText()),
+                getString(R.string.player_settings_item_aspect, btnAspect.getText()),
+                getString(R.string.player_settings_item_lock, (isScreenLocked ? getString(R.string.player_status_locked) : getString(R.string.player_status_unlocked))),
+                getString(R.string.player_settings_item_pip)
         };
 
         AlertDialog dialog = new AlertDialog.Builder(this)

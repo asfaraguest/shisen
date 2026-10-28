@@ -350,4 +350,81 @@
     <string name="lane_tag_prev_season">PREV SEASON</string>
     <string name="lane_header_long_running">CONTINUOUS LONG-RUNNING SERIES</string>
     <string name="lane_tag_long_running">LONG RUNNING</string>
+
+    <!-- Player Subtitle Options & Labels -->
+    <string name="player_badge_active">[Active]</string>
+    <string name="player_sub_option_smart_id">[ID] Indonesian (Smart Fansub &amp; Lexicon)</string>
+    <string name="player_sub_option_native_id">[ID] Indonesian (Original)</string>
+    <string name="player_sub_option_native_en">[EN] English (Original)</string>
+    <string name="player_sub_option_ai_fmt">✨ AI Subtitle &amp; Prompt Settings [%s]</string>
+    <string name="player_sub_option_ai_default">✨ AI Subtitle Settings (Gemini / Groq / OpenAI / Ollama)...</string>
+    <string name="player_sub_option_refresh_gtx">[Refresh] Re-translate Subtitles (Clear Cache)</string>
+    <string name="player_sub_option_search_online">[+] Search Indonesian Subtitles (AnimeTosho &amp; OpenSubtitles)...</string>
+    <string name="player_sub_option_pick_local">[+] Choose Local Subtitle File (.srt / .vtt / .ass)...</string>
+    <string name="player_sub_option_custom_url">[+] Enter Custom Subtitle URL...</string>
+    <string name="player_sub_option_sync_offset">[Sync] Subtitle Time Sync (%s)...</string>
+    <string name="player_sub_option_appearance">Appearance Settings (Position, Background &amp; Size)...</string>
+    <string name="player_sub_option_disable">Turn Off Subtitles</string>
+    <string name="player_sub_status_lines">%1$s (%2$d lines)</string>
+    <string name="player_speed_normal_item">1.0x (Normal)</string>
+
+    <!-- Player Quality Dialog Items -->
+    <string name="player_quality_auto_item">Auto (Recommended)</string>
+    <string name="player_quality_1080_item">1080p Full HD</string>
+    <string name="player_quality_720_item">720p HD</string>
+    <string name="player_quality_480_item">480p SD</string>
+    <string name="player_quality_360_item">360p Data Saver</string>
+
+    <!-- Player Server Dialog Items -->
+    <string name="player_server_hianime_item">HiAnime (Primary · Multi-Audio &amp; Subtitle HD)</string>
+    <string name="player_server_anichan_item">AniChan (Fast · Direct HLS Stream)</string>
+    <string name="player_server_otakudesu_item">Otakudesu (Backup · Indonesian Hardsub)</string>
+
+    <!-- Player Unified Settings Menu -->
+    <string name="player_settings_item_sub">Subtitles &amp; Translation (%s)</string>
+    <string name="player_settings_item_style">Subtitle Appearance Settings</string>
+    <string name="player_settings_item_offset">Subtitle Time Sync (Offset)</string>
+    <string name="player_settings_item_quality">Video Quality (%s)</string>
+    <string name="player_settings_item_server">Video Server / Source (%s)</string>
+    <string name="player_settings_item_autoskip">Auto-Skip Opening/Ending (%s)</string>
+    <string name="player_settings_item_speed">Playback Speed (%s)</string>
+    <string name="player_settings_item_aspect">Screen Ratio (%s)</string>
+    <string name="player_settings_item_lock">Lock Screen (%s)</string>
+    <string name="player_settings_item_pip">Picture-in-Picture (PiP)</string>
+    <string name="player_status_disabled">Off</string>
+    <string name="player_status_locked">Locked</string>
+    <string name="player_status_unlocked">Unlocked</string>
+
+    <!-- Player Subtitle Style & Offset Options -->
+    <string name="player_sub_style_pos_fmt">Subtitle Position: %s</string>
+    <string name="player_sub_style_bg_fmt">Background: %s</string>
+    <string name="player_sub_style_size_fmt">Font Size: %s</string>
+    <string name="player_sub_style_offset_fmt">Time Sync (Offset): %s</string>
+    <string name="player_sub_reset_default">Reset to Default</string>
+    <string name="player_sub_pos_low">Bottom (22dp) [Optimal]</string>
+    <string name="player_sub_pos_mid">Medium (36dp)</string>
+    <string name="player_sub_pos_high">High (54dp)</string>
+    <string name="player_sub_bg_transparent">Transparent (No Box)</string>
+    <string name="player_sub_bg_subtle">Subtle (30%)</string>
+    <string name="player_sub_bg_medium">Medium (55%)</string>
+    <string name="player_sub_bg_dark">Dark (80%)</string>
+    <string name="player_sub_size_small">Small (14sp)</string>
+    <string name="player_sub_size_medium">Medium (17sp) [Standard]</string>
+    <string name="player_sub_size_large">Large (21sp)</string>
+    <string name="player_sub_size_xlarge">Extra Large (25sp)</string>
+
+    <string name="player_sub_offset_earlier_2s">-2.0s (2 Seconds Earlier)</string>
+    <string name="player_sub_offset_earlier_1s">-1.0s (1 Second Earlier)</string>
+    <string name="player_sub_offset_earlier_05s">-0.5s (0.5 Seconds Earlier)</string>
+    <string name="player_sub_offset_earlier_025s">-0.25s (0.25 Seconds Earlier)</string>
+    <string name="player_sub_offset_synced">0.0s (Normal / Synced)</string>
+    <string name="player_sub_offset_later_025s">+0.25s (0.25 Seconds Later)</string>
+    <string name="player_sub_offset_later_05s">+0.5s (0.5 Seconds Later)</string>
+    <string name="player_sub_offset_later_1s">+1.0s (1 Second Later)</string>
+    <string name="player_sub_offset_later_2s">+2.0s (2 Seconds Later)</string>
+
+    <!-- Player Aspect Ratio Toasts -->
+    <string name="player_toast_aspect_zoom">Mode: Zoom (Full Screen)</string>
+    <string name="player_toast_aspect_fill">Mode: Fill (Stretch)</string>
+    <string name="player_toast_aspect_fit">Mode: Fit (Original 16:9)</string>
 </resources>

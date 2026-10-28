@@ -350,4 +350,81 @@
     <string name="lane_tag_prev_season">前期枠</string>
     <string name="lane_header_long_running">長期連載枠</string>
     <string name="lane_tag_long_running">定番作品</string>
+
+    <!-- Player Subtitle Options & Labels -->
+    <string name="player_badge_active">[有効]</string>
+    <string name="player_sub_option_smart_id">[ID] インドネシア語 (Smart Fansub &amp; Lexicon)</string>
+    <string name="player_sub_option_native_id">[ID] インドネシア語 (オリジナル)</string>
+    <string name="player_sub_option_native_en">[EN] 英語 (オリジナル)</string>
+    <string name="player_sub_option_ai_fmt">✨ AI字幕＆プロンプト設定 [%s]</string>
+    <string name="player_sub_option_ai_default">✨ AI字幕設定 (Gemini / Groq / OpenAI / Ollama)...</string>
+    <string name="player_sub_option_refresh_gtx">[更新] 字幕を再翻訳 (キャッシュ消去)</string>
+    <string name="player_sub_option_search_online">[+] インドネシア語字幕を検索 (AnimeTosho &amp; OpenSubtitles)...</string>
+    <string name="player_sub_option_pick_local">[+] ローカル字幕ファイルを選択 (.srt / .vtt / .ass)...</string>
+    <string name="player_sub_option_custom_url">[+] カスタム字幕URLを入力...</string>
+    <string name="player_sub_option_sync_offset">[同期] 字幕時間同期 (%s)...</string>
+    <string name="player_sub_option_appearance">外観設定 (位置、背景、サイズ)...</string>
+    <string name="player_sub_option_disable">字幕をオフにする</string>
+    <string name="player_sub_status_lines">%1$s (%2$d 行)</string>
+    <string name="player_speed_normal_item">1.0x (標準)</string>
+
+    <!-- Player Quality Dialog Items -->
+    <string name="player_quality_auto_item">Auto (最適)</string>
+    <string name="player_quality_1080_item">1080p Full HD</string>
+    <string name="player_quality_720_item">720p HD</string>
+    <string name="player_quality_480_item">480p SD</string>
+    <string name="player_quality_360_item">360p 節約</string>
+
+    <!-- Player Server Dialog Items -->
+    <string name="player_server_hianime_item">HiAnime (メイン · マルチ音声・HD字幕)</string>
+    <string name="player_server_anichan_item">AniChan (高速 · Direct HLS Stream)</string>
+    <string name="player_server_otakudesu_item">Otakudesu (予備 · インドネシア語字幕付き)</string>
+
+    <!-- Player Unified Settings Menu -->
+    <string name="player_settings_item_sub">字幕と翻訳の選択 (%s)</string>
+    <string name="player_settings_item_style">字幕の外観設定</string>
+    <string name="player_settings_item_offset">字幕時間同期 (オフセット)</string>
+    <string name="player_settings_item_quality">動画の画質 (%s)</string>
+    <string name="player_settings_item_server">サーバー / ソースの選択 (%s)</string>
+    <string name="player_settings_item_autoskip">OP/ED自動スキップ (%s)</string>
+    <string name="player_settings_item_speed">再生速度 (%s)</string>
+    <string name="player_settings_item_aspect">画面アスペクト比 (%s)</string>
+    <string name="player_settings_item_lock">画面ロック (%s)</string>
+    <string name="player_settings_item_pip">ピクチャー・イン・ピクチャー (PiP)</string>
+    <string name="player_status_disabled">オフ</string>
+    <string name="player_status_locked">ロック中</string>
+    <string name="player_status_unlocked">解除</string>
+
+    <!-- Player Subtitle Style & Offset Options -->
+    <string name="player_sub_style_pos_fmt">字幕の位置: %s</string>
+    <string name="player_sub_style_bg_fmt">背景: %s</string>
+    <string name="player_sub_style_size_fmt">フォントサイズ: %s</string>
+    <string name="player_sub_style_offset_fmt">時間同期 (オフセット): %s</string>
+    <string name="player_sub_reset_default">デフォルトに戻す</string>
+    <string name="player_sub_pos_low">下部 (22dp) [最適]</string>
+    <string name="player_sub_pos_mid">中間 (36dp)</string>
+    <string name="player_sub_pos_high">上部 (54dp)</string>
+    <string name="player_sub_bg_transparent">透明 (ボックスなし)</string>
+    <string name="player_sub_bg_subtle">薄い (30%)</string>
+    <string name="player_sub_bg_medium">中間 (55%)</string>
+    <string name="player_sub_bg_dark">濃い (80%)</string>
+    <string name="player_sub_size_small">小 (14sp)</string>
+    <string name="player_sub_size_medium">標準 (17sp) [標準]</string>
+    <string name="player_sub_size_large">大 (21sp)</string>
+    <string name="player_sub_size_xlarge">特大 (25sp)</string>
+
+    <string name="player_sub_offset_earlier_2s">-2.0s (2秒早く)</string>
+    <string name="player_sub_offset_earlier_1s">-1.0s (1秒早く)</string>
+    <string name="player_sub_offset_earlier_05s">-0.5s (0.5秒早く)</string>
+    <string name="player_sub_offset_earlier_025s">-0.25s (0.25秒早く)</string>
+    <string name="player_sub_offset_synced">0.0s (標準 / 同期)</string>
+    <string name="player_sub_offset_later_025s">+0.25s (0.25秒遅く)</string>
+    <string name="player_sub_offset_later_05s">+0.5s (0.5秒遅く)</string>
+    <string name="player_sub_offset_later_1s">+1.0s (1秒遅く)</string>
+    <string name="player_sub_offset_later_2s">+2.0s (2秒遅く)</string>
+
+    <!-- Player Aspect Ratio Toasts -->
+    <string name="player_toast_aspect_zoom">モード: ズーム (全画面)</string>
+    <string name="player_toast_aspect_fill">モード: 画面いっぱいに拡大</string>
+    <string name="player_toast_aspect_fit">モード: フィット (オリジナル 16:9)</string>
 </resources>
