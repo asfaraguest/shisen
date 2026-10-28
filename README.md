@@ -1,7 +1,7 @@
 # Shisen (視線) — Android Native Anime Streaming App
 
 <div align="center">
-  <img src="./assets/shisen_icon_512.png" width="112" height="112" alt="Shisen Logo">
+  <img src="./shisen_icon_512.png" width="112" height="112" alt="Shisen Logo">
   <h1>Shisen (視線)</h1>
   <p>Aplikasi pemutar video anime native Android. Tanpa login, tanpa telemetri, tanpa iklan.</p>
 
