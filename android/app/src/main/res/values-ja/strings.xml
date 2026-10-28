@@ -336,4 +336,12 @@
     <string name="ai_dialog_prompt_title">カスタム翻訳プロンプト (ファンサブ)</string>
     <string name="ai_dialog_prompt_desc">文体、ペルソナ、ファンサブ規則を指示します。空欄の場合はデフォルトのファンサブプロンプトが使用されます。</string>
     <string name="ai_dialog_save">設定を保存</string>
+
+    <!-- 3-Lane Section Headers (Airing) -->
+    <string name="lane_header_current_season">今期アニメ (%1$s %2$d)</string>
+    <string name="lane_tag_current_season">放送中</string>
+    <string name="lane_header_prev_season">前期アニメ (%1$s %2$d)</string>
+    <string name="lane_tag_prev_season">前期枠</string>
+    <string name="lane_header_long_running">長期連載枠</string>
+    <string name="lane_tag_long_running">定番作品</string>
 </resources>

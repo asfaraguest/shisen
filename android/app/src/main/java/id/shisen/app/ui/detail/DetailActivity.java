@@ -37,6 +37,7 @@ import id.shisen.app.data.service.AniChanClient;
 import id.shisen.app.data.service.AniListClient;
 import id.shisen.app.data.service.HiAnimeClient;
 import id.shisen.app.data.service.OtakudesuScraper;
+import id.shisen.app.ui.adapter.AnimeAdapter;
 import id.shisen.app.ui.adapter.EpisodeAdapter;
 import id.shisen.app.ui.adapter.RelatedAnimeAdapter;
 import id.shisen.app.ui.player.PlaybackDataHolder;
@@ -301,8 +302,13 @@ public class DetailActivity extends AppCompatActivity {
             }
         } else if (anime.episodesCount > 0) {
             meta.append(" · ").append(anime.episodesCount).append(" ").append(getString(R.string.detail_episode_word));
-        } else if (anime.epsCounter != null && !anime.epsCounter.isEmpty() && !"null".equalsIgnoreCase(anime.epsCounter)) {
-            meta.append(" · ").append(anime.epsCounter);
+        } else {
+            String badge = AnimeAdapter.getLocalizedBadge(this, anime);
+            if (badge != null && !badge.isEmpty()) {
+                meta.append(" · ").append(badge);
+            } else if (anime.epsCounter != null && !anime.epsCounter.isEmpty() && !"null".equalsIgnoreCase(anime.epsCounter)) {
+                meta.append(" · ").append(anime.epsCounter);
+            }
         }
 
         if (anime.score > 0) {

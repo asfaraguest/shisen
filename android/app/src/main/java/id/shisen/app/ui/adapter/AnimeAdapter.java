@@ -113,13 +113,38 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     private void bindHeader(HeaderViewHolder holder, Anime header) {
         if (header == null) return;
-        holder.tvLaneTitle.setText(header.headerTitle != null && !header.headerTitle.isEmpty() ? header.headerTitle : header.title);
-        if (header.headerSubtitle != null && !header.headerSubtitle.isEmpty()) {
-            holder.tvLaneSubtitle.setText(header.headerSubtitle);
+        if ("CUR".equalsIgnoreCase(header.headerType)) {
+            String s = getLocalizedSeasonName(context, header.season);
+            holder.tvLaneTitle.setText(context.getString(R.string.lane_header_current_season, s, header.year));
+            holder.tvLaneSubtitle.setText(context.getString(R.string.lane_tag_current_season));
+            holder.tvLaneSubtitle.setVisibility(View.VISIBLE);
+        } else if ("PREV".equalsIgnoreCase(header.headerType)) {
+            String s = getLocalizedSeasonName(context, header.season);
+            holder.tvLaneTitle.setText(context.getString(R.string.lane_header_prev_season, s, header.year));
+            holder.tvLaneSubtitle.setText(context.getString(R.string.lane_tag_prev_season));
+            holder.tvLaneSubtitle.setVisibility(View.VISIBLE);
+        } else if ("LONG".equalsIgnoreCase(header.headerType)) {
+            holder.tvLaneTitle.setText(context.getString(R.string.lane_header_long_running));
+            holder.tvLaneSubtitle.setText(context.getString(R.string.lane_tag_long_running));
             holder.tvLaneSubtitle.setVisibility(View.VISIBLE);
         } else {
-            holder.tvLaneSubtitle.setVisibility(View.GONE);
+            holder.tvLaneTitle.setText(header.headerTitle != null && !header.headerTitle.isEmpty() ? header.headerTitle : header.title);
+            if (header.headerSubtitle != null && !header.headerSubtitle.isEmpty()) {
+                holder.tvLaneSubtitle.setText(header.headerSubtitle);
+                holder.tvLaneSubtitle.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvLaneSubtitle.setVisibility(View.GONE);
+            }
         }
+    }
+
+    public static String getLocalizedSeasonName(Context context, String season) {
+        if (context == null || season == null) return "";
+        if ("WINTER".equalsIgnoreCase(season)) return context.getString(R.string.season_winter);
+        if ("SPRING".equalsIgnoreCase(season)) return context.getString(R.string.season_spring);
+        if ("SUMMER".equalsIgnoreCase(season)) return context.getString(R.string.season_summer);
+        if ("FALL".equalsIgnoreCase(season)) return context.getString(R.string.season_fall);
+        return season;
     }
 
     private void bindHero(HeroViewHolder holder, Anime anime) {

@@ -336,4 +336,12 @@
     <string name="ai_dialog_prompt_title">Prompt Terjemahan Kustom (Fansub)</string>
     <string name="ai_dialog_prompt_desc">Instruksikan gaya bahasa, persona terjemahan, atau aturan penulisan fansub. Kosongkan untuk menggunakan prompt default fansub.</string>
     <string name="ai_dialog_save">Simpan Pengaturan</string>
+
+    <!-- 3-Lane Section Headers (Airing) -->
+    <string name="lane_header_current_season">ANIME MUSIM BERJALAN (%1$s %2$d)</string>
+    <string name="lane_tag_current_season">SEDANG TAYANG</string>
+    <string name="lane_header_prev_season">ANIME MUSIM SEBELUMNYA (%1$s %2$d)</string>
+    <string name="lane_tag_prev_season">MUSIM LALU</string>
+    <string name="lane_header_long_running">SERIAL PANJANG BERKELANJUTAN</string>
+    <string name="lane_tag_long_running">SERIAL PANJANG</string>
 </resources>

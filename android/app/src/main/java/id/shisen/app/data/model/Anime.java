@@ -38,6 +38,7 @@ public class Anime implements Serializable {
 
     // Dual-Lane Header & Long-Running support
     public boolean isHeader = false;
+    public String headerType = "";
     public String headerTitle = "";
     public String headerSubtitle = "";
     public boolean isLongRunning = false;
@@ -55,6 +56,19 @@ public class Anime implements Serializable {
         a.headerSubtitle = subtitle;
         a.title = title;
         a.slug = "header_" + (title != null ? title.hashCode() : 0);
+        return a;
+    }
+
+    public static Anime createLaneHeader(String type, String season, int year, String fallbackTitle, String fallbackTag) {
+        Anime a = new Anime();
+        a.isHeader = true;
+        a.headerType = type != null ? type : "";
+        a.season = season != null ? season : "";
+        a.year = year;
+        a.headerTitle = fallbackTitle != null ? fallbackTitle : "";
+        a.headerSubtitle = fallbackTag != null ? fallbackTag : "";
+        a.title = a.headerTitle;
+        a.slug = "header_" + a.headerType + "_" + (a.headerTitle.hashCode());
         return a;
     }
 

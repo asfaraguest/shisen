@@ -67,7 +67,11 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
             holder.tvBadgeScore.setVisibility(View.GONE);
         }
 
-        if (anime.epsCounter != null && !anime.epsCounter.isEmpty() && !"null".equalsIgnoreCase(anime.epsCounter)) {
+        String badge = AnimeAdapter.getLocalizedBadge(context, anime);
+        if (badge != null && !badge.isEmpty()) {
+            holder.tvBadgeEp.setVisibility(View.VISIBLE);
+            holder.tvBadgeEp.setText(badge);
+        } else if (anime.epsCounter != null && !anime.epsCounter.isEmpty() && !"null".equalsIgnoreCase(anime.epsCounter)) {
             holder.tvBadgeEp.setVisibility(View.VISIBLE);
             holder.tvBadgeEp.setText(anime.epsCounter);
         } else {

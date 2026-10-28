@@ -348,31 +348,37 @@ public class AniListClient {
                         String lang = Locale.getDefault().getLanguage();
                         boolean isJa = "ja".equalsIgnoreCase(lang);
                         boolean isEn = "en".equalsIgnoreCase(lang);
+                        boolean isEs = "es".equalsIgnoreCase(lang);
 
-                        String h1Title = isJa ? ("今期アニメ (" + cur.season + " " + cur.year + ")") :
+                        String curSeasonLabel = isJa ? toJaSeason(cur.season) : (isEs ? toEsSeason(cur.season) : cur.season);
+                        String prevSeasonLabel = isJa ? toJaSeason(prev.season) : (isEs ? toEsSeason(prev.season) : prev.season);
+
+                        String h1Title = isJa ? ("今期アニメ (" + curSeasonLabel + " " + cur.year + ")") :
+                                (isEs ? ("ANIME DE LA TEMPORADA ACTUAL (" + curSeasonLabel + " " + cur.year + ")") :
                                 (isEn ? ("CURRENT SEASON ANIME (" + cur.season + " " + cur.year + ")") :
-                                        ("ANIME MUSIM BERJALAN (" + cur.season + " " + cur.year + ")"));
-                        String h1Tag = isJa ? "放送中" : (isEn ? "AIRING NOW" : "SEDANG TAYANG");
+                                        ("ANIME MUSIM BERJALAN (" + cur.season + " " + cur.year + ")")));
+                        String h1Tag = isJa ? "放送中" : (isEs ? "EN EMISIÓN" : (isEn ? "AIRING NOW" : "SEDANG TAYANG"));
 
-                        String h2Title = isJa ? ("前期アニメ (" + prev.season + " " + prev.year + ")") :
+                        String h2Title = isJa ? ("前期アニメ (" + prevSeasonLabel + " " + prev.year + ")") :
+                                (isEs ? ("ANIME DE LA TEMPORADA ANTERIOR (" + prevSeasonLabel + " " + prev.year + ")") :
                                 (isEn ? ("PREVIOUS SEASON ANIME (" + prev.season + " " + prev.year + ")") :
-                                        ("ANIME MUSIM SEBELUMNYA (" + prev.season + " " + prev.year + ")"));
-                        String h2Tag = isJa ? "前期枠" : (isEn ? "PREV SEASON" : "MUSIM LALU");
+                                        ("ANIME MUSIM SEBELUMNYA (" + prev.season + " " + prev.year + ")")));
+                        String h2Tag = isJa ? "前期枠" : (isEs ? "TEMPORADA ANTERIOR" : (isEn ? "PREV SEASON" : "MUSIM LALU"));
 
-                        String h3Title = isJa ? "長期連載枠" : (isEn ? "CONTINUOUS LONG-RUNNING SERIES" : "SERIAL PANJANG BERKELANJUTAN");
-                        String h3Tag = isJa ? "定番作品" : (isEn ? "LONG RUNNING" : "SERIAL PANJANG");
+                        String h3Title = isJa ? "長期連載枠" : (isEs ? "SERIES DE LARGA DURACIÓN CONTINUAS" : (isEn ? "CONTINUOUS LONG-RUNNING SERIES" : "SERIAL PANJANG BERKELANJUTAN"));
+                        String h3Tag = isJa ? "定番作品" : (isEs ? "LARGA DURACIÓN" : (isEn ? "LONG RUNNING" : "SERIAL PANJANG"));
 
                         List<Anime> result = new ArrayList<>();
                         if (!currentSeasonList.isEmpty()) {
-                            result.add(Anime.createHeader(h1Title, h1Tag));
+                            result.add(Anime.createLaneHeader("CUR", cur.season, cur.year, h1Title, h1Tag));
                             result.addAll(currentSeasonList);
                         }
                         if (!prevSeasonList.isEmpty()) {
-                            result.add(Anime.createHeader(h2Title, h2Tag));
+                            result.add(Anime.createLaneHeader("PREV", prev.season, prev.year, h2Title, h2Tag));
                             result.addAll(prevSeasonList);
                         }
                         if (!longRunningList.isEmpty()) {
-                            result.add(Anime.createHeader(h3Title, h3Tag));
+                            result.add(Anime.createLaneHeader("LONG", "", 0, h3Title, h3Tag));
                             result.addAll(longRunningList);
                         }
 
@@ -1443,5 +1449,23 @@ public class AniListClient {
         if (month >= 3 && month <= 5) return "SPRING";
         if (month >= 6 && month <= 8) return "SUMMER";
         return "FALL";
+    }
+
+    private static String toEsSeason(String season) {
+        if (season == null) return "";
+        if ("WINTER".equalsIgnoreCase(season)) return "INVIERNO";
+        if ("SPRING".equalsIgnoreCase(season)) return "PRIMAVERA";
+        if ("SUMMER".equalsIgnoreCase(season)) return "VERANO";
+        if ("FALL".equalsIgnoreCase(season)) return "OTOÑO";
+        return season;
+    }
+
+    private static String toJaSeason(String season) {
+        if (season == null) return "";
+        if ("WINTER".equalsIgnoreCase(season)) return "冬";
+        if ("SPRING".equalsIgnoreCase(season)) return "春";
+        if ("SUMMER".equalsIgnoreCase(season)) return "夏";
+        if ("FALL".equalsIgnoreCase(season)) return "秋";
+        return season;
     }
 }

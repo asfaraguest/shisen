@@ -336,4 +336,12 @@
     <string name="ai_dialog_prompt_title">Custom Translation Prompt (Fansub)</string>
     <string name="ai_dialog_prompt_desc">Instruct style, tone, or fansub rules. Leave empty to use default fansub prompt.</string>
     <string name="ai_dialog_save">Save Settings</string>
+
+    <!-- 3-Lane Section Headers (Airing) -->
+    <string name="lane_header_current_season">CURRENT SEASON ANIME (%1$s %2$d)</string>
+    <string name="lane_tag_current_season">AIRING NOW</string>
+    <string name="lane_header_prev_season">PREVIOUS SEASON ANIME (%1$s %2$d)</string>
+    <string name="lane_tag_prev_season">PREV SEASON</string>
+    <string name="lane_header_long_running">CONTINUOUS LONG-RUNNING SERIES</string>
+    <string name="lane_tag_long_running">LONG RUNNING</string>
 </resources>

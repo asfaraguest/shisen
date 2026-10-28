@@ -35,9 +35,9 @@
 
     <!-- Airing Lanes -->
     <string name="lane_all">Todos (3 Pistas)</string>
-    <string name="lane_cur">Season Actual</string>
-    <string name="lane_prev">Season Anteriores</string>
-    <string name="lane_long">Largometrajes</string>
+    <string name="lane_cur">Temporada Actual</string>
+    <string name="lane_prev">Temporadas Anteriores</string>
+    <string name="lane_long">Larga Duración</string>
 
     <!-- Days of Week -->
     <string name="day_mon">Lunes</string>
@@ -63,7 +63,7 @@
     <string name="badge_not_yet_aired">Aún no emitido</string>
     <string name="badge_ongoing">En curso</string>
     <string name="badge_finished">Finalizado</string>
-    <string name="badge_long_running">Largometraje</string>
+    <string name="badge_long_running">Larga Duración</string>
     <string name="card_last_played">Visto por última vez: Ep %d</string>
     <string name="card_episodes_format">%d Episodios</string>
     <string name="card_episodes_finished_format">%d Eps (Finalizado)</string>
@@ -336,4 +336,12 @@
     <string name="ai_dialog_prompt_title">Prompt de traducción personalizado (Fansub)</string>
     <string name="ai_dialog_prompt_desc">Instruye el estilo, tono o reglas de fansub. Deja en blanco para usar el prompt por defecto.</string>
     <string name="ai_dialog_save">Guardar Ajustes</string>
+
+    <!-- 3-Lane Section Headers (Airing) -->
+    <string name="lane_header_current_season">ANIME DE LA TEMPORADA ACTUAL (%1$s %2$d)</string>
+    <string name="lane_tag_current_season">EN EMISIÓN</string>
+    <string name="lane_header_prev_season">ANIME DE LA TEMPORADA ANTERIOR (%1$s %2$d)</string>
+    <string name="lane_tag_prev_season">TEMPORADA ANTERIOR</string>
+    <string name="lane_header_long_running">SERIES DE LARGA DURACIÓN CONTINUAS</string>
+    <string name="lane_tag_long_running">LARGA DURACIÓN</string>
 </resources>
