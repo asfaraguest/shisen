@@ -227,6 +227,7 @@
             android:background="@drawable/bg_badge_frost"
             android:src="@drawable/ic_lock_open"
             app:tint="@color/text_frost_bright"
+            android:elevation="25dp"
             android:visibility="gone"
             android:contentDescription="Kunci Layar" />
 
@@ -274,6 +275,7 @@
             android:paddingBottom="20dp"
             android:paddingHorizontal="16dp"
             android:background="@drawable/bg_player_top_scrim"
+            android:elevation="25dp"
             android:visibility="gone">
 
             <ImageButton

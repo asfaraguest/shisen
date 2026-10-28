@@ -354,6 +354,18 @@ public class PlayerActivity extends AppCompatActivity {
         tvRippleRight = findViewById(R.id.tv_ripple_right);
 
         layoutTopBar = findViewById(R.id.layout_top_bar);
+        if (layoutTopBar != null) {
+            layoutTopBar.setElevation(25f);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                layoutTopBar.setZ(25f);
+            }
+        }
+        if (btnScreenLock != null) {
+            btnScreenLock.setElevation(25f);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                btnScreenLock.setZ(25f);
+            }
+        }
         btnPlayerBack = findViewById(R.id.btn_player_back);
         tvPlayerTitle = findViewById(R.id.tv_player_title);
         tvSubStatus = findViewById(R.id.tv_sub_status);
@@ -510,13 +522,6 @@ public class PlayerActivity extends AppCompatActivity {
             layoutSafetyUnlock.setOnClickListener(v -> unlockScreen(true));
         }
 
-        if (layoutTopBar != null) {
-            layoutTopBar.setOnClickListener(v -> {
-                if (playerView != null) playerView.hideController();
-                hideTopBar(true);
-            });
-        }
-
         btnSkipOpEd.setOnClickListener(v -> {
             HapticHelper.performClick(v);
             if (player == null || currentSkipTimes == null) return;
@@ -652,9 +657,9 @@ public class PlayerActivity extends AppCompatActivity {
             boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
             if (isLandscape && !isScreenLocked) {
                 if (visibility == View.VISIBLE) {
-                    showTopBar(true);
+                    showTopBar(false, true);
                 } else {
-                    hideTopBar(true);
+                    hideTopBar(false);
                 }
             } else {
                 hideTopBar(false);
@@ -662,12 +667,12 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
-    private final Runnable hideTopBarRunnable = () -> hideTopBar(true);
-
     private void showTopBar(boolean animate) {
+        showTopBar(animate, getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+    }
+
+    private void showTopBar(boolean animate, boolean isLandscape) {
         if (layoutTopBar == null) return;
-        mainHandler.removeCallbacks(hideTopBarRunnable);
-        boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
         if (!isLandscape || isScreenLocked) {
             layoutTopBar.setVisibility(View.GONE);
             if (btnScreenLock != null) btnScreenLock.setVisibility(View.GONE);
@@ -675,49 +680,30 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         boolean isInPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode();
-        if (btnScreenLock != null) {
-            btnScreenLock.setVisibility(!isInPip ? View.VISIBLE : View.GONE);
-            if (animate && !isInPip) {
-                btnScreenLock.animate().cancel();
-                btnScreenLock.animate().alpha(1f).setDuration(180).start();
-            } else if (!isInPip) {
-                btnScreenLock.setAlpha(1f);
-            }
+        if (isInPip) {
+            layoutTopBar.setVisibility(View.GONE);
+            if (btnScreenLock != null) btnScreenLock.setVisibility(View.GONE);
+            return;
         }
 
         layoutTopBar.setVisibility(View.VISIBLE);
-        if (animate) {
-            layoutTopBar.animate().cancel();
-            layoutTopBar.animate().alpha(1f).setDuration(180).start();
-        } else {
-            layoutTopBar.setAlpha(1f);
-        }
+        layoutTopBar.setAlpha(1.0f);
+        layoutTopBar.bringToFront();
 
-        // Backup auto-hide fallback matching ExoPlayer timeout (3500ms)
-        mainHandler.postDelayed(hideTopBarRunnable, 3500);
+        if (btnScreenLock != null) {
+            btnScreenLock.setVisibility(View.VISIBLE);
+            btnScreenLock.setAlpha(1.0f);
+            btnScreenLock.bringToFront();
+        }
     }
 
     private void hideTopBar(boolean animate) {
-        mainHandler.removeCallbacks(hideTopBarRunnable);
         if (layoutTopBar == null) return;
-        if (animate && layoutTopBar.getVisibility() == View.VISIBLE) {
-            layoutTopBar.animate().cancel();
-            layoutTopBar.animate().alpha(0f).setDuration(220).withEndAction(() -> {
-                if (layoutTopBar != null) layoutTopBar.setVisibility(View.GONE);
-            }).start();
-            if (btnScreenLock != null && btnScreenLock.getVisibility() == View.VISIBLE) {
-                btnScreenLock.animate().cancel();
-                btnScreenLock.animate().alpha(0f).setDuration(220).withEndAction(() -> {
-                    if (btnScreenLock != null) btnScreenLock.setVisibility(View.GONE);
-                }).start();
-            }
-        } else {
-            layoutTopBar.setVisibility(View.GONE);
-            layoutTopBar.setAlpha(0f);
-            if (btnScreenLock != null) {
-                btnScreenLock.setVisibility(View.GONE);
-                btnScreenLock.setAlpha(0f);
-            }
+        layoutTopBar.setVisibility(View.GONE);
+        layoutTopBar.setAlpha(1.0f);
+        if (btnScreenLock != null) {
+            btnScreenLock.setVisibility(View.GONE);
+            btnScreenLock.setAlpha(1.0f);
         }
     }
 
@@ -1141,10 +1127,13 @@ public class PlayerActivity extends AppCompatActivity {
                         || (playerView != null && playerView.isControllerFullyVisible());
                 if (isControlsShowing) {
                     if (playerView != null) playerView.hideController();
-                    hideTopBar(true);
+                    hideTopBar(false);
                 } else {
                     if (playerView != null) playerView.showController();
-                    showTopBar(true);
+                    boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+                    if (isLandscape) {
+                        showTopBar(false, true);
+                    }
                 }
                 return true;
             }
@@ -2556,7 +2545,7 @@ public class PlayerActivity extends AppCompatActivity {
             playerView.showController();
         }
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            showTopBar(true);
+            showTopBar(false, true);
         }
         if (showFeedback) {
             HapticHelper.performClick(layoutSafetyUnlock != null ? layoutSafetyUnlock : playerView);
@@ -2623,8 +2612,8 @@ public class PlayerActivity extends AppCompatActivity {
             layoutPortraitBottom.setVisibility(View.GONE);
             boolean isInPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode();
             if (!isScreenLocked && !isInPip) {
-                showTopBar(false);
                 if (playerView != null) playerView.showController();
+                showTopBar(false, true);
             } else {
                 hideTopBar(false);
             }
@@ -2822,7 +2811,6 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mainHandler.removeCallbacks(hideTopBarRunnable);
         backgroundStopHandler.removeCallbacks(backgroundStopRunnable);
         if (pipReceiverRegistered && pipReceiver != null) {
             try {
