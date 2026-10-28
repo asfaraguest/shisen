@@ -72,7 +72,7 @@ public class SettingsDialog {
         setupSystemSection(dialogView, activity, listener);
 
         // 4. AI Subtitle & Model Selector
-        setupAiSubtitleSection(dialogView, activity);
+        setupAiSubtitleSection(dialogView, activity, dialog);
 
         // 5. About & Update
         setupAboutSection(dialogView, activity);
@@ -222,7 +222,7 @@ public class SettingsDialog {
         });
     }
 
-    private static void setupAiSubtitleSection(View root, Activity activity) {
+    private static void setupAiSubtitleSection(View root, Activity activity, AlertDialog dialog) {
         TextView tvBadge = root.findViewById(R.id.tv_settings_ai_badge);
         EditText etKey = root.findViewById(R.id.et_settings_ai_key);
         LinearLayout layoutChips = root.findViewById(R.id.layout_model_chips);
@@ -273,26 +273,44 @@ public class SettingsDialog {
         btnResetPrompt.setOnClickListener(v -> {
             HapticHelper.performClick(v);
             etPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+            AiSubtitleService.saveCustomPrompt(activity, AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
             Toast.makeText(activity, activity.getString(R.string.settings_toast_prompt_reset), Toast.LENGTH_SHORT).show();
         });
 
-        btnSave.setOnClickListener(v -> {
-            HapticHelper.performClick(v);
+        final Runnable autoSaveTask = () -> {
             String inputKey = etKey.getText().toString().trim();
             String inputPrompt = etPrompt.getText().toString().trim();
             String inputModel = etModel.getText().toString().trim();
 
-            if (inputKey.isEmpty()) {
-                Toast.makeText(activity, activity.getString(R.string.settings_toast_key_required), Toast.LENGTH_SHORT).show();
-                return;
+            if (!inputKey.isEmpty()) {
+                AiSubtitleService.saveKey(activity, inputKey);
             }
+            if (!inputModel.isEmpty()) {
+                AiSubtitleService.saveModel(activity, inputModel);
+            }
+            if (!inputPrompt.isEmpty()) {
+                AiSubtitleService.saveCustomPrompt(activity, inputPrompt);
+            }
+        };
 
-            AiSubtitleService.saveKey(activity, inputKey);
-            AiSubtitleService.saveCustomPrompt(activity, inputPrompt);
-            AiSubtitleService.saveModel(activity, inputModel);
+        if (dialog != null) {
+            dialog.setOnDismissListener(d -> autoSaveTask.run());
+        }
 
-            AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(inputKey);
-            Toast.makeText(activity, activity.getString(R.string.settings_toast_ai_saved, p.displayName), Toast.LENGTH_SHORT).show();
+        btnSave.setOnClickListener(v -> {
+            HapticHelper.performClick(v);
+            autoSaveTask.run();
+
+            String inputKey = etKey.getText().toString().trim();
+            if (!inputKey.isEmpty()) {
+                AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(inputKey);
+                Toast.makeText(activity, activity.getString(R.string.settings_toast_ai_saved, p.displayName), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(activity, "Pengaturan AI subtitle tersimpan", Toast.LENGTH_SHORT).show();
+            }
+            if (dialog != null) {
+                dialog.dismiss();
+            }
         });
 
         btnClear.setOnClickListener(v -> {
@@ -343,6 +361,7 @@ public class SettingsDialog {
                 if (etModel != null) {
                     etModel.setText(m);
                 }
+                AiSubtitleService.saveModel(context, m);
                 for (int i = 0; i < layout.getChildCount(); i++) {
                     View child = layout.getChildAt(i);
                     if (child instanceof TextView) {

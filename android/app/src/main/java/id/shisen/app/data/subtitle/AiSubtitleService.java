@@ -1,6 +1,7 @@
 package id.shisen.app.data.subtitle;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -499,6 +500,14 @@ Output:
         this.customBaseUrl = baseUrl;
     }
 
+    private static final String PREF_AI_NAME = "shisen_ai_preferences";
+
+    private static SharedPreferences getAiPrefs(Context context) {
+        if (context == null) return null;
+        Context appCtx = context.getApplicationContext() != null ? context.getApplicationContext() : context;
+        return appCtx.getSharedPreferences(PREF_AI_NAME, Context.MODE_PRIVATE);
+    }
+
     public static boolean saveKey(Context context, String key) {
         if (context == null || key == null) return false;
         return SecureStore.getInstance(context).putString(KEY_PREF_LLM, key.trim());
@@ -516,15 +525,23 @@ Output:
 
     public static boolean saveCustomPrompt(Context context, String prompt) {
         if (context == null) return false;
+        SharedPreferences sp = getAiPrefs(context);
         if (prompt == null || prompt.trim().isEmpty()) {
+            if (sp != null) sp.edit().remove(KEY_PREF_CUSTOM_PROMPT).apply();
             return SecureStore.getInstance(context).remove(KEY_PREF_CUSTOM_PROMPT);
+        }
+        if (sp != null) {
+            sp.edit().putString(KEY_PREF_CUSTOM_PROMPT, prompt.trim()).apply();
         }
         return SecureStore.getInstance(context).putString(KEY_PREF_CUSTOM_PROMPT, prompt.trim());
     }
 
     public static String getCustomPrompt(Context context) {
         if (context == null) return DEFAULT_FANSUB_PROMPT_ID;
-        String prompt = SecureStore.getInstance(context).getString(KEY_PREF_CUSTOM_PROMPT, "");
+        SharedPreferences sp = getAiPrefs(context);
+        String prompt = (sp != null && sp.contains(KEY_PREF_CUSTOM_PROMPT))
+                ? sp.getString(KEY_PREF_CUSTOM_PROMPT, "")
+                : SecureStore.getInstance(context).getString(KEY_PREF_CUSTOM_PROMPT, "");
         if (prompt == null || prompt.trim().isEmpty() || prompt.trim().startsWith(OLD_SHORT_PROMPT_PREFIX)) {
             return DEFAULT_FANSUB_PROMPT_ID;
         }
@@ -533,24 +550,37 @@ Output:
 
     public static boolean clearCustomPrompt(Context context) {
         if (context == null) return false;
+        SharedPreferences sp = getAiPrefs(context);
+        if (sp != null) sp.edit().remove(KEY_PREF_CUSTOM_PROMPT).apply();
         return SecureStore.getInstance(context).remove(KEY_PREF_CUSTOM_PROMPT);
     }
 
     public static boolean saveModel(Context context, String model) {
         if (context == null) return false;
+        SharedPreferences sp = getAiPrefs(context);
         if (model == null || model.trim().isEmpty()) {
+            if (sp != null) sp.edit().remove(KEY_PREF_MODEL).apply();
             return SecureStore.getInstance(context).remove(KEY_PREF_MODEL);
+        }
+        if (sp != null) {
+            sp.edit().putString(KEY_PREF_MODEL, model.trim()).apply();
         }
         return SecureStore.getInstance(context).putString(KEY_PREF_MODEL, model.trim());
     }
 
     public static String getModel(Context context) {
         if (context == null) return "";
+        SharedPreferences sp = getAiPrefs(context);
+        if (sp != null && sp.contains(KEY_PREF_MODEL)) {
+            return sp.getString(KEY_PREF_MODEL, "");
+        }
         return SecureStore.getInstance(context).getString(KEY_PREF_MODEL, "");
     }
 
     public static boolean clearModel(Context context) {
         if (context == null) return false;
+        SharedPreferences sp = getAiPrefs(context);
+        if (sp != null) sp.edit().remove(KEY_PREF_MODEL).apply();
         return SecureStore.getInstance(context).remove(KEY_PREF_MODEL);
     }
 

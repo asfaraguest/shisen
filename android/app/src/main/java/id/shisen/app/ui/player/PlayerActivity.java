@@ -2165,21 +2165,33 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
-        btnSave.setOnClickListener(v -> {
+        final Runnable autoSaveTask = () -> {
             String newKey = etKey.getText().toString().trim();
-            if (newKey.isEmpty()) {
-                Toast.makeText(this, "Kunci API tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                return;
+            if (!newKey.isEmpty()) {
+                AiSubtitleService.saveKey(PlayerActivity.this, newKey);
             }
-            AiSubtitleService.saveKey(this, newKey);
             if (etCustomPrompt != null) {
                 String promptText = etCustomPrompt.getText().toString().trim();
-                AiSubtitleService.saveCustomPrompt(this, promptText);
+                if (!promptText.isEmpty()) {
+                    AiSubtitleService.saveCustomPrompt(PlayerActivity.this, promptText);
+                }
             }
             if (etModel != null) {
-                AiSubtitleService.saveModel(this, etModel.getText().toString().trim());
+                String modelText = etModel.getText().toString().trim();
+                if (!modelText.isEmpty()) {
+                    AiSubtitleService.saveModel(PlayerActivity.this, modelText);
+                }
             }
-            AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(newKey);
+        };
+
+        dialog.setOnDismissListener(d -> autoSaveTask.run());
+
+        btnSave.setOnClickListener(v -> {
+            autoSaveTask.run();
+            String newKey = etKey.getText().toString().trim();
+            AiSubtitleService.Provider p = !newKey.isEmpty()
+                    ? AiSubtitleService.Provider.detect(newKey)
+                    : AiSubtitleService.getActiveProvider(this);
             Toast.makeText(this, "Pengaturan " + p.displayName + " & Model Selector berhasil disimpan", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
         });
@@ -2200,7 +2212,10 @@ public class PlayerActivity extends AppCompatActivity {
             Toast.makeText(this, "Kunci API dan pengaturan telah dihapus", Toast.LENGTH_SHORT).show();
         });
 
-        btnClose.setOnClickListener(v -> dialog.dismiss());
+        btnClose.setOnClickListener(v -> {
+            autoSaveTask.run();
+            dialog.dismiss();
+        });
         dialog.show();
     }
 

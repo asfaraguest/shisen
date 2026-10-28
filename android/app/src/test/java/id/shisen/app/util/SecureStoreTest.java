@@ -125,6 +125,15 @@ public class SecureStoreTest {
         assertEquals("fallback_default", result);
     }
 
+    @Test
+    public void testFallbackAndRawPayloadRetrieval() {
+        String key = "test_raw_key";
+        fakePrefs.data.put(key, "raw:sk-my-super-secret-key");
+
+        String retrieved = secureStore.getString(key, null);
+        assertEquals("sk-my-super-secret-key", retrieved);
+    }
+
     /**
      * In-memory FakeSharedPreferences for host JVM tests.
      */
