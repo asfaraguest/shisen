@@ -1,10 +1,9 @@
 package id.shisen.app.ui.player;
 
 import android.content.Context;
-import android.media.AudioManager;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.PowerManager;
 import android.os.Process;
 import android.os.SystemClock;
 import android.util.Log;
@@ -17,22 +16,9 @@ import androidx.media3.session.MediaSession;
 import androidx.media3.session.MediaSessionService;
 import androidx.media3.session.SessionCommands;
 
-import java.util.concurrent.TimeUnit;
-
 /**
- * PlaybackService extends MediaSessionService untuk pemutaran latar, notifikasi media,
- * dan kontrol layar kunci.
- *
- * Keamanan: seluruh koneksi controller melalui whitelist di {@link #createControllerCallback(Context)}.
- * Hanya diterima: aplikasi sendiri, controller notifikasi media (sistem),
- * dan sistem tepercaya ({@code isTrusted}) — contohnya lockscreen / Bluetooth headset routing.
- * Controller asing (aplikasi pihak ketiga biasa) ditolak.
- *
- * FASE 2.1: Penanganan wake lock & background behavior.
- * - setWakeMode(C.WAKE_MODE_NETWORK) agar tidak tersendat saat audio background
- * - pause >3 menit di background: hentikan service + release player
- * - keepScreenOn hanya aktif saat benar-benar memutar
- * - Tidak ada loop/timer terus jalan saat pause
+ * PlaybackService mengelola MediaSession untuk notifikasi background media playback.
+ * Berjalan sebagai MediaSessionService terisolasi tanpa memori leak atau background runaway timer.
  */
 public class PlaybackService extends MediaSessionService {
 
@@ -40,10 +26,20 @@ public class PlaybackService extends MediaSessionService {
 
     private static volatile MediaSession activeSession;
     private static volatile PlaybackService instance;
-    private static volatile ExoPlayer player;
     private static volatile boolean keepScreenOn = false;
     private static volatile long pauseStartMs = 0L;
     private static final long PAUSE_BACKGROUND_TIMEOUT_MS = 3 * 60 * 1000L; // 3 menit
+
+    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private static final Runnable pauseTimeoutRunnable = () -> {
+        long now = SystemClock.uptimeMillis();
+        if (pauseStartMs > 0 && (now - pauseStartMs) >= PAUSE_BACKGROUND_TIMEOUT_MS) {
+            Log.d(TAG, "Pause >= 3 menit, menghentikan PlaybackService");
+            if (instance != null) {
+                instance.stopSelf();
+            }
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -85,7 +81,6 @@ public class PlaybackService extends MediaSessionService {
      */
     public static void setupPlayerWakeMode(ExoPlayer p) {
         if (p != null) {
-            // WAKE_MODE_NETWORK: wakelock hanya saat ada aktivitas jaringan, tidak saat screen off
             p.setWakeMode(C.WAKE_MODE_NETWORK);
             Log.d(TAG, "Wake mode set to WAKE_MODE_NETWORK");
         }
@@ -97,22 +92,17 @@ public class PlaybackService extends MediaSessionService {
     public static void onPlaybackStarted() {
         keepScreenOn = true;
         pauseStartMs = 0L;
+        mainHandler.removeCallbacks(pauseTimeoutRunnable);
     }
 
     /**
-     * Panggil saat pemuturan dihentikan (pause). Aktifkan timer pause.
+     * Panggil saat pemutaran dihentikan (pause). Aktifkan timer pause terkelola.
      */
     public static void onPlaybackPaused() {
         keepScreenOn = false;
         pauseStartMs = SystemClock.uptimeMillis();
-        // Cek jika pause > 3 menit di background, hentikan service
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            long now = SystemClock.uptimeMillis();
-            if (pauseStartMs > 0 && (now - pauseStartMs) >= PAUSE_BACKGROUND_TIMEOUT_MS) {
-                Log.d(TAG, "Pause > 3 menit, hentikan PlaybackService");
-                if (instance != null) instance.stopSelf();
-            }
-        }, PAUSE_BACKGROUND_TIMEOUT_MS);
+        mainHandler.removeCallbacks(pauseTimeoutRunnable);
+        mainHandler.postDelayed(pauseTimeoutRunnable, PAUSE_BACKGROUND_TIMEOUT_MS);
     }
 
     /**
@@ -120,6 +110,7 @@ public class PlaybackService extends MediaSessionService {
      */
     public static void onPlaybackResumed() {
         pauseStartMs = 0L;
+        mainHandler.removeCallbacks(pauseTimeoutRunnable);
     }
 
     public static void setActiveSession(MediaSession session) {
@@ -132,19 +123,30 @@ public class PlaybackService extends MediaSessionService {
 
     /**
      * Setel keepScreenOn — hanya dipakai saat benar-benar memutar.
-     * Dilakukan dari PlayerActivity saat viewport terlihat.
      */
     public static void setKeepScreenOn(boolean on) {
         keepScreenOn = on;
     }
 
     @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        // Hentikan service jika task dihapus dari recent apps dan sedang tidak memutar
+        MediaSession session = activeSession;
+        if (session == null || session.getPlayer() == null || !session.getPlayer().isPlaying()) {
+            stopSelf();
+        }
+    }
+
+    @Override
     public void onDestroy() {
+        mainHandler.removeCallbacks(pauseTimeoutRunnable);
         instance = null;
-        activeSession = null;
-        if (player != null) {
-            player.release();
-            player = null;
+        if (activeSession != null) {
+            try {
+                activeSession.release();
+            } catch (Throwable ignored) {}
+            activeSession = null;
         }
         super.onDestroy();
     }

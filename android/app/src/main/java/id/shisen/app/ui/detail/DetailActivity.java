@@ -848,8 +848,9 @@ public class DetailActivity extends AppCompatActivity {
         PlaybackDataHolder.set(anime, episodeList, index);
 
         Intent intent = new Intent(this, PlayerActivity.class);
-        intent.putExtra("anime", anime);
-        intent.putExtra("episodes", (Serializable) episodeList);
+        if (anime != null) {
+            intent.putExtra("slug", anime.slug);
+        }
         intent.putExtra("selectedIndex", index);
         startActivity(intent);
     }

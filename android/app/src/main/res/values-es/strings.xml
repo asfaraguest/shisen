@@ -291,6 +291,7 @@
     <string name="player_toast_auto_ed">⚡ Omitiendo ending automáticamente</string>
     <string name="player_toast_resumed">Continuando reproducción en %s</string>
     <string name="secure_store_failed">La clave de API no se puede almacenar de forma segura en este dispositivo (Android Keystore no disponible).</string>
+    <string name="player_toast_notification_disabled">Permiso de notificación denegado. Los controles de reproducción en la barra de notificaciones están desactivados.</string>
     <string name="player_toast_next_ep">Reproduciendo siguiente episodio...</string>
     <string name="player_toast_prev_ep">Reproduciendo episodio anterior...</string>
     <string name="player_toast_screen_locked">🔒 Pantalla bloqueada</string>

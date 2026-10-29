@@ -196,6 +196,7 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean pipReceiverRegistered = false;
     private BroadcastReceiver timeTickReceiver;
     private boolean timeTickReceiverRegistered = false;
+    private androidx.activity.result.ActivityResultLauncher<String> postNotificationLauncher;
 
     // ExoPlayer Built-in Controller Buttons (Tatap OG Parity)
     private View btnExoPlayPause;
@@ -279,34 +280,37 @@ public class PlayerActivity extends AppCompatActivity {
         SystemUiHelper.applySystemBarsTheme(this);
         setContentView(R.layout.activity_player);
 
+        initNotificationPermissionLauncher();
+
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         subtitleManager = new SubtitleManager(this);
 
-        if (getIntent() != null) {
-            anime = (Anime) getIntent().getSerializableExtra("anime");
-            @SuppressWarnings("unchecked")
-            List<Episode> eps = (List<Episode>) getIntent().getSerializableExtra("episodes");
-            if (eps != null) {
-                episodeList.addAll(eps);
-            }
-            currentIndex = getIntent().getIntExtra("selectedIndex", 0);
-        }
-
-        if (anime == null && savedInstanceState != null) {
-            anime = (Anime) savedInstanceState.getSerializable("saved_anime");
-            @SuppressWarnings("unchecked")
-            List<Episode> savedEps = (List<Episode>) savedInstanceState.getSerializable("saved_episodes");
-            if (savedEps != null && !savedEps.isEmpty()) {
-                episodeList.addAll(savedEps);
-            }
-            currentIndex = savedInstanceState.getInt("saved_index", 0);
-        }
-
-        if ((anime == null || episodeList.isEmpty()) && PlaybackDataHolder.hasData()) {
+        if (PlaybackDataHolder.hasData()) {
             anime = PlaybackDataHolder.getAnime();
             episodeList.clear();
             episodeList.addAll(PlaybackDataHolder.getEpisodes());
             currentIndex = PlaybackDataHolder.getIndex();
+        }
+
+        if (getIntent() != null) {
+            if (anime == null && getIntent().hasExtra("anime")) {
+                anime = (Anime) getIntent().getSerializableExtra("anime");
+            }
+            if (getIntent().hasExtra("selectedIndex")) {
+                currentIndex = getIntent().getIntExtra("selectedIndex", currentIndex);
+            }
+        }
+
+        if (savedInstanceState != null) {
+            currentIndex = savedInstanceState.getInt("saved_index", currentIndex);
+            String savedSlug = savedInstanceState.getString("saved_slug", null);
+            if ((anime == null || episodeList.isEmpty()) && savedSlug != null) {
+                List<Episode> cachedEps = id.shisen.app.data.cache.FeedCache.getInstance(this).getCachedEpisodes(savedSlug);
+                if (cachedEps != null && !cachedEps.isEmpty()) {
+                    episodeList.clear();
+                    episodeList.addAll(cachedEps);
+                }
+            }
         }
 
         if (anime == null || episodeList.isEmpty()) {
@@ -574,8 +578,7 @@ public class PlayerActivity extends AppCompatActivity {
         // Initialize Media3 MediaSession & background PlaybackService
         try {
             Intent sessionIntent = new Intent(this, PlayerActivity.class);
-            if (anime != null) sessionIntent.putExtra("anime", anime);
-            if (!episodeList.isEmpty()) sessionIntent.putExtra("episodes", (Serializable) episodeList);
+            if (anime != null) sessionIntent.putExtra("slug", anime.slug);
             sessionIntent.putExtra("selectedIndex", currentIndex);
 
             PendingIntent pi = PendingIntent.getActivity(this, 0, sessionIntent,
@@ -588,10 +591,7 @@ public class PlayerActivity extends AppCompatActivity {
                     .build();
             PlaybackService.setActiveSession(mediaSession);
 
-            Intent serviceIntent = new Intent(this, PlaybackService.class);
-            try {
-                startService(serviceIntent);
-            } catch (Throwable ignored) {}
+            checkAndStartPlaybackService();
         } catch (Throwable ignored) {}
 
         // Hide default ExoPlayer subtitle view since we use seamless custom overlay
@@ -680,6 +680,38 @@ public class PlayerActivity extends AppCompatActivity {
                 hideTopBar(false);
             }
         });
+    }
+
+    private void initNotificationPermissionLauncher() {
+        postNotificationLauncher = registerForActivityResult(
+                new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (!isGranted) {
+                        Toast.makeText(this, R.string.player_toast_notification_disabled, Toast.LENGTH_SHORT).show();
+                    }
+                    startPlaybackServiceDirectly();
+                }
+        );
+    }
+
+    private void checkAndStartPlaybackService() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                if (postNotificationLauncher != null) {
+                    postNotificationLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
+                    return;
+                }
+            }
+        }
+        startPlaybackServiceDirectly();
+    }
+
+    private void startPlaybackServiceDirectly() {
+        Intent serviceIntent = new Intent(this, PlaybackService.class);
+        try {
+            startService(serviceIntent);
+        } catch (Throwable ignored) {}
     }
 
     private void showTopBar(boolean animate) {
@@ -2854,10 +2886,9 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (anime != null) {
-            outState.putSerializable("saved_anime", anime);
-        }
-        if (!episodeList.isEmpty()) {
-            outState.putSerializable("saved_episodes", (Serializable) new ArrayList<>(episodeList));
+            outState.putString("saved_slug", anime.slug);
+            outState.putInt("saved_anilist_id", anime.anilistId);
+            outState.putString("saved_title", anime.title);
         }
         outState.putInt("saved_index", currentIndex);
         if (player != null) {
@@ -2871,21 +2902,14 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        if (intent != null && intent.hasExtra("anime")) {
-            Anime newAnime = (Anime) intent.getSerializableExtra("anime");
-            @SuppressWarnings("unchecked")
-            List<Episode> newEps = (List<Episode>) intent.getSerializableExtra("episodes");
-            int newIndex = intent.getIntExtra("selectedIndex", -1);
-            if (newAnime != null && newEps != null && !newEps.isEmpty()) {
-                anime = newAnime;
-                episodeList.clear();
-                episodeList.addAll(newEps);
-                if (newIndex >= 0) {
-                    PlaybackDataHolder.set(anime, episodeList, newIndex);
-                    if (newIndex != currentIndex) {
-                        playEpisode(newIndex);
-                    }
-                }
+        if (PlaybackDataHolder.hasData()) {
+            anime = PlaybackDataHolder.getAnime();
+            episodeList.clear();
+            episodeList.addAll(PlaybackDataHolder.getEpisodes());
+            int newIndex = intent != null ? intent.getIntExtra("selectedIndex", PlaybackDataHolder.getIndex()) : PlaybackDataHolder.getIndex();
+            if (newIndex >= 0 && newIndex < episodeList.size()) {
+                currentIndex = newIndex;
+                playEpisode(currentIndex);
             }
         }
     }
