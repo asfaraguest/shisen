@@ -38,4 +38,13 @@ public class AppUpdateManagerTest {
         assertFalse(AppUpdateManager.isNewerVersion("0.1.0", "0.1.0"));
         assertFalse(AppUpdateManager.isNewerVersion("v0.1.0-beta.5", "0.1.0-beta.5"));
     }
+
+    @Test
+    public void testSingleRepoOwnerAndConsistentConstants() {
+        assertEquals("asfaraguest", AppUpdateManager.GITHUB_OWNER);
+        assertEquals("shisen", AppUpdateManager.GITHUB_REPO);
+        assertTrue(AppUpdateManager.GITHUB_RELEASES_URL.contains("asfaraguest/shisen"));
+        assertTrue(AppUpdateManager.GITHUB_API_LATEST_RELEASE.contains("asfaraguest/shisen"));
+        assertFalse(AppUpdateManager.GITHUB_RELEASES_URL.contains("asfara/shisen"));
+    }
 }

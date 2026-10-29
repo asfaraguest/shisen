@@ -48,9 +48,13 @@ import okhttp3.Response;
 public class AppUpdateManager {
 
     public static final int REQUEST_CODE_INSTALL_PERMISSION = 7129;
+    public static final String GITHUB_OWNER = "asfaraguest";
+    public static final String GITHUB_REPO = "shisen";
+    public static final String GITHUB_RELEASES_URL = "https://github.com/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/releases";
+    public static final String GITHUB_API_LATEST_RELEASE = "https://api.github.com/repos/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/releases/latest";
+
     private static final String[] UPDATE_URLS = {
-            "https://api.github.com/repos/asfaraguest/shisen/releases/latest",
-            "https://api.github.com/repos/asfaraguest/menatap/releases/latest"
+            GITHUB_API_LATEST_RELEASE
     };
 
     private static volatile AppUpdateManager instance;
@@ -58,6 +62,7 @@ public class AppUpdateManager {
     private volatile boolean isChecking = false;
     private volatile boolean isDownloading = false;
     private volatile boolean isDownloadCancelled = false;
+    private volatile okhttp3.Call activeDownloadCall = null;
     private Thread activeDownloadThread = null;
     private File pendingApkFile = null;
 
@@ -85,7 +90,7 @@ public class AppUpdateManager {
                 }
             } catch (Exception ignored) {}
         }
-        return id.shisen.app.BuildConfig.APP_VERSION_NAME;
+        return id.shisen.app.BuildConfig.VERSION_NAME;
     }
 
     public void checkUpdate(Activity activity, boolean isManual) {
@@ -232,7 +237,7 @@ public class AppUpdateManager {
                 } else {
                     Toast.makeText(activity, "File APK belum tersedia untuk rilis ini, membuka browser...", Toast.LENGTH_SHORT).show();
                     try {
-                        String target = htmlUrl != null ? htmlUrl : "https://github.com/asfara/shisen/releases";
+                        String target = htmlUrl != null ? htmlUrl : GITHUB_RELEASES_URL;
                         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(target));
                         activity.startActivity(browserIntent);
                     } catch (Exception e) {
@@ -245,7 +250,7 @@ public class AppUpdateManager {
         if (tvFallbackBrowser != null) {
             tvFallbackBrowser.setOnClickListener(v -> {
                 try {
-                    String target = htmlUrl != null ? htmlUrl : (downloadUrl != null ? downloadUrl : "https://github.com/asfara/shisen/releases");
+                    String target = htmlUrl != null ? htmlUrl : (downloadUrl != null ? downloadUrl : GITHUB_RELEASES_URL);
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(target));
                     activity.startActivity(browserIntent);
                 } catch (Exception e) {
@@ -294,6 +299,11 @@ public class AppUpdateManager {
         if (btnCancel != null) {
             btnCancel.setOnClickListener(v -> {
                 isDownloadCancelled = true;
+                if (activeDownloadCall != null) {
+                    try {
+                        activeDownloadCall.cancel();
+                    } catch (Throwable ignored) {}
+                }
                 if (activeDownloadThread != null) {
                     activeDownloadThread.interrupt();
                 }
@@ -314,7 +324,8 @@ public class AppUpdateManager {
                         .header("User-Agent", "Shisen-Android")
                         .build();
 
-                try (Response resp = client.newCall(req).execute()) {
+                activeDownloadCall = client.newCall(req);
+                try (Response resp = activeDownloadCall.execute()) {
                     if (!resp.isSuccessful() || resp.body() == null) {
                         throw new Exception("HTTP " + resp.code());
                     }
@@ -336,8 +347,8 @@ public class AppUpdateManager {
                         long lastUpdateMs = 0;
 
                         while ((bytesRead = in.read(buffer)) != -1) {
-                            if (isDownloadCancelled) {
-                                if (outFile.exists()) outFile.delete();
+                            if (isDownloadCancelled || Thread.currentThread().isInterrupted()) {
+                                if (outFile != null && outFile.exists()) outFile.delete();
                                 return;
                             }
 
@@ -372,6 +383,15 @@ public class AppUpdateManager {
                             }
                         }
                         fos.flush();
+                    } finally {
+                        activeDownloadCall = null;
+                    }
+
+                    if (isDownloadCancelled || Thread.currentThread().isInterrupted()) {
+                        if (outFile != null && outFile.exists()) {
+                            outFile.delete();
+                        }
+                        return;
                     }
 
                     final File finalApk = outFile;
@@ -380,10 +400,13 @@ public class AppUpdateManager {
                         if (downloadDialog.isShowing()) {
                             downloadDialog.dismiss();
                         }
-                        installApk(activity, finalApk);
+                        if (!isDownloadCancelled && finalApk != null && finalApk.exists()) {
+                            installApk(activity, finalApk);
+                        }
                     });
                 }
             } catch (Exception e) {
+                activeDownloadCall = null;
                 if (outFile != null && outFile.exists()) {
                     outFile.delete();
                 }
