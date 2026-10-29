@@ -234,6 +234,11 @@ public class SubtitleManager {
                                     }
 
                                     SubtitleMergeEngine.MergeResult mr = SubtitleMergeEngine.merge(finalEnCues, atCues, offset, translatedGaps);
+                                    if (!SubtitleMergeEngine.isMatchValid(mr, finalEnCues.size(), atCues.size())) {
+                                        // Terdeteksi mismatch AnimeTosho (salah anime/season/episode)! Fallback ke OpenSubtitles
+                                        runOpenSubtitlesFallback(finalEnCues, title, episode, sourceEn.url, sourceEn.referer, loadId, forceRefresh);
+                                        return;
+                                    }
                                     cleanedCues = new ArrayList<>(mr.mergedCues.size());
                                     for (SubtitleCue c : mr.mergedCues) {
                                         cleanedCues.add(new SubtitleCue(c.startMs, c.endMs, SmartLexicon.applyUniversalLexicon(c.text)));
@@ -310,6 +315,11 @@ public class SubtitleManager {
                                 }
 
                                 SubtitleMergeEngine.MergeResult mr = SubtitleMergeEngine.merge(enCues, osCues, offset, translatedGaps);
+                                if (!SubtitleMergeEngine.isMatchValid(mr, enCues.size(), osCues.size())) {
+                                    // Terdeteksi mismatch OpenSubtitles (salah anime/season/episode)! Fallback ke GTX Translator
+                                    runGtxFallback(enCues, sourceUrl, loadId, forceRefresh);
+                                    return;
+                                }
 
                                 // Otomasi kata ganti OpenSubtitles berdasarkan konteks adegan
                                 List<SubtitleCue> pronounAdjusted = SmartLexicon.automateOpenSubtitlesPronouns(mr.mergedCues, "id", 2, 10.0);

@@ -1,6 +1,7 @@
 package id.shisen.app.data.subtitle;
 
 import id.shisen.app.data.service.HttpClientProvider;
+import id.shisen.app.util.TitleMatcher;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -10,6 +11,8 @@ import org.json.JSONObject;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,15 +52,27 @@ public class AnimeToshoClient {
     public static void searchIndonesianAsync(String title, int episode, SearchCallback callback) {
         new Thread(() -> {
             try {
+                int season = TitleMatcher.extractSeasonNumber(title);
                 String cleanTitle = cleanAnimeTitle(title);
-                String[] queries = {
-                        cleanTitle + " " + String.format(java.util.Locale.US, "%02d", episode),
-                        cleanTitle + " E" + String.format(java.util.Locale.US, "%02d", episode),
-                        cleanTitle + " S01E" + String.format(java.util.Locale.US, "%02d", episode)
-                };
+                List<String> queries = new ArrayList<>();
+                if (season > 1) {
+                    queries.add(cleanTitle + " S" + String.format(Locale.US, "%02d", season) + "E" + String.format(Locale.US, "%02d", episode));
+                    queries.add(cleanTitle + " Season " + season + " " + String.format(Locale.US, "%02d", episode));
+                    queries.add(cleanTitle + " S" + season + " " + String.format(Locale.US, "%02d", episode));
+                    queries.add(cleanTitle + " " + String.format(Locale.US, "%02d", episode));
+                } else {
+                    queries.add(cleanTitle + " S01E" + String.format(Locale.US, "%02d", episode));
+                    queries.add(cleanTitle + " " + String.format(Locale.US, "%02d", episode));
+                    queries.add(cleanTitle + " E" + String.format(Locale.US, "%02d", episode));
+                }
 
                 OkHttpClient client = HttpClientProvider.getClient();
                 List<SubtitleSearchResult> results = new ArrayList<>();
+                Set<String> cleanTokens = TitleMatcher.cleanTitleTokens(cleanTitle);
+
+                Pattern patSxxExx = Pattern.compile("\\bs0*" + season + "e0*" + episode + "\\b", Pattern.CASE_INSENSITIVE);
+                Pattern patEp = Pattern.compile("\\bep(?:isode)?[\\s._-]*0*" + episode + "\\b", Pattern.CASE_INSENSITIVE);
+                Pattern patIsolated = Pattern.compile("[\\s._\\[(-]0*" + episode + "(?:v\\d+)?[\\s._\\])-]", Pattern.CASE_INSENSITIVE);
 
                 for (String q : queries) {
                     if (!results.isEmpty()) break;
@@ -72,17 +87,43 @@ public class AnimeToshoClient {
                         String body = resp.body().string();
                         JSONArray items = new JSONArray(body);
 
-                        for (int i = 0; i < Math.min(items.length(), 10); i++) {
+                        for (int i = 0; i < Math.min(items.length(), 12); i++) {
                             JSONObject it = items.getJSONObject(i);
                             String torrentTitle = it.optString("title", it.optString("torrent_name", ""));
                             String tId = it.optString("id", "");
                             if (tId.isEmpty()) continue;
 
-                            // Verifikasi nomor episode di judul torrent
-                            String tLow = torrentTitle.toLowerCase();
-                            String epStr = String.format(java.util.Locale.US, "%02d", episode);
-                            if (!tLow.contains(epStr) && !tLow.contains(" " + episode + " ") && !tLow.contains("e" + episode)) {
+                            String tLow = torrentTitle.toLowerCase(Locale.US);
+
+                            // 1. Verifikasi kecocokan nomor episode dengan boundary regex
+                            boolean epMatch = patSxxExx.matcher(tLow).find()
+                                    || patEp.matcher(tLow).find()
+                                    || patIsolated.matcher(tLow).find();
+                            if (!epMatch) {
                                 continue;
+                            }
+
+                            // 2. Cegah mismatch season jika rilis eksplisit menyebut season berbeda
+                            int torrentSeason = TitleMatcher.extractSeasonNumber(torrentTitle);
+                            if (season > 1 && torrentSeason == 1 && (tLow.contains("season 1") || tLow.contains("s01") || tLow.contains("1st season"))) {
+                                continue;
+                            }
+                            if (season == 1 && torrentSeason > 1) {
+                                continue;
+                            }
+
+                            // 3. Verifikasi judul anime terhadap nama torrent (hindari false positive rilis anime lain)
+                            if (!cleanTokens.isEmpty()) {
+                                Set<String> torrentTokens = TitleMatcher.cleanTitleTokens(torrentTitle);
+                                int matchedTokens = 0;
+                                for (String tok : cleanTokens) {
+                                    if (torrentTokens.contains(tok)) {
+                                        matchedTokens++;
+                                    }
+                                }
+                                if ((double) matchedTokens / cleanTokens.size() < 0.6) {
+                                    continue;
+                                }
                             }
 
                             // Kunjungi halaman view untuk mengekstrak attachment

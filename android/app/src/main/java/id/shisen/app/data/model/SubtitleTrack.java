@@ -138,29 +138,46 @@ public class SubtitleTrack implements Serializable {
         return "en".equals(l) || lbl.contains("english") || lbl.startsWith("eng");
     }
 
+    public static boolean isSignsOrSongsOnly(SubtitleTrack track) {
+        if (track == null) return false;
+        String lbl = track.label != null ? track.label.trim().toLowerCase(Locale.US) : "";
+        return lbl.contains("sign") || lbl.contains("song") || lbl.contains("lyric") || lbl.contains("forced");
+    }
+
     /**
      * Cari track English paling representatif dari daftar subtitle stream.
-     * Paritas Tatap backend: Jangan izinkan track Arabic membajak seleksi English.
+     * Paritas Tatap backend: Utamakan dialog penuh dan jangan biarkan track Signs/Songs
+     * atau track Arabic membajak seleksi English utama.
      */
     public static SubtitleTrack findEnglishTrack(List<SubtitleTrack> tracks) {
         if (tracks == null || tracks.isEmpty()) return null;
 
-        // Prioritas 1: Exact "English" label
+        // Prioritas 1: Exact "English" label dan BUKAN tanda/lagu saja
         for (SubtitleTrack t : tracks) {
-            if (isExactEnglish(t)) return t;
+            if (isExactEnglish(t) && !isSignsOrSongsOnly(t)) return t;
         }
 
-        // Prioritas 2: Any English track (e.g. "English - Signs", default flag)
+        // Prioritas 2: Any English track yang BUKAN tanda/lagu saja
+        for (SubtitleTrack t : tracks) {
+            if (isAnyEnglish(t) && !isSignsOrSongsOnly(t)) return t;
+        }
+
+        // Prioritas 3: Any English track (fallback jika hanya ada signs/songs)
         for (SubtitleTrack t : tracks) {
             if (isAnyEnglish(t)) return t;
         }
 
-        // Prioritas 3: Track non-Arabic pertama
+        // Prioritas 4: Track non-Arabic pertama yang bukan tanda/lagu
+        for (SubtitleTrack t : tracks) {
+            if (!isArabic(t) && !isSignsOrSongsOnly(t)) return t;
+        }
+
+        // Prioritas 5: Track non-Arabic pertama
         for (SubtitleTrack t : tracks) {
             if (!isArabic(t)) return t;
         }
 
-        // Prioritas 4: Fallback terakhir jika semua track adalah Arabic
+        // Prioritas 6: Fallback terakhir jika semua track adalah Arabic
         return tracks.get(0);
     }
 }

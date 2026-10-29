@@ -1,6 +1,7 @@
 package id.shisen.app.data.subtitle;
 
 import id.shisen.app.data.service.HttpClientProvider;
+import id.shisen.app.util.TitleMatcher;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class OpenSubtitlesClient {
@@ -45,14 +47,15 @@ public class OpenSubtitlesClient {
     public static void searchIndonesianAsync(String title, int episode, SearchCallback callback) {
         new Thread(() -> {
             try {
+                int season = TitleMatcher.extractSeasonNumber(title);
                 OkHttpClient client = HttpClientProvider.getClient();
                 String cleanTitle = cleanAnimeTitle(title);
                 String imdbId = resolveImdbId(client, cleanTitle);
 
                 List<SubtitleSearchResult> results = new ArrayList<>();
                 if (!imdbId.isEmpty()) {
-                    // Coba via Stremio OpenSubtitles v3 API
-                    String stremioUrl = "https://opensubtitles-v3.strem.io/subtitles/series/" + imdbId + ":1:" + episode + ".json";
+                    // Coba via Stremio OpenSubtitles v3 API dengan Season dan Episode dinamis
+                    String stremioUrl = "https://opensubtitles-v3.strem.io/subtitles/series/" + imdbId + ":" + season + ":" + episode + ".json";
                     Request req = new Request.Builder()
                             .url(stremioUrl)
                             .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0")
@@ -65,7 +68,7 @@ public class OpenSubtitlesClient {
                             if (subs != null) {
                                 for (int i = 0; i < subs.length(); i++) {
                                     JSONObject sub = subs.getJSONObject(i);
-                                    String lang = sub.optString("lang", "").toLowerCase();
+                                    String lang = sub.optString("lang", "").toLowerCase(Locale.US);
                                     if ("id".equals(lang) || "ind".equals(lang) || "indonesian".equals(lang)) {
                                         String fileId = sub.optString("id", String.valueOf(i));
                                         String dlUrl = sub.optString("url", "");
@@ -141,8 +144,11 @@ public class OpenSubtitlesClient {
                         for (int i = 0; i < Math.min(metas.length(), 4); i++) {
                             JSONObject m = metas.getJSONObject(i);
                             String imdb = m.optString("imdb_id", m.optString("id", ""));
+                            String name = m.optString("name", "");
                             if (imdb.startsWith("tt")) {
-                                return imdb;
+                                if (name.isEmpty() || TitleMatcher.isTitleMatch(cleanTitle, name)) {
+                                    return imdb;
+                                }
                             }
                         }
                     }

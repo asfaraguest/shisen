@@ -178,4 +178,29 @@ public class SubtitleMergeEngine {
         }
         return result;
     }
+
+    /**
+     * Validasi apakah hasil merge subtitle eksternal benar-benar cocok dengan subtitle bawaan anime.
+     * Mencegah pemutaran subtitle dari anime lain, season lain, atau episode berbeda.
+     *
+     * @param mr Hasil merge
+     * @param builtinCount Jumlah cue subtitle bawaan anime
+     * @param externalCount Jumlah cue subtitle eksternal
+     * @return true jika keselarasan timing (snapping ratio) memenuhi batas minimum kecocokan
+     */
+    public static boolean isMatchValid(MergeResult mr, int builtinCount, int externalCount) {
+        if (mr == null) return false;
+        if (builtinCount <= 0 || externalCount <= 0) return true;
+
+        int minCount = Math.min(builtinCount, externalCount);
+        // Untuk anime durasi normal (misal > 30 dialog):
+        if (minCount >= 30) {
+            double ratio = (double) mr.snappedCount / (double) minCount;
+            // Minimal 35% dialog harus snapping dan minimal 12 dialog selaras
+            return ratio >= 0.35 && mr.snappedCount >= 12;
+        }
+
+        // Untuk video pendek / preview (< 30 dialog)
+        return mr.snappedCount >= 3;
+    }
 }
