@@ -55,7 +55,7 @@ public class HiAnimeClient {
             callback.onSuccess(Collections.emptyList());
             return;
         }
-        new Thread(() -> {
+        HttpClientProvider.execute(() -> {
             try {
                 String cleanQ = query.replaceAll("[^\\p{L}\\p{N}\\s-]", "").trim();
                 if (cleanQ.isEmpty()) {
@@ -121,14 +121,14 @@ public class HiAnimeClient {
                 }
 
                 callback.onSuccess(results);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 callback.onError(e);
             }
-        }).start();
+        });
     }
 
     public static void getEpisodes(String slug, Callback<List<Episode>> callback) {
-        new Thread(() -> {
+        HttpClientProvider.execute(() -> {
             try {
                 String numericId = extractNumericId(slug);
                 if (numericId.isEmpty()) {
@@ -166,14 +166,14 @@ public class HiAnimeClient {
 
                 Collections.sort(list, (e1, e2) -> Integer.compare(e1.number, e2.number));
                 callback.onSuccess(list);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 callback.onError(e);
             }
-        }).start();
+        });
     }
 
     public static void resolveStream(String epId, Callback<StreamSource> callback) {
-        new Thread(() -> {
+        HttpClientProvider.execute(() -> {
             try {
                 String serversUrl = HI_BASE + "/api/theme/episode/servers?episodeId=" + epId;
                 String respStr = fetchString(serversUrl, HI_BASE + "/");
@@ -232,10 +232,10 @@ public class HiAnimeClient {
                 }
 
                 callback.onError(lastErr != null ? lastErr : new IOException("Gagal menyelesaikan stream Megaplay / ZokoAnime"));
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 callback.onError(e);
             }
-        }).start();
+        });
     }
 
     private static StreamSource resolveMegaplay(String embedUrl) throws Exception {

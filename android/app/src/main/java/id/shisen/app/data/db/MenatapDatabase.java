@@ -114,14 +114,29 @@ public class MenatapDatabase extends SQLiteOpenHelper {
                             "duration_ms INTEGER, " +
                             "updated_at INTEGER, " +
                             "PRIMARY KEY(slug, ep))");
-                    db.execSQL("CREATE INDEX IF NOT EXISTS idx_watch_progress_slug ON watch_progress (slug)");
                 } catch (Exception e) {
                     android.util.Log.w("MenatapDatabase", "Gagal membuat tabel watch_progress: " + e.getMessage());
+                }
+                try {
+                    db.execSQL("CREATE INDEX IF NOT EXISTS idx_watch_progress_slug ON watch_progress (slug)");
+                } catch (Exception e) {
+                    android.util.Log.w("MenatapDatabase", "Gagal membuat index idx_watch_progress_slug: " + e.getMessage());
                 }
             }
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
+        }
+    }
+
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // Safe downgrade: Pertahankan data pengguna (bookmarks/history/watch_progress)
+        android.util.Log.w("MenatapDatabase", "Permintaan downgrade database dari v" + oldVersion + " ke v" + newVersion + ". Mempertahankan tabel data pengguna.");
+        try {
+            onCreate(db);
+        } catch (Exception e) {
+            android.util.Log.e("MenatapDatabase", "Error pada onDowngrade aman: " + e.getMessage());
         }
     }
 

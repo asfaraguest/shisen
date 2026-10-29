@@ -39,7 +39,7 @@ public class OtakudesuScraper {
     }
 
     public static void getOngoing(Callback<List<Anime>> callback) {
-        new Thread(() -> {
+        HttpClientProvider.execute(() -> {
             try {
                 String url = BASE_URL + "/ongoing-anime/";
                 Document doc = fetchDoc(url, BASE_URL + "/");
@@ -71,10 +71,10 @@ public class OtakudesuScraper {
                     results.add(a);
                 }
                 callback.onSuccess(results);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 callback.onError(e);
             }
-        }).start();
+        });
     }
 
     public static void searchAnime(String query, Callback<List<Anime>> callback) {
@@ -82,7 +82,7 @@ public class OtakudesuScraper {
             callback.onSuccess(Collections.emptyList());
             return;
         }
-        new Thread(() -> {
+        HttpClientProvider.execute(() -> {
             try {
                 String cleanQ = query.replaceAll("[^\\p{L}\\p{N}\\s-]", "").trim();
                 if (cleanQ.isEmpty()) {
@@ -113,14 +113,14 @@ public class OtakudesuScraper {
                     results.add(a);
                 }
                 callback.onSuccess(results);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 callback.onError(e);
             }
-        }).start();
+        });
     }
 
     public static void getEpisodes(String animeSlug, Callback<List<Episode>> callback) {
-        new Thread(() -> {
+        HttpClientProvider.execute(() -> {
             try {
                 String animeUrl = animeSlug.startsWith("http") ? animeSlug : (BASE_URL + "/anime/" + animeSlug.replaceAll("^/+|/+$", "") + "/");
                 Document doc = fetchDoc(animeUrl, BASE_URL + "/");
@@ -138,14 +138,14 @@ public class OtakudesuScraper {
                 }
                 Collections.sort(list, (e1, e2) -> Integer.compare(e1.number, e2.number));
                 callback.onSuccess(list);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 callback.onError(e);
             }
-        }).start();
+        });
     }
 
     public static void resolveStream(String episodeSlugOrUrl, Callback<StreamSource> callback) {
-        new Thread(() -> {
+        HttpClientProvider.execute(() -> {
             try {
                 String epUrl = episodeSlugOrUrl.startsWith("http") ? episodeSlugOrUrl : (BASE_URL + "/episode/" + episodeSlugOrUrl.replaceAll("^/+|/+$", "") + "/");
                 Document doc = fetchDoc(epUrl, BASE_URL + "/");
@@ -180,10 +180,10 @@ public class OtakudesuScraper {
                 }
 
                 callback.onError(new IOException("Stream URL tidak ditemukan di server Otakudesu."));
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 callback.onError(e);
             }
-        }).start();
+        });
     }
 
     private static StreamSource resolveEmbedPlayer(String embedUrl) {

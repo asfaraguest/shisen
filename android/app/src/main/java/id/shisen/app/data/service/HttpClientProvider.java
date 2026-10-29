@@ -3,7 +3,12 @@ package id.shisen.app.data.service;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -23,7 +28,39 @@ import okhttp3.Response;
 public class HttpClientProvider {
     private static volatile OkHttpClient client;
     private static volatile okhttp3.Cache diskCache;
+    private static volatile ExecutorService networkExecutor;
     public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+    public static ExecutorService getExecutor() {
+        if (networkExecutor == null) {
+            synchronized (HttpClientProvider.class) {
+                if (networkExecutor == null) {
+                    networkExecutor = new ThreadPoolExecutor(
+                            4,
+                            16,
+                            60L,
+                            TimeUnit.SECONDS,
+                            new LinkedBlockingQueue<>(256),
+                            new ThreadFactory() {
+                                private final AtomicInteger count = new AtomicInteger(1);
+                                @Override
+                                public Thread newThread(Runnable r) {
+                                    Thread t = new Thread(r, "shisen-net-" + count.getAndIncrement());
+                                    t.setDaemon(true);
+                                    return t;
+                                }
+                            },
+                            new ThreadPoolExecutor.CallerRunsPolicy()
+                    );
+                }
+            }
+        }
+        return networkExecutor;
+    }
+
+    public static void execute(Runnable task) {
+        getExecutor().execute(task);
+    }
 
     /** Fase 2.2: panggil sekali dari Application untuk mengaktifkan cache disk HTTP 50MB. */
     public static void configureCache(java.io.File cacheDir) {

@@ -41,6 +41,7 @@ public class MenatapApplication extends Application {
         final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             Log.e(TAG, "Uncaught exception on thread: " + thread.getName(), throwable);
+            logExceptionToFile(thread, throwable);
 
             // If crash occurred on a background thread, log and swallow to prevent killing UI activity
             if (Looper.myLooper() != Looper.getMainLooper()) {
@@ -52,6 +53,26 @@ public class MenatapApplication extends Application {
                 defaultHandler.uncaughtException(thread, throwable);
             }
         });
+    }
+
+    private void logExceptionToFile(Thread thread, Throwable throwable) {
+        try {
+            java.io.File logFile = new java.io.File(getCacheDir(), "crash_reports.log");
+            if (logFile.exists() && logFile.length() > 512 * 1024) {
+                logFile.delete();
+            }
+            try (java.io.FileWriter fw = new java.io.FileWriter(logFile, true);
+                 java.io.PrintWriter pw = new java.io.PrintWriter(fw)) {
+                pw.println("--- CRASH REPORT ---");
+                pw.println("Time: " + new java.util.Date());
+                pw.println("Thread: " + (thread != null ? thread.getName() : "null") + " (ID: " + (thread != null ? thread.getId() : -1) + ")");
+                if (throwable != null) {
+                    throwable.printStackTrace(pw);
+                }
+                pw.println();
+                pw.flush();
+            }
+        } catch (Throwable ignored) {}
     }
 
     @Override
