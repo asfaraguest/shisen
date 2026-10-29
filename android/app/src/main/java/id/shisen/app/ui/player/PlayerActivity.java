@@ -556,10 +556,10 @@ public class PlayerActivity extends AppCompatActivity {
 
         DefaultMediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(okHttpFactory);
 
-        // Konfigurasi buffer agresif:
+        // Konfigurasi buffer agresif & stabil:
         // - minBufferMs: 60s, maxBufferMs: 300s (5 menit buffer ke depan)
-        // - bufferForPlayback: 1.5s (start cepat)
-        // - bufferForPlaybackAfterRebuffer: 3.0s (pemulihan cepat)
+        // - bufferForPlayback: 3.5s (cukup untuk 1 segmen HLS utuh agar tidak buffer-starving saat play)
+        // - bufferForPlaybackAfterRebuffer: 5.0s (pemulihan stabil dengan bantalan memadai)
         // - prioritizeTimeOverSizeThresholds: true (terus buffer hingga target waktu tanpa dipotong batas byte 13MB)
         // - backBuffer: 30s (seek mundur instan tanpa download ulang)
         DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
@@ -567,8 +567,8 @@ public class PlayerActivity extends AppCompatActivity {
                 .setBufferDurationsMs(
                         60_000,
                         300_000,
-                        1_500,
-                        3_000
+                        3_500,
+                        5_000
                 )
                 .setPrioritizeTimeOverSizeThresholds(true)
                 .setBackBuffer(30_000, true)
@@ -1472,10 +1472,25 @@ public class PlayerActivity extends AppCompatActivity {
                     currentStreamSource = source;
                     tvPortraitCurrentEp.setText("Episode " + ep.number + " · " + source.server);
                     tvSubStatus.setText("Server: " + source.server + (source.subtitles.isEmpty() ? " (Hardsub)" : " (Multi-Sub)"));
+
+                    // Sinkronkan daftar episode lokal dari PlaybackDataHolder jika sudah diperkaya
+                    if (PlaybackDataHolder.hasData()) {
+                        List<Episode> enriched = PlaybackDataHolder.getEpisodes();
+                        if (enriched != null && enriched.size() == episodeList.size()) {
+                            episodeList.clear();
+                            episodeList.addAll(enriched);
+                        }
+                    }
+
                     startExoPlayback(source, ep, explicitResumeMs);
 
-                    // Load subtitles into multi-source subtitle engine
-                    subtitleManager.loadFromTracks(source.subtitles, safeTitle, ep.number, false);
+                    // Beri prioritas throughput 400ms pertama untuk ExoPlayer mengunduh manifest & chunk video awal
+                    // sebelum SubtitleManager memulai pencarian/translasi fansub di background
+                    subtitleHandler.postDelayed(() -> {
+                        if (isActivityRunning) {
+                            subtitleManager.loadFromTracks(source.subtitles, safeTitle, ep.number, false);
+                        }
+                    }, 400);
                 });
             }
 

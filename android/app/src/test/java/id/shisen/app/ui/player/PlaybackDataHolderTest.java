@@ -58,4 +58,29 @@ public class PlaybackDataHolderTest {
         assertNull(PlaybackDataHolder.getAnime());
         assertTrue(PlaybackDataHolder.getEpisodes().isEmpty());
     }
+
+    @Test
+    public void testEnrichingEpisodesUpdatesHolder() {
+        Anime anime = new Anime();
+        anime.slug = "frieren";
+        List<Episode> eps = new ArrayList<>();
+        eps.add(new Episode(1, "Ep 1", "frieren-1"));
+        eps.add(new Episode(2, "Ep 2", "frieren-2"));
+
+        PlaybackDataHolder.set(anime, eps, 0);
+
+        List<Episode> copy = PlaybackDataHolder.getEpisodes();
+        copy.get(0).epId = "hianime-ep-1";
+        copy.get(0).provider = "hianime";
+        copy.get(1).epId = "hianime-ep-2";
+        copy.get(1).provider = "hianime";
+
+        PlaybackDataHolder.set(anime, copy, 0);
+
+        List<Episode> reloaded = PlaybackDataHolder.getEpisodes();
+        assertEquals("hianime-ep-1", reloaded.get(0).epId);
+        assertEquals("hianime", reloaded.get(0).provider);
+        assertEquals("hianime-ep-2", reloaded.get(1).epId);
+        assertEquals("hianime", reloaded.get(1).provider);
+    }
 }

@@ -32,6 +32,9 @@ public class ShisenApplication extends Application {
         // Initialize disk and memory image cache
         ImageLoader.init(this);
 
+        // Initialize Feed & Episode Cache
+        id.shisen.app.data.cache.FeedCache.getInstance(this);
+
         // Aktifkan cache disk HTTP 50MB untuk GET metadata
         id.shisen.app.data.service.HttpClientProvider.configureCache(
                 new java.io.File(getCacheDir(), "http_cache"));

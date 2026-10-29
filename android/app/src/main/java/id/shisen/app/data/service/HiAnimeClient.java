@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -345,8 +346,24 @@ public class HiAnimeClient {
         return "";
     }
 
+    private static volatile OkHttpClient resolveClient;
+
+    private static OkHttpClient getResolveClient() {
+        if (resolveClient == null) {
+            synchronized (HiAnimeClient.class) {
+                if (resolveClient == null) {
+                    resolveClient = HttpClientProvider.getClient().newBuilder()
+                            .connectTimeout(6, TimeUnit.SECONDS)
+                            .readTimeout(8, TimeUnit.SECONDS)
+                            .build();
+                }
+            }
+        }
+        return resolveClient;
+    }
+
     private static String fetchString(String url, String referer) throws IOException {
-        OkHttpClient client = HttpClientProvider.getClient();
+        OkHttpClient client = getResolveClient();
         Request.Builder rb = new Request.Builder()
                 .url(url)
                 .header("User-Agent", HttpClientProvider.USER_AGENT)

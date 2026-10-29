@@ -43,13 +43,13 @@ public class FeedCache {
     }
 
     private FeedCache(Context context) {
-        this.context = context.getApplicationContext();
+        this.context = context != null ? context.getApplicationContext() : null;
     }
 
     public static FeedCache getInstance(Context context) {
         if (instance == null) {
             synchronized (FeedCache.class) {
-                if (instance == null) {
+                if (instance == null && context != null) {
                     instance = new FeedCache(context);
                 }
             }

@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import id.shisen.app.data.cache.FeedCache;
 import id.shisen.app.data.model.Anime;
 import id.shisen.app.data.model.Episode;
 import id.shisen.app.data.model.StreamSource;
@@ -146,6 +147,40 @@ public class StreamResolver {
             return;
         }
 
+        // Fast-path 1b: Periksa FeedCache apakah daftar episode anime ini sudah pernah tersimpan dengan epId HiAnime
+        FeedCache feedCache = FeedCache.getInstance(null);
+        if (feedCache != null && anime.slug != null) {
+            List<Episode> cachedEps = feedCache.getCachedEpisodes(anime.slug);
+            if (cachedEps != null && !cachedEps.isEmpty()) {
+                Episode matchedCached = null;
+                for (Episode ce : cachedEps) {
+                    if (ce.number == episode.number && ce.epId != null && !ce.epId.isEmpty() && "hianime".equalsIgnoreCase(ce.provider)) {
+                        matchedCached = ce;
+                        break;
+                    }
+                }
+                if (matchedCached != null) {
+                    episode.epId = matchedCached.epId;
+                    episode.provider = "hianime";
+                    if (PlaybackDataHolder.hasData()) {
+                        PlaybackDataHolder.set(anime, cachedEps, PlaybackDataHolder.getIndex());
+                    }
+                    HiAnimeClient.resolveStream(matchedCached.epId, new HiAnimeClient.Callback<StreamSource>() {
+                        @Override
+                        public void onSuccess(StreamSource result) {
+                            callback.onSuccess(result);
+                        }
+
+                        @Override
+                        public void onError(Throwable t) {
+                            callback.onError(t);
+                        }
+                    });
+                    return;
+                }
+            }
+        }
+
         // Fast-path 2: Jika slug HiAnime untuk anime ini sudah pernah dicocokkan & dicache
         String cachedSlug = getCachedSlug(anime.slug);
         if (cachedSlug == null && anime.id > 0) {
@@ -282,7 +317,14 @@ public class StreamResolver {
                                 }
                             }
                         }
+                        PlaybackDataHolder.set(PlaybackDataHolder.getAnime(), holderEps, PlaybackDataHolder.getIndex());
                     }
+                }
+
+                // Simpan juga ke FeedCache agar persisten di memory dan disk
+                FeedCache fc = FeedCache.getInstance(null);
+                if (fc != null && anime.slug != null) {
+                    fc.saveEpisodeList(anime.slug, episodes);
                 }
 
                 for (Episode ep : episodes) {
