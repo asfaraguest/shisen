@@ -1513,14 +1513,16 @@ public class PlayerActivity extends AppCompatActivity {
         mediaItemBuilder.setMediaMetadata(metaBuilder.build());
 
         long seekTargetMs = 0;
+        boolean shouldPromptResume = false;
+        MenatapDatabase.PlaybackProgress resumeProg = null;
+
         if (explicitResumeMs >= 0) {
             seekTargetMs = explicitResumeMs;
         } else if (anime != null && ep != null) {
             MenatapDatabase.PlaybackProgress prog = MenatapDatabase.getInstance(this).getEpisodeProgress(anime.slug, ep.number);
             if (prog != null && prog.shouldResume()) {
-                seekTargetMs = prog.progressMs;
-                String timeStr = prog.getFormattedTime();
-                Toast.makeText(this, getString(R.string.player_toast_resumed, timeStr), Toast.LENGTH_SHORT).show();
+                shouldPromptResume = true;
+                resumeProg = prog;
             }
         }
 
@@ -1528,10 +1530,15 @@ public class PlayerActivity extends AppCompatActivity {
         player.setMediaSource(msFactory.createMediaSource(mediaItem));
         player.setPlaybackParameters(new PlaybackParameters(currentSpeed));
         player.prepare();
-        if (seekTargetMs > 0) {
-            player.seekTo(seekTargetMs);
+
+        if (shouldPromptResume && resumeProg != null) {
+            showResumeConfirmationDialog(resumeProg.progressMs, resumeProg.getFormattedTime(), ep.number);
+        } else {
+            if (seekTargetMs > 0) {
+                player.seekTo(seekTargetMs);
+            }
+            player.play();
         }
-        player.play();
 
         // Fetch AniSkip
         if (anime.idMal > 0) {
@@ -1545,6 +1552,38 @@ public class PlayerActivity extends AppCompatActivity {
                 public void onError(Throwable t) {}
             });
         }
+    }
+
+    private void showResumeConfirmationDialog(long resumeMs, String formattedTime, int epNumber) {
+        if (isFinishing()) return;
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.player_dialog_resume_title)
+                .setMessage(getString(R.string.player_dialog_resume_message, epNumber, formattedTime))
+                .setPositiveButton(getString(R.string.player_dialog_resume_action_resume, formattedTime), (d, which) -> {
+                    if (player != null) {
+                        player.seekTo(resumeMs);
+                        player.play();
+                        Toast.makeText(this, getString(R.string.player_toast_resumed, formattedTime), Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton(R.string.player_dialog_resume_action_restart, (d, which) -> {
+                    if (player != null) {
+                        player.seekTo(0);
+                        player.play();
+                    }
+                    if (anime != null) {
+                        MenatapDatabase.getInstance(this).clearEpisodeProgress(anime.slug, epNumber);
+                    }
+                })
+                .setOnCancelListener(d -> {
+                    if (player != null) {
+                        player.seekTo(resumeMs);
+                        player.play();
+                    }
+                })
+                .create();
+        SystemUiHelper.setupDialogBounds(dialog, this);
+        dialog.show();
     }
 
     private void startProgressTracker() {

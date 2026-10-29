@@ -290,6 +290,10 @@
     <string name="player_toast_auto_op">⚡ Auto Skipping Opening</string>
     <string name="player_toast_auto_ed">⚡ Auto Skipping Ending</string>
     <string name="player_toast_resumed">Resuming playback at %s</string>
+    <string name="player_dialog_resume_title">Resume Playback?</string>
+    <string name="player_dialog_resume_message">Episode %1$d was previously watched up to %2$s. Resume from this position or restart from the beginning?</string>
+    <string name="player_dialog_resume_action_resume">Resume (%s)</string>
+    <string name="player_dialog_resume_action_restart">Start from Beginning</string>
     <string name="secure_store_failed">API key cannot be securely stored on this device (Android Keystore unavailable).</string>
     <string name="player_toast_notification_disabled">Notification permission denied. Media playback controls in notification shade are disabled.</string>
     <string name="player_toast_next_ep">Playing next episode...</string>

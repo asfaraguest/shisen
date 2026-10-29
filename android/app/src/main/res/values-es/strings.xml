@@ -290,6 +290,10 @@
     <string name="player_toast_auto_op">⚡ Omitiendo opening automáticamente</string>
     <string name="player_toast_auto_ed">⚡ Omitiendo ending automáticamente</string>
     <string name="player_toast_resumed">Continuando reproducción en %s</string>
+    <string name="player_dialog_resume_title">¿Reanudar reproducción?</string>
+    <string name="player_dialog_resume_message">El episodio %1$d se reprodujo anteriormente hasta %2$s. ¿Reanudar desde esta posición o reiniciar desde el principio?</string>
+    <string name="player_dialog_resume_action_resume">Reanudar (%s)</string>
+    <string name="player_dialog_resume_action_restart">Empezar desde el principio</string>
     <string name="secure_store_failed">La clave de API no se puede almacenar de forma segura en este dispositivo (Android Keystore no disponible).</string>
     <string name="player_toast_notification_disabled">Permiso de notificación denegado. Los controles de reproducción en la barra de notificaciones están desactivados.</string>
     <string name="player_toast_next_ep">Reproduciendo siguiente episodio...</string>
