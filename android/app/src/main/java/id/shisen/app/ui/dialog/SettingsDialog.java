@@ -285,7 +285,10 @@ public class SettingsDialog {
             String inputModel = etModel.getText().toString().trim();
 
             if (!inputKey.isEmpty()) {
-                AiSubtitleService.saveKey(activity, inputKey);
+                boolean saved = AiSubtitleService.saveKey(activity, inputKey);
+                if (!saved && activity != null) {
+                    android.widget.Toast.makeText(activity, R.string.secure_store_failed, android.widget.Toast.LENGTH_LONG).show();
+                }
             }
             if (!inputModel.isEmpty()) {
                 AiSubtitleService.saveModel(activity, inputModel);

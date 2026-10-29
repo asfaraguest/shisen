@@ -86,7 +86,8 @@ public class AiSubtitleServiceTest {
 
         RecordedRequest req = server.takeRequest();
         assertEquals("POST", req.getMethod());
-        assertTrue(req.getPath().contains("key=" + key));
+        assertFalse(req.getPath().contains("key="));
+        assertEquals(key, req.getHeader("x-goog-api-key"));
         assertTrue(req.getBody().readUtf8().contains("Welcome to the world of Satisfy!"));
     }
 

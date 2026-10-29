@@ -290,6 +290,7 @@
     <string name="player_toast_auto_op">⚡ Auto Skipping Opening</string>
     <string name="player_toast_auto_ed">⚡ Auto Skipping Ending</string>
     <string name="player_toast_resumed">Resuming playback at %s</string>
+    <string name="secure_store_failed">API key cannot be securely stored on this device (Android Keystore unavailable).</string>
     <string name="player_toast_next_ep">Playing next episode...</string>
     <string name="player_toast_prev_ep">Playing previous episode...</string>
     <string name="player_toast_screen_locked">🔒 Screen Locked</string>

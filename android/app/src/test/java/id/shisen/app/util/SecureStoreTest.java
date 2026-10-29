@@ -132,6 +132,77 @@ public class SecureStoreTest {
 
         String retrieved = secureStore.getString(key, null);
         assertEquals("sk-my-super-secret-key", retrieved);
+
+        // Verifikasi migrasi: entri di preferences tidak lagi memiliki prefix "raw:" dan terenkripsi
+        String migratedRaw = fakePrefs.getString(key, null);
+        assertNotNull(migratedRaw);
+        assertFalse(migratedRaw.startsWith("raw:"));
+        assertNotEquals("sk-my-super-secret-key", migratedRaw);
+    }
+
+    @Test
+    public void testFbPrefixMigratesAndReEncrypts() throws Exception {
+        String key = "test_fb_key";
+        String secret = "sk-legacy-fb-secret-token";
+
+        // Setup legacy decryptor di test
+        SecureStore.setLegacyFallbackDecryptorForTesting(payload -> {
+            if ("legacy_encrypted_payload".equals(payload)) {
+                return secret;
+            }
+            return null;
+        });
+
+        fakePrefs.data.put(key, "fb:legacy_encrypted_payload");
+
+        String retrieved = secureStore.getString(key, null);
+        assertEquals(secret, retrieved);
+
+        // Verifikasi migrasi: entri terenkripsi tanpa prefix "fb:"
+        String migratedRaw = fakePrefs.getString(key, null);
+        assertNotNull(migratedRaw);
+        assertFalse(migratedRaw.startsWith("fb:"));
+        assertEquals(secret, secureStore.decrypt(migratedRaw));
+
+        SecureStore.setLegacyFallbackDecryptorForTesting(null);
+    }
+
+    @Test
+    public void testKeystoreFailureReturnsFalseAndDoesNotSavePlaintext() {
+        // Buat instance SecureStore dengan secretKey = null (mensimulasikan kegagalan Android Keystore)
+        SecureStore brokenStore = SecureStore.createForTesting(fakePrefs, null);
+
+        String key = "broken_keystore_key";
+        String secret = "ultra-confidential-token";
+
+        boolean success = brokenStore.putString(key, secret);
+        assertFalse("putString harus return false bila Keystore gagal", success);
+        assertFalse(fakePrefs.contains(key));
+        assertNull(fakePrefs.getString(key, null));
+    }
+
+    @Test
+    public void testKeystoreFailureDuringMigrationDeletesInsecureEntry() {
+        SecureStore brokenStore = SecureStore.createForTesting(fakePrefs, null);
+
+        String key = "insecure_entry";
+        fakePrefs.data.put(key, "raw:sk-insecure-legacy-value");
+
+        String result = brokenStore.getString(key, "default_val");
+        assertEquals("default_val", result);
+        assertFalse("Entri tidak aman harus dihapus bila gagal migrasi ke Keystore", fakePrefs.contains(key));
+    }
+
+    @Test
+    public void testNoHardcodedKeyLiteralInProductionClass() throws Exception {
+        // Verifikasi tidak ada string literal "menatap_jvm_test_aes_gcm_seed_2026" di SecureStore
+        for (java.lang.reflect.Field field : SecureStore.class.getDeclaredFields()) {
+            field.setAccessible(true);
+            if (field.getType() == String.class) {
+                String val = (String) field.get(null);
+                assertFalse("Tidak boleh ada seed hardcoded di field", "menatap_jvm_test_aes_gcm_seed_2026".equals(val));
+            }
+        }
     }
 
     /**

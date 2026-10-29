@@ -2385,7 +2385,10 @@ public class PlayerActivity extends AppCompatActivity {
         final Runnable autoSaveTask = () -> {
             String newKey = etKey.getText().toString().trim();
             if (!newKey.isEmpty()) {
-                AiSubtitleService.saveKey(PlayerActivity.this, newKey);
+                boolean saved = AiSubtitleService.saveKey(PlayerActivity.this, newKey);
+                if (!saved) {
+                    android.widget.Toast.makeText(PlayerActivity.this, R.string.secure_store_failed, android.widget.Toast.LENGTH_LONG).show();
+                }
             }
             if (etCustomPrompt != null) {
                 String promptText = etCustomPrompt.getText().toString().trim();

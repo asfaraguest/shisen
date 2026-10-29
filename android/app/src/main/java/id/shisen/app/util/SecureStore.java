@@ -14,9 +14,7 @@ import java.util.Arrays;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  * SecureStore provides hardware-backed, encrypted key-value persistence
@@ -24,6 +22,7 @@ import javax.crypto.spec.SecretKeySpec;
  *
  * Prepared for Phase 2 BYOK LLM subtitle keys (Gemini, Groq, Ollama, OpenAI).
  * Strictly forbids logging of secrets and API keys.
+ * Hardcoded seeds and raw plaintext fallbacks are strictly prohibited in production.
  */
 public class SecureStore {
 
@@ -33,6 +32,16 @@ public class SecureStore {
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int GCM_TAG_LENGTH_BITS = 128;
     private static final int GCM_IV_LENGTH_BYTES = 12;
+
+    public interface LegacyFallbackDecryptor {
+        String decryptFallback(String base64Combined) throws Exception;
+    }
+
+    private static volatile LegacyFallbackDecryptor legacyFallbackDecryptor;
+
+    public static void setLegacyFallbackDecryptorForTesting(LegacyFallbackDecryptor decryptor) {
+        legacyFallbackDecryptor = decryptor;
+    }
 
     private static volatile SecureStore instance;
     private final SharedPreferences prefs;
@@ -46,9 +55,13 @@ public class SecureStore {
     }
 
     SecureStore(SharedPreferences prefs) {
+        this(prefs, initOrGetSecretKey());
+    }
+
+    SecureStore(SharedPreferences prefs, Key secretKey) {
         this.prefs = prefs;
         this.secureRandom = new SecureRandom();
-        this.secretKey = initOrGetSecretKey();
+        this.secretKey = secretKey;
     }
 
     public static SecureStore getInstance(Context context) {
@@ -64,16 +77,27 @@ public class SecureStore {
 
     /**
      * Testing factory for isolated unit test environments without Android Context.
+     * Generates an ephemeral in-memory AES key if Android Keystore is unavailable.
      */
     public static SecureStore createForTesting(SharedPreferences prefs) {
-        return new SecureStore(prefs);
+        try {
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+            keyGen.init(256);
+            return new SecureStore(prefs, keyGen.generateKey());
+        } catch (Throwable t) {
+            return new SecureStore(prefs, null);
+        }
+    }
+
+    public static SecureStore createForTesting(SharedPreferences prefs, Key key) {
+        return new SecureStore(prefs, key);
     }
 
     /**
      * Initializes or retrieves an AES-256 key from Android Keystore.
-     * Provides an in-memory deterministic fallback if running within non-Android JVM unit tests.
+     * Returns null if AndroidKeyStore provider is unavailable (e.g. Host JVM or broken keystore).
      */
-    private Key initOrGetSecretKey() {
+    private static Key initOrGetSecretKey() {
         try {
             KeyStore keyStore = KeyStore.getInstance(ANDROID_KEYSTORE);
             keyStore.load(null);
@@ -92,17 +116,8 @@ public class SecureStore {
             }
             return keyStore.getKey(KEY_ALIAS, null);
         } catch (Throwable t) {
-            // JVM Unit Test Fallback (when AndroidKeyStore provider is not registered in host JVM)
-            return getJvmTestFallbackKey();
+            return null;
         }
-    }
-
-    private SecretKey getJvmTestFallbackKey() {
-        // Deterministic 256-bit key for local test environments
-        byte[] keyBytes = new byte[32];
-        byte[] seed = "menatap_jvm_test_aes_gcm_seed_2026".getBytes(StandardCharsets.UTF_8);
-        System.arraycopy(seed, 0, keyBytes, 0, Math.min(seed.length, 32));
-        return new SecretKeySpec(keyBytes, "AES");
     }
 
     /**
@@ -111,6 +126,9 @@ public class SecureStore {
      */
     public synchronized String encrypt(String plainText) throws Exception {
         if (plainText == null) return null;
+        if (secretKey == null) {
+            throw new IllegalStateException("Hardware Keystore is unavailable");
+        }
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         byte[] iv;
         try {
@@ -121,7 +139,7 @@ public class SecureStore {
                 throw new IllegalStateException("Cipher did not generate IV");
             }
         } catch (Throwable t) {
-            // JVM Unit Test Fallback or non-randomized providers
+            // JVM Unit Test Fallback or standard JCE providers
             iv = new byte[GCM_IV_LENGTH_BYTES];
             secureRandom.nextBytes(iv);
             GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv);
@@ -136,38 +154,14 @@ public class SecureStore {
         return encodeBase64(combined);
     }
 
-    private String encryptSoftwareFallback(String plainText) throws Exception {
-        SecretKey fallbackKey = getJvmTestFallbackKey();
-        byte[] iv = new byte[GCM_IV_LENGTH_BYTES];
-        secureRandom.nextBytes(iv);
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv);
-        cipher.init(Cipher.ENCRYPT_MODE, fallbackKey, spec);
-        byte[] cipherText = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
-        byte[] combined = new byte[iv.length + cipherText.length];
-        System.arraycopy(iv, 0, combined, 0, iv.length);
-        System.arraycopy(cipherText, 0, combined, iv.length, cipherText.length);
-        return encodeBase64(combined);
-    }
-
-    private String decryptSoftwareFallback(String base64Combined) throws Exception {
-        SecretKey fallbackKey = getJvmTestFallbackKey();
-        byte[] combined = decodeBase64(base64Combined);
-        if (combined.length <= GCM_IV_LENGTH_BYTES) throw new IllegalArgumentException("Short payload");
-        byte[] iv = Arrays.copyOfRange(combined, 0, GCM_IV_LENGTH_BYTES);
-        byte[] cipherText = Arrays.copyOfRange(combined, GCM_IV_LENGTH_BYTES, combined.length);
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv);
-        cipher.init(Cipher.DECRYPT_MODE, fallbackKey, spec);
-        byte[] plainBytes = cipher.doFinal(cipherText);
-        return new String(plainBytes, StandardCharsets.UTF_8);
-    }
-
     /**
      * Decrypts Base64 payload containing IV and ciphertext.
      */
     public synchronized String decrypt(String base64Combined) throws Exception {
         if (base64Combined == null || base64Combined.trim().isEmpty()) return null;
+        if (secretKey == null) {
+            throw new IllegalStateException("Hardware Keystore is unavailable");
+        }
         byte[] combined = decodeBase64(base64Combined);
         if (combined.length <= GCM_IV_LENGTH_BYTES) {
             throw new IllegalArgumentException("Invalid payload length");
@@ -201,54 +195,68 @@ public class SecureStore {
     }
 
     /**
-     * Stores secret securely in encrypted preferences with automatic fallback.
+     * Stores secret securely in encrypted preferences.
+     * Returns false if Keystore is unavailable or encryption fails (never stores plaintext or hardcoded key).
      */
     public boolean putString(String key, String value) {
         if (key == null || prefs == null) return false;
         if (value == null) {
             return prefs.edit().remove(key).commit();
         }
+        if (secretKey == null) {
+            return false;
+        }
         try {
             String encrypted = encrypt(value);
             return prefs.edit().putString(key, encrypted).commit();
         } catch (Throwable e) {
-            try {
-                String fallbackEnc = encryptSoftwareFallback(value);
-                return prefs.edit().putString(key, "fb:" + fallbackEnc).commit();
-            } catch (Throwable ex) {
-                return prefs.edit().putString(key, "raw:" + value).commit();
-            }
+            return false;
         }
     }
 
     /**
      * Retrieves and decrypts secret from storage. Returns defaultValue if missing or corrupted.
+     * Performs one-way migration if legacy "raw:" or "fb:" prefix is detected.
      */
     public String getString(String key, String defaultValue) {
         if (key == null || prefs == null) return defaultValue;
         String raw = prefs.getString(key, null);
         if (raw == null) return defaultValue;
+
+        // 1. One-way migration for legacy plaintext prefix "raw:"
         if (raw.startsWith("raw:")) {
-            return raw.substring(4);
-        }
-        if (raw.startsWith("fb:")) {
-            try {
-                String dec = decryptSoftwareFallback(raw.substring(3));
-                return (dec != null) ? dec : defaultValue;
-            } catch (Throwable t) {
+            String plain = raw.substring(4);
+            if (putString(key, plain)) {
+                return plain;
+            } else {
+                remove(key);
                 return defaultValue;
             }
         }
+
+        // 2. One-way migration for legacy software fallback prefix "fb:"
+        if (raw.startsWith("fb:")) {
+            String payload = raw.substring(3);
+            String plain = null;
+            if (legacyFallbackDecryptor != null) {
+                try {
+                    plain = legacyFallbackDecryptor.decryptFallback(payload);
+                } catch (Throwable ignored) {}
+            }
+            if (plain != null && putString(key, plain)) {
+                return plain;
+            } else {
+                remove(key);
+                return defaultValue;
+            }
+        }
+
+        // 3. Normal Keystore decryption
         try {
             String decrypted = decrypt(raw);
             return (decrypted != null) ? decrypted : defaultValue;
         } catch (Throwable e) {
-            try {
-                String dec = decryptSoftwareFallback(raw);
-                return (dec != null) ? dec : defaultValue;
-            } catch (Throwable t) {
-                return defaultValue;
-            }
+            return defaultValue;
         }
     }
 

@@ -1060,7 +1060,7 @@ Output:
     public String callGemini(String text, String apiKey, String customPrompt, String model) throws Exception {
         String base = customBaseUrl != null ? customBaseUrl : "https://generativelanguage.googleapis.com";
         String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "gemini-2.5-flash";
-        String url = base + "/v1beta/models/" + effectiveModel + ":generateContent?key=" + apiKey;
+        String url = base + "/v1beta/models/" + effectiveModel + ":generateContent";
 
         String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
                 ? customPrompt.trim() : DEFAULT_FANSUB_PROMPT_ID;
@@ -1080,10 +1080,13 @@ Output:
         JSONObject bodyObj = new JSONObject();
         bodyObj.put("contents", contents);
 
-        Request request = new Request.Builder()
+        Request.Builder reqBuilder = new Request.Builder()
                 .url(url)
-                .post(RequestBody.create(bodyObj.toString(), JSON_MEDIA_TYPE))
-                .build();
+                .post(RequestBody.create(bodyObj.toString(), JSON_MEDIA_TYPE));
+        if (apiKey != null && !apiKey.trim().isEmpty()) {
+            reqBuilder.header("x-goog-api-key", apiKey.trim());
+        }
+        Request request = reqBuilder.build();
 
         try (Response resp = httpClient.newCall(request).execute()) {
             if (!resp.isSuccessful()) {
