@@ -3,6 +3,7 @@ package id.shisen.app.data.subtitle;
 import android.content.Context;
 import id.shisen.app.data.model.SubtitleTrack;
 import id.shisen.app.data.service.HttpClientProvider;
+import id.shisen.app.data.service.NetworkConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -566,16 +567,11 @@ public class SubtitleManager {
             }
         } catch (Exception ignored) {}
 
-        refererCandidates.add("https://megaplay.buzz/");
-        refererCandidates.add("https://hianime.to/");
-        refererCandidates.add("https://hianime.at/");
-        refererCandidates.add("https://hianime.sx/");
-        refererCandidates.add("https://hianime.nz/");
-        refererCandidates.add("https://zoro.to/");
-        refererCandidates.add("https://aniwave.to/");
-        refererCandidates.add("https://zokoanime.video/");
-        refererCandidates.add("https://kaido.to/");
-        refererCandidates.add("https://animixplay.to/");
+        for (String cand : NetworkConfig.SUBTITLE_REFERER_CANDIDATES) {
+            if (!refererCandidates.contains(cand)) {
+                refererCandidates.add(cand);
+            }
+        }
         refererCandidates.add(""); // direct request tanpa referer
 
         Exception lastErr = null;

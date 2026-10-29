@@ -145,21 +145,7 @@ public class HttpClientProvider {
                 // Anti-403 CDN Referer/Origin Injection
                 boolean isDirect = "none".equalsIgnoreCase(original.header("Sec-Fetch-Site"));
 
-                boolean isMegaCdn = (!host.contains("anichan") && !host.contains("otakudesu") && !host.contains("animetosho") && !host.contains("opensubtitles"))
-                        && (host.contains("megaplay") || host.contains("megap.")
-                        || host.contains("megacloud") || host.contains("rabbitstream")
-                        || host.contains("dokicloud") || host.contains("rapid-cloud")
-                        || host.contains("nexabloom") || host.contains("ivorysummit")
-                        || host.contains("shiora") || host.contains("broforgotsave")
-                        || host.contains("eclipseharbor") || host.contains("emeralddrift")
-                        || host.contains("silverhaze") || host.contains("velvet") || host.contains("aurora")
-                        || (host.contains("cdn") && (path.contains("sub") || fullUrl.contains(".vtt") || fullUrl.contains(".srt")))
-                        || host.endsWith(".world") || host.endsWith(".buzz")
-                        || host.endsWith(".top") || host.endsWith(".xyz")
-                        || host.endsWith(".to") || host.endsWith(".cc") || host.endsWith(".site")
-                        || path.contains("/subtitles/") || path.contains("/subtitle") || path.contains("/caption")
-                        || path.contains("/anime/") || path.contains("/tracks/")
-                        || path.endsWith(".vtt") || path.endsWith(".srt") || fullUrl.contains(".vtt") || fullUrl.contains(".srt"));
+                boolean isMegaCdn = NetworkConfig.isMegaCdnHost(host, path, fullUrl);
 
                 if (!isDirect) {
                     if (host.contains("anichan")) {

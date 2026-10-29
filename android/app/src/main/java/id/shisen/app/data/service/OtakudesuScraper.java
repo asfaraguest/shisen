@@ -31,7 +31,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class OtakudesuScraper {
-    public static final String BASE_URL = "https://ww2.otakudesu.biz";
+    public static final String BASE_URL = NetworkConfig.OTAKUDESU_BASE;
 
     public interface Callback<T> {
         void onSuccess(T result);

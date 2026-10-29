@@ -15,6 +15,7 @@ import id.shisen.app.data.model.Anime;
 
 /** Database SQLite untuk Menatap (100% Pure Native Java). */
 public class MenatapDatabase extends SQLiteOpenHelper {
+    private static final String TAG = "ShisenDatabase";
     private static final String DATABASE_NAME = "menatap.db";
     private static final int DATABASE_VERSION = 3; // Dinaikkan untuk tabel watch_progress (paritas Tatap)
 
@@ -93,12 +94,12 @@ public class MenatapDatabase extends SQLiteOpenHelper {
                 try {
                     db.execSQL("ALTER TABLE bookmarks ADD COLUMN anilist_id INTEGER DEFAULT 0");
                 } catch (Exception e) {
-                    android.util.Log.w("MenatapDatabase", "Gagal menambahkan kolom anilist_id: " + e.getMessage());
+                    android.util.Log.w(TAG, "Gagal menambahkan kolom anilist_id: " + e.getMessage());
                 }
                 try {
                     db.execSQL("ALTER TABLE bookmarks ADD COLUMN mal_id INTEGER DEFAULT 0");
                 } catch (Exception e) {
-                    android.util.Log.w("MenatapDatabase", "Gagal menambahkan kolom mal_id: " + e.getMessage());
+                    android.util.Log.w(TAG, "Gagal menambahkan kolom mal_id: " + e.getMessage());
                 }
                 try {
                     db.execSQL("CREATE INDEX IF NOT EXISTS idx_bookmarks_anilist_id ON bookmarks (anilist_id)");
@@ -115,12 +116,12 @@ public class MenatapDatabase extends SQLiteOpenHelper {
                             "updated_at INTEGER, " +
                             "PRIMARY KEY(slug, ep))");
                 } catch (Exception e) {
-                    android.util.Log.w("MenatapDatabase", "Gagal membuat tabel watch_progress: " + e.getMessage());
+                    android.util.Log.w(TAG, "Gagal membuat tabel watch_progress: " + e.getMessage());
                 }
                 try {
                     db.execSQL("CREATE INDEX IF NOT EXISTS idx_watch_progress_slug ON watch_progress (slug)");
                 } catch (Exception e) {
-                    android.util.Log.w("MenatapDatabase", "Gagal membuat index idx_watch_progress_slug: " + e.getMessage());
+                    android.util.Log.w(TAG, "Gagal membuat index idx_watch_progress_slug: " + e.getMessage());
                 }
             }
             db.setTransactionSuccessful();
@@ -132,11 +133,11 @@ public class MenatapDatabase extends SQLiteOpenHelper {
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Safe downgrade: Pertahankan data pengguna (bookmarks/history/watch_progress)
-        android.util.Log.w("MenatapDatabase", "Permintaan downgrade database dari v" + oldVersion + " ke v" + newVersion + ". Mempertahankan tabel data pengguna.");
+        android.util.Log.w(TAG, "Permintaan downgrade database dari v" + oldVersion + " ke v" + newVersion + ". Mempertahankan tabel data pengguna.");
         try {
             onCreate(db);
         } catch (Exception e) {
-            android.util.Log.e("MenatapDatabase", "Error pada onDowngrade aman: " + e.getMessage());
+            android.util.Log.e(TAG, "Error pada onDowngrade aman: " + e.getMessage());
         }
     }
 

@@ -33,7 +33,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class HiAnimeClient {
-    public static final String HI_BASE = "https://hianime.at";
+    public static final String HI_BASE = NetworkConfig.HIANIME_BASE;
 
     // Static Megaplay AES-256-CBC keys (32 bytes key, 16 bytes IV)
     private static final byte[] MEGA_KEY = new byte[32];
