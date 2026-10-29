@@ -132,7 +132,7 @@ public class AppUpdateManager {
                 }
 
                 if (releaseObj == null) {
-                    onCheckFinished(activity, isManual, false, "Gagal terhubung ke GitHub (" + lastError + ")", null, null, null, 0);
+                    onCheckFinished(activity, isManual, false, "Gagal terhubung ke GitHub (" + lastError + ")", null, null, null, 0, null);
                     return;
                 }
 
@@ -161,20 +161,16 @@ public class AppUpdateManager {
                     }
                 }
 
-                if (downloadUrl == null) {
-                    downloadUrl = htmlUrl;
-                }
-
                 boolean hasUpdate = isNewerVersion(cleanRemote, cleanInstalled);
-                onCheckFinished(activity, isManual, hasUpdate, null, cleanRemote, bodyNotes, downloadUrl, apkSize);
+                onCheckFinished(activity, isManual, hasUpdate, null, cleanRemote, bodyNotes, downloadUrl, apkSize, htmlUrl);
             } catch (Exception e) {
-                onCheckFinished(activity, isManual, false, "Koneksi terganggu: " + e.getMessage(), null, null, null, 0);
+                onCheckFinished(activity, isManual, false, "Koneksi terganggu: " + e.getMessage(), null, null, null, 0, null);
             }
         }).start();
     }
 
     private void onCheckFinished(Activity activity, boolean isManual, boolean hasUpdate, String errorMsg,
-                                 String latestVer, String notes, String downloadUrl, long sizeBytes) {
+                                 String latestVer, String notes, String downloadUrl, long sizeBytes, String htmlUrl) {
         isChecking = false;
         mainHandler.post(() -> {
             if (activity == null || activity.isFinishing()) return;
@@ -187,14 +183,14 @@ public class AppUpdateManager {
             }
 
             if (hasUpdate) {
-                showUpdateDialog(activity, latestVer, notes, downloadUrl, sizeBytes);
+                showUpdateDialog(activity, latestVer, notes, downloadUrl, sizeBytes, htmlUrl);
             } else if (isManual) {
                 Toast.makeText(activity, activity.getString(R.string.update_toast_latest, getInstalledVersion(activity)), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void showUpdateDialog(Activity activity, String latestVer, String notes, String downloadUrl, long sizeBytes) {
+    private void showUpdateDialog(Activity activity, String latestVer, String notes, String downloadUrl, long sizeBytes, String htmlUrl) {
         if (activity == null || activity.isFinishing() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed())) return;
 
         Dialog dialog = new Dialog(activity);
@@ -231,14 +227,26 @@ public class AppUpdateManager {
             btnNow.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 dialog.dismiss();
-                startStreamingDownload(activity, latestVer, downloadUrl);
+                if (downloadUrl != null && downloadUrl.endsWith(".apk")) {
+                    startStreamingDownload(activity, latestVer, downloadUrl);
+                } else {
+                    Toast.makeText(activity, "File APK belum tersedia untuk rilis ini, membuka browser...", Toast.LENGTH_SHORT).show();
+                    try {
+                        String target = htmlUrl != null ? htmlUrl : "https://github.com/asfara/shisen/releases";
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(target));
+                        activity.startActivity(browserIntent);
+                    } catch (Exception e) {
+                        Toast.makeText(activity, "Tidak ada browser yang tersedia", Toast.LENGTH_SHORT).show();
+                    }
+                }
             });
         }
 
         if (tvFallbackBrowser != null) {
             tvFallbackBrowser.setOnClickListener(v -> {
                 try {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
+                    String target = htmlUrl != null ? htmlUrl : (downloadUrl != null ? downloadUrl : "https://github.com/asfara/shisen/releases");
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(target));
                     activity.startActivity(browserIntent);
                 } catch (Exception e) {
                     Toast.makeText(activity, "Tidak ada browser yang tersedia", Toast.LENGTH_SHORT).show();
@@ -471,26 +479,53 @@ public class AppUpdateManager {
         }
     }
 
-    private static boolean isNewerVersion(String remote, String installed) {
+    static boolean isNewerVersion(String remote, String installed) {
         if (remote == null || remote.isEmpty() || installed == null || installed.isEmpty()) {
             return false;
         }
 
         try {
-            // Bersihkan format (misal 0.1.0-beta.2 -> 0.1.0.2 atau bandingkan segment)
-            String[] rParts = remote.replaceAll("[^0-9.]", ".").replaceAll("\\.+", ".").split("\\.");
-            String[] iParts = installed.replaceAll("[^0-9.]", ".").replaceAll("\\.+", ".").split("\\.");
+            String r = remote.trim();
+            String ins = installed.trim();
+            if (r.startsWith("v") || r.startsWith("V")) r = r.substring(1);
+            if (ins.startsWith("v") || ins.startsWith("V")) ins = ins.substring(1);
 
-            int maxLen = Math.max(rParts.length, iParts.length);
-            for (int i = 0; i < maxLen; i++) {
-                int rVal = i < rParts.length && !rParts[i].isEmpty() ? Integer.parseInt(rParts[i]) : 0;
-                int iVal = i < iParts.length && !iParts[i].isEmpty() ? Integer.parseInt(iParts[i]) : 0;
-                if (rVal > iVal) return true;
-                if (rVal < iVal) return false;
+            int[] rSem = parseSemVer(r);
+            int[] iSem = parseSemVer(ins);
+
+            // Bandingkan major, minor, patch
+            for (int i = 0; i < 3; i++) {
+                if (rSem[i] > iSem[i]) return true;
+                if (rSem[i] < iSem[i]) return false;
             }
+
+            // Jika major, minor, patch sama:
+            // Versi stabil (tanpa -beta, beta = -1) SELALU lebih baru daripada versi -beta.N
+            int rBeta = rSem[3] < 0 ? Integer.MAX_VALUE : rSem[3];
+            int iBeta = iSem[3] < 0 ? Integer.MAX_VALUE : iSem[3];
+            return rBeta > iBeta;
         } catch (Exception ignored) {
             return !remote.equalsIgnoreCase(installed);
         }
-        return false;
+    }
+
+    private static int[] parseSemVer(String v) {
+        int[] res = new int[]{0, 0, 0, -1};
+        String[] dashParts = v.split("-", 2);
+        String mainPart = dashParts[0];
+        String[] dotParts = mainPart.split("\\.");
+        if (dotParts.length > 0 && !dotParts[0].isEmpty()) res[0] = Integer.parseInt(dotParts[0].replaceAll("[^0-9]", ""));
+        if (dotParts.length > 1 && !dotParts[1].isEmpty()) res[1] = Integer.parseInt(dotParts[1].replaceAll("[^0-9]", ""));
+        if (dotParts.length > 2 && !dotParts[2].isEmpty()) res[2] = Integer.parseInt(dotParts[2].replaceAll("[^0-9]", ""));
+
+        if (dashParts.length > 1) {
+            String pre = dashParts[1].replaceAll("[^0-9]", "");
+            if (!pre.isEmpty()) {
+                res[3] = Integer.parseInt(pre);
+            } else {
+                res[3] = 0;
+            }
+        }
+        return res;
     }
 }

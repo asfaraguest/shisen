@@ -103,4 +103,33 @@ public class DnsFallbackResolverTest {
         DnsFallbackResolver resolver = new DnsFallbackResolver(fail, fail, fail, Collections.emptyMap());
         resolver.lookup("completely-unresolvable.xyz");
     }
+
+    @Test
+    public void testFilterPoisonedIpsRemovesSinkholesAndLocalAddresses() throws Exception {
+        java.util.List<InetAddress> ips = new java.util.ArrayList<>();
+        ips.add(InetAddress.getByName("0.0.0.0"));
+        ips.add(InetAddress.getByName("127.0.0.1"));
+        ips.add(InetAddress.getByName("10.0.0.1"));
+        ips.add(InetAddress.getByName("192.168.1.1"));
+        ips.add(InetAddress.getByName("118.98.44.10")); // Mercusuar ISP sinkhole
+        ips.add(InetAddress.getByName("::1"));
+        ips.add(InetAddress.getByName("104.21.5.12")); // Valid public IP
+
+        List<InetAddress> clean = DnsFallbackResolver.filterPoisonedIps(ips);
+        assertEquals(1, clean.size());
+        assertEquals("104.21.5.12", clean.get(0).getHostAddress());
+    }
+
+    @Test
+    public void testLookupHostnameNormalizedToLowercaseAndTrimmed() throws Exception {
+        InetAddress ip = InetAddress.getByName("104.21.5.12");
+        DnsFallbackResolver.TierResolver sys = host -> {
+            assertEquals("mixed-case-domain.com", host);
+            return Collections.singletonList(ip);
+        };
+        DnsFallbackResolver resolver = new DnsFallbackResolver(sys, null, null, null);
+        List<InetAddress> res = resolver.lookup("   MIXED-CASE-DOMAIN.COM   ");
+        assertEquals(1, res.size());
+        assertEquals("104.21.5.12", res.get(0).getHostAddress());
+    }
 }

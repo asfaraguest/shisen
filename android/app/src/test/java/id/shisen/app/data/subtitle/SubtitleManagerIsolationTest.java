@@ -104,4 +104,27 @@ public class SubtitleManagerIsolationTest {
         boolean isStale = (simulatedAiJobLoadId != manager.getCurrentLoadId());
         assertTrue("Late AI translation must be identified as stale and discarded", isStale);
     }
+
+    @Test
+    public void testOverlappingCuesCombinedWithNewline() {
+        List<SubtitleCue> cues = new java.util.ArrayList<>();
+        // Cue 1: Durasi panjang (misal Song / Sign)
+        cues.add(new SubtitleCue(1000, 10000, "[Lagu Pembuka]"));
+        // Cue 2: Dialog di tengah
+        cues.add(new SubtitleCue(3000, 5000, "Selamat pagi!"));
+
+        manager.setCustomCues(cues, "Overlapping Test");
+
+        // Pada waktu 2000: hanya lagu
+        assertEquals("[Lagu Pembuka]", manager.getCurrentText(2000));
+
+        // Pada waktu 4000: kedua cue aktif secara bersamaan
+        assertEquals("[Lagu Pembuka]\nSelamat pagi!", manager.getCurrentText(4000));
+
+        // Pada waktu 7000: dialog sudah selesai, lagu masih berlangsung
+        assertEquals("[Lagu Pembuka]", manager.getCurrentText(7000));
+
+        // Pada waktu 11000: keduanya sudah selesai
+        assertEquals("", manager.getCurrentText(11000));
+    }
 }

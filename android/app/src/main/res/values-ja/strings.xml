@@ -289,6 +289,7 @@
     <string name="player_toast_pip_failed">PiPモードに入れません: %s</string>
     <string name="player_toast_auto_op">⚡ オープニングを自動スキップ</string>
     <string name="player_toast_auto_ed">⚡ エンディングを自動スキップ</string>
+    <string name="player_toast_resumed">%sから再生を再開</string>
     <string name="player_toast_next_ep">次のエピソードを再生中...</string>
     <string name="player_toast_prev_ep">前のエピソードを再生中...</string>
     <string name="player_toast_screen_locked">🔒 画面ロック中</string>

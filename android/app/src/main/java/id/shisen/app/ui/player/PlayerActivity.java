@@ -315,6 +315,13 @@ public class PlayerActivity extends AppCompatActivity {
             return;
         }
 
+        long initialResumePos = -1;
+        if (savedInstanceState != null) {
+            initialResumePos = savedInstanceState.getLong("saved_position", -1);
+        } else if (PlaybackDataHolder.getPositionMs() > 0) {
+            initialResumePos = PlaybackDataHolder.getPositionMs();
+        }
+
         PlaybackDataHolder.set(anime, episodeList, currentIndex);
 
         initViews();
@@ -325,7 +332,7 @@ public class PlayerActivity extends AppCompatActivity {
         setupGestureControls();
         applySubtitleStyle();
         updateOrientationLayout(getResources().getConfiguration().orientation);
-        playEpisode(currentIndex);
+        playEpisodeWithServer(currentIndex, preferredServer, initialResumePos);
     }
 
     private void initViews() {
@@ -630,6 +637,14 @@ public class PlayerActivity extends AppCompatActivity {
                 }
 
                 if (playbackState == Player.STATE_ENDED) {
+                    if (anime != null && currentIndex >= 0 && currentIndex < episodeList.size()) {
+                        Episode currEp = episodeList.get(currentIndex);
+                        dbExecutor.execute(() -> {
+                            try {
+                                MenatapDatabase.getInstance(getApplicationContext()).clearEpisodeProgress(anime.slug, currEp.number);
+                            } catch (Throwable ignored) {}
+                        });
+                    }
                     playNextEpisode();
                 }
             }
@@ -1361,10 +1376,18 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void playEpisode(int index) {
-        playEpisodeWithServer(index, preferredServer);
+        playEpisodeWithServer(index, preferredServer, -1);
+    }
+
+    private void playEpisode(int index, long explicitResumeMs) {
+        playEpisodeWithServer(index, preferredServer, explicitResumeMs);
     }
 
     private void playEpisodeWithServer(int index, String server) {
+        playEpisodeWithServer(index, server, -1);
+    }
+
+    private void playEpisodeWithServer(int index, String server, long explicitResumeMs) {
         if (index < 0 || index >= episodeList.size()) return;
         currentIndex = index;
         preferredServer = server != null ? server : "hianime";
@@ -1396,7 +1419,7 @@ public class PlayerActivity extends AppCompatActivity {
                     currentStreamSource = source;
                     tvPortraitCurrentEp.setText("Episode " + ep.number + " · " + source.server);
                     tvSubStatus.setText("Server: " + source.server + (source.subtitles.isEmpty() ? " (Hardsub)" : " (Multi-Sub)"));
-                    startExoPlayback(source, ep);
+                    startExoPlayback(source, ep, explicitResumeMs);
 
                     // Load subtitles into multi-source subtitle engine
                     subtitleManager.loadFromTracks(source.subtitles, safeTitle, ep.number, false);
@@ -1419,6 +1442,10 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void startExoPlayback(StreamSource source, Episode ep) {
+        startExoPlayback(source, ep, -1);
+    }
+
+    private void startExoPlayback(StreamSource source, Episode ep, long explicitResumeMs) {
         if (player == null) return;
 
         Map<String, String> headers = new HashMap<>();
@@ -1453,10 +1480,25 @@ public class PlayerActivity extends AppCompatActivity {
         }
         mediaItemBuilder.setMediaMetadata(metaBuilder.build());
 
+        long seekTargetMs = 0;
+        if (explicitResumeMs >= 0) {
+            seekTargetMs = explicitResumeMs;
+        } else if (anime != null && ep != null) {
+            MenatapDatabase.PlaybackProgress prog = MenatapDatabase.getInstance(this).getEpisodeProgress(anime.slug, ep.number);
+            if (prog != null && prog.shouldResume()) {
+                seekTargetMs = prog.progressMs;
+                String timeStr = prog.getFormattedTime();
+                Toast.makeText(this, getString(R.string.player_toast_resumed, timeStr), Toast.LENGTH_SHORT).show();
+            }
+        }
+
         MediaItem mediaItem = mediaItemBuilder.build();
         player.setMediaSource(msFactory.createMediaSource(mediaItem));
         player.setPlaybackParameters(new PlaybackParameters(currentSpeed));
         player.prepare();
+        if (seekTargetMs > 0) {
+            player.seekTo(seekTargetMs);
+        }
         player.play();
 
         // Fetch AniSkip
@@ -1953,55 +1995,92 @@ public class PlayerActivity extends AppCompatActivity {
         String safeTitle = getSafeAnimeTitle();
         int epNumber = getCurrentEpisodeNumberSafe();
 
+        final List<AnimeToshoClient.SubtitleSearchResult> atResults = new ArrayList<>();
+        final List<OpenSubtitlesClient.SubtitleSearchResult> osResults = new ArrayList<>();
+        final java.util.concurrent.atomic.AtomicInteger pending = new java.util.concurrent.atomic.AtomicInteger(2);
+        final StringBuilder lastError = new StringBuilder();
+
+        Runnable onFinished = () -> {
+            if (pending.decrementAndGet() == 0) {
+                runOnUiThread(() -> {
+                    if (isFinishing()) return;
+                    if (atResults.isEmpty() && osResults.isEmpty()) {
+                        String msg = lastError.length() > 0
+                                ? lastError.toString()
+                                : getString(R.string.player_toast_subs_not_found);
+                        Toast.makeText(PlayerActivity.this, msg, Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    List<String> labels = new ArrayList<>();
+                    List<Runnable> itemActions = new ArrayList<>();
+
+                    for (AnimeToshoClient.SubtitleSearchResult at : atResults) {
+                        labels.add("[AnimeTosho] " + at.filename);
+                        itemActions.add(() -> downloadAndApplyAnimeToshoSub(at.downloadUrl, at.filename));
+                    }
+
+                    for (OpenSubtitlesClient.SubtitleSearchResult os : osResults) {
+                        labels.add("[OpenSubtitles] " + os.filename);
+                        itemActions.add(() -> downloadAndApplyOpenSubtitlesSub(os.downloadUrl, os.filename));
+                    }
+
+                    AlertDialog dialog = new AlertDialog.Builder(PlayerActivity.this)
+                            .setTitle(R.string.player_dialog_fansub_title)
+                            .setItems(labels.toArray(new String[0]), (d, which) -> {
+                                if (which >= 0 && which < itemActions.size()) {
+                                    itemActions.get(which).run();
+                                }
+                            })
+                            .setNegativeButton(R.string.dialog_cancel, null)
+                            .create();
+                    SystemUiHelper.setupDialogBounds(dialog, PlayerActivity.this);
+                    dialog.show();
+                });
+            }
+        };
+
         AnimeToshoClient.searchIndonesianAsync(safeTitle, epNumber, new AnimeToshoClient.SearchCallback() {
             @Override
-            public void onSuccess(List<AnimeToshoClient.SubtitleSearchResult> atResults) {
-                OpenSubtitlesClient.searchIndonesianAsync(safeTitle, epNumber, new OpenSubtitlesClient.SearchCallback() {
-                    @Override
-                    public void onSuccess(List<OpenSubtitlesClient.SubtitleSearchResult> osResults) {
-                        runOnUiThread(() -> {
-                            if (atResults.isEmpty() && osResults.isEmpty()) {
-                                Toast.makeText(PlayerActivity.this, R.string.player_toast_subs_not_found, Toast.LENGTH_LONG).show();
-                                return;
-                            }
-
-                            List<String> labels = new ArrayList<>();
-                            List<Runnable> itemActions = new ArrayList<>();
-
-                            for (AnimeToshoClient.SubtitleSearchResult at : atResults) {
-                                labels.add("[AnimeTosho] " + at.filename);
-                                itemActions.add(() -> downloadAndApplyAnimeToshoSub(at.downloadUrl, at.filename));
-                            }
-
-                            for (OpenSubtitlesClient.SubtitleSearchResult os : osResults) {
-                                labels.add("[OpenSubtitles] " + os.filename);
-                                itemActions.add(() -> downloadAndApplyOpenSubtitlesSub(os.downloadUrl, os.filename));
-                            }
-
-                            AlertDialog dialog = new AlertDialog.Builder(PlayerActivity.this)
-                                    .setTitle(R.string.player_dialog_fansub_title)
-                                    .setItems(labels.toArray(new String[0]), (d, which) -> {
-                                        if (which >= 0 && which < itemActions.size()) {
-                                            itemActions.get(which).run();
-                                        }
-                                    })
-                                    .setNegativeButton(R.string.dialog_cancel, null)
-                                    .create();
-                            SystemUiHelper.setupDialogBounds(dialog, PlayerActivity.this);
-                            dialog.show();
-                        });
+            public void onSuccess(List<AnimeToshoClient.SubtitleSearchResult> results) {
+                if (results != null) {
+                    synchronized (atResults) {
+                        atResults.addAll(results);
                     }
-
-                    @Override
-                    public void onError(String error) {
-                        runOnUiThread(() -> Toast.makeText(PlayerActivity.this, error, Toast.LENGTH_SHORT).show());
-                    }
-                });
+                }
+                onFinished.run();
             }
 
             @Override
             public void onError(String error) {
-                runOnUiThread(() -> Toast.makeText(PlayerActivity.this, error, Toast.LENGTH_SHORT).show());
+                synchronized (lastError) {
+                    if (lastError.length() == 0 && error != null) {
+                        lastError.append(error);
+                    }
+                }
+                onFinished.run();
+            }
+        });
+
+        OpenSubtitlesClient.searchIndonesianAsync(safeTitle, epNumber, new OpenSubtitlesClient.SearchCallback() {
+            @Override
+            public void onSuccess(List<OpenSubtitlesClient.SubtitleSearchResult> results) {
+                if (results != null) {
+                    synchronized (osResults) {
+                        osResults.addAll(results);
+                    }
+                }
+                onFinished.run();
+            }
+
+            @Override
+            public void onError(String error) {
+                synchronized (lastError) {
+                    if (lastError.length() == 0 && error != null) {
+                        lastError.append(error);
+                    }
+                }
+                onFinished.run();
             }
         });
     }

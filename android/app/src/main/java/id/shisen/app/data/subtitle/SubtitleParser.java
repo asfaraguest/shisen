@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class SubtitleParser {
 
     private static final Pattern ASS_DIALOGUE_RE = Pattern.compile(
-            "^\\s*Dialogue:\\s*[^,]*,\\s*([0-9]+:[0-5]?\\d:[0-5]?\\d[.,]\\d+)\\s*,\\s*([0-9]+:[0-5]?\\d:[0-5]?\\d[.,]\\d+)\\s*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,(.*)$",
+            "^\\s*Dialogue:\\s*[^,]*,\\s*([0-9]+:[0-5]?\\d:[0-5]?\\d[,.]\\d+)\\s*,\\s*([0-9]+:[0-5]?\\d:[0-5]?\\d[,.]\\d+)\\s*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,(.*)$",
             Pattern.CASE_INSENSITIVE
     );
 

@@ -43,8 +43,8 @@ public final class NetworkTwin {
 
     /** Entri request pertama yang sedang berjalan di map in-flight. */
     private static final class Candidate {
-        final Response firstResponse;
-        final byte[] bytes;
+        volatile Response firstResponse;
+        volatile byte[] bytes;
         final CountDownLatch ready = new CountDownLatch(1);
 
         Candidate(Response firstResponse, byte[] bytes) {
@@ -93,20 +93,15 @@ public final class NetworkTwin {
                 Response resp = chain.proceed(req);
                 if (isLargeBody(resp)) {
                     // Respons besar: tidak disangga, jalankan normal
-                    inflight.remove(key, placeholder);
-                    placeholder.ready.countDown();
                     return resp;
                 }
                 byte[] bytes = resp.body() != null ? resp.body().bytes() : new byte[0];
-                Candidate carrier = new Candidate(resp, bytes);
-                inflight.replace(key, carrier);
-                placeholder.ready.countDown();
-                carrier.ready.countDown();
+                placeholder.firstResponse = resp;
+                placeholder.bytes = bytes;
                 return duplicate(resp, bytes);
-            } catch (IOException | RuntimeException e) {
+            } finally {
                 inflight.remove(key, placeholder);
                 placeholder.ready.countDown();
-                throw e;
             }
         };
     }

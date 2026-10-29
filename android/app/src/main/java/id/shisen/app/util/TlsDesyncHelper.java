@@ -31,13 +31,14 @@ public final class TlsDesyncHelper {
             return new byte[][]{ record.clone() };
         }
 
-        // 3-byte record prefix: ContentType (0x16) + ProtocolVersion (e.g. 0x03, 0x01 / 0x03, 0x03)
-        byte[] prefix = Arrays.copyOfRange(record, 0, 3);
-        byte[] payload = Arrays.copyOfRange(record, 5, record.length);
-
-        if (payload.length <= 1) {
+        int payloadLength = ((record[3] & 0xFF) << 8) | (record[4] & 0xFF);
+        if (payloadLength <= 1 || record.length < 5 + payloadLength) {
             return new byte[][]{ record.clone() };
         }
+
+        // 3-byte record prefix: ContentType (0x16) + ProtocolVersion (e.g. 0x03, 0x01 / 0x03, 0x03)
+        byte[] prefix = Arrays.copyOfRange(record, 0, 3);
+        byte[] payload = Arrays.copyOfRange(record, 5, 5 + payloadLength);
 
         // Record 1: 1 byte of handshake data
         byte[] rec1 = new byte[6];
@@ -47,12 +48,17 @@ public final class TlsDesyncHelper {
         rec1[5] = payload[0];
 
         // Record 2: Remaining handshake data
-        int rec2DataLen = payload.length - 1;
+        int rec2DataLen = payloadLength - 1;
         byte[] rec2 = new byte[5 + rec2DataLen];
         System.arraycopy(prefix, 0, rec2, 0, 3);
         rec2[3] = (byte) ((rec2DataLen >> 8) & 0xFF);
         rec2[4] = (byte) (rec2DataLen & 0xFF);
         System.arraycopy(payload, 1, rec2, 5, rec2DataLen);
+
+        if (record.length > 5 + payloadLength) {
+            byte[] trailing = Arrays.copyOfRange(record, 5 + payloadLength, record.length);
+            return new byte[][]{ rec1, rec2, trailing };
+        }
 
         return new byte[][]{ rec1, rec2 };
     }

@@ -100,7 +100,7 @@ public class DnsFallbackResolver implements Dns {
         if (hostname == null || hostname.trim().isEmpty()) {
             throw new UnknownHostException("Hostname cannot be null or empty");
         }
-        String h = hostname.trim();
+        String h = hostname.trim().toLowerCase(java.util.Locale.US);
 
         // Tier 1: In-Memory Cache
         if (memoryCache.containsKey(h)) {
@@ -168,11 +168,16 @@ public class DnsFallbackResolver implements Dns {
         if (list == null || list.isEmpty()) return Collections.emptyList();
         List<InetAddress> clean = new ArrayList<>();
         for (InetAddress addr : list) {
+            if (addr == null) continue;
+            // Saring wildcard local, loopback (127.x, ::1), link-local, dan site-local (10.x, 192.168.x)
+            if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()
+                    || addr.isLinkLocalAddress() || addr.isSiteLocalAddress()) {
+                continue;
+            }
             String ip = addr.getHostAddress();
             if (ip == null) continue;
-            // Filter Indonesian ISP poisoned DNS addresses (10.x, 127.x, 192.168.x, 118.98.x Mercusuar/Internet Positif)
-            if (ip.startsWith("127.") || ip.startsWith("10.") || ip.startsWith("192.168.")
-                    || ip.startsWith("118.98.") || ip.equals("0.0.0.0")) {
+            // Saring Indonesian ISP poisoned DNS addresses (118.98.x Mercusuar/Internet Positif) dan sinkhole tambahan
+            if (ip.startsWith("118.98.") || ip.equals("0.0.0.0") || ip.equals("::") || ip.equals("::1")) {
                 continue;
             }
             clean.add(addr);

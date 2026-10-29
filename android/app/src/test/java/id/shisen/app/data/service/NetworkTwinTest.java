@@ -53,12 +53,14 @@ public class NetworkTwinTest {
 
     @Test
     public void identicalInFlightGetsCollapseToOneServerHit() throws Exception {
-        final CountDownLatch gate = new CountDownLatch(1);
         final AtomicInteger serverHits = new AtomicInteger();
         final StringBuilder body1 = new StringBuilder();
         final StringBuilder body2 = new StringBuilder();
 
-        server.enqueue(new MockResponse().setResponseCode(200).setBody("meta payload v1"));
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setBodyDelay(800, TimeUnit.MILLISECONDS)
+                .setBody("meta payload v1"));
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(NetworkTwin.metadataDedupInterceptor(
@@ -69,26 +71,24 @@ public class NetworkTwinTest {
                 .url(server.url("/v1/meta?album=1").toString())
                 .build();
 
-        // Thread 1: mulai request, thread 2 ikut thread 2 identik saat #1 masih in-flight
+        // Thread 1: mulai request, thread 2 ikut pasangan identik saat #1 masih in-flight
         Thread t1 = new Thread(() -> {
             try {
                 Response r = client.newCall(req).execute();
                 serverHits.incrementAndGet();
-                gate.await(5, TimeUnit.SECONDS); // tahan agar t2ikut pasangan identik in-flight
                 body1.append(r.body() != null ? r.body().string() : "");
             } catch (Exception ignored) {}
         });
         Thread t2 = new Thread(() -> {
             try {
-                gate.await(5, TimeUnit.SECONDS); // tunggu t1 menjalankan call dulu
                 Response r = client.newCall(req).execute();
                 serverHits.incrementAndGet();
                 body2.append(r.body() != null ? r.body().string() : "");
             } catch (Exception ignored) {}
         });
         t1.start();
-        // beri waktu t1 mengunci in-flight key, lalu t2 start
-        Thread.sleep(400);
+        // beri waktu t1 mengunci in-flight key, lalu t2 start selagi t1 masih in-flight
+        Thread.sleep(150);
         t2.start();
         t1.join(10_000);
         t2.join(10_000);
@@ -139,5 +139,31 @@ public class NetworkTwinTest {
 
         assertEquals("GET kedua dalam TTL harus dilayani cache, bukan server", 1,
                 server.getRequestCount());
+    }
+
+    @Test
+    public void sequentialRequestsAfterCompletionAreNotStuckInflight() throws Exception {
+        server.enqueue(new MockResponse().setResponseCode(200).setBody("response 1"));
+        server.enqueue(new MockResponse().setResponseCode(200).setBody("response 2"));
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(NetworkTwin.metadataDedupInterceptor(
+                        Collections.singleton("localhost")))
+                .build();
+
+        Request req = new Request.Builder()
+                .url(server.url("/v1/not-cached-meta").toString())
+                .build();
+
+        try (Response r1 = client.newCall(req).execute()) {
+            assertEquals("response 1", r1.body() != null ? r1.body().string() : "");
+        }
+
+        try (Response r2 = client.newCall(req).execute()) {
+            assertEquals("response 2", r2.body() != null ? r2.body().string() : "");
+        }
+
+        assertEquals("Kedua request berurutan harus sampai ke server karena inflight sudah dibersihkan",
+                2, server.getRequestCount());
     }
 }

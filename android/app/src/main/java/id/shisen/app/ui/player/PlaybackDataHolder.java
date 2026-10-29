@@ -21,13 +21,17 @@ public final class PlaybackDataHolder {
     private PlaybackDataHolder() {}
 
     public static synchronized void set(Anime anime, List<Episode> episodes, int index) {
+        set(anime, episodes, index, 0);
+    }
+
+    public static synchronized void set(Anime anime, List<Episode> episodes, int index, long positionMs) {
         activeAnime = anime;
         activeEpisodes.clear();
         if (episodes != null) {
             activeEpisodes.addAll(episodes);
         }
         activeIndex = Math.max(0, index);
-        activePositionMs = 0;
+        activePositionMs = Math.max(0, positionMs);
     }
 
     public static synchronized Anime getAnime() {

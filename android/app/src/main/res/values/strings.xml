@@ -289,6 +289,7 @@
     <string name="player_toast_pip_failed">Tidak dapat masuk mode PiP: %s</string>
     <string name="player_toast_auto_op">⚡ Melewati Opening Otomatis</string>
     <string name="player_toast_auto_ed">⚡ Melewati Ending Otomatis</string>
+    <string name="player_toast_resumed">Melanjutkan pemutaran di %s</string>
     <string name="player_toast_next_ep">Memutar episode selanjutnya...</string>
     <string name="player_toast_prev_ep">Memutar episode sebelumnya...</string>
     <string name="player_toast_screen_locked">🔒 Layar Terkunci</string>

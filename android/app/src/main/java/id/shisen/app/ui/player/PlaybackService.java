@@ -45,6 +45,12 @@ public class PlaybackService extends MediaSessionService {
     private static volatile long pauseStartMs = 0L;
     private static final long PAUSE_BACKGROUND_TIMEOUT_MS = 3 * 60 * 1000L; // 3 menit
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        instance = this;
+    }
+
     @Nullable
     @Override
     public MediaSession onGetSession(MediaSession.ControllerInfo controllerInfo) {
@@ -102,7 +108,7 @@ public class PlaybackService extends MediaSessionService {
         // Cek jika pause > 3 menit di background, hentikan service
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             long now = SystemClock.uptimeMillis();
-            if (pauseStartMs > 0 && (now - pauseStartMs) > PAUSE_BACKGROUND_TIMEOUT_MS) {
+            if (pauseStartMs > 0 && (now - pauseStartMs) >= PAUSE_BACKGROUND_TIMEOUT_MS) {
                 Log.d(TAG, "Pause > 3 menit, hentikan PlaybackService");
                 if (instance != null) instance.stopSelf();
             }

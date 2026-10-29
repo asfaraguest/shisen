@@ -106,7 +106,10 @@ public class HttpClientProvider {
                 String fullUrl = original.url().toString().toLowerCase(java.util.Locale.US);
 
                 // Anti-403 CDN Referer/Origin Injection
-                boolean isMegaCdn = host.contains("megaplay") || host.contains("megap.")
+                boolean isDirect = "none".equalsIgnoreCase(original.header("Sec-Fetch-Site"));
+
+                boolean isMegaCdn = (!host.contains("anichan") && !host.contains("otakudesu") && !host.contains("animetosho") && !host.contains("opensubtitles"))
+                        && (host.contains("megaplay") || host.contains("megap.")
                         || host.contains("megacloud") || host.contains("rabbitstream")
                         || host.contains("dokicloud") || host.contains("rapid-cloud")
                         || host.contains("nexabloom") || host.contains("ivorysummit")
@@ -119,54 +122,56 @@ public class HttpClientProvider {
                         || host.endsWith(".to") || host.endsWith(".cc") || host.endsWith(".site")
                         || path.contains("/subtitles/") || path.contains("/subtitle") || path.contains("/caption")
                         || path.contains("/anime/") || path.contains("/tracks/")
-                        || path.endsWith(".vtt") || path.endsWith(".srt") || fullUrl.contains(".vtt") || fullUrl.contains(".srt");
+                        || path.endsWith(".vtt") || path.endsWith(".srt") || fullUrl.contains(".vtt") || fullUrl.contains(".srt"));
 
-                if (isMegaCdn) {
-                    String determinedReferer = original.header("Referer");
-                    if (determinedReferer == null || determinedReferer.isEmpty()) {
-                        if (host.contains("hianime")) {
-                            determinedReferer = "https://hianime.to/";
-                        } else if (host.contains("zoro") || host.contains("aniwave")) {
-                            determinedReferer = "https://zoro.to/";
-                        } else if (host.contains("zoko")) {
-                            determinedReferer = "https://zokoanime.video/";
-                        } else {
-                            determinedReferer = "https://megaplay.buzz/";
+                if (!isDirect) {
+                    if (host.contains("anichan")) {
+                        if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
+                            rb.header("Referer", "https://anichan.to/");
                         }
-                        rb.header("Referer", determinedReferer);
-                    }
-                    if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
-                        String origin = determinedReferer.endsWith("/")
-                                ? determinedReferer.substring(0, determinedReferer.length() - 1)
-                                : determinedReferer;
-                        rb.header("Origin", origin);
-                    }
-                } else if (host.contains("dramahot") || host.contains("zokoanime")) {
-                    if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
-                        rb.header("Referer", "https://zokoanime.video/");
-                    }
-                    if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
-                        rb.header("Origin", "https://zokoanime.video");
-                    }
-                } else if (host.contains("animetosho")) {
-                    if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
-                        rb.header("Referer", "https://animetosho.net/");
-                    }
-                } else if (host.contains("opensubtitles")) {
-                    if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
-                        rb.header("Referer", "https://opensubtitles.org/");
-                    }
-                } else if (host.contains("hianime")) {
-                    if (original.header("Referer") == null) {
-                        rb.header("Referer", "https://hianime.at/");
-                    }
-                } else if (host.contains("anichan")) {
-                    if (original.header("Referer") == null) {
-                        rb.header("Referer", "https://anichan.to/");
-                    }
-                } else if (host.contains("otakudesu")) {
-                    if (original.header("Referer") == null) {
-                        rb.header("Referer", "https://ww2.otakudesu.biz/");
+                    } else if (host.contains("otakudesu")) {
+                        if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
+                            rb.header("Referer", "https://ww2.otakudesu.biz/");
+                        }
+                    } else if (host.contains("animetosho")) {
+                        if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
+                            rb.header("Referer", "https://animetosho.net/");
+                        }
+                    } else if (host.contains("opensubtitles")) {
+                        if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
+                            rb.header("Referer", "https://opensubtitles.org/");
+                        }
+                    } else if (host.contains("dramahot") || host.contains("zokoanime")) {
+                        if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
+                            rb.header("Referer", "https://zokoanime.video/");
+                        }
+                        if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
+                            rb.header("Origin", "https://zokoanime.video");
+                        }
+                    } else if (isMegaCdn) {
+                        String determinedReferer = original.header("Referer");
+                        if (determinedReferer == null || determinedReferer.isEmpty()) {
+                            if (host.contains("hianime")) {
+                                determinedReferer = "https://hianime.to/";
+                            } else if (host.contains("zoro") || host.contains("aniwave")) {
+                                determinedReferer = "https://zoro.to/";
+                            } else if (host.contains("zoko")) {
+                                determinedReferer = "https://zokoanime.video/";
+                            } else {
+                                determinedReferer = "https://megaplay.buzz/";
+                            }
+                            rb.header("Referer", determinedReferer);
+                        }
+                        if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
+                            String origin = determinedReferer.endsWith("/")
+                                    ? determinedReferer.substring(0, determinedReferer.length() - 1)
+                                    : determinedReferer;
+                            rb.header("Origin", origin);
+                        }
+                    } else if (host.contains("hianime")) {
+                        if (original.header("Referer") == null) {
+                            rb.header("Referer", "https://hianime.at/");
+                        }
                     }
                 }
 

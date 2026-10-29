@@ -14,11 +14,11 @@
 set -euo pipefail
 
 PKG="${PKG:-id.shisen.app}"
-ACT="${ACT:-id.shisen.app/id.shisen.app.ui.home.MainActivity}"
+ACT="${ACT:-id.shisen.app.ui.home.MainActivity}"
 COLD_START_RUNS=5
 SESSION_MINUTES="${SESSION_MINUTES:-30}"
 
-echo "== Shisen bench =="; echo "pkg=$PKG activity=$ACT"
+echo "== Shisen bench =="; echo "pkg=$PKG activity=$PKG/$ACT"
 echo "- Pastikan HP terhubung: $(adb devices)"
 
 send_key() { adb shell input keyevent "$1"; }
@@ -34,7 +34,7 @@ cold_times=()
 for i in $(seq 1 $COLD_START_RUNS); do
   adb shell am force-stop "$PKG"
   sleep 2
-  out=$(adb shell am start -W -n "$ACT")
+  out=$(adb shell am start -W -n "$PKG/$ACT")
   t=$(echo "$out" | grep -o 'TotalTime: [0-9]*' | grep -o '[0-9]*' | head -1)
   ct=$(echo "$out" | grep -o 'WaitTime: [0-9]*' | grep -o '[0-9]*' | head -1)
   echo "run$i TotalTime=${t}ms WaitTime=${ct}ms"
@@ -47,7 +47,7 @@ echo "median Cold Start TotalTime: ${median_cold}ms"
 # === (c) meminfo saat idle di katalog ===
 echo "== Meminfo idle katalog =="
 adb shell am force-stop "$PKG"; sleep 2
-adb shell am start -W -n "$ACT" >/dev/null
+adb shell am start -W -n "$PKG/$ACT" >/dev/null
 sleep 10
 adb shell dumpsys meminfo "$PKG" | head -30 > /tmp/shisen_meminfo_idle.txt
 cat /tmp/shisen_meminfo_idle.txt

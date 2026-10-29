@@ -135,4 +135,18 @@ public class TlsDesyncHelperTest {
         String extractedName = new String(extractedNameBytes, StandardCharsets.UTF_8);
         assertEquals(host, extractedName);
     }
+
+    @Test
+    public void testClientHelloWithSubsequentDataPreservesTrailingBytes() throws Exception {
+        byte[] clientHello = createSyntheticClientHello("hls.dramahot.top");
+        byte[] extraBytes = "EXTRA_TRAILING_DATA".getBytes(StandardCharsets.UTF_8);
+
+        byte[] combinedBuffer = new byte[clientHello.length + extraBytes.length];
+        System.arraycopy(clientHello, 0, combinedBuffer, 0, clientHello.length);
+        System.arraycopy(extraBytes, 0, combinedBuffer, clientHello.length, extraBytes.length);
+
+        byte[][] split = TlsDesyncHelper.splitClientHello(combinedBuffer);
+        assertEquals(3, split.length);
+        assertArrayEquals("Trailing bytes must be preserved without loss", extraBytes, split[2]);
+    }
 }

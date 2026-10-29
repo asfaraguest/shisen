@@ -289,6 +289,7 @@
     <string name="player_toast_pip_failed">No se puede entrar en modo PiP: %s</string>
     <string name="player_toast_auto_op">⚡ Omitiendo opening automáticamente</string>
     <string name="player_toast_auto_ed">⚡ Omitiendo ending automáticamente</string>
+    <string name="player_toast_resumed">Continuando reproducción en %s</string>
     <string name="player_toast_next_ep">Reproduciendo siguiente episodio...</string>
     <string name="player_toast_prev_ep">Reproduciendo episodio anterior...</string>
     <string name="player_toast_screen_locked">🔒 Pantalla bloqueada</string>

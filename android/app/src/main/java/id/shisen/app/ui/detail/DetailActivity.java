@@ -410,7 +410,17 @@ public class DetailActivity extends AppCompatActivity {
             btnPlayPrimary.setEnabled(true);
             btnPlayPrimary.setAlpha(1.0f);
             if (lastWatchedEp > 0) {
-                btnPlayPrimary.setText(getString(R.string.detail_resume_format, lastWatchedEp));
+                MenatapDatabase.PlaybackProgress prog = MenatapDatabase.getInstance(this).getEpisodeProgress(anime.slug, lastWatchedEp);
+                if (!prog.shouldResume() && prog.durationMs > 0 && prog.progressMs >= prog.durationMs - 30_000) {
+                    int nextPos = episodeAdapter.findPositionByNumber(lastWatchedEp + 1);
+                    if (nextPos != -1) {
+                        btnPlayPrimary.setText(getString(R.string.detail_resume_format, lastWatchedEp + 1));
+                    } else {
+                        btnPlayPrimary.setText(getString(R.string.detail_resume_format, lastWatchedEp));
+                    }
+                } else {
+                    btnPlayPrimary.setText(getString(R.string.detail_resume_format, lastWatchedEp));
+                }
             } else {
                 btnPlayPrimary.setText(getString(R.string.detail_play_ep1));
             }
@@ -815,8 +825,19 @@ public class DetailActivity extends AppCompatActivity {
 
         int targetIndex = 0;
         if (lastWatchedEp > 0) {
-            int pos = episodeAdapter.findPositionByNumber(lastWatchedEp);
-            if (pos != -1) targetIndex = pos;
+            MenatapDatabase.PlaybackProgress prog = MenatapDatabase.getInstance(this).getEpisodeProgress(anime.slug, lastWatchedEp);
+            if (!prog.shouldResume() && prog.durationMs > 0 && prog.progressMs >= prog.durationMs - 30_000) {
+                int nextPos = episodeAdapter.findPositionByNumber(lastWatchedEp + 1);
+                if (nextPos != -1) {
+                    targetIndex = nextPos;
+                } else {
+                    int pos = episodeAdapter.findPositionByNumber(lastWatchedEp);
+                    if (pos != -1) targetIndex = pos;
+                }
+            } else {
+                int pos = episodeAdapter.findPositionByNumber(lastWatchedEp);
+                if (pos != -1) targetIndex = pos;
+            }
         }
         launchPlayer(targetIndex);
     }
