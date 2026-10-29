@@ -61,8 +61,10 @@ import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
 import androidx.media3.datasource.okhttp.OkHttpDataSource;
+import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
+import androidx.media3.exoplayer.upstream.DefaultAllocator;
 import androidx.media3.session.MediaSession;
 import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.DefaultTimeBar;
@@ -554,8 +556,27 @@ public class PlayerActivity extends AppCompatActivity {
 
         DefaultMediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(okHttpFactory);
 
+        // Konfigurasi buffer agresif:
+        // - minBufferMs: 60s, maxBufferMs: 300s (5 menit buffer ke depan)
+        // - bufferForPlayback: 1.5s (start cepat)
+        // - bufferForPlaybackAfterRebuffer: 3.0s (pemulihan cepat)
+        // - prioritizeTimeOverSizeThresholds: true (terus buffer hingga target waktu tanpa dipotong batas byte 13MB)
+        // - backBuffer: 30s (seek mundur instan tanpa download ulang)
+        DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
+                .setAllocator(new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE))
+                .setBufferDurationsMs(
+                        60_000,
+                        300_000,
+                        1_500,
+                        3_000
+                )
+                .setPrioritizeTimeOverSizeThresholds(true)
+                .setBackBuffer(30_000, true)
+                .build();
+
         player = new ExoPlayer.Builder(this)
                 .setMediaSourceFactory(mediaSourceFactory)
+                .setLoadControl(loadControl)
                 .build();
 
         // Fase 2.1: Jika pemutaran dilanjutkan dari notifikasi saat layar mati,

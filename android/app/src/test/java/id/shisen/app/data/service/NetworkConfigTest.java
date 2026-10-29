@@ -29,8 +29,20 @@ public class NetworkConfigTest {
         assertFalse(NetworkConfig.isMegaCdnHost("animetosho.net", "/series/1", "https://animetosho.net/series/1"));
         assertFalse(NetworkConfig.isMegaCdnHost("opensubtitles.org", "/api/v1", "https://opensubtitles.org/api/v1"));
 
-        // Domain acak dengan TLD .to / .xyz yang bukan CDN
+        // Domain acak dengan TLD .to / .xyz yang bukan CDN dan bukan media request
         assertFalse(NetworkConfig.isMegaCdnHost("random-site.to", "/page", "https://random-site.to/page"));
         assertFalse(NetworkConfig.isMegaCdnHost("example.xyz", "/index.html", "https://example.xyz/index.html"));
+    }
+
+    @Test
+    public void testDynamicMediaCdnEdgeDetection() {
+        // Segmen video HLS (.ts, .m4s, .m3u8) pada CDN edge dinamis harus terdeteksi
+        assertTrue(NetworkConfig.isMegaCdnHost("edge1.streamcdn.xyz", "/anime/ep1/chunk.m4s", "https://edge1.streamcdn.xyz/anime/ep1/chunk.m4s"));
+        assertTrue(NetworkConfig.isMegaCdnHost("node42.velvet.xyz", "/hls/playlist.m3u8", "https://node42.velvet.xyz/hls/playlist.m3u8"));
+        assertTrue(NetworkConfig.isMegaCdnHost("storage.aurora.buzz", "/anime/ep12.ts", "https://storage.aurora.buzz/anime/ep12.ts"));
+        assertTrue(NetworkConfig.isMegaCdnHost("video-node.cdn.world", "/tracks/ep2/index.m3u8", "https://video-node.cdn.world/tracks/ep2/index.m3u8"));
+
+        // Subtitle track pada edge CDN
+        assertTrue(NetworkConfig.isMegaCdnHost("sub-edge.shiora.xyz", "/subtitles/eng-1.vtt", "https://sub-edge.shiora.xyz/subtitles/eng-1.vtt"));
     }
 }

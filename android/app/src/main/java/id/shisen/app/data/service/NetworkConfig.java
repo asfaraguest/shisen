@@ -56,7 +56,9 @@ public final class NetworkConfig {
             "broforgotsave.xyz",
             "eclipseharbor.xyz",
             "emeralddrift.xyz",
-            "silverhaze.xyz"
+            "silverhaze.xyz",
+            "velvet.xyz",
+            "aurora.xyz"
     )));
 
     /**
@@ -83,8 +85,31 @@ public final class NetworkConfig {
         }
 
         // Host pola CDN video / subtitle spesifik
-        return h.contains("megaplay") || h.contains("megacloud")
+        if (h.contains("megaplay") || h.contains("megacloud")
                 || h.contains("rabbitstream") || h.contains("dokicloud")
-                || h.contains("rapid-cloud");
+                || h.contains("rapid-cloud") || h.contains("shiora")
+                || h.contains("broforgotsave") || h.contains("velvet")
+                || h.contains("aurora")) {
+            return true;
+        }
+
+        // Deteksi potongan media video streaming (HLS .m3u8, segmen .ts/.m4s) atau subtitle (.vtt/.srt)
+        // pada domain edge CDN dengan TLD streaming atau subdomain cdn/stream/play/edge
+        String p = path != null ? path.toLowerCase(java.util.Locale.US) : "";
+        String f = fullUrl != null ? fullUrl.toLowerCase(java.util.Locale.US) : "";
+        boolean isMediaOrTrack = p.contains("/anime/") || p.contains("/ep/")
+                || p.contains("/tracks/") || p.contains("/subtitles/")
+                || p.endsWith(".m3u8") || p.endsWith(".ts") || p.endsWith(".m4s") || p.endsWith(".mp4")
+                || p.endsWith(".vtt") || p.endsWith(".srt")
+                || f.contains(".m3u8") || f.contains(".ts") || f.contains(".m4s") || f.contains(".vtt") || f.contains(".srt");
+
+        if (isMediaOrTrack) {
+            return h.endsWith(".world") || h.endsWith(".buzz") || h.endsWith(".top")
+                    || h.endsWith(".xyz") || h.endsWith(".to") || h.endsWith(".cc")
+                    || h.endsWith(".site") || h.contains("cdn") || h.contains("stream")
+                    || h.contains("play") || h.contains("edge");
+        }
+
+        return false;
     }
 }
