@@ -129,30 +129,42 @@ public class StreamResolver {
 
                 @Override
                 public void onError(Throwable t1) {
-                    // TIER 2: AniChan (Direct HLS Fallback)
-                    tryAniChan(anime, episode, new Callback() {
+                    // TIER 1.5: HiAnimes.se (Direct MAL / Alternative Embed Fallback)
+                    tryHianimesSe(anime, episode, new Callback() {
                         @Override
                         public void onSuccess(StreamSource source) {
                             callback.onSuccess(source);
                         }
 
                         @Override
-                        public void onError(Throwable t2) {
-                            // TIER 3: Otakudesu (Safety Net Fallback)
-                            tryOtakudesu(anime, episode, new Callback() {
+                        public void onError(Throwable t1b) {
+                            // TIER 2: AniChan (Direct HLS Fallback)
+                            tryAniChan(anime, episode, new Callback() {
                                 @Override
                                 public void onSuccess(StreamSource source) {
                                     callback.onSuccess(source);
                                 }
 
                                 @Override
-                                public void onError(Throwable t3) {
-                                    callback.onError(new IOException(
-                                            "Seluruh sumber stream gagal:\n" +
-                                            "1. HiAnime: " + t1.getMessage() + "\n" +
-                                            "2. AniChan: " + t2.getMessage() + "\n" +
-                                            "3. Otakudesu: " + t3.getMessage()
-                                    ));
+                                public void onError(Throwable t2) {
+                                    // TIER 3: Otakudesu (Safety Net Fallback)
+                                    tryOtakudesu(anime, episode, new Callback() {
+                                        @Override
+                                        public void onSuccess(StreamSource source) {
+                                            callback.onSuccess(source);
+                                        }
+
+                                        @Override
+                                        public void onError(Throwable t3) {
+                                            callback.onError(new IOException(
+                                                    "Seluruh sumber stream gagal:\n" +
+                                                    "1. HiAnime: " + t1.getMessage() + "\n" +
+                                                    "2. HiAnimes.se: " + t1b.getMessage() + "\n" +
+                                                    "3. AniChan: " + t2.getMessage() + "\n" +
+                                                    "4. Otakudesu: " + t3.getMessage()
+                                            ));
+                                        }
+                                    });
                                 }
                             });
                         }
@@ -220,22 +232,6 @@ public class StreamResolver {
         }
         if (cachedSlug != null) {
             fetchHiAnimeEpAndResolve(cachedSlug, anime, episode, callback);
-            return;
-        }
-
-        // Fast-path 3: Direct MAL embed (Megaplay / ZokoAnime) jika anime memiliki ID MAL
-        if (anime.idMal > 0) {
-            HianimesSeClient.resolveByMalId(anime.idMal, episode.number, new HianimesSeClient.Callback<StreamSource>() {
-                @Override
-                public void onSuccess(StreamSource result) {
-                    callback.onSuccess(result);
-                }
-
-                @Override
-                public void onError(Throwable ignored) {
-                    searchHiAnimeKeyword(anime, episode, callback);
-                }
-            });
             return;
         }
 

@@ -223,6 +223,8 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean isSortAscending = true;
 
     private volatile AniSkipClient.SkipResult currentSkipTimes;
+    private boolean hasAutoSkippedIntro = false;
+    private boolean hasAutoSkippedOutro = false;
     private final Handler progressHandler = new Handler(Looper.getMainLooper());
     private Runnable progressRunnable;
     private final Handler autoHideHandler = new Handler(Looper.getMainLooper());
@@ -540,9 +542,11 @@ public class PlayerActivity extends AppCompatActivity {
             if (player == null || currentSkipTimes == null) return;
             long posSec = player.getCurrentPosition() / 1000;
             if (currentSkipTimes.intro != null && posSec >= currentSkipTimes.intro.startTime && posSec < currentSkipTimes.intro.endTime) {
-                player.seekTo((long) (currentSkipTimes.intro.endTime * 1000));
+                hasAutoSkippedIntro = true;
+                player.seekTo((long) (currentSkipTimes.intro.endTime * 1000) + 200);
             } else if (currentSkipTimes.outro != null && posSec >= currentSkipTimes.outro.startTime && posSec < currentSkipTimes.outro.endTime) {
-                player.seekTo((long) (currentSkipTimes.outro.endTime * 1000));
+                hasAutoSkippedOutro = true;
+                player.seekTo((long) (currentSkipTimes.outro.endTime * 1000) + 200);
             }
             btnSkipOpEd.setVisibility(View.GONE);
         });
@@ -1457,6 +1461,8 @@ public class PlayerActivity extends AppCompatActivity {
         if (layoutBuffering != null) layoutBuffering.setVisibility(View.VISIBLE);
         btnSkipOpEd.setVisibility(View.GONE);
         currentSkipTimes = null;
+        hasAutoSkippedIntro = false;
+        hasAutoSkippedOutro = false;
 
         if (player != null) {
             player.stop();
@@ -1616,8 +1622,10 @@ public class PlayerActivity extends AppCompatActivity {
                         player.seekTo(0);
                         player.play();
                     }
-                    if (anime != null) {
-                        MenatapDatabase.getInstance(this).clearEpisodeProgress(anime.slug, epNumber);
+                    if (anime != null && anime.slug != null) {
+                        final String aSlug = anime.slug;
+                        final int aEp = epNumber;
+                        dbExecutor.execute(() -> MenatapDatabase.getInstance(PlayerActivity.this).clearEpisodeProgress(aSlug, aEp));
                     }
                 })
                 .setOnCancelListener(d -> {
@@ -1666,8 +1674,11 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (currentSkipTimes.intro != null && posSec >= currentSkipTimes.intro.startTime && posSec < currentSkipTimes.intro.endTime) {
             if (autoSkip) {
-                player.seekTo((long) (currentSkipTimes.intro.endTime * 1000));
-                Toast.makeText(this, R.string.player_toast_auto_op, Toast.LENGTH_SHORT).show();
+                if (!hasAutoSkippedIntro) {
+                    hasAutoSkippedIntro = true;
+                    player.seekTo((long) (currentSkipTimes.intro.endTime * 1000) + 200);
+                    Toast.makeText(this, R.string.player_toast_auto_op, Toast.LENGTH_SHORT).show();
+                }
                 btnSkipOpEd.setVisibility(View.GONE);
             } else {
                 btnSkipOpEd.setText(getString(R.string.player_skip_op));
@@ -1675,8 +1686,11 @@ public class PlayerActivity extends AppCompatActivity {
             }
         } else if (currentSkipTimes.outro != null && posSec >= currentSkipTimes.outro.startTime && posSec < currentSkipTimes.outro.endTime) {
             if (autoSkip) {
-                player.seekTo((long) (currentSkipTimes.outro.endTime * 1000));
-                Toast.makeText(this, R.string.player_toast_auto_ed, Toast.LENGTH_SHORT).show();
+                if (!hasAutoSkippedOutro) {
+                    hasAutoSkippedOutro = true;
+                    player.seekTo((long) (currentSkipTimes.outro.endTime * 1000) + 200);
+                    Toast.makeText(this, R.string.player_toast_auto_ed, Toast.LENGTH_SHORT).show();
+                }
                 btnSkipOpEd.setVisibility(View.GONE);
             } else {
                 btnSkipOpEd.setText(getString(R.string.player_skip_ed));
@@ -2643,12 +2657,13 @@ public class PlayerActivity extends AppCompatActivity {
         boolean autoSkip = getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
                 .getBoolean("pref_auto_skip", false);
 
+        String serverDisplay = "hianimes_se".equalsIgnoreCase(preferredServer) ? "HIANIMES.SE" : preferredServer.toUpperCase();
         String[] menu = {
                 getString(R.string.player_settings_item_sub, subLabel),
                 getString(R.string.player_settings_item_style),
                 getString(R.string.player_settings_item_offset),
                 getString(R.string.player_settings_item_quality, btnQuality.getText()),
-                getString(R.string.player_settings_item_server, preferredServer.toUpperCase()),
+                getString(R.string.player_settings_item_server, serverDisplay),
                 getString(R.string.player_settings_item_autoskip, (autoSkip ? getString(R.string.label_enabled) : getString(R.string.label_disabled))),
                 getString(R.string.player_settings_item_speed, btnSpeed.getText()),
                 getString(R.string.player_settings_item_aspect, btnAspect.getText()),

@@ -182,25 +182,8 @@ public class HianimesSeClient {
                         StreamSource src = resolveByMalIdSync(itemMalId, episode.number);
                         callback.onSuccess(src);
                         return;
-                    } catch (Exception ignored) {}
-                }
-
-                // Fallback: periksa field slugs (daftar slug episode)
-                JSONArray slugs = bestMatch.optJSONArray("slugs");
-                if (slugs != null && slugs.length() >= episode.number) {
-                    int epIndex = Math.max(0, episode.number - 1);
-                    String epSlug = slugs.optString(epIndex, "");
-                    if (!epSlug.isEmpty()) {
-                        String embedUrl = "https://megaplay.buzz/stream/" + epSlug + "/sub?autostart=false&asi=0";
-                        try {
-                            StreamSource source = HiAnimeClient.resolveMegaplay(embedUrl, NetworkConfig.HIANIMES_SE_BASE + "/");
-                            if (source != null && source.url != null && !source.url.isEmpty()) {
-                                source.server = "HiAnimes (Megaplay)";
-                                source.provider = "hianimes_se";
-                                callback.onSuccess(source);
-                                return;
-                            }
-                        } catch (Exception ignored) {}
+                    } catch (Exception e) {
+                        Log.w(TAG, "Resolusi sinkron MAL ID gagal: " + e.getMessage());
                     }
                 }
 
@@ -231,7 +214,17 @@ public class HianimesSeClient {
                 throw new IOException("Search HTTP gagal: " + response.code());
             }
             String respStr = response.body().string();
-            return new JSONArray(respStr);
+            String trimmed = respStr.trim();
+            if (trimmed.startsWith("[")) {
+                return new JSONArray(trimmed);
+            } else if (trimmed.startsWith("{")) {
+                JSONObject obj = new JSONObject(trimmed);
+                if (obj.has("data")) {
+                    JSONArray dataArr = obj.optJSONArray("data");
+                    if (dataArr != null) return dataArr;
+                }
+            }
+            return new JSONArray();
         }
     }
 }

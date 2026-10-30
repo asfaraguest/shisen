@@ -145,14 +145,14 @@ public class ZokoAnimeParser {
                 if (introObj != null) {
                     double start = introObj.optDouble("start", 0);
                     double end = introObj.optDouble("end", 0);
-                    if (end > start) {
+                    if (end > start && (end - start) >= 5.0) {
                         skips.intro = new AniSkipClient.SkipInterval(start, end, "op");
                     }
                 }
                 if (outroObj != null) {
                     double start = outroObj.optDouble("start", 0);
                     double end = outroObj.optDouble("end", 0);
-                    if (end > start) {
+                    if (end > start && (end - start) >= 5.0) {
                         skips.outro = new AniSkipClient.SkipInterval(start, end, "ed");
                     }
                 }
