@@ -115,15 +115,25 @@ public class ImageLoader {
         if (diskCacheDir == null) return null;
         try {
             File f = new File(diskCacheDir, md5(url));
-            if (f.exists()) {
+            if (f.exists() && f.length() > 0) {
                 BitmapFactory.Options opts = new BitmapFactory.Options();
                 opts.inJustDecodeBounds = true;
                 BitmapFactory.decodeFile(f.getAbsolutePath(), opts);
 
+                if (opts.outWidth <= 0 || opts.outHeight <= 0) {
+                    // File korup atau truncated, hapus agar bisa didownload ulang
+                    f.delete();
+                    return null;
+                }
+
                 opts.inSampleSize = calculateInSampleSize(opts, reqWidth, reqHeight);
                 opts.inJustDecodeBounds = false;
                 opts.inPreferredConfig = Bitmap.Config.RGB_565; // High performance, 50% RAM savings
-                return BitmapFactory.decodeFile(f.getAbsolutePath(), opts);
+                Bitmap bmp = BitmapFactory.decodeFile(f.getAbsolutePath(), opts);
+                if (bmp == null) {
+                    f.delete();
+                }
+                return bmp;
             }
         } catch (Throwable ignored) {}
         return null;
@@ -132,6 +142,7 @@ public class ImageLoader {
     private static boolean downloadToDisk(String urlStr) {
         if (diskCacheDir == null) return false;
         HttpURLConnection conn = null;
+        File tmp = null;
         try {
             URL url = new URL(urlStr);
             conn = (HttpURLConnection) url.openConnection();
@@ -142,20 +153,32 @@ public class ImageLoader {
             conn.connect();
 
             if (conn.getResponseCode() == 200) {
-                File f = new File(diskCacheDir, md5(urlStr));
+                String hash = md5(urlStr);
+                File target = new File(diskCacheDir, hash);
+                tmp = new File(diskCacheDir, hash + "_" + System.currentTimeMillis() + ".tmp");
+
                 try (InputStream is = conn.getInputStream();
-                     FileOutputStream fos = new FileOutputStream(f)) {
+                     FileOutputStream fos = new FileOutputStream(tmp)) {
                     byte[] buffer = new byte[8192];
                     int len;
                     while ((len = is.read(buffer)) != -1) {
                         fos.write(buffer, 0, len);
                     }
                     fos.flush();
-                    return true;
+                }
+
+                if (tmp.exists() && tmp.length() > 0) {
+                    if (target.exists()) {
+                        target.delete();
+                    }
+                    return tmp.renameTo(target);
                 }
             }
         } catch (Throwable ignored) {
         } finally {
+            if (tmp != null && tmp.exists()) {
+                tmp.delete();
+            }
             if (conn != null) {
                 try {
                     conn.disconnect();

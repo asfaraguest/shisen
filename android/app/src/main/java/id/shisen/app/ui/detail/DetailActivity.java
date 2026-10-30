@@ -697,13 +697,7 @@ public class DetailActivity extends AppCompatActivity {
                         public void onSuccess(List<Episode> otakuEpisodes) {
                             List<Episode> filtered = filterAccurateEpisodes(otakuEpisodes);
                             if (!filtered.isEmpty()) {
-                                mainHandler.post(() -> {
-                                    episodeList.clear();
-                                    episodeList.addAll(filtered);
-                                    anime.airedEpisodesCount = filtered.size();
-                                    refreshWatchedStates();
-                                    episodeAdapter.setData(episodeList);
-                                });
+                                applyLoadedEpisodes(null, filtered);
                             }
                         }
 

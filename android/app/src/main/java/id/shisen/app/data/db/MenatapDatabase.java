@@ -312,7 +312,8 @@ public class MenatapDatabase extends SQLiteOpenHelper {
         cv.put("format", anime.format);
         cv.put("eps_counter", anime.epsCounter);
         cv.put("created_at", System.currentTimeMillis());
-        if (anime.anilistId > 0) cv.put("anilist_id", anime.anilistId);
+        int aid = anime.anilistId > 0 ? anime.anilistId : anime.id;
+        if (aid > 0) cv.put("anilist_id", aid);
         if (anime.idMal > 0) cv.put("mal_id", anime.idMal);
         db.insertWithOnConflict("bookmarks", null, cv, SQLiteDatabase.CONFLICT_REPLACE);
     }
@@ -333,7 +334,7 @@ public class MenatapDatabase extends SQLiteOpenHelper {
     public List<Anime> getBookmarkList() {
         List<Anime> list = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT slug, title, poster, score, format, eps_counter FROM bookmarks ORDER BY created_at DESC", null);
+        Cursor c = db.rawQuery("SELECT slug, title, poster, score, format, eps_counter, anilist_id, mal_id FROM bookmarks ORDER BY created_at DESC", null);
         if (c != null) {
             while (c.moveToNext()) {
                 Anime a = new Anime();
@@ -343,6 +344,9 @@ public class MenatapDatabase extends SQLiteOpenHelper {
                 a.score = c.getDouble(3);
                 a.format = c.getString(4);
                 a.epsCounter = c.getString(5);
+                a.anilistId = c.getInt(6);
+                a.id = c.getInt(6);
+                a.idMal = c.getInt(7);
                 a.isFavorite = true;
                 list.add(a);
             }

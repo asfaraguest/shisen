@@ -266,10 +266,14 @@ public class GtxTranslator {
     }
 
     private static String readFile(File f) throws Exception {
-        try (FileInputStream fis = new FileInputStream(f)) {
-            byte[] data = new byte[(int) f.length()];
-            fis.read(data);
-            return new String(data, StandardCharsets.UTF_8);
+        try (FileInputStream fis = new FileInputStream(f);
+             java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream((int) Math.min(f.length(), 65536))) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = fis.read(buffer)) != -1) {
+                bos.write(buffer, 0, read);
+            }
+            return bos.toString("UTF-8");
         }
     }
 

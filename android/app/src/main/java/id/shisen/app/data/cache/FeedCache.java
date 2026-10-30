@@ -247,7 +247,6 @@ public class FeedCache {
         total += getDirSize(new File(context.getCacheDir(), "http_cache"));
         total += getDirSize(new File(context.getCacheDir(), "sub_cache"));
         total += getDirSize(new File(context.getCacheDir(), "menatap_img_cache"));
-        total += getDirSize(context.getDatabasePath("menatap.db"));
         return total;
     }
 

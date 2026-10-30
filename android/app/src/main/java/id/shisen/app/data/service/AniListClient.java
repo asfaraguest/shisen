@@ -1288,11 +1288,15 @@ public class AniListClient {
 
             @Override
             public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    callback.onError(new IOException("AniList HTTP error: " + response.code()));
-                    return;
-                }
-                try {
+                try (response) {
+                    if (!response.isSuccessful()) {
+                        callback.onError(new IOException("AniList HTTP error: " + response.code()));
+                        return;
+                    }
+                    if (response.body() == null) {
+                        callback.onError(new IOException("Empty response body from AniList"));
+                        return;
+                    }
                     String respStr = response.body().string();
                     JSONObject root = new JSONObject(respStr);
                     callback.onSuccess(root);
