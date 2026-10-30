@@ -83,7 +83,21 @@ public class AdaptiveScrapingTest {
         assertEquals("https://ww2.otakudesu.biz/", NetworkConfig.resolveAppropriateReferer("putarin.top", "otakudesu", "https://putarin.top/stream/123.m3u8"));
         assertEquals("https://anichan.to/", NetworkConfig.resolveAppropriateReferer("cdn.anichan.to", "anichan", "https://cdn.anichan.to/ep.m3u8"));
         assertEquals("https://zokoanime.video/", NetworkConfig.resolveAppropriateReferer("edge.zokoanime.video", "zokoanime", "https://edge.zokoanime.video/hls.m3u8"));
+        assertEquals("https://zokoanime.video/", NetworkConfig.resolveAppropriateReferer("hls1.drama1.cfd", "hianimes_se", "https://hls1.drama1.cfd/s/seg_00000.ts.jpg"));
+        assertEquals("https://zokoanime.video/", NetworkConfig.resolveAppropriateReferer("hls.dramahot.top", "hianimes_se", "https://hls.dramahot.top/anime/master.m3u8"));
         assertEquals("https://hianimes.se/", NetworkConfig.resolveAppropriateReferer("edge.animehot.cc", "hianimes", "https://edge.animehot.cc/stream.m3u8"));
         assertEquals("https://megaplay.buzz/", NetworkConfig.resolveAppropriateReferer("dokicloud.one", "hianime", "https://dokicloud.one/ep1.m3u8"));
+    }
+
+    @Test
+    public void testDnsFallbackResolverKnownIps() throws Exception {
+        id.shisen.app.util.DnsFallbackResolver resolver = new id.shisen.app.util.DnsFallbackResolver();
+        List<java.net.InetAddress> ipsZoko = resolver.lookup("zokoanime.video");
+        assertNotNull(ipsZoko);
+        assertFalse(ipsZoko.isEmpty());
+
+        List<java.net.InetAddress> ipsDrama1 = resolver.lookup("hls1.drama1.cfd");
+        assertNotNull(ipsDrama1);
+        assertFalse(ipsDrama1.isEmpty());
     }
 }

@@ -77,7 +77,9 @@ public class HianimesSeClient {
             StreamSource source = ZokoAnimeParser.fetchAndParse(zokoUrl, NetworkConfig.HIANIMES_SE_BASE + "/");
             if (source != null && source.url != null && !source.url.isEmpty()) {
                 source.server = "HiAnimes (ZokoAnime)";
-                source.provider = "hianimes_se";
+                source.provider = "zokoanime";
+                source.headers.put("Referer", "https://zokoanime.video/");
+                source.headers.put("Origin", "https://zokoanime.video");
                 return source;
             }
         } catch (Exception e) {

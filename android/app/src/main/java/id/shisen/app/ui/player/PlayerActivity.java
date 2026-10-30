@@ -65,6 +65,7 @@ import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.exoplayer.upstream.DefaultAllocator;
+import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter;
 import androidx.media3.session.MediaSession;
 import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.DefaultTimeBar;
@@ -563,8 +564,8 @@ public class PlayerActivity extends AppCompatActivity {
 
         // Konfigurasi buffer agresif & stabil:
         // - minBufferMs: 60s, maxBufferMs: 300s (5 menit buffer ke depan)
-        // - bufferForPlayback: 3.5s (cukup untuk 1 segmen HLS utuh agar tidak buffer-starving saat play)
-        // - bufferForPlaybackAfterRebuffer: 5.0s (pemulihan stabil dengan bantalan memadai)
+        // - bufferForPlayback: 4.0s
+        // - bufferForPlaybackAfterRebuffer: 10.0s (cukup untuk 1 segmen HLS ZokoAnime/Megaplay utuh agar bebas stutter loop)
         // - prioritizeTimeOverSizeThresholds: true (terus buffer hingga target waktu tanpa dipotong batas byte 13MB)
         // - backBuffer: 30s (seek mundur instan tanpa download ulang)
         DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
@@ -572,16 +573,19 @@ public class PlayerActivity extends AppCompatActivity {
                 .setBufferDurationsMs(
                         60_000,
                         300_000,
-                        3_500,
-                        5_000
+                        4_000,
+                        10_000
                 )
                 .setPrioritizeTimeOverSizeThresholds(true)
                 .setBackBuffer(30_000, true)
                 .build();
 
+        DefaultBandwidthMeter bandwidthMeter = DefaultBandwidthMeter.getSingletonInstance(this);
+
         player = new ExoPlayer.Builder(this)
                 .setMediaSourceFactory(mediaSourceFactory)
                 .setLoadControl(loadControl)
+                .setBandwidthMeter(bandwidthMeter)
                 .build();
 
         // Fase 2.1: Jika pemutaran dilanjutkan dari notifikasi saat layar mati,
@@ -682,6 +686,15 @@ public class PlayerActivity extends AppCompatActivity {
                 } else {
                     stopProgressTracker();
                     saveCurrentPlayback();
+                }
+            }
+
+            @Override
+            public void onTracksChanged(@NonNull androidx.media3.common.Tracks tracks) {
+                String savedQuality = getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
+                        .getString("pref_quality", "auto");
+                if (savedQuality != null && !"auto".equalsIgnoreCase(savedQuality)) {
+                    applyHlsTrackSelection(savedQuality);
                 }
             }
 
@@ -1545,10 +1558,12 @@ public class PlayerActivity extends AppCompatActivity {
             headers.put("Origin", origin);
         }
 
+        DefaultBandwidthMeter bandwidthMeter = DefaultBandwidthMeter.getSingletonInstance(this);
         OkHttpClient okClient = HttpClientProvider.getClient();
         OkHttpDataSource.Factory okHttpFactory = new OkHttpDataSource.Factory(okClient)
                 .setUserAgent(HttpClientProvider.USER_AGENT)
-                .setDefaultRequestProperties(headers);
+                .setDefaultRequestProperties(headers)
+                .setTransferListener(bandwidthMeter);
 
         DefaultMediaSourceFactory msFactory = new DefaultMediaSourceFactory(okHttpFactory);
         MediaItem.Builder mediaItemBuilder = new MediaItem.Builder().setUri(Uri.parse(source.url));
@@ -1583,6 +1598,19 @@ public class PlayerActivity extends AppCompatActivity {
         player.setMediaSource(msFactory.createMediaSource(mediaItem));
         player.setPlaybackParameters(new PlaybackParameters(currentSpeed));
         player.prepare();
+
+        String savedQuality = getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE)
+                .getString("pref_quality", "auto");
+        if (savedQuality != null && !"auto".equalsIgnoreCase(savedQuality)) {
+            String qUpper = savedQuality.toUpperCase(Locale.US);
+            String label = qUpper.contains("P") ? qUpper : qUpper + "p";
+            if (btnQuality != null) btnQuality.setText(label);
+            if (btnPortraitQuality != null) btnPortraitQuality.setText(label);
+        } else {
+            if (btnQuality != null) btnQuality.setText("Auto");
+            if (btnPortraitQuality != null) btnPortraitQuality.setText("Auto");
+        }
+        applyHlsTrackSelection(savedQuality);
 
         if (shouldPromptResume && resumeProg != null) {
             showResumeConfirmationDialog(resumeProg.progressMs, resumeProg.getFormattedTime(), ep.number);

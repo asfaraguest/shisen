@@ -40,6 +40,9 @@ public class DnsFallbackResolver implements Dns {
         this.knownIps = new HashMap<>();
         this.knownIps.put("hls.dramahot.top", "93.123.109.210");
         this.knownIps.put("dramahot.top", "93.123.109.210");
+        this.knownIps.put("zokoanime.video", "5.253.86.249");
+        this.knownIps.put("hls1.drama1.cfd", "104.21.21.54");
+        this.knownIps.put("drama1.cfd", "104.21.21.54");
 
         // Real system DNS resolver
         this.systemResolver = hostname -> Dns.SYSTEM.lookup(hostname);

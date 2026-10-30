@@ -142,15 +142,16 @@ public final class NetworkConfig {
     public static String resolveAppropriateReferer(String host, String provider, String fullUrl) {
         String h = host != null ? host.toLowerCase(java.util.Locale.US) : "";
         String prov = provider != null ? provider.toLowerCase(java.util.Locale.US) : "";
+        String f = fullUrl != null ? fullUrl.toLowerCase(java.util.Locale.US) : "";
 
+        if (h.contains("dramahot") || h.contains("zokoanime") || h.contains("drama1") || f.contains("drama1") || prov.contains("zoko")) {
+            return ZOKOANIME_BASE + "/";
+        }
         if (h.contains("otakudesu") || h.contains("putarin") || prov.contains("otaku")) {
             return OTAKUDESU_BASE + "/";
         }
         if (h.contains("anichan") || prov.contains("anichan")) {
             return ANICHAN_BASE + "/";
-        }
-        if (h.contains("dramahot") || h.contains("zokoanime") || prov.contains("zoko")) {
-            return ZOKOANIME_BASE + "/";
         }
         if (h.contains("animehot") || h.contains("anitv") || h.contains("hianimes.se") || prov.contains("hianimes")) {
             return HIANIMES_SE_BASE + "/";

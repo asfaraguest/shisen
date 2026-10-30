@@ -164,7 +164,7 @@ public class HttpClientProvider {
                         if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
                             rb.header("Referer", "https://opensubtitles.org/");
                         }
-                    } else if (host.contains("dramahot") || host.contains("zokoanime")) {
+                    } else if (host.contains("dramahot") || host.contains("zokoanime") || host.contains("drama1")) {
                         if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
                             rb.header("Referer", "https://zokoanime.video/");
                         }
@@ -185,7 +185,7 @@ public class HttpClientProvider {
                                 determinedReferer = "https://hianime.to/";
                             } else if (host.contains("zoro") || host.contains("aniwave")) {
                                 determinedReferer = "https://zoro.to/";
-                            } else if (host.contains("zoko")) {
+                            } else if (host.contains("zoko") || host.contains("dramahot") || host.contains("drama1")) {
                                 determinedReferer = "https://zokoanime.video/";
                             } else {
                                 determinedReferer = "https://megaplay.buzz/";
