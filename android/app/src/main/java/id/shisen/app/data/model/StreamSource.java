@@ -12,6 +12,7 @@ public class StreamSource implements Serializable {
     public String provider = "";
     public java.util.List<SubtitleTrack> subtitles = new java.util.ArrayList<>();
     public Map<String, String> headers = new HashMap<>();
+    public id.shisen.app.data.service.AniSkipClient.SkipResult skipTimes;
 
     public StreamSource(String url, String quality, String server, boolean isHls) {
         this.url = url;

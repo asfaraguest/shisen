@@ -28,6 +28,9 @@ public class NetworkConfigTest {
         assertFalse(NetworkConfig.isMegaCdnHost("ww2.otakudesu.biz", "/episode/1", "https://ww2.otakudesu.biz/episode/1"));
         assertFalse(NetworkConfig.isMegaCdnHost("animetosho.net", "/series/1", "https://animetosho.net/series/1"));
         assertFalse(NetworkConfig.isMegaCdnHost("opensubtitles.org", "/api/v1", "https://opensubtitles.org/api/v1"));
+        assertFalse(NetworkConfig.isMegaCdnHost("animehot.cc", "/api/search", "https://animehot.cc/api/search"));
+        assertFalse(NetworkConfig.isMegaCdnHost("anitv.cfd", "/api/search", "https://anitv.cfd/api/search"));
+        assertFalse(NetworkConfig.isMegaCdnHost("hianimes.se", "/watch", "https://hianimes.se/watch"));
 
         // Domain acak dengan TLD .to / .xyz yang bukan CDN dan bukan media request
         assertFalse(NetworkConfig.isMegaCdnHost("random-site.to", "/page", "https://random-site.to/page"));

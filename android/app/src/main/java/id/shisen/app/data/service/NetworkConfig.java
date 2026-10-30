@@ -31,9 +31,14 @@ public final class NetworkConfig {
 
     public static final String ZOKOANIME_BASE = "https://zokoanime.video";
 
+    public static final String HIANIMES_SE_BASE = "https://hianimes.se";
+    public static final String ANIMEHOT_API_BASE = "https://animehot.cc/api";
+    public static final String ANITV_API_BASE = "https://anitv.cfd/api";
+
     // --- Subtitle CDN Bypass Referers ---
     public static final java.util.List<String> SUBTITLE_REFERER_CANDIDATES = Collections.unmodifiableList(Arrays.asList(
             "https://megaplay.buzz/",
+            "https://hianimes.se/",
             "https://hianime.to/",
             "https://hianime.at/",
             "https://zokoanime.video/",
@@ -74,7 +79,8 @@ public final class NetworkConfig {
         if (h.contains("anichan") || h.contains("otakudesu") || h.contains("animetosho")
                 || h.contains("opensubtitles") || h.contains("github.com")
                 || h.contains("googleapis.com") || h.contains("groq.com")
-                || h.contains("openai.com") || h.contains("anilist.co")) {
+                || h.contains("openai.com") || h.contains("anilist.co")
+                || h.contains("animehot") || h.contains("anitv") || h.contains("hianimes.se")) {
             return false;
         }
 

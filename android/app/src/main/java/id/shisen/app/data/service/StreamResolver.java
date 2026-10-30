@@ -43,7 +43,39 @@ public class StreamResolver {
             return;
         }
 
-        if ("anichan".equalsIgnoreCase(preferredServer)) {
+        if ("hianimes_se".equalsIgnoreCase(preferredServer)) {
+            tryHianimesSe(anime, episode, new Callback() {
+                @Override
+                public void onSuccess(StreamSource source) {
+                    callback.onSuccess(source);
+                }
+
+                @Override
+                public void onError(Throwable t1) {
+                    tryHiAnime(anime, episode, new Callback() {
+                        @Override
+                        public void onSuccess(StreamSource source) {
+                            callback.onSuccess(source);
+                        }
+
+                        @Override
+                        public void onError(Throwable t2) {
+                            tryAniChan(anime, episode, new Callback() {
+                                @Override
+                                public void onSuccess(StreamSource source) {
+                                    callback.onSuccess(source);
+                                }
+
+                                @Override
+                                public void onError(Throwable t3) {
+                                    tryOtakudesu(anime, episode, callback);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        } else if ("anichan".equalsIgnoreCase(preferredServer)) {
             tryAniChan(anime, episode, new Callback() {
                 @Override
                 public void onSuccess(StreamSource source) {
@@ -191,6 +223,26 @@ public class StreamResolver {
             return;
         }
 
+        // Fast-path 3: Direct MAL embed (Megaplay / ZokoAnime) jika anime memiliki ID MAL
+        if (anime.idMal > 0) {
+            HianimesSeClient.resolveByMalId(anime.idMal, episode.number, new HianimesSeClient.Callback<StreamSource>() {
+                @Override
+                public void onSuccess(StreamSource result) {
+                    callback.onSuccess(result);
+                }
+
+                @Override
+                public void onError(Throwable ignored) {
+                    searchHiAnimeKeyword(anime, episode, callback);
+                }
+            });
+            return;
+        }
+
+        searchHiAnimeKeyword(anime, episode, callback);
+    }
+
+    private static void searchHiAnimeKeyword(Anime anime, Episode episode, Callback callback) {
         String primaryQuery = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
                 ? anime.title : anime.romajiTitle;
         if (primaryQuery == null || primaryQuery.isEmpty() || "null".equalsIgnoreCase(primaryQuery)) {
@@ -428,6 +480,20 @@ public class StreamResolver {
                         callback.onError(t);
                     }
                 });
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
+    private static void tryHianimesSe(Anime anime, Episode episode, Callback callback) {
+        HianimesSeClient.searchAndResolve(anime, episode, new HianimesSeClient.Callback<StreamSource>() {
+            @Override
+            public void onSuccess(StreamSource result) {
+                callback.onSuccess(result);
             }
 
             @Override

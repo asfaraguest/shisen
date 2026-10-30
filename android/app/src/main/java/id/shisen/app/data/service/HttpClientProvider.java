@@ -171,6 +171,13 @@ public class HttpClientProvider {
                         if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
                             rb.header("Origin", "https://zokoanime.video");
                         }
+                    } else if (host.contains("animehot") || host.contains("anitv") || host.contains("hianimes.se")) {
+                        if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
+                            rb.header("Referer", "https://hianimes.se/");
+                        }
+                        if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
+                            rb.header("Origin", "https://hianimes.se");
+                        }
                     } else if (isMegaCdn) {
                         String determinedReferer = original.header("Referer");
                         if (determinedReferer == null || determinedReferer.isEmpty()) {

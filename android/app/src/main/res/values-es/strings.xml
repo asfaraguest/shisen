@@ -383,6 +383,7 @@
     <string name="player_quality_360_item">360p Ahorro</string>
 
     <!-- Player Server Dialog Items -->
+    <string name="player_server_hianimes_se_item">HiAnimes.se (Direct MAL · Multi-Sub)</string>
     <string name="player_server_hianime_item">HiAnime (Principal · Multi-Audio y subtítulos HD)</string>
     <string name="player_server_anichan_item">AniChan (Rápido · Direct HLS Stream)</string>
     <string name="player_server_otakudesu_item">Otakudesu (Respaldo · Subtítulos en indonesio)</string>

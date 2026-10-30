@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 import id.shisen.app.data.model.StreamSource;
 import id.shisen.app.data.model.SubtitleTrack;
 
@@ -131,6 +135,33 @@ public class ZokoAnimeParser {
             }
         }
 
+        // 4. Extract Intro / Outro (Skip OP/ED)
+        JSONObject skipObj = cfg.optJSONObject("skip");
+        if (skipObj != null) {
+            JSONObject introObj = skipObj.optJSONObject("intro");
+            JSONObject outroObj = skipObj.optJSONObject("outro");
+            if (introObj != null || outroObj != null) {
+                AniSkipClient.SkipResult skips = new AniSkipClient.SkipResult();
+                if (introObj != null) {
+                    double start = introObj.optDouble("start", 0);
+                    double end = introObj.optDouble("end", 0);
+                    if (end > start) {
+                        skips.intro = new AniSkipClient.SkipInterval(start, end, "op");
+                    }
+                }
+                if (outroObj != null) {
+                    double start = outroObj.optDouble("start", 0);
+                    double end = outroObj.optDouble("end", 0);
+                    if (end > start) {
+                        skips.outro = new AniSkipClient.SkipInterval(start, end, "ed");
+                    }
+                }
+                if (skips.intro != null || skips.outro != null) {
+                    streamSource.skipTimes = skips;
+                }
+            }
+        }
+
         return streamSource;
     }
 
@@ -180,5 +211,23 @@ public class ZokoAnimeParser {
         Pattern p = Pattern.compile("(?:^|,)\\s*" + key + "=\"?([^\",]+)\"?");
         Matcher m = p.matcher(attrs);
         return m.find() ? m.group(1).trim() : null;
+    }
+
+    public static StreamSource fetchAndParse(String embedUrl, String referer) throws Exception {
+        OkHttpClient client = HttpClientProvider.getClient();
+        Request.Builder rb = new Request.Builder()
+                .url(embedUrl)
+                .header("User-Agent", HttpClientProvider.USER_AGENT)
+                .header("Accept", "*/*");
+        if (referer != null) {
+            rb.header("Referer", referer);
+        }
+        try (Response resp = client.newCall(rb.build()).execute()) {
+            if (!resp.isSuccessful()) {
+                throw new IOException("HTTP error: " + resp.code());
+            }
+            String html = resp.body() != null ? resp.body().string() : "";
+            return parseEmbed(html, embedUrl);
+        }
     }
 }

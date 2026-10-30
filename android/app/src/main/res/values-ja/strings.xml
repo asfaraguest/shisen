@@ -383,6 +383,7 @@
     <string name="player_quality_360_item">360p 節約</string>
 
     <!-- Player Server Dialog Items -->
+    <string name="player_server_hianimes_se_item">HiAnimes.se (Direct MAL · 多言語字幕)</string>
     <string name="player_server_hianime_item">HiAnime (メイン · マルチ音声・HD字幕)</string>
     <string name="player_server_anichan_item">AniChan (高速 · Direct HLS Stream)</string>
     <string name="player_server_otakudesu_item">Otakudesu (予備 · インドネシア語字幕付き)</string>

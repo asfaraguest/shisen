@@ -1576,12 +1576,21 @@ public class PlayerActivity extends AppCompatActivity {
             player.play();
         }
 
-        // Fetch AniSkip
+        // Init Skip Times from StreamSource (Intro/Outro tagging)
+        if (source != null && source.skipTimes != null) {
+            currentSkipTimes = source.skipTimes;
+        } else {
+            currentSkipTimes = null;
+        }
+
+        // Fetch AniSkip for refinement / community-submitted timestamps
         if (anime.idMal > 0) {
             AniSkipClient.getSkipTimes(anime.idMal, ep.number, 1420, new AniSkipClient.Callback() {
                 @Override
                 public void onSuccess(AniSkipClient.SkipResult result) {
-                    currentSkipTimes = result;
+                    if (result != null && (result.intro != null || result.outro != null)) {
+                        currentSkipTimes = result;
+                    }
                 }
 
                 @Override
@@ -1862,10 +1871,11 @@ public class PlayerActivity extends AppCompatActivity {
     private void showServerSelectorDialog() {
         CharSequence[] servers = {
                 getString(R.string.player_server_hianime_item),
+                getString(R.string.player_server_hianimes_se_item),
                 getString(R.string.player_server_anichan_item),
                 getString(R.string.player_server_otakudesu_item)
         };
-        String[] serverKeys = {"hianime", "anichan", "otakudesu"};
+        String[] serverKeys = {"hianime", "hianimes_se", "anichan", "otakudesu"};
 
         int selectedIdx = 0;
         for (int i = 0; i < serverKeys.length; i++) {

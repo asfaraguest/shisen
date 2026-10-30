@@ -239,8 +239,12 @@ public class HiAnimeClient {
         });
     }
 
-    private static StreamSource resolveMegaplay(String embedUrl) throws Exception {
-        String pageHtml = fetchString(embedUrl, HI_BASE + "/");
+    public static StreamSource resolveMegaplay(String embedUrl) throws Exception {
+        return resolveMegaplay(embedUrl, HI_BASE + "/");
+    }
+
+    public static StreamSource resolveMegaplay(String embedUrl, String referer) throws Exception {
+        String pageHtml = fetchString(embedUrl, referer != null ? referer : HI_BASE + "/");
         Pattern pDataId = Pattern.compile("data-id=[\"'](\\d+)[\"']");
         Matcher mDataId = pDataId.matcher(pageHtml);
         if (!mDataId.find()) {
@@ -307,6 +311,30 @@ public class HiAnimeClient {
                         streamSource.subtitles.add(new SubtitleTrack(file, lang, label, isDef, subReferer));
                     }
                 }
+            }
+        }
+
+        // Parse Intro / Outro (Skip OP/ED)
+        JSONObject introObj = cfg.optJSONObject("intro");
+        JSONObject outroObj = cfg.optJSONObject("outro");
+        if (introObj != null || outroObj != null) {
+            AniSkipClient.SkipResult skips = new AniSkipClient.SkipResult();
+            if (introObj != null) {
+                double start = introObj.optDouble("start", 0);
+                double end = introObj.optDouble("end", 0);
+                if (end > start) {
+                    skips.intro = new AniSkipClient.SkipInterval(start, end, "op");
+                }
+            }
+            if (outroObj != null) {
+                double start = outroObj.optDouble("start", 0);
+                double end = outroObj.optDouble("end", 0);
+                if (end > start) {
+                    skips.outro = new AniSkipClient.SkipInterval(start, end, "ed");
+                }
+            }
+            if (skips.intro != null || skips.outro != null) {
+                streamSource.skipTimes = skips;
             }
         }
 
