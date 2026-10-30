@@ -435,4 +435,20 @@
     <string name="player_toast_aspect_zoom">Modo: Zoom (Pantalla completa)</string>
     <string name="player_toast_aspect_fill">Modo: Rellenar</string>
     <string name="player_toast_aspect_fit">Modo: Ajustar (Original 16:9)</string>
+
+    <!-- Relation Badges & Empty States -->
+    <string name="relation_prequel">Precuela</string>
+    <string name="relation_sequel">Secuela</string>
+    <string name="relation_parent">Historia Principal</string>
+    <string name="relation_special">Especial</string>
+    <string name="relation_related">Relacionado</string>
+    <string name="relation_prequel_movie">Película Precuela</string>
+    <string name="relation_sequel_movie">Película Secuela</string>
+    <string name="empty_no_data_title">Sin Datos</string>
+    <string name="empty_no_data_desc">El contenido aún no está disponible para esta categoría.</string>
+    <string name="empty_blocked_title">Contenido Bloqueado</string>
+    <string name="empty_blocked_desc">El género explícito está bloqueado permanentemente por la política de la aplicación.</string>
+    <string name="empty_safemode_title">Modo Seguro Activo</string>
+    <string name="empty_safemode_desc">La búsqueda de contenido para adultos está restringida por el Modo Seguro. Puedes ajustarlo en Configuración.</string>
+    <string name="error_search_failed">Error en la búsqueda</string>
 </resources>

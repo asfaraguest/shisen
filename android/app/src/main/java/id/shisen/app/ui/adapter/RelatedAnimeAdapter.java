@@ -68,7 +68,7 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
         holder.tvMeta.setText(meta.toString());
 
         if (anime.relationLabel != null && !anime.relationLabel.isEmpty() && !"null".equalsIgnoreCase(anime.relationLabel)) {
-            holder.tvBadge.setText(anime.relationLabel);
+            holder.tvBadge.setText(getLocalizedRelationLabel(anime.relationLabel));
             holder.tvBadge.setVisibility(View.VISIBLE);
         } else {
             holder.tvBadge.setVisibility(View.GONE);
@@ -91,6 +91,28 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    private String getLocalizedRelationLabel(String rawLabel) {
+        if (context == null || rawLabel == null) return "";
+        switch (rawLabel) {
+            case "Prekuel":
+                return context.getString(R.string.relation_prequel);
+            case "Sekuel":
+                return context.getString(R.string.relation_sequel);
+            case "Seri Utama":
+                return context.getString(R.string.relation_parent);
+            case "Spesial":
+                return context.getString(R.string.relation_special);
+            case "Terkait":
+                return context.getString(R.string.relation_related);
+            case "Prekuel Film":
+                return context.getString(R.string.relation_prequel_movie);
+            case "Sekuel Film":
+                return context.getString(R.string.relation_sequel_movie);
+            default:
+                return rawLabel;
+        }
     }
 
     private void attachSpringTouch(View v) {

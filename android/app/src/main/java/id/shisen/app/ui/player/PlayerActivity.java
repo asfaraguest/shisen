@@ -1142,20 +1142,22 @@ public class PlayerActivity extends AppCompatActivity {
             ep.isWatched = MenatapDatabase.getInstance(this).isEpisodeWatched(anime.slug, ep.number);
         }
         episodeAdapter.setData(episodeList);
-        tvPortraitEpCount.setText("DAFTAR EPISODE (" + episodeList.size() + ")");
+        tvPortraitEpCount.setText(getString(R.string.player_episodes_title) + " (" + episodeList.size() + ")");
 
         episodeAdapter.setListener((episode, position) -> playEpisode(position));
     }
 
     private void toggleEpisodeSort() {
+        int currentEpNumber = (currentIndex >= 0 && currentIndex < episodeList.size())
+                ? episodeList.get(currentIndex).number : -1;
         isSortAscending = !isSortAscending;
-        btnPortraitSort.setText(isSortAscending ? "Urutan: 1 - N" : "Urutan: N - 1");
+        btnPortraitSort.setText(isSortAscending ? R.string.player_order_asc : R.string.player_order_desc);
         Collections.reverse(episodeList);
         episodeAdapter.setData(episodeList);
-        if (player != null) {
-            int currentEpNumber = currentIndex + 1;
+        if (currentEpNumber != -1) {
             int newIdx = episodeAdapter.findPositionByNumber(currentEpNumber);
             if (newIdx != -1) currentIndex = newIdx;
+            episodeAdapter.setCurrentPlayingNumber(currentEpNumber);
         }
     }
 
@@ -1186,7 +1188,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (player == null || isHoldingRewind || isHoldingSpeed) return;
         isHoldingRewind = true;
         if (tvHoldSpeedIcon != null) tvHoldSpeedIcon.setText("⏪");
-        if (tvHoldSpeedText != null) tvHoldSpeedText.setText("<< Putar Mundur");
+        if (tvHoldSpeedText != null) tvHoldSpeedText.setText(R.string.player_rewind);
         hudHoldSpeed.setVisibility(View.VISIBLE);
         HapticHelper.performTick(playerView);
         gestureHandler.post(holdRewindRunnable);
@@ -1313,16 +1315,14 @@ public class PlayerActivity extends AppCompatActivity {
                 if (factor > 1.08f && currentResizeMode != AspectRatioFrameLayout.RESIZE_MODE_ZOOM) {
                     currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
                     playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
-                    btnAspect.setText("ZOOM");
-                    btnPortraitFullscreen.setText("ZOOM");
+                    btnAspect.setText(R.string.player_zoom);
                     showOsd("⛶", 100);
                     HapticHelper.performClick(playerView);
                     return true;
                 } else if (factor < 0.92f && currentResizeMode != AspectRatioFrameLayout.RESIZE_MODE_FIT) {
                     currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
                     playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
-                    btnAspect.setText("FIT");
-                    btnPortraitFullscreen.setText("FIT");
+                    btnAspect.setText(R.string.player_fit);
                     showOsd("⛶", 0);
                     HapticHelper.performClick(playerView);
                     return true;
@@ -1499,6 +1499,11 @@ public class PlayerActivity extends AppCompatActivity {
                         if (enriched != null && enriched.size() == episodeList.size()) {
                             episodeList.clear();
                             episodeList.addAll(enriched);
+                            if (!isSortAscending) {
+                                Collections.reverse(episodeList);
+                            }
+                            int newIdx = episodeAdapter.findPositionByNumber(ep.number);
+                            if (newIdx != -1) currentIndex = newIdx;
                         }
                     }
 
@@ -2891,7 +2896,7 @@ public class PlayerActivity extends AppCompatActivity {
             }
             layoutPortraitBottom.setVisibility(View.VISIBLE);
             hideTopBar(false);
-            btnPortraitFullscreen.setText("⛶ Full");
+            btnPortraitFullscreen.setText(R.string.player_fullscreen);
 
             int screenWidth = getResources().getDisplayMetrics().widthPixels;
             int playerHeight = (int) (screenWidth * 9f / 16f);

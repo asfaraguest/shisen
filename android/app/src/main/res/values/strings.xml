@@ -435,4 +435,20 @@
     <string name="player_toast_aspect_zoom">Mode: Zoom (Penuh Layar)</string>
     <string name="player_toast_aspect_fill">Mode: Fill (Rentang Rasio)</string>
     <string name="player_toast_aspect_fit">Mode: Fit (Asli 16:9)</string>
+
+    <!-- Relation Badges & Empty States -->
+    <string name="relation_prequel">Prekuel</string>
+    <string name="relation_sequel">Sekuel</string>
+    <string name="relation_parent">Seri Utama</string>
+    <string name="relation_special">Spesial</string>
+    <string name="relation_related">Terkait</string>
+    <string name="relation_prequel_movie">Prekuel Film</string>
+    <string name="relation_sequel_movie">Sekuel Film</string>
+    <string name="empty_no_data_title">Tidak Ada Data</string>
+    <string name="empty_no_data_desc">Konten belum tersedia untuk kategori ini.</string>
+    <string name="empty_blocked_title">Konten Diblokir</string>
+    <string name="empty_blocked_desc">Genre Hentai diblokir secara permanen oleh kebijakan aplikasi.</string>
+    <string name="empty_safemode_title">Safe Mode Aktif</string>
+    <string name="empty_safemode_desc">Pencarian konten dewasa dibatasi oleh Safe Mode. Anda dapat menyesuaikannya di Pengaturan.</string>
+    <string name="error_search_failed">Pencarian gagal</string>
 </resources>

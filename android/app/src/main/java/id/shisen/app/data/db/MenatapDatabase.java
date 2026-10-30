@@ -239,6 +239,7 @@ public class MenatapDatabase extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         db.delete("history", null, null);
         db.delete("watch_progress", null, null);
+        db.delete("watched_eps", null, null);
     }
 
     public void markEpisodeWatched(String slug, int ep) {
@@ -303,18 +304,25 @@ public class MenatapDatabase extends SQLiteOpenHelper {
     }
 
     public void addBookmark(Anime anime) {
+        if (anime == null || anime.slug == null) return;
+        int existingAid = getAniListId(anime.slug);
+        int existingMal = getMalId(anime.slug);
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("slug", anime.slug);
-        cv.put("title", anime.title);
-        cv.put("poster", anime.poster);
+        String safeTitle = (anime.title != null && !anime.title.trim().isEmpty())
+                ? anime.title
+                : (anime.romajiTitle != null && !anime.romajiTitle.trim().isEmpty() ? anime.romajiTitle : anime.slug);
+        cv.put("title", safeTitle);
+        cv.put("poster", anime.poster != null ? anime.poster : "");
         cv.put("score", anime.score);
-        cv.put("format", anime.format);
-        cv.put("eps_counter", anime.epsCounter);
+        cv.put("format", anime.format != null ? anime.format : "TV");
+        cv.put("eps_counter", anime.epsCounter != null ? anime.epsCounter : "-");
         cv.put("created_at", System.currentTimeMillis());
-        int aid = anime.anilistId > 0 ? anime.anilistId : anime.id;
+        int aid = anime.anilistId > 0 ? anime.anilistId : (anime.id > 0 ? anime.id : existingAid);
+        int mid = anime.idMal > 0 ? anime.idMal : existingMal;
         if (aid > 0) cv.put("anilist_id", aid);
-        if (anime.idMal > 0) cv.put("mal_id", anime.idMal);
+        if (mid > 0) cv.put("mal_id", mid);
         db.insertWithOnConflict("bookmarks", null, cv, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
@@ -324,8 +332,9 @@ public class MenatapDatabase extends SQLiteOpenHelper {
     }
 
     public boolean isBookmarked(String slug) {
+        if (slug == null || slug.isEmpty()) return false;
         SQLiteDatabase db = getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT 1 FROM bookmarks WHERE slug = ?", new String[]{slug});
+        Cursor c = db.rawQuery("SELECT 1 FROM bookmarks WHERE slug = ? AND title IS NOT NULL AND title != ''", new String[]{slug});
         boolean exists = (c != null && c.moveToFirst());
         if (c != null) c.close();
         return exists;
@@ -334,7 +343,7 @@ public class MenatapDatabase extends SQLiteOpenHelper {
     public List<Anime> getBookmarkList() {
         List<Anime> list = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT slug, title, poster, score, format, eps_counter, anilist_id, mal_id FROM bookmarks ORDER BY created_at DESC", null);
+        Cursor c = db.rawQuery("SELECT slug, title, poster, score, format, eps_counter, anilist_id, mal_id FROM bookmarks WHERE title IS NOT NULL AND title != '' ORDER BY created_at DESC", null);
         if (c != null) {
             while (c.moveToNext()) {
                 Anime a = new Anime();

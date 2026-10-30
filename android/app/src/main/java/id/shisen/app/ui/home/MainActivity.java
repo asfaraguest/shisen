@@ -1712,14 +1712,14 @@ public class MainActivity extends AppCompatActivity {
         if (!AppSettings.isSafeQuery(this, query)) {
             setLoading(false);
             if (query.toLowerCase().contains("hentai")) {
-                displayResults(new ArrayList<>(), "Konten Diblokir", "Genre Hentai diblokir secara permanen oleh kebijakan aplikasi.", 40, false, false);
+                displayResults(new ArrayList<>(), getString(R.string.empty_blocked_title), getString(R.string.empty_blocked_desc), 40, false, false);
             } else {
-                displayResults(new ArrayList<>(), "Safe Mode Aktif", "Pencarian konten dewasa dibatasi oleh Safe Mode. Anda dapat menyesuaikannya di Pengaturan.", 40, false, false);
+                displayResults(new ArrayList<>(), getString(R.string.empty_safemode_title), getString(R.string.empty_safemode_desc), 40, false, false);
             }
             return;
         }
 
-        AniListClient.search(query, page, 40, createPagedCallback("Pencarian gagal", 40, cacheKey, hasStaleData));
+        AniListClient.search(query, page, 40, createPagedCallback(getString(R.string.error_search_failed), 40, cacheKey, hasStaleData));
     }
 
     private AniListClient.PagedCallback<List<Anime>> createPagedCallback(String errorPrefix, int pageSize, String cacheKey, boolean hasStaleData) {
@@ -1729,7 +1729,7 @@ public class MainActivity extends AppCompatActivity {
                 if (cacheKey != null && result != null && !result.isEmpty()) {
                     FeedCache.getInstance(MainActivity.this).put(cacheKey, result, hasNextPage, total);
                 }
-                displayResults(result, "Tidak Ada Data", "Konten belum tersedia untuk kategori ini.", pageSize, hasNextPage, hasStaleData);
+                displayResults(result, getString(R.string.empty_no_data_title), getString(R.string.empty_no_data_desc), pageSize, hasNextPage, hasStaleData);
             }
 
             @Override
@@ -1751,7 +1751,7 @@ public class MainActivity extends AppCompatActivity {
                 if (cacheKey != null && result != null && !result.isEmpty()) {
                     FeedCache.getInstance(MainActivity.this).put(cacheKey, result, result.size() >= pageSize, result.size());
                 }
-                displayResults(result, "Tidak Ada Data", "Konten belum tersedia untuk kategori ini.", pageSize, result != null && result.size() >= pageSize, hasStaleData);
+                displayResults(result, getString(R.string.empty_no_data_title), getString(R.string.empty_no_data_desc), pageSize, result != null && result.size() >= pageSize, hasStaleData);
             }
 
             @Override

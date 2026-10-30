@@ -246,9 +246,17 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             context.startActivity(intent);
         };
 
+        View.OnClickListener playHeroAction = v -> {
+            HapticHelper.performClick(v);
+            Intent intent = new Intent(context, DetailActivity.class);
+            intent.putExtra("anime", anime);
+            intent.putExtra("autoPlay", true);
+            context.startActivity(intent);
+        };
+
         holder.itemView.setOnClickListener(openDetailAction);
         holder.cardHero.setOnClickListener(openDetailAction);
-        holder.btnHeroPlay.setOnClickListener(openDetailAction);
+        holder.btnHeroPlay.setOnClickListener(playHeroAction);
         holder.btnHeroInfo.setOnClickListener(openDetailAction);
     }
 
@@ -267,7 +275,7 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             metaText = anime.airingDay + (anime.format != null ? " · " + anime.format : "");
         } else {
             String seasonStr = (anime.season != null && !anime.season.isEmpty() && !"null".equalsIgnoreCase(anime.season))
-                    ? (anime.season.substring(0, 1).toUpperCase(Locale.US) + anime.season.substring(1).toLowerCase(Locale.US))
+                    ? getLocalizedSeasonName(context, anime.season)
                     : "";
             if (!seasonStr.isEmpty() && anime.year > 0) {
                 metaText = seasonStr + " " + anime.year + " · " + (anime.format != null ? anime.format : "TV");

@@ -435,4 +435,20 @@
     <string name="player_toast_aspect_zoom">モード: ズーム (全画面)</string>
     <string name="player_toast_aspect_fill">モード: 画面いっぱいに拡大</string>
     <string name="player_toast_aspect_fit">モード: フィット (オリジナル 16:9)</string>
+
+    <!-- Relation Badges & Empty States -->
+    <string name="relation_prequel">前日譚</string>
+    <string name="relation_sequel">続編</string>
+    <string name="relation_parent">本編</string>
+    <string name="relation_special">スペシャル</string>
+    <string name="relation_related">関連作品</string>
+    <string name="relation_prequel_movie">前日譚映画</string>
+    <string name="relation_sequel_movie">続編映画</string>
+    <string name="empty_no_data_title">データなし</string>
+    <string name="empty_no_data_desc">このカテゴリのコンテンツはまだありません。</string>
+    <string name="empty_blocked_title">コンテンツ制限</string>
+    <string name="empty_blocked_desc">成人向けジャンルはアプリポリシーによりブロックされています。</string>
+    <string name="empty_safemode_title">セーフモード有効</string>
+    <string name="empty_safemode_desc">成人向け検索はセーフモードで制限されています。設定で変更できます。</string>
+    <string name="error_search_failed">検索に失敗しました</string>
 </resources>

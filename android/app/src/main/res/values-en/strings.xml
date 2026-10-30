@@ -435,4 +435,20 @@
     <string name="player_toast_aspect_zoom">Mode: Zoom (Full Screen)</string>
     <string name="player_toast_aspect_fill">Mode: Fill (Stretch)</string>
     <string name="player_toast_aspect_fit">Mode: Fit (Original 16:9)</string>
+
+    <!-- Relation Badges & Empty States -->
+    <string name="relation_prequel">Prequel</string>
+    <string name="relation_sequel">Sequel</string>
+    <string name="relation_parent">Main Story</string>
+    <string name="relation_special">Special</string>
+    <string name="relation_related">Related</string>
+    <string name="relation_prequel_movie">Prequel Movie</string>
+    <string name="relation_sequel_movie">Sequel Movie</string>
+    <string name="empty_no_data_title">No Data Found</string>
+    <string name="empty_no_data_desc">Content is not yet available for this category.</string>
+    <string name="empty_blocked_title">Content Blocked</string>
+    <string name="empty_blocked_desc">Explicit adult genre is permanently blocked by app policy.</string>
+    <string name="empty_safemode_title">Safe Mode Active</string>
+    <string name="empty_safemode_desc">Adult content search is restricted by Safe Mode. You can adjust this in Settings.</string>
+    <string name="error_search_failed">Search failed</string>
 </resources>

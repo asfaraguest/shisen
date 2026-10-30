@@ -90,6 +90,7 @@ public class DetailActivity extends AppCompatActivity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private int lastWatchedEp = 0;
     private boolean isSynopsisExpanded = false;
+    private boolean pendingAutoPlay = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,8 +98,14 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
         SystemUiHelper.applySystemBarsTheme(this);
 
-        if (getIntent() != null && getIntent().hasExtra("anime")) {
-            anime = (Anime) getIntent().getSerializableExtra("anime");
+        if (getIntent() != null) {
+            if (getIntent().hasExtra("anime")) {
+                anime = (Anime) getIntent().getSerializableExtra("anime");
+            }
+            if (savedInstanceState == null && getIntent().getBooleanExtra("autoPlay", false)) {
+                pendingAutoPlay = true;
+                getIntent().removeExtra("autoPlay");
+            }
         }
         if (anime == null && savedInstanceState != null) {
             anime = (Anime) savedInstanceState.getSerializable("saved_anime");
@@ -282,7 +289,7 @@ public class DetailActivity extends AppCompatActivity {
 
         StringBuilder meta = new StringBuilder();
         if (anime.season != null && !anime.season.isEmpty() && !"null".equalsIgnoreCase(anime.season)) {
-            meta.append(anime.season.substring(0, 1).toUpperCase(Locale.US)).append(anime.season.substring(1).toLowerCase(Locale.US)).append(" ");
+            meta.append(AnimeAdapter.getLocalizedSeasonName(this, anime.season)).append(" ");
             if (anime.year > 0) meta.append(anime.year).append(" · ");
         } else if (anime.year > 0) {
             meta.append(anime.year).append(" · ");
@@ -459,12 +466,14 @@ public class DetailActivity extends AppCompatActivity {
 
             // Jika anime tamat (FINISHED) dan memiliki provider epId valid -> skip scraping 100%!
             if ("FINISHED".equalsIgnoreCase(anime.status) && hasValidEpIds) {
+                triggerAutoPlayIfPending();
                 return;
             }
 
             // Jika anime on-going dan belum jam rilis episode berikutnya serta memiliki provider epId valid -> skip!
             long nowSec = System.currentTimeMillis() / 1000L;
             if (anime.airingAt > 0 && nowSec < anime.airingAt && hasValidEpIds) {
+                triggerAutoPlayIfPending();
                 return;
             }
         }
@@ -641,19 +650,28 @@ public class DetailActivity extends AppCompatActivity {
                 });
                 if (results != null && !results.isEmpty()) {
                     String matchedSlug = TitleMatcher.pickBestSlug(results, anime, anime.title, anime.romajiTitle);
-                    if (matchedSlug == null) return;
+                    if (matchedSlug == null) {
+                        mainHandler.post(DetailActivity.this::triggerAutoPlayIfPending);
+                        return;
+                    }
                     OtakudesuScraper.getEpisodes(matchedSlug, new OtakudesuScraper.Callback<List<Episode>>() {
                         @Override
                         public void onSuccess(List<Episode> otakuEpisodes) {
                             List<Episode> filtered = filterAccurateEpisodes(otakuEpisodes);
                             if (!filtered.isEmpty()) {
                                 applyLoadedEpisodes(null, filtered);
+                            } else {
+                                mainHandler.post(DetailActivity.this::triggerAutoPlayIfPending);
                             }
                         }
 
                         @Override
-                        public void onError(Throwable t) {}
+                        public void onError(Throwable t) {
+                            mainHandler.post(DetailActivity.this::triggerAutoPlayIfPending);
+                        }
                     });
+                } else {
+                    mainHandler.post(DetailActivity.this::triggerAutoPlayIfPending);
                 }
             }
 
@@ -661,9 +679,18 @@ public class DetailActivity extends AppCompatActivity {
             public void onError(Throwable t) {
                 mainHandler.post(() -> {
                     if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
+                    triggerAutoPlayIfPending();
                 });
             }
         });
+    }
+
+    private void triggerAutoPlayIfPending() {
+        if (!pendingAutoPlay || isFinishing() || isDestroyed()) return;
+        pendingAutoPlay = false;
+        if (!episodeList.isEmpty()) {
+            startPlaybackAtLastOrFirst();
+        }
     }
 
     private void applyLoadedEpisodes(String matchedSlug, List<Episode> filtered) {
@@ -685,6 +712,7 @@ public class DetailActivity extends AppCompatActivity {
                     (PlaybackDataHolder.getAnime().id == anime.id || anime.slug.equals(PlaybackDataHolder.getAnime().slug))) {
                 PlaybackDataHolder.set(anime, episodeList, PlaybackDataHolder.getIndex());
             }
+            triggerAutoPlayIfPending();
         });
     }
 
