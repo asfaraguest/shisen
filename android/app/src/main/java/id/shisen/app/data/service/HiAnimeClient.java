@@ -67,11 +67,20 @@ public class HiAnimeClient {
 
                 Document doc = Jsoup.parse(html, url);
                 List<Anime> results = new ArrayList<>();
-                Elements items = doc.select(".flw-item");
+                Elements items = doc.select(".flw-item, .film-item, [class*='film-item'], [class*='item-qtip'], .film_list-wrap .inner");
+                if (items.isEmpty()) {
+                    items = doc.select("[class*='search'] a[href*='/watch/']");
+                }
 
                 for (Element el : items) {
-                    Element titleEl = el.selectFirst(".film-name a");
-                    if (titleEl == null) continue;
+                    Element titleEl = el.selectFirst(".film-name a, [class*='film-name'] a, [class*='title'] a, a.dynamic-name, a[href*='/watch/']");
+                    if (titleEl == null) {
+                        if ("a".equalsIgnoreCase(el.tagName()) && el.hasAttr("href") && el.attr("href").contains("/watch/")) {
+                            titleEl = el;
+                        } else {
+                            continue;
+                        }
+                    }
 
                     String title = titleEl.attr("title").trim();
                     if (title.isEmpty()) title = titleEl.text().trim();
@@ -79,11 +88,12 @@ public class HiAnimeClient {
 
                     String href = titleEl.attr("href").trim();
                     String slug = href;
-                    if (slug.contains("hianime.at/")) {
+                    if (slug.contains("/watch/")) {
+                        slug = slug.substring(slug.indexOf("/watch/") + "/watch/".length());
+                    } else if (slug.contains("hianime.at/")) {
                         slug = slug.substring(slug.indexOf("hianime.at/") + "hianime.at/".length());
                     }
                     if (slug.startsWith("/")) slug = slug.substring(1);
-                    if (slug.startsWith("watch/")) slug = slug.substring("watch/".length());
                     if (slug.contains("?")) slug = slug.substring(0, slug.indexOf("?"));
                     if (slug.endsWith("/")) slug = slug.substring(0, slug.length() - 1);
 
@@ -91,7 +101,7 @@ public class HiAnimeClient {
                         continue;
                     }
 
-                    Element posterEl = el.selectFirst("img.film-poster-img");
+                    Element posterEl = el.selectFirst("img.film-poster-img, [class*='film-poster'] img, img[data-src], img[src]");
                     String poster = posterEl != null ? posterEl.attr("data-src") : "";
                     if (poster.isEmpty() && posterEl != null) {
                         poster = posterEl.attr("src");
@@ -105,15 +115,15 @@ public class HiAnimeClient {
                     a.slug = slug;
                     a.poster = poster;
 
-                    Element subEl = el.selectFirst(".tick-sub");
+                    Element subEl = el.selectFirst(".tick-sub, [class*='tick-sub'], .tick-eps");
                     if (subEl != null) {
                         try {
-                            a.airedEpisodesCount = Integer.parseInt(subEl.text().trim());
+                            a.airedEpisodesCount = Integer.parseInt(subEl.text().replaceAll("[^0-9]", "").trim());
                             a.epsCounter = a.airedEpisodesCount + " Ep";
                         } catch (Exception ignored) {}
                     }
 
-                    Element typeEl = el.selectFirst(".fdi-item");
+                    Element typeEl = el.selectFirst(".fdi-item, [class*='fdi-item']");
                     if (typeEl != null) {
                         a.format = typeEl.text().trim();
                     }
@@ -147,14 +157,60 @@ public class HiAnimeClient {
                     html = jsonStr;
                 }
 
-                Pattern p = Pattern.compile("data-number=[\"']([0-9]+)[\"'][^>]*?data-id=[\"']([0-9]+)[\"']");
-                Matcher m = p.matcher(html);
-                List<Episode> list = new ArrayList<>();
-                List<Integer> seen = new ArrayList<>();
+                List<Episode> list = parseEpisodesFromHtml(html, slug);
+                callback.onSuccess(list);
+            } catch (Throwable e) {
+                callback.onError(e);
+            }
+        });
+    }
 
-                while (m.find()) {
-                    int epNo = Integer.parseInt(m.group(1));
-                    String epId = m.group(2);
+    public static List<Episode> parseEpisodesFromHtml(String html, String slug) {
+        List<Episode> list = new ArrayList<>();
+        if (html == null || html.isEmpty()) return list;
+        List<Integer> seen = new ArrayList<>();
+
+        // Parsing adaptif via Jsoup DOM
+        Document doc = Jsoup.parse(html);
+        Elements epElements = doc.select("[data-number][data-id], .ep-item, .ssl-item, a[data-number]");
+        for (Element el : epElements) {
+            String numStr = el.attr("data-number").trim();
+            String idStr = el.attr("data-id").trim();
+            if (numStr.isEmpty() || idStr.isEmpty()) {
+                Element innerWithData = el.selectFirst("[data-number][data-id]");
+                if (innerWithData != null) {
+                    numStr = innerWithData.attr("data-number").trim();
+                    idStr = innerWithData.attr("data-id").trim();
+                }
+            }
+            if (!numStr.isEmpty() && !idStr.isEmpty()) {
+                try {
+                    int epNo = Integer.parseInt(numStr);
+                    if (!seen.contains(epNo)) {
+                        seen.add(epNo);
+                        Episode ep = new Episode(epNo);
+                        ep.epId = idStr;
+                        ep.slug = slug;
+                        ep.provider = "hianime";
+                        String titleAttr = el.attr("title").trim();
+                        if (!titleAttr.isEmpty()) {
+                            ep.title = titleAttr;
+                        }
+                        list.add(ep);
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        // Fallback regex attribute-agnostic (urutan data-number & data-id bebas)
+        if (list.isEmpty()) {
+            Pattern p = Pattern.compile("(?:data-number=[\"']([0-9]+)[\"'][^>]*?data-id=[\"']([0-9]+)[\"']|data-id=[\"']([0-9]+)[\"'][^>]*?data-number=[\"']([0-9]+)[\"'])");
+            Matcher m = p.matcher(html);
+            while (m.find()) {
+                String epNoStr = m.group(1) != null ? m.group(1) : m.group(4);
+                String epId = m.group(2) != null ? m.group(2) : m.group(3);
+                try {
+                    int epNo = Integer.parseInt(epNoStr);
                     if (!seen.contains(epNo)) {
                         seen.add(epNo);
                         Episode ep = new Episode(epNo);
@@ -163,14 +219,12 @@ public class HiAnimeClient {
                         ep.provider = "hianime";
                         list.add(ep);
                     }
-                }
-
-                Collections.sort(list, (e1, e2) -> Integer.compare(e1.number, e2.number));
-                callback.onSuccess(list);
-            } catch (Throwable e) {
-                callback.onError(e);
+                } catch (Exception ignored) {}
             }
-        });
+        }
+
+        Collections.sort(list, (e1, e2) -> Integer.compare(e1.number, e2.number));
+        return list;
     }
 
     public static void resolveStream(String epId, Callback<StreamSource> callback) {
@@ -245,12 +299,30 @@ public class HiAnimeClient {
 
     public static StreamSource resolveMegaplay(String embedUrl, String referer) throws Exception {
         String pageHtml = fetchString(embedUrl, referer != null ? referer : HI_BASE + "/");
-        Pattern pDataId = Pattern.compile("data-id=[\"'](\\d+)[\"']");
+        String dataId = "";
+        Pattern pDataId = Pattern.compile("(?:data-id|data-video-id|data-source-id)=[\"'](\\d+)[\"']");
         Matcher mDataId = pDataId.matcher(pageHtml);
-        if (!mDataId.find()) {
+        if (mDataId.find()) {
+            dataId = mDataId.group(1);
+        } else {
+            Pattern pJsId = Pattern.compile("(?:videoId|sourceId|episodeId|id)\\s*[:=]\\s*[\"']?(\\d+)[\"']?");
+            Matcher mJsId = pJsId.matcher(pageHtml);
+            if (mJsId.find()) {
+                dataId = mJsId.group(1);
+            } else {
+                try {
+                    Uri embedUri = Uri.parse(embedUrl);
+                    String qId = embedUri.getQueryParameter("id");
+                    if (qId != null && qId.matches("\\d+")) {
+                        dataId = qId;
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        if (dataId.isEmpty()) {
             throw new IOException("data-id Megaplay tidak ditemukan");
         }
-        String dataId = mDataId.group(1);
 
         Uri embedUri = Uri.parse(embedUrl);
         String origin = embedUri.getScheme() + "://" + embedUri.getHost();

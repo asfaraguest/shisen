@@ -92,6 +92,7 @@ import id.shisen.app.data.model.StreamSource;
 import id.shisen.app.data.model.SubtitleTrack;
 import id.shisen.app.data.service.AniSkipClient;
 import id.shisen.app.data.service.HttpClientProvider;
+import id.shisen.app.data.service.NetworkConfig;
 import id.shisen.app.data.service.StreamResolver;
 import id.shisen.app.data.subtitle.AiSubtitleService;
 import id.shisen.app.data.subtitle.AnimeToshoClient;
@@ -1527,11 +1528,21 @@ public class PlayerActivity extends AppCompatActivity {
         if (source.headers != null) {
             headers.putAll(source.headers);
         }
-        if (!headers.containsKey("Referer") || headers.get("Referer") == null || headers.get("Referer").isEmpty()) {
-            headers.put("Referer", "https://megaplay.buzz/");
+
+        String host = "";
+        try {
+            Uri u = Uri.parse(source.url);
+            host = u.getHost() != null ? u.getHost().toLowerCase(Locale.US) : "";
+        } catch (Exception ignored) {}
+
+        String referer = headers.get("Referer");
+        if (referer == null || referer.isEmpty()) {
+            referer = NetworkConfig.resolveAppropriateReferer(host, source.provider, source.url);
+            headers.put("Referer", referer);
         }
         if (!headers.containsKey("Origin") || headers.get("Origin") == null || headers.get("Origin").isEmpty()) {
-            headers.put("Origin", "https://megaplay.buzz");
+            String origin = referer.endsWith("/") ? referer.substring(0, referer.length() - 1) : referer;
+            headers.put("Origin", origin);
         }
 
         OkHttpClient okClient = HttpClientProvider.getClient();

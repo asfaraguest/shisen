@@ -103,19 +103,67 @@ public final class NetworkConfig {
         // pada domain edge CDN dengan TLD streaming atau subdomain cdn/stream/play/edge
         String p = path != null ? path.toLowerCase(java.util.Locale.US) : "";
         String f = fullUrl != null ? fullUrl.toLowerCase(java.util.Locale.US) : "";
-        boolean isMediaOrTrack = p.contains("/anime/") || p.contains("/ep/")
-                || p.contains("/tracks/") || p.contains("/subtitles/")
-                || p.endsWith(".m3u8") || p.endsWith(".ts") || p.endsWith(".m4s") || p.endsWith(".mp4")
-                || p.endsWith(".vtt") || p.endsWith(".srt")
-                || f.contains(".m3u8") || f.contains(".ts") || f.contains(".m4s") || f.contains(".vtt") || f.contains(".srt");
+        boolean isMediaOrTrack = isMediaUrl(p, f);
 
         if (isMediaOrTrack) {
             return h.endsWith(".world") || h.endsWith(".buzz") || h.endsWith(".top")
                     || h.endsWith(".xyz") || h.endsWith(".to") || h.endsWith(".cc")
-                    || h.endsWith(".site") || h.contains("cdn") || h.contains("stream")
+                    || h.endsWith(".site") || h.endsWith(".space") || h.endsWith(".cfd")
+                    || h.endsWith(".biz") || h.endsWith(".monster") || h.endsWith(".quest")
+                    || h.endsWith(".live") || h.endsWith(".stream") || h.endsWith(".cloud")
+                    || h.endsWith(".press") || h.endsWith(".lat") || h.endsWith(".fun")
+                    || h.endsWith(".lol") || h.endsWith(".tech") || h.endsWith(".link")
+                    || h.endsWith(".video") || h.endsWith(".vip") || h.endsWith(".tv")
+                    || h.contains("cdn") || h.contains("stream")
                     || h.contains("play") || h.contains("edge");
         }
 
         return false;
+    }
+
+    /**
+     * Memeriksa apakah path atau URL merupakan request file media streaming atau subtitle.
+     */
+    public static boolean isMediaUrl(String path, String fullUrl) {
+        String p = path != null ? path.toLowerCase(java.util.Locale.US) : "";
+        String f = fullUrl != null ? fullUrl.toLowerCase(java.util.Locale.US) : "";
+        return p.contains("/anime/") || p.contains("/ep/")
+                || p.contains("/tracks/") || p.contains("/subtitles/")
+                || p.endsWith(".m3u8") || p.endsWith(".ts") || p.endsWith(".m4s") || p.endsWith(".mp4")
+                || p.endsWith(".vtt") || p.endsWith(".srt")
+                || f.contains(".m3u8") || f.contains(".ts") || f.contains(".m4s")
+                || f.contains(".vtt") || f.contains(".srt");
+    }
+
+    /**
+     * Menentukan Referer yang tepat berdasarkan host URL, provider, dan endpoint tujuan
+     * untuk mencegah respon HTTP 403 Forbidden.
+     */
+    public static String resolveAppropriateReferer(String host, String provider, String fullUrl) {
+        String h = host != null ? host.toLowerCase(java.util.Locale.US) : "";
+        String prov = provider != null ? provider.toLowerCase(java.util.Locale.US) : "";
+
+        if (h.contains("otakudesu") || h.contains("putarin") || prov.contains("otaku")) {
+            return OTAKUDESU_BASE + "/";
+        }
+        if (h.contains("anichan") || prov.contains("anichan")) {
+            return ANICHAN_BASE + "/";
+        }
+        if (h.contains("dramahot") || h.contains("zokoanime") || prov.contains("zoko")) {
+            return ZOKOANIME_BASE + "/";
+        }
+        if (h.contains("animehot") || h.contains("anitv") || h.contains("hianimes.se") || prov.contains("hianimes")) {
+            return HIANIMES_SE_BASE + "/";
+        }
+        if (h.contains("animetosho") || prov.contains("animetosho")) {
+            return ANIMETOSHO_BASE + "/";
+        }
+        if (h.contains("opensubtitles") || prov.contains("opensubtitles")) {
+            return OPENSUBTITLES_BASE + "/";
+        }
+        if (h.contains("hianime.to") || h.contains("hianime.at") || prov.contains("hianime")) {
+            return "https://megaplay.buzz/";
+        }
+        return "https://megaplay.buzz/";
     }
 }

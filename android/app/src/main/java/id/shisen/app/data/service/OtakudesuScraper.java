@@ -91,9 +91,9 @@ public class OtakudesuScraper {
                 String searchUrl = BASE_URL + "/?s=" + URLEncoder.encode(cleanQ, "UTF-8") + "&post_type=anime";
                 Document doc = fetchDoc(searchUrl, BASE_URL + "/");
                 List<Anime> results = new ArrayList<>();
-                Elements items = doc.select(".chivsrc li, .venz ul li");
+                Elements items = doc.select(".chivsrc li, .venz ul li, [class*='search'] li, .page li, .film-list li");
                 for (Element el : items) {
-                    Element titleEl = el.selectFirst("h2 a, .jdlfl, .ot-k-j");
+                    Element titleEl = el.selectFirst("h2 a, .jdlfl, .ot-k-j, [class*='title'] a, a[href*='/anime/']");
                     if (titleEl == null) titleEl = el.selectFirst("a");
                     if (titleEl == null) continue;
                     String title = titleEl.text();
@@ -125,14 +125,15 @@ public class OtakudesuScraper {
                 String animeUrl = animeSlug.startsWith("http") ? animeSlug : (BASE_URL + "/anime/" + animeSlug.replaceAll("^/+|/+$", "") + "/");
                 Document doc = fetchDoc(animeUrl, BASE_URL + "/");
                 List<Episode> list = new ArrayList<>();
-                Elements epLinks = doc.select(".episodelst ul li a, .ot-ep");
+                Elements epLinks = doc.select(".episodelst ul li a, .ot-ep, [class*='episode'] a, [class*='ep-'] a, a[href*='/episode/']");
                 for (Element a : epLinks) {
                     String epText = a.text();
                     String epHref = a.attr("href");
-                    int epNum = parseEpisodeNumber(epText);
+                    int epNum = parseEpisodeNumber(epText, epHref);
                     if (epNum > 0) {
                         Episode ep = new Episode(epNum, epText, extractSlug(epHref));
                         ep.url = epHref;
+                        ep.provider = "otakudesu";
                         list.add(ep);
                     }
                 }
@@ -151,7 +152,7 @@ public class OtakudesuScraper {
                 Document doc = fetchDoc(epUrl, BASE_URL + "/");
 
                 // Check iframe
-                Element iframeEl = doc.selectFirst(".responsive-embed-stream iframe");
+                Element iframeEl = doc.selectFirst(".responsive-embed-stream iframe, .player-embed iframe, #embed_holder iframe, iframe[src*='putarin'], iframe[src*='stream'], iframe[src*='embed']");
                 if (iframeEl != null) {
                     String src = iframeEl.attr("src");
                     if (!src.isEmpty()) {
@@ -172,6 +173,7 @@ public class OtakudesuScraper {
                             String decoded = new String(Base64.decode(dataContent, Base64.DEFAULT), StandardCharsets.UTF_8);
                             if (decoded.contains("http")) {
                                 StreamSource source = new StreamSource(decoded, "720p", "Mirror", decoded.contains(".m3u8"));
+                                source.provider = "otakudesu";
                                 callback.onSuccess(source);
                                 return;
                             }
@@ -232,6 +234,7 @@ public class OtakudesuScraper {
 
                         if (!fileUrl.isEmpty()) {
                             StreamSource source = new StreamSource(fileUrl, "HD", "Putarin HLS", fileUrl.contains(".m3u8"));
+                            source.provider = "otakudesu";
                             source.headers.put("Referer", embedUrl);
                             source.headers.put("Origin", origin);
                             return source;
@@ -241,11 +244,12 @@ public class OtakudesuScraper {
             }
 
             // Direct file regex match in HTML
-            Pattern p = Pattern.compile("file:\\s*[\"']([^\"']+\\.m3u8[^\"']*)[\"']");
+            Pattern p = Pattern.compile("(?:file|source|src|video)\\s*:\\s*[\"']([^\"']+\\.(?:m3u8|mp4)[^\"']*)[\"']");
             Matcher m = p.matcher(html);
             if (m.find()) {
                 String hlsUrl = m.group(1);
-                StreamSource s = new StreamSource(hlsUrl, "HD", "HLS", true);
+                StreamSource s = new StreamSource(hlsUrl, "HD", "HLS", hlsUrl.contains(".m3u8"));
+                s.provider = "otakudesu";
                 s.headers.put("Referer", embedUrl);
                 return s;
             }
@@ -290,17 +294,37 @@ public class OtakudesuScraper {
         return lastSlash >= 0 ? url.substring(lastSlash + 1) : url;
     }
 
-    private static int parseEpisodeNumber(String text) {
+    public static int parseEpisodeNumber(String text) {
+        return parseEpisodeNumber(text, null);
+    }
+
+    public static int parseEpisodeNumber(String text, String href) {
         try {
-            Pattern p = Pattern.compile("(?i)(?:episode|eps|ep)\\s*#?\\s*(\\d+)");
-            Matcher m = p.matcher(text);
-            if (m.find()) {
-                return Integer.parseInt(m.group(1));
+            if (text != null && !text.trim().isEmpty()) {
+                String lower = text.toLowerCase(Locale.US);
+                if (lower.contains("batch") || lower.contains("lengkap")) {
+                    return 0;
+                }
+
+                Pattern p = Pattern.compile("(?i)(?:episode|eps|ep|ke)[\\s._-]*#?\\s*(\\d+)");
+                Matcher m = p.matcher(text);
+                if (m.find()) {
+                    return Integer.parseInt(m.group(1));
+                }
+
+                Pattern pStandalone = Pattern.compile("^#?\\s*(\\d+)\\s*$");
+                Matcher mStandalone = pStandalone.matcher(text.trim());
+                if (mStandalone.find()) {
+                    return Integer.parseInt(mStandalone.group(1));
+                }
             }
-            Pattern p2 = Pattern.compile("(\\d+)");
-            Matcher m2 = p2.matcher(text);
-            if (m2.find()) {
-                return Integer.parseInt(m2.group(1));
+
+            if (href != null && !href.trim().isEmpty()) {
+                Pattern pSlug = Pattern.compile("(?i)[-_/](?:episode|eps|ep|ke)[-_.#]*(\\d+)");
+                Matcher mSlug = pSlug.matcher(href);
+                if (mSlug.find()) {
+                    return Integer.parseInt(mSlug.group(1));
+                }
             }
         } catch (Exception ignored) {}
         return 0;

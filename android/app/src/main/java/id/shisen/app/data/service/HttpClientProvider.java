@@ -152,7 +152,7 @@ public class HttpClientProvider {
                         if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
                             rb.header("Referer", "https://anichan.to/");
                         }
-                    } else if (host.contains("otakudesu")) {
+                    } else if (host.contains("otakudesu") || host.contains("putarin")) {
                         if (original.header("Referer") == null || original.header("Referer").isEmpty()) {
                             rb.header("Referer", "https://ww2.otakudesu.biz/");
                         }
