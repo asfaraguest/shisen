@@ -158,7 +158,7 @@ public class FeedCache {
         if (mem != null) return mem;
 
         try {
-            String jsonStr = MenatapDatabase.getInstance(context).getCacheStale("detail_eps_" + slug);
+            String jsonStr = MenatapDatabase.getInstance(context).getCacheStale("detail_eps_v2_" + slug);
             if (jsonStr != null && !jsonStr.isEmpty()) {
                 List<Episode> list = deserializeEpisodes(jsonStr);
                 if (list != null && !list.isEmpty()) {
@@ -178,7 +178,7 @@ public class FeedCache {
             try {
                 String jsonStr = serializeEpisodes(episodes);
                 long ttlMs = 30L * 24L * 3600L * 1000L; // 30 hari di SQLite
-                MenatapDatabase.getInstance(context).setCache("detail_eps_" + slug, jsonStr, ttlMs);
+                MenatapDatabase.getInstance(context).setCache("detail_eps_v2_" + slug, jsonStr, ttlMs);
             } catch (Throwable ignored) {}
         });
     }

@@ -289,57 +289,7 @@ public class StreamResolver {
     }
 
     private static String pickBestSlug(List<Anime> candidates, Anime anime, String target, String alt) {
-        if (candidates == null || candidates.isEmpty()) return null;
-        boolean hasAlt = alt != null && !alt.isEmpty();
-        boolean hasTarget = target != null && !target.isEmpty();
-
-        // Pass 1: Cocokkan terhadap model dan judul (Inggris / Romaji / Slug)
-        for (Anime c : candidates) {
-            if (c == null) continue;
-            if (TitleMatcher.isMatchAny(anime, c)) {
-                return c.slug;
-            }
-            if (c.title != null && ((hasTarget && TitleMatcher.isTitleMatch(target, c.title)) || (hasAlt && TitleMatcher.isTitleMatch(alt, c.title)))) {
-                return c.slug;
-            }
-            if (c.romajiTitle != null && !c.romajiTitle.isEmpty()) {
-                if ((hasTarget && TitleMatcher.isTitleMatch(target, c.romajiTitle)) || (hasAlt && TitleMatcher.isTitleMatch(alt, c.romajiTitle))) {
-                    return c.slug;
-                }
-            }
-            if (c.slug != null && !c.slug.isEmpty()) {
-                if ((hasTarget && TitleMatcher.isTitleMatch(target, c.slug)) || (hasAlt && TitleMatcher.isTitleMatch(alt, c.slug))) {
-                    return c.slug;
-                }
-            }
-        }
-
-        // Pass 2: Season-consistent match jika musim sama dan judul relevan
-        if (hasTarget || hasAlt) {
-            int sTarget = hasTarget ? TitleMatcher.extractSeasonNumber(target) : TitleMatcher.extractSeasonNumber(alt);
-            for (Anime c : candidates) {
-                if (c == null || c.title == null) continue;
-                int sCandidate = TitleMatcher.extractSeasonNumber(c.title);
-                if (sTarget == sCandidate) {
-                    if ((hasTarget && TitleMatcher.isTitleMatch(target, c.title)) || (hasAlt && TitleMatcher.isTitleMatch(alt, c.title))) {
-                        return c.slug;
-                    }
-                }
-            }
-        }
-
-        // Pass 3: Fallback aman kandidat pertama dari pencarian spesifik (jika musim identik & tanpa kontradiksi)
-        Anime first = candidates.get(0);
-        if (first != null && first.slug != null && !first.slug.isEmpty() && first.title != null) {
-            String q = hasTarget ? target : alt;
-            int sQ = TitleMatcher.extractSeasonNumber(q);
-            int sFirst = TitleMatcher.extractSeasonNumber(first.title);
-            if (sQ == sFirst && !TitleMatcher.hasContradictoryKeywords(q, first.title)) {
-                return first.slug;
-            }
-        }
-
-        return null;
+        return TitleMatcher.pickBestSlug(candidates, anime, target, alt);
     }
 
     private static void fetchHiAnimeEpAndResolve(String slug, Anime anime, Episode episode, Callback callback) {
@@ -436,13 +386,7 @@ public class StreamResolver {
                     return;
                 }
 
-                String otakuSlug = null;
-                for (Anime r : results) {
-                    if (TitleMatcher.isTitleMatch(searchQ, r.title) || TitleMatcher.isMatchAny(anime, r)) {
-                        otakuSlug = r.slug;
-                        break;
-                    }
-                }
+                String otakuSlug = TitleMatcher.pickBestSlug(results, anime, anime.title, anime.romajiTitle);
                 if (otakuSlug == null) {
                     callback.onError(new IOException("Judul tidak cocok di Otakudesu"));
                     return;

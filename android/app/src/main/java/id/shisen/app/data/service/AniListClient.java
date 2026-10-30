@@ -750,6 +750,7 @@ public class AniListClient {
             "          id idMal title { romaji english native } coverImage { extraLarge large medium } " +
             "          bannerImage averageScore status format episodes season seasonYear " +
             "          description(asHtml: false) genres studios(isMain: true) { nodes { name } } " +
+            "          nextAiringEpisode { episode airingAt timeUntilAiring } " +
             "        } " +
             "      } " +
             "    } " +
@@ -832,6 +833,7 @@ public class AniListClient {
                         .append("id idMal title { romaji english native } coverImage { extraLarge large medium } ")
                         .append("bannerImage averageScore status format episodes season seasonYear ")
                         .append("description(asHtml: false) genres studios(isMain: true) { nodes { name } } ")
+                        .append("nextAiringEpisode { episode airingAt timeUntilAiring } ")
                         .append("} } } } ");
             }
             queryBuilder.append("}");

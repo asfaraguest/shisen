@@ -150,26 +150,23 @@ public class HianimesSeClient {
                     return;
                 }
 
-                // Cari anime paling cocok
+                // Cari anime paling cocok dengan isolasi season ketat via TitleMatcher
                 JSONObject bestMatch = null;
-                String queryLower = query.toLowerCase(Locale.US);
+                int bestScore = 0;
 
                 for (int i = 0; i < results.length(); i++) {
                     JSONObject item = results.optJSONObject(i);
                     if (item == null) continue;
-                    String title = item.optString("title", "").toLowerCase(Locale.US);
-                    String english = item.optString("English", "").toLowerCase(Locale.US);
-                    String altTitle = item.optString("alternateTitle", "").toLowerCase(Locale.US);
-
-                    if (title.contains(queryLower) || english.contains(queryLower) || altTitle.contains(queryLower)
-                            || queryLower.contains(title)) {
+                    Anime cand = new Anime();
+                    cand.title = item.optString("English", item.optString("title", ""));
+                    if (cand.title.isEmpty()) cand.title = item.optString("title", "");
+                    cand.romajiTitle = item.optString("title", item.optString("alternateTitle", ""));
+                    int score = id.shisen.app.util.TitleMatcher.matchScore(anime, cand, anime.title, anime.romajiTitle);
+                    if (score > bestScore) {
+                        bestScore = score;
                         bestMatch = item;
-                        break;
+                        if (score == 100) break;
                     }
-                }
-
-                if (bestMatch == null) {
-                    bestMatch = results.optJSONObject(0);
                 }
 
                 if (bestMatch == null) {

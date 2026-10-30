@@ -599,51 +599,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private String pickBestSlug(List<Anime> list, String target, String alt) {
-        if (list == null || list.isEmpty()) return null;
-        boolean hasAlt = alt != null && !alt.isEmpty();
-        boolean hasTarget = target != null && !target.isEmpty();
-
-        for (Anime a : list) {
-            if (a == null) continue;
-            if (TitleMatcher.isMatchAny(anime, a)) {
-                return a.slug;
-            }
-            if (a.title != null && ((hasTarget && TitleMatcher.isTitleMatch(target, a.title)) || (hasAlt && TitleMatcher.isTitleMatch(alt, a.title)))) {
-                return a.slug;
-            }
-            if (a.romajiTitle != null && !a.romajiTitle.isEmpty()) {
-                if ((hasTarget && TitleMatcher.isTitleMatch(target, a.romajiTitle)) || (hasAlt && TitleMatcher.isTitleMatch(alt, a.romajiTitle))) {
-                    return a.slug;
-                }
-            }
-            if (a.slug != null && !a.slug.isEmpty()) {
-                if ((hasTarget && TitleMatcher.isTitleMatch(target, a.slug)) || (hasAlt && TitleMatcher.isTitleMatch(alt, a.slug))) {
-                    return a.slug;
-                }
-            }
-        }
-        // Season-consistent match
-        if (hasTarget || hasAlt) {
-            int sTarget = hasTarget ? TitleMatcher.extractSeasonNumber(target) : TitleMatcher.extractSeasonNumber(alt);
-            for (Anime a : list) {
-                if (a == null || a.title == null) continue;
-                int sCandidate = TitleMatcher.extractSeasonNumber(a.title);
-                if (sTarget == sCandidate && ((hasTarget && TitleMatcher.isTitleMatch(target, a.title)) || (hasAlt && TitleMatcher.isTitleMatch(alt, a.title)))) {
-                    return a.slug;
-                }
-            }
-        }
-        // Fallback: candidate 0 if season matches and no contradictory terms
-        Anime first = list.get(0);
-        if (first != null && first.slug != null && !first.slug.isEmpty() && first.title != null) {
-            String q = hasTarget ? target : alt;
-            int sQ = TitleMatcher.extractSeasonNumber(q);
-            int sFirst = TitleMatcher.extractSeasonNumber(first.title);
-            if (sQ == sFirst && !TitleMatcher.hasContradictoryKeywords(q, first.title)) {
-                return first.slug;
-            }
-        }
-        return null;
+        return TitleMatcher.pickBestSlug(list, anime, target, alt);
     }
 
     // TIER 2 Fallback: AniChan
@@ -684,13 +640,7 @@ public class DetailActivity extends AppCompatActivity {
                     if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
                 });
                 if (results != null && !results.isEmpty()) {
-                    String matchedSlug = null;
-                    for (Anime r : results) {
-                        if (TitleMatcher.isTitleMatch(searchTitle, r.title) || TitleMatcher.isMatchAny(anime, r)) {
-                            matchedSlug = r.slug;
-                            break;
-                        }
-                    }
+                    String matchedSlug = TitleMatcher.pickBestSlug(results, anime, anime.title, anime.romajiTitle);
                     if (matchedSlug == null) return;
                     OtakudesuScraper.getEpisodes(matchedSlug, new OtakudesuScraper.Callback<List<Episode>>() {
                         @Override

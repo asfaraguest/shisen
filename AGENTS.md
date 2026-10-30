@@ -3,6 +3,7 @@
 > [!IMPORTANT]
 > **BACA SEBELUM BERUBAH:** Setiap agen/AI WAJIB membaca `AGENTS.md` ini dahulu, lalu `PROJECT_MAP.md`
 > untuk peta topologi + indeks simbol, sebelum merencanakan atau mengubah kode.
+> **WAJIB PONYTAIL MODE (ANTI-CEREWET):** Setiap model AI WAJIB mengaktifkan dan mematuhi skill `ponytail` (`.agents/skills/ponytail/SKILL.md`) di setiap sesi tanpa perlu diminta. Bekerja cepat, tepat sasaran, gunakan perubahan kode terkecil yang menuntaskan akar masalah, dilarang bertele-tele/narasi panjang di tengah riset, dan berikan balasan super ringkas yang langsung dipahami dalam sekali baca.
 
 ---
 

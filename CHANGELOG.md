@@ -2,6 +2,16 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [0.1.0-beta.26] - 2026-10-30
+
+### Diperbaiki
+- **Isolasi Musim & Split-Cour Ketat pada Pencocokan Episode/Stream (`TitleMatcher.java`, `DetailActivity.java`, `StreamResolver.java`, `HianimesSeClient.java`, `AniListClient.java`, `FeedCache.java`)**:
+  - Memperbaiki bug anime Season 2 / Cour 2 (seperti *Chitose Is in the Ramune Bottle 2nd Cour*, *The Angel Next Door Spoils Me Rotten2*, *Mushoku Tensei Season 2 Part 2*, *Blue Lock Season 2*, *Mashle Season 2*, dll.) yang salah memuat daftar episode Season 1.
+  - Melengkapi `extractSeasonNumber()` & `extractPartNumber()` untuk mengenali format `2nd Cour` / `Cour 2`, `2nd Stage`, `Second..Eighth Season`, angka Romawi Unicode (`Ⅱ`–`Ⅷ`), istilah sekuel Romaji (`Ni/San no Shou`, `Sono Ni`), serta angka di akhir judul.
+  - Mengunci kompatibilitas season & part di level entitas `Anime` (gabungan judul Inggris & Romaji) serta menggunakan pemilihan kandidat berbasis skor tertinggi (`TitleMatcher.pickBestSlug`) di HiAnime, HiAnimes.se, dan Otakudesu.
+  - Menambahkan `nextAiringEpisode` pada `RELATIONS_QUERY` AniList agar sekuel *ongoing* yang dibuka dari *Related Seasons* menerapkan batas episode tayang secara akurat.
+  - Memperbarui prefix cache daftar episode (`detail_eps_v2_`) untuk membersihkan cache episode musim yang salah.
+
 ## [0.1.0-beta.5] - 2026-10-26
 
 ### Diperbaiki
