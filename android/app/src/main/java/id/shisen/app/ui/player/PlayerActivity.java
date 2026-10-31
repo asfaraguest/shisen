@@ -2513,7 +2513,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (currentKey != null && !currentKey.isEmpty()) {
             etKey.setText(currentKey);
             AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(currentKey);
-            tvBadge.setText("Provider Aktif: " + p.displayName);
+            tvBadge.setText(getString(R.string.settings_ai_badge_active, p.displayName));
         }
 
         String savedModel = AiSubtitleService.getModel(this);
@@ -2534,7 +2534,7 @@ public class PlayerActivity extends AppCompatActivity {
             btnResetPrompt.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
-                Toast.makeText(this, "Prompt direset ke default fansub anime", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.settings_toast_prompt_reset, Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -2546,9 +2546,9 @@ public class PlayerActivity extends AppCompatActivity {
                 String input = s != null ? s.toString().trim() : "";
                 AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(input);
                 if (!input.isEmpty()) {
-                    tvBadge.setText("Terdeteksi: " + p.displayName);
+                    tvBadge.setText(getString(R.string.settings_ai_badge_detected, p.displayName));
                 } else {
-                    tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama / OpenRouter");
+                    tvBadge.setText(R.string.settings_ai_badge_none);
                 }
                 SettingsDialog.populateModelChips(layoutChips, PlayerActivity.this, p, etModel);
                 if (etModel != null && etModel.getText().toString().trim().isEmpty()) {
@@ -2587,7 +2587,7 @@ public class PlayerActivity extends AppCompatActivity {
             AiSubtitleService.Provider p = !newKey.isEmpty()
                     ? AiSubtitleService.Provider.detect(newKey)
                     : AiSubtitleService.getActiveProvider(this);
-            Toast.makeText(this, "Pengaturan " + p.displayName + " & Model Selector berhasil disimpan", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.settings_toast_ai_saved, p.displayName), Toast.LENGTH_SHORT).show();
             dialog.dismiss();
         });
 
@@ -2603,8 +2603,8 @@ public class PlayerActivity extends AppCompatActivity {
             if (etCustomPrompt != null) {
                 etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
             }
-            tvBadge.setText("Provider: Gemini / Groq / OpenAI / Ollama / OpenRouter");
-            Toast.makeText(this, "Kunci API dan pengaturan telah dihapus", Toast.LENGTH_SHORT).show();
+            tvBadge.setText(R.string.settings_ai_badge_none);
+            Toast.makeText(this, R.string.settings_toast_ai_cleared, Toast.LENGTH_SHORT).show();
         });
 
         btnClose.setOnClickListener(v -> {
@@ -3062,6 +3062,12 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         backgroundStopHandler.removeCallbacks(backgroundStopRunnable);
+        backgroundStopHandler.removeCallbacksAndMessages(null);
+        autoHideHandler.removeCallbacksAndMessages(null);
+        gestureHandler.removeCallbacksAndMessages(null);
+        subtitleHandler.removeCallbacksAndMessages(null);
+        mainHandler.removeCallbacksAndMessages(null);
+        progressHandler.removeCallbacksAndMessages(null);
         if (pipReceiverRegistered && pipReceiver != null) {
             try {
                 unregisterReceiver(pipReceiver);

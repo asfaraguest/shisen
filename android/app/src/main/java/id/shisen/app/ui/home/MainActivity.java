@@ -1068,10 +1068,19 @@ public class MainActivity extends AppCompatActivity {
             else parts.add(filterCatalogSeason.toUpperCase(Locale.US));
         }
         if (!filterCatalogMonth.isEmpty()) {
-            String[] mNames = {"", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DES"};
+            int[] monthRes = {
+                    0,
+                    R.string.month_1, R.string.month_2, R.string.month_3, R.string.month_4,
+                    R.string.month_5, R.string.month_6, R.string.month_7, R.string.month_8,
+                    R.string.month_9, R.string.month_10, R.string.month_11, R.string.month_12
+            };
             try {
                 int mi = Integer.parseInt(filterCatalogMonth);
-                if (mi >= 1 && mi <= 12) parts.add(mNames[mi]);
+                if (mi >= 1 && mi <= 12) {
+                    String raw = getString(monthRes[mi]);
+                    int parenIdx = raw.indexOf(" (");
+                    parts.add((parenIdx > 0 ? raw.substring(0, parenIdx) : raw).toUpperCase(Locale.US));
+                }
             } catch (Exception ignored) {}
         }
         if (!filterCatalogType.isEmpty()) parts.add(filterCatalogType.toUpperCase(Locale.US));

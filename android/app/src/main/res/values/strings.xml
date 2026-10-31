@@ -139,7 +139,7 @@
     <string name="settings_check_update">🔄 Cek Pembaruan</string>
     <string name="settings_clear_cache">🗑️ Bersihkan Cache Aplikasi</string>
     <string name="settings_cache_cleared">Cache aplikasi berhasil dibersihkan</string>
-    <string name="settings_app_version">Shisen v0.1.0-beta.2</string>
+    <string name="settings_app_version">Shisen (視線)</string>
     <string name="settings_close">Tutup</string>
 
     <!-- Settings Dialog: Kartu Tema -->
