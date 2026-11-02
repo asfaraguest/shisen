@@ -3,7 +3,12 @@
 > [!IMPORTANT]
 > **BACA SEBELUM BERUBAH:** Setiap agen/AI WAJIB membaca `AGENTS.md` ini dahulu, lalu `PROJECT_MAP.md`
 > untuk peta topologi + indeks simbol, sebelum merencanakan atau mengubah kode.
-> **WAJIB PONYTAIL MODE (ANTI-CEREWET):** Setiap model AI WAJIB mengaktifkan dan mematuhi skill `ponytail` (`.agents/skills/ponytail/SKILL.md`) di setiap sesi tanpa perlu diminta. Bekerja cepat, tepat sasaran, gunakan perubahan kode terkecil yang menuntaskan akar masalah, dilarang bertele-tele/narasi panjang di tengah riset, dan berikan balasan super ringkas yang langsung dipahami dalam sekali baca.
+> **WAJIB PONYTAIL MAX (ULTRA - ANTI-CEREWET & ANTI-BLOAT):**
+> Setiap model AI WAJIB mengaktifkan dan mematuhi skill `ponytail` level **ultra/max** (`.agents/skills/ponytail/SKILL.md`) secara permanen di setiap sesi tanpa perlu diminta.
+> 1. **Perubahan Kode Terkecil (*Smallest Working Diff*):** Selesaikan masalah dengan kode seminimal mungkin. Tolak abstraksi, wrapper, opsi ekstra, atau fitur "untuk nanti" (YAGNI). Deletion lebih baik daripada addition.
+> 2. **Manfaatkan Apa yang Ada:** Gunakan helper, komponen, atau dependency yang sudah terpasang. Dilarang menambah dependency baru jika bisa diselesaikan native platform/kode yang ada.
+> 3. **Tepat Sasaran & Tuntas:** Cari akar masalah via grep/indeks simbol, perbaiki sekali di kode bersama (shared code), dan perbarui semua caller yang terdampak. Jangan potong error handling kritis atau validasi batasan.
+> 4. **Respon Super Ringkas:** Dilarang narasi panjang bertele-tele saat riset atau eksekusi. Berikan jawaban padat, to-the-point, dan dapat dipahami dalam sekali baca. Jika ada batas/hal yang diskip, tuliskan dalam 1-2 baris di akhir.
 
 ---
 
