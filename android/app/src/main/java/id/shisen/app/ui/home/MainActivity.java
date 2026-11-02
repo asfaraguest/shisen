@@ -1623,6 +1623,7 @@ public class MainActivity extends AppCompatActivity {
                 case RIWAYAT:
                     new Thread(() -> {
                         List<Anime> history = MenatapDatabase.getInstance(this).getHistoryList();
+                        FeedCache.syncAiringList(history);
                         int total = history.size();
                         int pageSize = 40;
                         int fromIndex = (currentPage - 1) * pageSize;
@@ -1649,6 +1650,7 @@ public class MainActivity extends AppCompatActivity {
                 case FAVORIT:
                     new Thread(() -> {
                         List<Anime> bookmarks = MenatapDatabase.getInstance(this).getBookmarkList();
+                        FeedCache.syncAiringList(bookmarks);
                         int total = bookmarks.size();
                         int pageSize = 40;
                         int fromIndex = (currentPage - 1) * pageSize;
@@ -1725,6 +1727,11 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 displayResults(new ArrayList<>(), getString(R.string.empty_safemode_title), getString(R.string.empty_safemode_desc), 40, false, false);
             }
+            return;
+        }
+
+        if (hasStaleData && !swipeRefresh.isRefreshing() && !FeedCache.isRevalidationNeeded(cached)) {
+            swipeRefresh.setRefreshing(false);
             return;
         }
 

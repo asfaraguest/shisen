@@ -10,10 +10,13 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1274,6 +1277,27 @@ public class AniListClient {
     }
 
     private static void executePostCustom(String jsonBody, Callback<JSONObject> callback) {
+        final long now = System.currentTimeMillis();
+        CachedGraphResponse cached = postCache.get(jsonBody);
+
+        // 1. Jika cache masih segar (< 5 menit) atau sedang masa cooldown rate-limit (429), gunakan cache instan
+        if (cached != null && ((now - cached.timestampMs) < POST_CACHE_TTL_MS || now < cooldownUntilMs)) {
+            callback.onSuccess(cached.data);
+            return;
+        }
+
+        // 2. Deduplikasi request POST identik yang sedang berjalan bersamaan (In-Flight Coalescing)
+        synchronized (inFlightPost) {
+            List<Callback<JSONObject>> listeners = inFlightPost.get(jsonBody);
+            if (listeners != null) {
+                listeners.add(callback);
+                return;
+            }
+            List<Callback<JSONObject>> newList = new ArrayList<>();
+            newList.add(callback);
+            inFlightPost.put(jsonBody, newList);
+        }
+
         OkHttpClient client = HttpClientProvider.getClient();
         RequestBody reqBody = RequestBody.create(jsonBody, JSON_MEDIA);
         Request request = new Request.Builder()
@@ -1285,28 +1309,131 @@ public class AniListClient {
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
             public void onFailure(okhttp3.Call call, IOException e) {
-                callback.onError(e);
+                if (cached != null) {
+                    dispatchPostSuccess(jsonBody, cached.data);
+                } else {
+                    dispatchPostError(jsonBody, e);
+                }
             }
 
             @Override
             public void onResponse(okhttp3.Call call, Response response) throws IOException {
                 try (response) {
+                    handleRateLimitHeaders(
+                            response.code(),
+                            response.header("Retry-After"),
+                            response.header("X-RateLimit-Remaining"),
+                            System.currentTimeMillis()
+                    );
                     if (!response.isSuccessful()) {
-                        callback.onError(new IOException("AniList HTTP error: " + response.code()));
+                        if (cached != null) {
+                            dispatchPostSuccess(jsonBody, cached.data);
+                        } else {
+                            dispatchPostError(jsonBody, new IOException("AniList HTTP error: " + response.code()));
+                        }
                         return;
                     }
                     if (response.body() == null) {
-                        callback.onError(new IOException("Empty response body from AniList"));
+                        if (cached != null) {
+                            dispatchPostSuccess(jsonBody, cached.data);
+                        } else {
+                            dispatchPostError(jsonBody, new IOException("Empty response body from AniList"));
+                        }
                         return;
                     }
                     String respStr = response.body().string();
                     JSONObject root = new JSONObject(respStr);
-                    callback.onSuccess(root);
+                    postCache.put(jsonBody, new CachedGraphResponse(root, System.currentTimeMillis()));
+                    dispatchPostSuccess(jsonBody, root);
                 } catch (Exception e) {
-                    callback.onError(e);
+                    if (cached != null) {
+                        dispatchPostSuccess(jsonBody, cached.data);
+                    } else {
+                        dispatchPostError(jsonBody, e);
+                    }
                 }
             }
         });
+    }
+
+    private static final long POST_CACHE_TTL_MS = 5L * 60_000L;
+    private static volatile long cooldownUntilMs = 0L;
+    private static final Map<String, List<Callback<JSONObject>>> inFlightPost = new ConcurrentHashMap<>();
+    private static final Map<String, CachedGraphResponse> postCache = Collections.synchronizedMap(
+            new LinkedHashMap<String, CachedGraphResponse>(64, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, CachedGraphResponse> eldest) {
+                    return size() > 60;
+                }
+            }
+    );
+
+    private static class CachedGraphResponse {
+        final JSONObject data;
+        final long timestampMs;
+        CachedGraphResponse(JSONObject data, long timestampMs) {
+            this.data = data;
+            this.timestampMs = timestampMs;
+        }
+    }
+
+    public static void handleRateLimitHeaders(int code, String retryAfterHeader, String remainingHeader, long nowMs) {
+        long retrySec = 0L;
+        if (retryAfterHeader != null && !retryAfterHeader.trim().isEmpty()) {
+            try {
+                retrySec = Long.parseLong(retryAfterHeader.trim());
+            } catch (NumberFormatException ignored) {}
+        }
+        int remaining = Integer.MAX_VALUE;
+        if (remainingHeader != null && !remainingHeader.trim().isEmpty()) {
+            try {
+                remaining = Integer.parseInt(remainingHeader.trim());
+            } catch (NumberFormatException ignored) {}
+        }
+
+        if (code == 429) {
+            long waitSec = retrySec > 0 ? retrySec : 60L;
+            cooldownUntilMs = Math.max(cooldownUntilMs, nowMs + (waitSec * 1000L));
+        } else if (remaining <= 2) {
+            long waitSec = retrySec > 0 ? retrySec : 15L;
+            cooldownUntilMs = Math.max(cooldownUntilMs, nowMs + (waitSec * 1000L));
+        }
+    }
+
+    public static long getCooldownUntilMs() {
+        return cooldownUntilMs;
+    }
+
+    public static void resetCooldownForTest() {
+        cooldownUntilMs = 0L;
+    }
+
+    private static void dispatchPostSuccess(String jsonBody, JSONObject result) {
+        List<Callback<JSONObject>> callbacks;
+        synchronized (inFlightPost) {
+            callbacks = inFlightPost.remove(jsonBody);
+        }
+        if (callbacks != null) {
+            for (Callback<JSONObject> cb : callbacks) {
+                try {
+                    cb.onSuccess(result);
+                } catch (Throwable ignored) {}
+            }
+        }
+    }
+
+    private static void dispatchPostError(String jsonBody, Throwable error) {
+        List<Callback<JSONObject>> callbacks;
+        synchronized (inFlightPost) {
+            callbacks = inFlightPost.remove(jsonBody);
+        }
+        if (callbacks != null) {
+            for (Callback<JSONObject> cb : callbacks) {
+                try {
+                    cb.onError(error);
+                } catch (Throwable ignored) {}
+            }
+        }
     }
 
     public static String optSafeString(JSONObject obj, String key, String fallback) {

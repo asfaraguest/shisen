@@ -103,6 +103,47 @@ public class FeedCache {
     }
 
     /**
+     * Sinkronisasi progres episode tayang berbasis jam sistem jika waktu rilis telah lewat.
+     */
+    public static void syncAiringProgress(Anime a) {
+        syncAiringProgress(a, System.currentTimeMillis() / 1000L);
+    }
+
+    public static void syncAiringProgress(Anime a, long nowSec) {
+        if (a == null) return;
+        boolean isOngoing = "RELEASING".equalsIgnoreCase(a.status) || "AIRING".equalsIgnoreCase(a.status);
+        if (!isOngoing || a.airingAt <= 0 || nowSec < a.airingAt) return;
+
+        int elapsedEps = 1 + (int) ((nowSec - a.airingAt) / 604800L);
+        int baseAired = a.nextAiringEpisode > 0 ? (a.nextAiringEpisode - 1) : a.airedEpisodesCount;
+        a.airedEpisodesCount = baseAired + elapsedEps;
+
+        if (a.episodesCount > 0 && a.airedEpisodesCount >= a.episodesCount) {
+            a.airedEpisodesCount = a.episodesCount;
+            a.status = "FINISHED";
+            a.nextAiringEpisode = 0;
+            a.airingAt = 0;
+            a.nextAiringTime = 0;
+            a.epsCounter = a.episodesCount + " Ep (Tamat)";
+        } else {
+            a.nextAiringEpisode = a.airedEpisodesCount + 1;
+            a.airingAt += elapsedEps * 604800L;
+            a.nextAiringTime = (int) Math.max(0L, a.airingAt - nowSec);
+            a.epsCounter = a.episodesCount > 0
+                    ? ("Ep " + a.airedEpisodesCount + "/" + a.episodesCount)
+                    : ("Ep " + a.airedEpisodesCount);
+        }
+    }
+
+    public static void syncAiringList(List<Anime> list) {
+        if (list == null) return;
+        long nowSec = System.currentTimeMillis() / 1000L;
+        for (Anime a : list) {
+            syncAiringProgress(a, nowSec);
+        }
+    }
+
+    /**
      * Ambil data feed secara instan (RAM LruCache terlebih dahulu, lalu SQLite).
      * Tidak memblokir UI thread lebih dari beberapa milidetik.
      */
@@ -112,6 +153,7 @@ public class FeedCache {
         // 1. Cek Memory LruCache (0ms)
         CachePayload mem = memoryCache.get(key);
         if (mem != null) {
+            syncAiringList(mem.items);
             return mem;
         }
 
@@ -121,6 +163,7 @@ public class FeedCache {
             if (jsonStr != null && !jsonStr.isEmpty()) {
                 CachePayload payload = deserializePayload(jsonStr);
                 if (payload != null && !payload.items.isEmpty()) {
+                    syncAiringList(payload.items);
                     memoryCache.put(key, payload);
                     return payload;
                 }
@@ -201,6 +244,15 @@ public class FeedCache {
             }
         } catch (Throwable ignored) {}
         return null;
+    }
+
+    public boolean isRelationsFresh(int anilistId) {
+        if (anilistId <= 0) return false;
+        try {
+            return MenatapDatabase.getInstance(context).getCache("detail_rel_" + anilistId) != null;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     public void saveRelations(int anilistId, AniListClient.RelationsResult rel) {

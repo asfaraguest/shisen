@@ -119,6 +119,7 @@ public class DetailActivity extends AppCompatActivity {
             return;
         }
 
+        FeedCache.syncAiringProgress(anime);
         DetailDataHolder.setAnime(anime);
 
         initViews();
@@ -435,6 +436,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void loadAccurateEpisodes() {
+        FeedCache.syncAiringProgress(anime);
         boolean isReleasing = "RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status);
         boolean isNotYetReleased = "NOT_YET_RELEASED".equalsIgnoreCase(anime.status) ||
                 (isReleasing && anime.nextAiringEpisode == 1 && anime.airedEpisodesCount == 0);
@@ -445,37 +447,6 @@ public class DetailActivity extends AppCompatActivity {
             if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
             refreshWatchedStates();
             return;
-        }
-
-        List<Episode> cachedEps = FeedCache.getInstance(this).getCachedEpisodes(anime.slug);
-        boolean hasCachedEps = (cachedEps != null && !cachedEps.isEmpty());
-        boolean hasValidEpIds = false;
-        if (hasCachedEps) {
-            for (Episode ep : cachedEps) {
-                if (ep != null && ep.epId != null && !ep.epId.isEmpty()) {
-                    hasValidEpIds = true;
-                    break;
-                }
-            }
-            episodeList.clear();
-            episodeList.addAll(cachedEps);
-            anime.airedEpisodesCount = cachedEps.size();
-            refreshWatchedStates();
-            episodeAdapter.setData(episodeList);
-            if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
-
-            // Jika anime tamat (FINISHED) dan memiliki provider epId valid -> skip scraping 100%!
-            if ("FINISHED".equalsIgnoreCase(anime.status) && hasValidEpIds) {
-                triggerAutoPlayIfPending();
-                return;
-            }
-
-            // Jika anime on-going dan belum jam rilis episode berikutnya serta memiliki provider epId valid -> skip!
-            long nowSec = System.currentTimeMillis() / 1000L;
-            if (anime.airingAt > 0 && nowSec < anime.airingAt && hasValidEpIds) {
-                triggerAutoPlayIfPending();
-                return;
-            }
         }
 
         // Safe airing count (anti-overflow on on-going anime)
@@ -497,6 +468,37 @@ public class DetailActivity extends AppCompatActivity {
                 safeAiredCount = anime.airedEpisodesCount;
             } else {
                 safeAiredCount = 12;
+            }
+        }
+
+        List<Episode> cachedEps = FeedCache.getInstance(this).getCachedEpisodes(anime.slug);
+        boolean hasCachedEps = (cachedEps != null && !cachedEps.isEmpty());
+        boolean hasValidEpIds = false;
+        if (hasCachedEps) {
+            for (Episode ep : cachedEps) {
+                if (ep != null && ep.epId != null && !ep.epId.isEmpty()) {
+                    hasValidEpIds = true;
+                    break;
+                }
+            }
+            episodeList.clear();
+            episodeList.addAll(cachedEps);
+            anime.airedEpisodesCount = Math.max(anime.airedEpisodesCount, cachedEps.size());
+            refreshWatchedStates();
+            episodeAdapter.setData(episodeList);
+            if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
+
+            // Jika anime tamat (FINISHED) dan memiliki provider epId valid -> skip scraping 100%!
+            if ("FINISHED".equalsIgnoreCase(anime.status) && hasValidEpIds && cachedEps.size() >= safeAiredCount) {
+                triggerAutoPlayIfPending();
+                return;
+            }
+
+            // Jika anime on-going, cache sudah lengkap hingga episode terakhir tayang, dan belum jam rilis berikutnya -> skip!
+            long nowSec = System.currentTimeMillis() / 1000L;
+            if (cachedEps.size() >= safeAiredCount && anime.airingAt > 0 && nowSec < anime.airingAt && hasValidEpIds) {
+                triggerAutoPlayIfPending();
+                return;
             }
         }
 
@@ -736,6 +738,9 @@ public class DetailActivity extends AppCompatActivity {
                 if (layoutRelatedMovies != null) {
                     layoutRelatedMovies.setVisibility(View.VISIBLE);
                 }
+            }
+            if (FeedCache.getInstance(this).isRelationsFresh(anime.id)) {
+                return;
             }
         }
 
