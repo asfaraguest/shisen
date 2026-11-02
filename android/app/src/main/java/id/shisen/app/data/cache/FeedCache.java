@@ -22,6 +22,7 @@ public class FeedCache {
     private static volatile FeedCache instance;
     private final Context context;
     private final LruCache<String, CachePayload> memoryCache = new LruCache<>(50);
+    private final LruCache<String, Anime> animeMetaMemory = new LruCache<>(200);
     private final LruCache<String, List<Episode>> episodesMemoryCache = new LruCache<>(50);
     private final LruCache<Integer, AniListClient.RelationsResult> relationsMemoryCache = new LruCache<>(50);
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
@@ -164,6 +165,11 @@ public class FeedCache {
                 CachePayload payload = deserializePayload(jsonStr);
                 if (payload != null && !payload.items.isEmpty()) {
                     syncAiringList(payload.items);
+                    for (Anime a : payload.items) {
+                        if (a != null && !a.isHeader && a.slug != null && !a.slug.isEmpty()) {
+                            animeMetaMemory.put(a.slug, a);
+                        }
+                    }
                     memoryCache.put(key, payload);
                     return payload;
                 }
@@ -179,6 +185,12 @@ public class FeedCache {
     public void put(String key, List<Anime> items, boolean hasNextPage, int total) {
         if (key == null || key.isEmpty() || items == null) return;
 
+        for (Anime a : items) {
+            if (a != null && !a.isHeader && a.slug != null && !a.slug.isEmpty()) {
+                animeMetaMemory.put(a.slug, a);
+            }
+        }
+
         long now = System.currentTimeMillis();
         long nextAiringEpoch = calculateNextRevalidateEpoch(items);
         CachePayload payload = new CachePayload(new ArrayList<>(items), hasNextPage, total, now, nextAiringEpoch);
@@ -191,6 +203,59 @@ public class FeedCache {
                 MenatapDatabase.getInstance(context).setCache(key, jsonStr, ttlMs);
             } catch (Throwable ignored) {}
         });
+    }
+
+    public void saveAnimeMeta(Anime a) {
+        if (a == null || a.isHeader || a.slug == null || a.slug.isEmpty()) return;
+        // Hanya simpan ke SQLite jika memiliki metadata bermakna (status atau sinopsis)
+        animeMetaMemory.put(a.slug, a);
+        if ((a.status == null || a.status.isEmpty()) && (a.synopsis == null || a.synopsis.isEmpty())) {
+            return;
+        }
+        ioExecutor.execute(() -> {
+            try {
+                String jsonStr = a.toJson().toString();
+                long ttlMs = 30L * 24L * 3600L * 1000L;
+                MenatapDatabase.getInstance(context).setCache("anime_meta_" + a.slug, jsonStr, ttlMs);
+            } catch (Throwable ignored) {}
+        });
+    }
+
+    public void hydrateAnime(Anime target) {
+        if (target == null || target.slug == null || target.slug.isEmpty()) return;
+        Anime meta = animeMetaMemory.get(target.slug);
+        if (meta == null) {
+            try {
+                String jsonStr = MenatapDatabase.getInstance(context).getCacheStale("anime_meta_" + target.slug);
+                if (jsonStr != null && !jsonStr.isEmpty()) {
+                    meta = Anime.fromJson(new JSONObject(jsonStr));
+                    if (meta != null && meta.slug != null && !meta.slug.isEmpty()) {
+                        animeMetaMemory.put(target.slug, meta);
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (meta != null) {
+            syncAiringProgress(meta);
+            boolean keepHistoryBadge = target.lastPlayedEp > 0;
+            String savedHistoryBadge = target.epsCounter;
+            target.mergeMetadataFrom(meta);
+            syncAiringProgress(target);
+            if (keepHistoryBadge) {
+                target.epsCounter = savedHistoryBadge;
+            } else if (meta.epsCounter != null && !meta.epsCounter.isEmpty()) {
+                target.epsCounter = meta.epsCounter;
+            }
+        } else {
+            syncAiringProgress(target);
+        }
+    }
+
+    public void hydrateAnimeList(List<Anime> list) {
+        if (list == null) return;
+        for (Anime a : list) {
+            hydrateAnime(a);
+        }
     }
 
     // --- DETAIL EPISODE CACHE ---
@@ -281,6 +346,7 @@ public class FeedCache {
 
     public void clearAllCache() {
         memoryCache.evictAll();
+        animeMetaMemory.evictAll();
         episodesMemoryCache.evictAll();
         relationsMemoryCache.evictAll();
 

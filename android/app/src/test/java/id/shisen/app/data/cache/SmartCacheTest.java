@@ -66,4 +66,40 @@ public class SmartCacheTest {
         assertEquals(now + 45_000L, AniListClient.getCooldownUntilMs());
         assertTrue(AniListClient.getCooldownUntilMs() > now);
     }
+
+    @Test
+    public void animeSerializationAndMerge_preservesMalIdNativeTitleAndAiringState() {
+        Anime src = new Anime();
+        src.id = 154587;
+        src.idMal = 52991;
+        src.slug = "frieren";
+        src.title = "Frieren: Beyond Journey's End";
+        src.romajiTitle = "Sousou no Frieren";
+        src.nativeTitle = "葬送のフリーレン";
+        src.status = "RELEASING";
+        src.episodesCount = 28;
+        src.airedEpisodesCount = 5;
+        src.nextAiringEpisode = 6;
+        src.airingAt = 3000_000L;
+        src.synopsis = "Elf mage journey.";
+
+        Anime deserialized = Anime.fromJson(src.toJson());
+        assertEquals(52991, deserialized.idMal);
+        assertEquals(154587, deserialized.anilistId);
+        assertEquals("葬送のフリーレン", deserialized.nativeTitle);
+
+        // Simulasikan item Favorit dari SQLite yang hanya punya kolom dasar
+        Anime bookmarkItem = new Anime();
+        bookmarkItem.slug = "frieren";
+        bookmarkItem.title = "Frieren: Beyond Journey's End";
+        bookmarkItem.epsCounter = "Ep 5/28";
+
+        bookmarkItem.mergeMetadataFrom(deserialized);
+        FeedCache.syncAiringProgress(bookmarkItem, 3000_500L);
+        assertEquals(52991, bookmarkItem.idMal);
+        assertEquals("葬送のフリーレン", bookmarkItem.nativeTitle);
+        assertEquals("Elf mage journey.", bookmarkItem.synopsis);
+        assertEquals(6, bookmarkItem.airedEpisodesCount);
+        assertEquals("Ep 6/28", bookmarkItem.epsCounter);
+    }
 }

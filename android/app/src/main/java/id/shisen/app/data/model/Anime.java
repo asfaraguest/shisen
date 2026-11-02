@@ -84,9 +84,12 @@ public class Anime implements Serializable {
         Anime a = new Anime();
         if (json == null) return a;
         a.id = json.optInt("id", 0);
+        a.idMal = json.optInt("id_mal", 0);
+        a.anilistId = json.optInt("anilist_id", a.id);
         a.slug = safeStr(json, "slug", safeStr(json, "id", ""));
         a.title = safeStr(json, "title", "Anime");
         a.romajiTitle = safeStr(json, "romaji_title", a.title);
+        a.nativeTitle = safeStr(json, "native_title", "");
         a.poster = safeStr(json, "poster", "");
         a.banner = safeStr(json, "banner", "");
         a.score = json.optDouble("score", 0.0);
@@ -127,9 +130,12 @@ public class Anime implements Serializable {
         JSONObject json = new JSONObject();
         try {
             json.put("id", id);
+            json.put("id_mal", idMal);
+            json.put("anilist_id", anilistId > 0 ? anilistId : id);
             json.put("slug", slug);
             json.put("title", title);
             json.put("romaji_title", romajiTitle);
+            json.put("native_title", nativeTitle);
             json.put("poster", poster);
             json.put("banner", banner);
             json.put("score", score);
@@ -160,6 +166,40 @@ public class Anime implements Serializable {
             json.put("genres", gArr);
         } catch (Exception ignored) {}
         return json;
+    }
+
+    /**
+     * Melengkapi field metadata yang kosong dari objek sumber (misal untuk item Favorit/Riwayat).
+     */
+    public void mergeMetadataFrom(Anime src) {
+        if (src == null || src == this) return;
+        if (this.id <= 0 && src.id > 0) this.id = src.id;
+        if (this.anilistId <= 0 && src.anilistId > 0) this.anilistId = src.anilistId;
+        if (this.idMal <= 0 && src.idMal > 0) this.idMal = src.idMal;
+        if ((this.romajiTitle == null || this.romajiTitle.isEmpty()) && src.romajiTitle != null) this.romajiTitle = src.romajiTitle;
+        if ((this.nativeTitle == null || this.nativeTitle.isEmpty()) && src.nativeTitle != null) this.nativeTitle = src.nativeTitle;
+        if ((this.poster == null || this.poster.isEmpty()) && src.poster != null) this.poster = src.poster;
+        if ((this.banner == null || this.banner.isEmpty()) && src.banner != null) this.banner = src.banner;
+        if (this.score <= 0.0 && src.score > 0.0) this.score = src.score;
+        if ((this.status == null || this.status.isEmpty()) && src.status != null) this.status = src.status;
+        if ((this.format == null || this.format.isEmpty()) && src.format != null) this.format = src.format;
+        if (this.episodesCount <= 0 && src.episodesCount > 0) this.episodesCount = src.episodesCount;
+        if (src.airedEpisodesCount > this.airedEpisodesCount) this.airedEpisodesCount = src.airedEpisodesCount;
+        if (this.nextAiringEpisode <= 0 && src.nextAiringEpisode > 0) this.nextAiringEpisode = src.nextAiringEpisode;
+        if (this.airingAt <= 0L && src.airingAt > 0L) {
+            this.airingAt = src.airingAt;
+            this.nextAiringTime = src.nextAiringTime;
+        }
+        if ((this.epsCounter == null || this.epsCounter.isEmpty() || "-".equals(this.epsCounter)) && src.epsCounter != null && !src.epsCounter.isEmpty()) {
+            this.epsCounter = src.epsCounter;
+        }
+        if ((this.season == null || this.season.isEmpty()) && src.season != null) this.season = src.season;
+        if (this.year <= 0 && src.year > 0) this.year = src.year;
+        if ((this.synopsis == null || this.synopsis.isEmpty()) && src.synopsis != null) this.synopsis = src.synopsis;
+        if ((this.studio == null || this.studio.isEmpty()) && src.studio != null) this.studio = src.studio;
+        if ((this.genres == null || this.genres.isEmpty()) && src.genres != null && !src.genres.isEmpty()) {
+            this.genres = new ArrayList<>(src.genres);
+        }
     }
 
     /**

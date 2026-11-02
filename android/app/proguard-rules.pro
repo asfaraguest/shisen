@@ -5,8 +5,10 @@
 # General Optimization Configuration
 -keepattributes SourceFile,LineNumberTable,Signature,*Annotation*,InnerClasses,EnclosingMethod
 
-# Menatap Application Packages
+# Menatap / Shisen Application Packages
+-keep class id.shisen.app.ShisenApplication { *; }
 -keep class id.shisen.app.MenatapApplication { *; }
+-keep class id.shisen.app.data.cache.** { *; }
 -keep class id.shisen.app.data.model.** { *; }
 -keep class id.shisen.app.data.db.** { *; }
 -keep class id.shisen.app.data.service.** { *; }

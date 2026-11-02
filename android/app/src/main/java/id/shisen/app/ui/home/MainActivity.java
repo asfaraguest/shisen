@@ -1623,7 +1623,7 @@ public class MainActivity extends AppCompatActivity {
                 case RIWAYAT:
                     new Thread(() -> {
                         List<Anime> history = MenatapDatabase.getInstance(this).getHistoryList();
-                        FeedCache.syncAiringList(history);
+                        FeedCache.getInstance(this).hydrateAnimeList(history);
                         int total = history.size();
                         int pageSize = 40;
                         int fromIndex = (currentPage - 1) * pageSize;
@@ -1650,7 +1650,7 @@ public class MainActivity extends AppCompatActivity {
                 case FAVORIT:
                     new Thread(() -> {
                         List<Anime> bookmarks = MenatapDatabase.getInstance(this).getBookmarkList();
-                        FeedCache.syncAiringList(bookmarks);
+                        FeedCache.getInstance(this).hydrateAnimeList(bookmarks);
                         int total = bookmarks.size();
                         int pageSize = 40;
                         int fromIndex = (currentPage - 1) * pageSize;

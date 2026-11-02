@@ -119,7 +119,9 @@ public class DetailActivity extends AppCompatActivity {
             return;
         }
 
+        FeedCache.getInstance(this).hydrateAnime(anime);
         FeedCache.syncAiringProgress(anime);
+        FeedCache.getInstance(this).saveAnimeMeta(anime);
         DetailDataHolder.setAnime(anime);
 
         initViews();
@@ -189,6 +191,7 @@ public class DetailActivity extends AppCompatActivity {
 
         btnBookmark.setOnClickListener(v -> {
             HapticHelper.performClick(v);
+            FeedCache.getInstance(this).saveAnimeMeta(anime);
             MenatapDatabase.getInstance(this).toggleBookmark(anime);
             updateBookmarkUI();
         });
