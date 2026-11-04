@@ -76,8 +76,13 @@ Lihat `PROJECT_MAP.md`.
 
 ## 6. Catatan Rilis & Keamanan
 
-- Build: `cd android && ./gradlew assembleRelease` → `android/app/build/outputs/apk/release/shisen-release-*.apk`.
-- Upload ke GitHub release HANYA `shisen-release-*.apk` (gunakan `--clobber`).
+- Build: `cd android && ./gradlew assembleRelease` → menghasilkan:
+  - Mobile: `android/app/build/outputs/apk/mobile/release/shisen-release-*.apk`
+  - Android TV: `android/app/build/outputs/apk/tv/release/shisen-tv-release-*.apk`
+- Upload ke GitHub release HANYA `shisen-release-*.apk` dan `shisen-tv-release-*.apk` (gunakan `--clobber`).
 - Jangan upload `menatap-release-*.apk`.
+- **Aturan Permanen Tombol Download di `README.md` (WAJIB):**
+  1. **Shisen Mobile (Stable):** Tombol download Mobile WAJIB selalu mengarah langsung ke file APK rilis stabil terakhir yang dipublikasikan (`https://github.com/asfaraguest/shisen/releases/download/vX.Y.Z/shisen-release-vX.Y.Z.apk`), jangan pernah ditimpa dengan versi beta.
+  2. **Shisen TV (Beta):** Selama varian TV belum rilis stabil, tombol download Shisen TV WAJIB selalu mengarah langsung ke file APK beta terbaru (`https://github.com/asfaraguest/shisen/releases/download/vX.Y.Z-beta.N/shisen-tv-release-vX.Y.Z-beta.N.apk`).
 - Aplikasi guest-only; tanpa telemetri; tidak membypass langganan berbayar.
 - backend_reference adalah rujukan Tatap — jangan dimodifikasi.

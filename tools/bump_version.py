@@ -35,18 +35,38 @@ def compute_version_code(v_str):
     return (major * 1000000) + (minor * 10000) + (patch * 100) + beta_val
 
 def update_version(new_version):
-    parse_semver(new_version)
+    _, _, _, beta = parse_semver(new_version)
     with open(VERSION_FILE, "w", encoding="utf-8") as f:
         f.write(new_version + "\n")
 
-    # Update README
+    # Update README sesuai aturan permanen:
+    # - Jika rilis stabil (beta is None): perbarui link APK Mobile Stable
+    # - Jika rilis beta (beta is not None): perbarui HANYA link APK Shisen TV Beta (jangan sentuh link Mobile Stable)
     if os.path.exists(README_FILE):
         with open(README_FILE, "r", encoding="utf-8") as f:
             readme_content = f.read()
-        readme_content = re.sub(r"(?:shisen|menatap)-release-v[0-9a-zA-Z\.\-]+\.apk", f"shisen-release-v{new_version}.apk", readme_content)
-        readme_content = re.sub(r"shisen-tv-release-v[0-9a-zA-Z\.\-]+\.apk", f"shisen-tv-release-v{new_version}.apk", readme_content)
-        readme_content = re.sub(r"releases/tag/v[0-9a-zA-Z\.\-]+", f"releases/tag/v{new_version}", readme_content)
-        readme_content = re.sub(r"releases/download/v[0-9a-zA-Z\.\-]+", f"releases/download/v{new_version}", readme_content)
+        if beta is None:
+            readme_content = re.sub(
+                r"releases/download/v[0-9a-zA-Z\.\-]+/shisen-release-v[0-9a-zA-Z\.\-]+\.apk",
+                f"releases/download/v{new_version}/shisen-release-v{new_version}.apk",
+                readme_content,
+            )
+            readme_content = re.sub(
+                r"`shisen-release-v[0-9a-zA-Z\.\-]+\.apk`",
+                f"`shisen-release-v{new_version}.apk`",
+                readme_content,
+            )
+        else:
+            readme_content = re.sub(
+                r"releases/download/v[0-9a-zA-Z\.\-]+/shisen-tv-release-v[0-9a-zA-Z\.\-]+\.apk",
+                f"releases/download/v{new_version}/shisen-tv-release-v{new_version}.apk",
+                readme_content,
+            )
+            readme_content = re.sub(
+                r"shisen-tv-release-v[0-9a-zA-Z\.\-]+\.apk",
+                f"shisen-tv-release-v{new_version}.apk",
+                readme_content,
+            )
         with open(README_FILE, "w", encoding="utf-8") as f:
             f.write(readme_content)
 
