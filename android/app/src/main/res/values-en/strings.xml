@@ -20,14 +20,15 @@
     <string name="badge_search">SEARCH</string>
 
     <!-- Floating Navigation Menu -->
+    <string name="menu_search">Search</string>
     <string name="menu_this_season">This Season</string>
-    <string name="menu_airing">Airing Now</string>
-    <string name="menu_schedule">Release Schedule</string>
-    <string name="menu_history">Watch History</string>
-    <string name="menu_favorites">My Favorites</string>
-    <string name="menu_catalog">Anime Catalog</string>
-    <string name="menu_genre">Anime Genres</string>
-    <string name="menu_settings">Unified Settings</string>
+    <string name="menu_airing">Airing</string>
+    <string name="menu_schedule">Schedule</string>
+    <string name="menu_history">History</string>
+    <string name="menu_favorites">Favorites</string>
+    <string name="menu_catalog">Catalog</string>
+    <string name="menu_genre">Genres</string>
+    <string name="menu_settings">Settings</string>
 
     <!-- Search -->
     <string name="search_capsule">Search anime...</string>

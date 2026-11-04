@@ -20,14 +20,15 @@
     <string name="badge_search">PENCARIAN</string>
 
     <!-- Floating Navigation Menu -->
+    <string name="menu_search">Cari</string>
     <string name="menu_this_season">Musim Ini</string>
     <string name="menu_airing">Sedang Tayang</string>
-    <string name="menu_schedule">Jadwal Rilis</string>
-    <string name="menu_history">Riwayat Tontonan</string>
-    <string name="menu_favorites">Favorit Saya</string>
-    <string name="menu_catalog">Katalog Anime</string>
-    <string name="menu_genre">Kategori Genre</string>
-    <string name="menu_settings">Pengaturan Terpadu</string>
+    <string name="menu_schedule">Jadwal</string>
+    <string name="menu_history">Riwayat</string>
+    <string name="menu_favorites">Favorit</string>
+    <string name="menu_catalog">Katalog</string>
+    <string name="menu_genre">Genre</string>
+    <string name="menu_settings">Pengaturan</string>
 
     <!-- Search -->
     <string name="search_capsule">Cari anime...</string>
@@ -50,8 +51,8 @@
     <string name="day_today_suffix"> (Hari Ini)</string>
 
     <!-- Pagination -->
-    <string name="page_prev">‹ Sebelumnya</string>
-    <string name="page_next">Berikutnya ›</string>
+    <string name="page_prev">‹ Prev</string>
+    <string name="page_next">Next ›</string>
     <string name="page_indicator_format">Hal %d</string>
 
     <!-- Hero Card Actions & Badges -->

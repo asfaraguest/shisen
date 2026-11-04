@@ -20,13 +20,14 @@
     <string name="badge_search">検索結果</string>
 
     <!-- Floating Navigation Menu -->
-    <string name="menu_this_season">今期アニメ</string>
-    <string name="menu_airing">放送中アニメ</string>
-    <string name="menu_schedule">週間番組表</string>
-    <string name="menu_history">視聴履歴</string>
+    <string name="menu_search">検索</string>
+    <string name="menu_this_season">今期</string>
+    <string name="menu_airing">放送中</string>
+    <string name="menu_schedule">番組表</string>
+    <string name="menu_history">履歴</string>
     <string name="menu_favorites">お気に入り</string>
-    <string name="menu_catalog">作品目録</string>
-    <string name="menu_genre">ジャンル一覧</string>
+    <string name="menu_catalog">目録</string>
+    <string name="menu_genre">ジャンル</string>
     <string name="menu_settings">設定</string>
 
     <!-- Search -->

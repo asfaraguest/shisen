@@ -20,14 +20,15 @@
     <string name="badge_search">RESULTADOS DE BÚSQUEDA</string>
 
     <!-- Floating Navigation Menu -->
-    <string name="menu_this_season">Este Season</string>
+    <string name="menu_search">Buscar</string>
+    <string name="menu_this_season">Temporada</string>
     <string name="menu_airing">En Emisión</string>
-    <string name="menu_schedule">Calendario de Estrenos</string>
-    <string name="menu_history">Historial de Visualización</string>
-    <string name="menu_favorites">Mis Favoritos</string>
-    <string name="menu_catalog">Catálogo de Anime</string>
-    <string name="menu_genre">Géneros de Anime</string>
-    <string name="menu_settings">Ajustes Unificados</string>
+    <string name="menu_schedule">Horarios</string>
+    <string name="menu_history">Historial</string>
+    <string name="menu_favorites">Favoritos</string>
+    <string name="menu_catalog">Catálogo</string>
+    <string name="menu_genre">Géneros</string>
+    <string name="menu_settings">Ajustes</string>
 
     <!-- Search -->
     <string name="search_capsule">Buscar anime...</string>
@@ -50,9 +51,9 @@
     <string name="day_today_suffix"> (Hoy)</string>
 
     <!-- Pagination -->
-    <string name="page_prev">‹ Anterior</string>
-    <string name="page_next">Siguiente ›</string>
-    <string name="page_indicator_format">Página %d</string>
+    <string name="page_prev">‹ Ant</string>
+    <string name="page_next">Sig ›</string>
+    <string name="page_indicator_format">Pág %d</string>
 
     <!-- Hero Card Actions & Badges -->
     <string name="hero_trending_today">TENDENCIAS HOY</string>

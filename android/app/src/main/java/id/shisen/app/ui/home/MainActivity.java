@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -136,6 +137,26 @@ public class MainActivity extends AppCompatActivity {
 
     private MainTab currentTab = MainTab.MUSIM;
     private boolean isSearchExpanded = false;
+    private boolean focusGridOnNextLoad = false;
+
+    public boolean isSearchExpanded() {
+        return isSearchExpanded;
+    }
+
+    public boolean focusFirstGridItem() {
+        if (rvGrid == null || rvGrid.getVisibility() != View.VISIBLE || rvGrid.getChildCount() <= 0) {
+            return false;
+        }
+        View first = rvGrid.getChildAt(0);
+        if (first != null) {
+            View heroBtn = first.findViewById(R.id.btn_hero_play);
+            if (heroBtn != null && heroBtn.getVisibility() == View.VISIBLE && heroBtn.isFocusable()) {
+                return heroBtn.requestFocus();
+            }
+            return first.requestFocus();
+        }
+        return false;
+    }
 
     // Contextual Sub-Filter States
     private int selectedDayOfWeek = Calendar.MONDAY;
@@ -604,16 +625,71 @@ public class MainActivity extends AppCompatActivity {
         });
 
         etSearch.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
                 String q = etSearch.getText().toString().trim();
                 if (!q.isEmpty()) {
                     hideKeyboard();
+                    focusGridOnNextLoad = true;
                     performSearch(q);
                 }
                 return true;
             }
             return false;
         });
+
+        etSearch.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                    hideKeyboard();
+                    if (focusFirstGridItem()) {
+                        return true;
+                    }
+                    if (rvGrid != null) {
+                        return rvGrid.requestFocus();
+                    }
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    int sel = etSearch.getSelectionStart();
+                    if (sel <= 0 && btnCollapseSearch != null) {
+                        btnCollapseSearch.requestFocus();
+                        return true;
+                    }
+                } else if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER) {
+                    String q = etSearch.getText().toString().trim();
+                    if (!q.isEmpty()) {
+                        hideKeyboard();
+                        focusGridOnNextLoad = true;
+                        performSearch(q);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+
+        if (btnCollapseSearch != null) {
+            btnCollapseSearch.setOnKeyListener((v, keyCode, event) -> {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                        etSearch.requestFocus();
+                        return true;
+                    } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                        hideKeyboard();
+                        if (focusFirstGridItem()) {
+                            return true;
+                        }
+                    } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                        if (deviceNav != null) {
+                            View railSearch = findViewById(R.id.btn_search_trigger);
+                            if (railSearch != null) {
+                                railSearch.requestFocus();
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            });
+        }
 
         // 3. Contextual Action Button (Riwayat: Hapus Semua, Katalog: Reset Filter, Genre: Pilih Genre)
         btnClearHistoryAll.setOnClickListener(v -> {
@@ -660,14 +736,18 @@ public class MainActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
+                if (isSearchExpanded) {
+                    collapseFluidSearch();
+                    if (deviceNav != null) {
+                        deviceNav.handleBackPressed();
+                    }
+                    return;
+                }
                 if (deviceNav != null && deviceNav.handleBackPressed()) {
                     return;
-                } else if (isSearchExpanded) {
-                    collapseFluidSearch();
-                } else {
-                    setEnabled(false);
-                    getOnBackPressedDispatcher().onBackPressed();
                 }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
             }
         });
     }
@@ -735,7 +815,7 @@ public class MainActivity extends AppCompatActivity {
         mainHandler.postDelayed(this::showKeyboard, 100);
     }
 
-    private void collapseFluidSearch() {
+    public void collapseFluidSearch() {
         if (!isSearchExpanded) return;
         isSearchExpanded = false;
         hideKeyboard();
@@ -1323,14 +1403,20 @@ public class MainActivity extends AppCompatActivity {
         isPaginationFolded = folded;
 
         Transition transition = new AutoTransition()
-                .setDuration(180)
-                .setInterpolator(new DecelerateInterpolator());
+                .setDuration(200)
+                .setInterpolator(new DecelerateInterpolator(1.6f));
         TransitionManager.beginDelayedTransition(layoutPagination, transition);
 
         if (folded) {
             if (btnPrevPage != null) btnPrevPage.setVisibility(View.GONE);
             if (btnNextPage != null) btnNextPage.setVisibility(View.GONE);
-            layoutPagination.animate().alpha(0.75f).setDuration(180).start();
+            layoutPagination.animate()
+                    .alpha(0.72f)
+                    .scaleX(0.96f)
+                    .scaleY(0.96f)
+                    .setDuration(200)
+                    .setInterpolator(new DecelerateInterpolator())
+                    .start();
         } else {
             if (btnPrevPage != null) {
                 btnPrevPage.setVisibility(View.VISIBLE);
@@ -1341,7 +1427,13 @@ public class MainActivity extends AppCompatActivity {
             if (btnNextPage != null) {
                 btnNextPage.setVisibility(View.VISIBLE);
             }
-            layoutPagination.animate().alpha(1.0f).setDuration(180).start();
+            layoutPagination.animate()
+                    .alpha(1.0f)
+                    .scaleX(1.0f)
+                    .scaleY(1.0f)
+                    .setDuration(220)
+                    .setInterpolator(new DecelerateInterpolator())
+                    .start();
         }
     }
 
@@ -1702,6 +1794,10 @@ public class MainActivity extends AppCompatActivity {
                 if (!hasStaleData) {
                     rvGrid.scrollToPosition(0);
                 }
+                if (focusGridOnNextLoad) {
+                    focusGridOnNextLoad = false;
+                    rvGrid.postDelayed(this::focusFirstGridItem, 150);
+                }
                 if (currentTab != MainTab.JADWAL) {
                     updatePaginationUI(list.size(), pageSize, hasNextPage);
                 } else {
@@ -1709,6 +1805,47 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            int keyCode = event.getKeyCode();
+            View focus = getCurrentFocus();
+
+            if (isSearchExpanded) {
+                // Dari search box atau collapse button, D-Pad Down langsung beralih ke konten anime
+                if ((focus == etSearch || focus == btnCollapseSearch) && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                    hideKeyboard();
+                    if (focusFirstGridItem()) {
+                        return true;
+                    }
+                    if (rvGrid != null) {
+                        return rvGrid.requestFocus();
+                    }
+                }
+                // Dari item baris paling atas di anime grid, D-Pad Up kembali ke search box
+                if (focus != null && rvGrid != null && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                    View parentCard = focus;
+                    while (parentCard != null && parentCard.getParent() != rvGrid) {
+                        if (parentCard.getParent() instanceof View) {
+                            parentCard = (View) parentCard.getParent();
+                        } else {
+                            break;
+                        }
+                    }
+                    if (parentCard != null) {
+                        int pos = rvGrid.getChildAdapterPosition(parentCard);
+                        if (pos >= 0 && pos < calculateGridSpan()) {
+                            if (etSearch != null && etSearch.requestFocus()) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event);
     }
 
     /* package */ void openSettingsDialog(boolean focusTheme) {

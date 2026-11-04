@@ -57,12 +57,12 @@
         <LinearLayout
             android:id="@+id/btn_search_trigger"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="42dp"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_tv_nav_focused"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="13dp"
+            android:paddingHorizontal="14dp"
             android:clickable="true"
             android:focusable="true">
 
@@ -77,11 +77,12 @@
                 android:id="@+id/tv_menu_search"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="@string/search_capsule"
+                android:layout_marginStart="14dp"
+                android:text="@string/menu_search"
                 android:textColor="@color/text_frost_bright"
-                android:textSize="12sp"
+                android:textSize="13sp"
                 android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.01"
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:visibility="gone" />
@@ -104,12 +105,12 @@
                 <LinearLayout
                     android:id="@+id/menu_item_musim"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="42dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="13dp"
+                    android:paddingHorizontal="14dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -123,11 +124,12 @@
                         android:id="@+id/tv_menu_musim"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:text="@string/menu_this_season"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
+                        android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.01"
                         android:singleLine="true"
                         android:ellipsize="end"
                         android:visibility="gone" />
@@ -137,12 +139,12 @@
                 <LinearLayout
                     android:id="@+id/menu_item_airing"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="42dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="13dp"
+                    android:paddingHorizontal="14dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -156,11 +158,12 @@
                         android:id="@+id/tv_menu_airing"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:text="@string/menu_airing"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
+                        android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.01"
                         android:singleLine="true"
                         android:ellipsize="end"
                         android:visibility="gone" />
@@ -170,12 +173,12 @@
                 <LinearLayout
                     android:id="@+id/menu_item_jadwal"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="42dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="13dp"
+                    android:paddingHorizontal="14dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -189,11 +192,12 @@
                         android:id="@+id/tv_menu_jadwal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:text="@string/menu_schedule"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
+                        android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.01"
                         android:singleLine="true"
                         android:ellipsize="end"
                         android:visibility="gone" />
@@ -203,12 +207,12 @@
                 <LinearLayout
                     android:id="@+id/menu_item_riwayat"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="42dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="13dp"
+                    android:paddingHorizontal="14dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -222,11 +226,12 @@
                         android:id="@+id/tv_menu_riwayat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:text="@string/menu_history"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
+                        android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.01"
                         android:singleLine="true"
                         android:ellipsize="end"
                         android:visibility="gone" />
@@ -236,12 +241,12 @@
                 <LinearLayout
                     android:id="@+id/menu_item_favorit"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="42dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="13dp"
+                    android:paddingHorizontal="14dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -255,11 +260,12 @@
                         android:id="@+id/tv_menu_favorit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:text="@string/menu_favorites"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
+                        android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.01"
                         android:singleLine="true"
                         android:ellipsize="end"
                         android:visibility="gone" />
@@ -269,12 +275,12 @@
                 <LinearLayout
                     android:id="@+id/menu_item_katalog"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="42dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="13dp"
+                    android:paddingHorizontal="14dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -288,11 +294,12 @@
                         android:id="@+id/tv_menu_katalog"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:text="@string/menu_catalog"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
+                        android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.01"
                         android:singleLine="true"
                         android:ellipsize="end"
                         android:visibility="gone" />
@@ -302,12 +309,12 @@
                 <LinearLayout
                     android:id="@+id/menu_item_genre"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="42dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="13dp"
+                    android:paddingHorizontal="14dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -321,11 +328,12 @@
                         android:id="@+id/tv_menu_genre"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:text="@string/menu_genre"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
+                        android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.01"
                         android:singleLine="true"
                         android:ellipsize="end"
                         android:visibility="gone" />
@@ -333,16 +341,26 @@
             </LinearLayout>
         </ScrollView>
 
+        <!-- Subtle Divider before Settings -->
+        <View
+            android:id="@+id/rail_divider_settings"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="6dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="#233252"
+            android:focusable="false" />
+
         <!-- 8. Pengaturan Terpadu (Settings) -->
         <LinearLayout
             android:id="@+id/menu_item_settings"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="6dp"
+            android:layout_height="42dp"
+            android:layout_marginTop="0dp"
             android:background="@drawable/bg_tv_nav_focused"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="13dp"
+            android:paddingHorizontal="14dp"
             android:clickable="true"
             android:focusable="true">
 
@@ -356,11 +374,12 @@
                 android:id="@+id/tv_menu_settings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="14dp"
                 android:text="@string/menu_settings"
                 android:textColor="@color/text_frost_bright"
-                android:textSize="12.5sp"
+                android:textSize="13sp"
                 android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.01"
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:visibility="gone" />
@@ -524,6 +543,8 @@
                     android:padding="8dp"
                     android:clickable="true"
                     android:focusable="true"
+                    android:nextFocusRight="@+id/et_search"
+                    android:nextFocusDown="@+id/rv_anime_grid"
                     android:contentDescription="Tutup Pencarian" />
 
                 <LinearLayout
@@ -555,7 +576,9 @@
                         android:fontFamily="sans-serif"
                         android:imeOptions="actionSearch"
                         android:inputType="text"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:nextFocusLeft="@+id/btn_collapse_search"
+                        android:nextFocusDown="@+id/rv_anime_grid" />
 
                     <ImageView
                         android:id="@+id/btn_clear_search"

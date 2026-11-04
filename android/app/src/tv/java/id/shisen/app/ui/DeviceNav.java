@@ -20,11 +20,12 @@ import id.shisen.app.util.TvFocusHelper;
 public final class DeviceNav {
 
     private static final int RAIL_COLLAPSED_DP = 64;
-    private static final int RAIL_EXPANDED_DP = 184;
+    private static final int RAIL_EXPANDED_DP = 180;
 
     private final MainActivity host;
     private View layoutTvSideRail;
     private View[] railLabels;
+    private View railDividerSettings;
     private boolean isRailExpanded = false;
     private ValueAnimator railWidthAnimator;
 
@@ -36,6 +37,7 @@ public final class DeviceNav {
         if (root == null || host == null) return;
 
         layoutTvSideRail = root.findViewById(R.id.layout_tv_side_rail);
+        railDividerSettings = root.findViewById(R.id.rail_divider_settings);
 
         railLabels = new View[]{
                 root.findViewById(R.id.tv_app_logo),
@@ -119,49 +121,80 @@ public final class DeviceNav {
         }
 
         if (expanded) {
-            setLabelsVisible(true);
-        } else {
-            setLabelsVisible(false);
+            setLabelsVisible(true, 0f);
         }
 
-        railWidthAnimator = ValueAnimator.ofInt(startWidth, targetWidth);
+        final int sWidth = startWidth;
+        final int tWidth = targetWidth;
+
+        railWidthAnimator = ValueAnimator.ofFloat(0f, 1f);
         railWidthAnimator.setDuration(160);
         railWidthAnimator.setInterpolator(new DecelerateInterpolator());
         railWidthAnimator.addUpdateListener(anim -> {
+            float frac = anim.getAnimatedFraction();
+            int curWidth = (int) (sWidth + (tWidth - sWidth) * frac);
             ViewGroup.LayoutParams lp = layoutTvSideRail.getLayoutParams();
             if (lp != null) {
-                lp.width = (int) anim.getAnimatedValue();
+                lp.width = curWidth;
                 layoutTvSideRail.setLayoutParams(lp);
+            }
+            setLabelsAlpha(expanded ? frac : (1f - frac));
+        });
+        railWidthAnimator.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                if (!expanded) {
+                    setLabelsVisible(false, 0f);
+                } else {
+                    setLabelsAlpha(1f);
+                }
             }
         });
         railWidthAnimator.start();
     }
 
-    private void setLabelsVisible(boolean visible) {
-        if (railLabels == null) return;
-        for (View label : railLabels) {
-            if (label != null) {
-                label.setVisibility(visible ? View.VISIBLE : View.GONE);
+    private void setLabelsVisible(boolean visible, float initialAlpha) {
+        if (railLabels != null) {
+            for (View label : railLabels) {
+                if (label != null) {
+                    label.setVisibility(visible ? View.VISIBLE : View.GONE);
+                    label.setAlpha(initialAlpha);
+                }
             }
+        }
+        if (railDividerSettings != null) {
+            railDividerSettings.setVisibility(visible ? View.VISIBLE : View.GONE);
+            railDividerSettings.setAlpha(initialAlpha);
+        }
+    }
+
+    private void setLabelsAlpha(float alpha) {
+        if (railLabels != null) {
+            for (View label : railLabels) {
+                if (label != null && label.getVisibility() == View.VISIBLE) {
+                    label.setAlpha(alpha);
+                }
+            }
+        }
+        if (railDividerSettings != null && railDividerSettings.getVisibility() == View.VISIBLE) {
+            railDividerSettings.setAlpha(alpha);
         }
     }
 
     private boolean focusMainContentArea() {
         if (host == null) return false;
 
-        // 1. Prioritaskan item pertama di RecyclerView katalog anime (Hero button atau kartu anime)
-        RecyclerView rvGrid = host.findViewById(R.id.rv_anime_grid);
-        if (rvGrid != null && rvGrid.getVisibility() == View.VISIBLE && rvGrid.getChildCount() > 0) {
-            View firstChild = rvGrid.getChildAt(0);
-            if (firstChild != null) {
-                View btnHeroPlay = firstChild.findViewById(R.id.btn_hero_play);
-                if (btnHeroPlay != null && btnHeroPlay.getVisibility() == View.VISIBLE) {
-                    return btnHeroPlay.requestFocus();
-                }
-                if (firstChild.requestFocus()) {
-                    return true;
-                }
+        // 0. Jika mode pencarian sedang aktif, prioritaskan search input
+        if (host.isSearchExpanded()) {
+            View et = host.findViewById(R.id.et_search);
+            if (et != null && et.isFocusable() && et.requestFocus()) {
+                return true;
             }
+        }
+
+        // 1. Prioritaskan item pertama di RecyclerView katalog anime (Hero button atau kartu anime)
+        if (host.focusFirstGridItem()) {
+            return true;
         }
 
         // 2. Fallback ke chip sub-filter jika sedang tampil
@@ -216,6 +249,16 @@ public final class DeviceNav {
 
     public boolean handleBackPressed() {
         if (host == null) return false;
+
+        // Jika pencarian sedang aktif, tutup pencarian dan kembalikan fokus ke sidebar
+        if (host.isSearchExpanded()) {
+            host.collapseFluidSearch();
+            View activeMenuItem = getActiveRailItem();
+            if (activeMenuItem != null) {
+                activeMenuItem.requestFocus();
+            }
+            return true;
+        }
 
         View currentFocus = host.getCurrentFocus();
         if (currentFocus != null && layoutTvSideRail != null) {
