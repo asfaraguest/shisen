@@ -7,10 +7,10 @@
     android:orientation="horizontal"
     android:background="@drawable/bg_anime_canvas_shinkai">
 
-    <!-- 1. LEFT-SIDE NAVIGATION RAIL (TV Leanback Menu) -->
+    <!-- 1. LEFT-SIDE NAVIGATION RAIL (TV Leanback Menu - Auto Expand/Collapse) -->
     <LinearLayout
         android:id="@+id/layout_tv_side_rail"
-        android:layout_width="200dp"
+        android:layout_width="64dp"
         android:layout_height="match_parent"
         android:background="@drawable/bg_tv_side_rail"
         android:orientation="vertical"
@@ -21,32 +21,35 @@
         <!-- Shisen Brand Header -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="32dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingHorizontal="8dp"
-            android:paddingBottom="14dp">
-
-            <TextView
-                android:id="@+id/tv_app_logo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="SHISEN"
-                android:textColor="@color/accent_glacial"
-                android:textSize="18sp"
-                android:fontFamily="sans-serif-black"
-                android:letterSpacing="0.08"
-                android:focusable="false" />
+            android:layout_marginBottom="10dp">
 
             <TextView
                 android:id="@+id/tv_app_logo_kanji"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
                 android:text="@string/app_logo_kanji"
                 android:textColor="@color/anime_iris_violet"
-                android:textSize="12sp"
-                android:fontFamily="sans-serif-bold"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-black"
+                android:singleLine="true"
+                android:focusable="false" />
+
+            <TextView
+                android:id="@+id/tv_app_logo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="SHISEN"
+                android:textColor="@color/accent_glacial"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-black"
+                android:letterSpacing="0.08"
+                android:singleLine="true"
+                android:visibility="gone"
                 android:focusable="false" />
         </LinearLayout>
 
@@ -59,10 +62,9 @@
             android:background="@drawable/bg_tv_nav_focused"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
+            android:paddingHorizontal="13dp"
             android:clickable="true"
-            android:focusable="true"
-            android:nextFocusRight="@+id/rv_anime_grid">
+            android:focusable="true">
 
             <ImageView
                 android:layout_width="18dp"
@@ -72,13 +74,17 @@
                 android:contentDescription="Cari" />
 
             <TextView
+                android:id="@+id/tv_menu_search"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="12dp"
                 android:text="@string/search_capsule"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12sp"
-                android:fontFamily="sans-serif-medium" />
+                android:fontFamily="sans-serif-medium"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- TV Menu Items Scrollable (To accommodate all screen sizes) -->
@@ -103,10 +109,9 @@
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="13dp"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:nextFocusRight="@+id/rv_anime_grid">
+                    android:focusable="true">
 
                     <ImageView
                         android:layout_width="18dp"
@@ -118,11 +123,14 @@
                         android:id="@+id/tv_menu_musim"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="12dp"
                         android:text="@string/menu_this_season"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium" />
+                        android:fontFamily="sans-serif-medium"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 2. Sedang Tayang (Airing) -->
@@ -134,10 +142,9 @@
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="13dp"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:nextFocusRight="@+id/rv_anime_grid">
+                    android:focusable="true">
 
                     <ImageView
                         android:layout_width="18dp"
@@ -149,11 +156,14 @@
                         android:id="@+id/tv_menu_airing"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="12dp"
                         android:text="@string/menu_airing"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium" />
+                        android:fontFamily="sans-serif-medium"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 3. Jadwal Rilis -->
@@ -165,10 +175,9 @@
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="13dp"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:nextFocusRight="@+id/rv_anime_grid">
+                    android:focusable="true">
 
                     <ImageView
                         android:layout_width="18dp"
@@ -180,11 +189,14 @@
                         android:id="@+id/tv_menu_jadwal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="12dp"
                         android:text="@string/menu_schedule"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium" />
+                        android:fontFamily="sans-serif-medium"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 4. Riwayat Tonton -->
@@ -196,10 +208,9 @@
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="13dp"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:nextFocusRight="@+id/rv_anime_grid">
+                    android:focusable="true">
 
                     <ImageView
                         android:layout_width="18dp"
@@ -211,11 +222,14 @@
                         android:id="@+id/tv_menu_riwayat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="12dp"
                         android:text="@string/menu_history"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium" />
+                        android:fontFamily="sans-serif-medium"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 5. Favorit -->
@@ -227,10 +241,9 @@
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="13dp"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:nextFocusRight="@+id/rv_anime_grid">
+                    android:focusable="true">
 
                     <ImageView
                         android:layout_width="18dp"
@@ -242,11 +255,14 @@
                         android:id="@+id/tv_menu_favorit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="12dp"
                         android:text="@string/menu_favorites"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium" />
+                        android:fontFamily="sans-serif-medium"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 6. Katalog -->
@@ -258,10 +274,9 @@
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="13dp"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:nextFocusRight="@+id/rv_anime_grid">
+                    android:focusable="true">
 
                     <ImageView
                         android:layout_width="18dp"
@@ -273,11 +288,14 @@
                         android:id="@+id/tv_menu_katalog"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="12dp"
                         android:text="@string/menu_catalog"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium" />
+                        android:fontFamily="sans-serif-medium"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 7. Genre -->
@@ -289,10 +307,9 @@
                     android:background="@drawable/bg_tv_nav_focused"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="13dp"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:nextFocusRight="@+id/rv_anime_grid">
+                    android:focusable="true">
 
                     <ImageView
                         android:layout_width="18dp"
@@ -304,11 +321,14 @@
                         android:id="@+id/tv_menu_genre"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="12dp"
                         android:text="@string/menu_genre"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium" />
+                        android:fontFamily="sans-serif-medium"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
@@ -322,10 +342,9 @@
             android:background="@drawable/bg_tv_nav_focused"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
+            android:paddingHorizontal="13dp"
             android:clickable="true"
-            android:focusable="true"
-            android:nextFocusRight="@+id/rv_anime_grid">
+            android:focusable="true">
 
             <ImageView
                 android:layout_width="18dp"
@@ -337,11 +356,14 @@
                 android:id="@+id/tv_menu_settings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="12dp"
                 android:text="@string/menu_settings"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="12.5sp"
-                android:fontFamily="sans-serif-medium" />
+                android:fontFamily="sans-serif-medium"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
 

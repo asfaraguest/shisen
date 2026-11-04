@@ -349,6 +349,17 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             tvHeroEps = itemView.findViewById(R.id.tv_hero_eps);
             btnHeroPlay = itemView.findViewById(R.id.btn_hero_play);
             btnHeroInfo = itemView.findViewById(R.id.btn_hero_info);
+            if (cardHero != null) {
+                cardHero.setFocusable(false);
+            }
+            if (btnHeroPlay != null) {
+                btnHeroPlay.setFocusable(true);
+                id.shisen.app.util.TvFocusHelper.attachFocusScale(btnHeroPlay, 1.05f);
+            }
+            if (btnHeroInfo != null) {
+                btnHeroInfo.setFocusable(true);
+                id.shisen.app.util.TvFocusHelper.attachFocusScale(btnHeroInfo, 1.05f);
+            }
         }
     }
 

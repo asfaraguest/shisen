@@ -477,6 +477,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         btnPlayerBack.setOnClickListener(v -> {
             HapticHelper.performClick(v);
+            if (PlayerKeys.handleBack(this)) {
+                return;
+            }
             int orient = getResources().getConfiguration().orientation;
             if (orient == Configuration.ORIENTATION_LANDSCAPE) {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -777,9 +780,13 @@ public class PlayerActivity extends AppCompatActivity {
         layoutTopBar.bringToFront();
 
         if (btnScreenLock != null) {
-            btnScreenLock.setVisibility(View.VISIBLE);
-            btnScreenLock.setAlpha(1.0f);
-            btnScreenLock.bringToFront();
+            if (PlayerKeys.isTv()) {
+                btnScreenLock.setVisibility(View.GONE);
+            } else {
+                btnScreenLock.setVisibility(View.VISIBLE);
+                btnScreenLock.setAlpha(1.0f);
+                btnScreenLock.bringToFront();
+            }
         }
     }
 
@@ -946,7 +953,7 @@ public class PlayerActivity extends AppCompatActivity {
                 btnExoFullscreen.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     int orient = getResources().getConfiguration().orientation;
-                    if (orient == Configuration.ORIENTATION_LANDSCAPE) {
+                    if (PlayerKeys.isTv() || orient == Configuration.ORIENTATION_LANDSCAPE) {
                         cycleAspectRatio();
                     } else {
                         toggleFullscreen();
@@ -954,9 +961,25 @@ public class PlayerActivity extends AppCompatActivity {
                 });
                 btnExoFullscreen.setOnLongClickListener(v -> {
                     HapticHelper.performClick(v);
-                    toggleFullscreen();
+                    if (PlayerKeys.isTv()) {
+                        cycleAspectRatio();
+                    } else {
+                        toggleFullscreen();
+                    }
                     return true;
                 });
+            }
+
+            View[] focusableControls = {
+                    btnExoPlayPause, btnExoRew, btnExoFfwd, btnExoPrev, btnExoNext,
+                    btnExoSub, btnExoPip, btnExoSettings, btnExoFullscreen,
+                    btnPlayerBack, btnSkipOpEd
+            };
+            for (View ctrl : focusableControls) {
+                if (ctrl != null) {
+                    ctrl.setFocusable(true);
+                    id.shisen.app.util.TvFocusHelper.attachFocusScale(ctrl, 1.12f);
+                }
             }
         });
     }
@@ -2826,11 +2849,35 @@ public class PlayerActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.player_toast_lock_hint, Toast.LENGTH_SHORT).show();
             return;
         }
+        if (PlayerKeys.handleBack(this)) {
+            return;
+        }
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             return;
         }
         super.onBackPressed();
+    }
+
+    public boolean isControllerVisible() {
+        return playerView != null && playerView.isControllerFullyVisible();
+    }
+
+    public void showTvController(boolean requestPrimaryFocus) {
+        if (playerView == null) return;
+        playerView.showController();
+        showTopBar(false, true);
+        if (requestPrimaryFocus && btnExoPlayPause != null) {
+            btnExoPlayPause.requestFocus();
+        }
+    }
+
+    public boolean performSkipIfVisible() {
+        if (btnSkipOpEd != null && btnSkipOpEd.getVisibility() == View.VISIBLE) {
+            btnSkipOpEd.performClick();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -3120,6 +3167,11 @@ public class PlayerActivity extends AppCompatActivity {
 
     public void handleTvSeek(long deltaMs) {
         seekRelative(deltaMs);
+        if (deltaMs < 0 && tvRippleLeft != null) {
+            showRippleFeedback(tvRippleLeft);
+        } else if (deltaMs > 0 && tvRippleRight != null) {
+            showRippleFeedback(tvRippleRight);
+        }
     }
 
     public void openSubtitleMenu() {

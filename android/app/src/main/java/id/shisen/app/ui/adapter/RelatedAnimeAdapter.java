@@ -143,6 +143,9 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
             tvBadge = itemView.findViewById(R.id.tv_related_badge);
             tvTitle = itemView.findViewById(R.id.tv_related_title);
             tvMeta = itemView.findViewById(R.id.tv_related_meta);
+            if (itemView instanceof com.google.android.material.card.MaterialCardView) {
+                id.shisen.app.util.TvFocusHelper.attachCardFocus((com.google.android.material.card.MaterialCardView) itemView, 1.06f);
+            }
         }
     }
 }

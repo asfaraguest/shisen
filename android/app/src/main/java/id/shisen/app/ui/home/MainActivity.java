@@ -1011,6 +1011,9 @@ public class MainActivity extends AppCompatActivity {
                     final int idx = i;
                     TextView chip = dialog.findViewById(ids[i]);
                     if (chip == null) continue;
+                    chip.setFocusable(true);
+                    chip.setClickable(true);
+                    id.shisen.app.util.TvFocusHelper.attachFocusScale(chip, 1.05f);
                     boolean selected = values[i].equals(current);
                     chip.setBackgroundResource(selected ? R.drawable.bg_chip_selected : R.drawable.bg_tab_inactive);
                     chip.setTextColor(selected ? 0xFF090D16 : 0xFF94A3B8);
@@ -1270,6 +1273,7 @@ public class MainActivity extends AppCompatActivity {
             ViewHolder(@NonNull View itemView) {
                 super(itemView);
                 tvName = itemView.findViewById(R.id.tv_genre_name);
+                id.shisen.app.util.TvFocusHelper.attachFocusScale(itemView, 1.05f);
             }
         }
     }
@@ -1289,6 +1293,9 @@ public class MainActivity extends AppCompatActivity {
                 (int) (12 * getResources().getDisplayMetrics().density), 0,
                 (int) (12 * getResources().getDisplayMetrics().density), 0
         );
+        chip.setFocusable(true);
+        chip.setClickable(true);
+        id.shisen.app.util.TvFocusHelper.attachFocusScale(chip, 1.06f);
 
         if (isSelected) {
             chip.setBackgroundResource(R.drawable.bg_chip_frost_active);

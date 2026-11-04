@@ -212,6 +212,18 @@ public class DetailActivity extends AppCompatActivity {
                 tvSynopsisToggle.setText(getString(R.string.detail_read_more));
             }
         });
+
+        View[] detailButtons = {btnBack, btnPlayPrimary, btnBookmark, tvSynopsisToggle};
+        for (View btn : detailButtons) {
+            if (btn != null) {
+                btn.setFocusable(true);
+                btn.setClickable(true);
+                id.shisen.app.util.TvFocusHelper.attachFocusScale(btn, 1.05f);
+            }
+        }
+        if (btnPlayPrimary != null) {
+            btnPlayPrimary.post(btnPlayPrimary::requestFocus);
+        }
     }
 
     private void setupWindowInsets() {

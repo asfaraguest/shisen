@@ -1,21 +1,32 @@
 package id.shisen.app.ui;
 
+import android.animation.ValueAnimator;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 import id.shisen.app.R;
 import id.shisen.app.ui.home.MainActivity;
 import id.shisen.app.util.TvFocusHelper;
 
 /**
  * Pengontrol navigasi khusus varian Android TV:
- * Mengatur Left-Side Navigation Rail, D-Pad remote traversal, dan 5-kolom lanskap.
- * Bebas total dari Floating Action Button (FAB).
+ * Mengatur Left-Side Navigation Rail yang dapat otomatis expand (184dp) saat fokus
+ * dan collapse (64dp ikon saja) saat fokus berpindah ke konten utama.
  */
 public final class DeviceNav {
 
+    private static final int RAIL_COLLAPSED_DP = 64;
+    private static final int RAIL_EXPANDED_DP = 184;
+
     private final MainActivity host;
     private View layoutTvSideRail;
+    private View[] railLabels;
+    private boolean isRailExpanded = false;
+    private ValueAnimator railWidthAnimator;
 
     public DeviceNav(MainActivity host) {
         this.host = host;
@@ -25,6 +36,19 @@ public final class DeviceNav {
         if (root == null || host == null) return;
 
         layoutTvSideRail = root.findViewById(R.id.layout_tv_side_rail);
+
+        railLabels = new View[]{
+                root.findViewById(R.id.tv_app_logo),
+                root.findViewById(R.id.tv_menu_search),
+                host.tvMenuMusim,
+                host.tvMenuAiring,
+                host.tvMenuJadwal,
+                host.tvMenuRiwayat,
+                host.tvMenuFavorit,
+                host.tvMenuKatalog,
+                host.tvMenuGenre,
+                root.findViewById(R.id.tv_menu_settings)
+        };
 
         View[] railItems = {
                 host.findViewById(R.id.btn_search_trigger),
@@ -38,13 +62,121 @@ public final class DeviceNav {
                 host.menuItemSettings
         };
 
+        View.OnKeyListener railKeyListener = (v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                if (focusMainContentArea()) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
         for (View item : railItems) {
             if (item != null) {
                 item.setFocusable(true);
                 item.setClickable(true);
                 TvFocusHelper.attachFocusScale(item, 1.04f);
+                item.setOnKeyListener(railKeyListener);
             }
         }
+
+        // Pasang focus scale pada kontrol topbar TV (Pagination, Clear History, Search Collapse)
+        int[] topFocusableIds = {
+                R.id.btn_prev_page,
+                R.id.btn_next_page,
+                R.id.btn_clear_history_all,
+                R.id.btn_collapse_search
+        };
+        for (int id : topFocusableIds) {
+            View btn = root.findViewById(id);
+            if (btn != null) {
+                btn.setFocusable(true);
+                TvFocusHelper.attachFocusScale(btn, 1.06f);
+            }
+        }
+
+        // Pantau perubahan fokus global untuk otomatis expand/collapse sidebar
+        root.getViewTreeObserver().addOnGlobalFocusChangeListener((oldFocus, newFocus) -> {
+            if (newFocus == null || layoutTvSideRail == null) return;
+            boolean focusInRail = isViewDescendantOf(newFocus, layoutTvSideRail);
+            setRailExpanded(focusInRail);
+        });
+    }
+
+    private void setRailExpanded(boolean expanded) {
+        if (layoutTvSideRail == null || isRailExpanded == expanded) return;
+        isRailExpanded = expanded;
+
+        float density = host.getResources().getDisplayMetrics().density;
+        int startWidth = layoutTvSideRail.getWidth();
+        if (startWidth <= 0) {
+            startWidth = (int) ((expanded ? RAIL_COLLAPSED_DP : RAIL_EXPANDED_DP) * density);
+        }
+        int targetWidth = (int) ((expanded ? RAIL_EXPANDED_DP : RAIL_COLLAPSED_DP) * density);
+
+        if (railWidthAnimator != null && railWidthAnimator.isRunning()) {
+            railWidthAnimator.cancel();
+        }
+
+        if (expanded) {
+            setLabelsVisible(true);
+        } else {
+            setLabelsVisible(false);
+        }
+
+        railWidthAnimator = ValueAnimator.ofInt(startWidth, targetWidth);
+        railWidthAnimator.setDuration(160);
+        railWidthAnimator.setInterpolator(new DecelerateInterpolator());
+        railWidthAnimator.addUpdateListener(anim -> {
+            ViewGroup.LayoutParams lp = layoutTvSideRail.getLayoutParams();
+            if (lp != null) {
+                lp.width = (int) anim.getAnimatedValue();
+                layoutTvSideRail.setLayoutParams(lp);
+            }
+        });
+        railWidthAnimator.start();
+    }
+
+    private void setLabelsVisible(boolean visible) {
+        if (railLabels == null) return;
+        for (View label : railLabels) {
+            if (label != null) {
+                label.setVisibility(visible ? View.VISIBLE : View.GONE);
+            }
+        }
+    }
+
+    private boolean focusMainContentArea() {
+        if (host == null) return false;
+
+        // 1. Prioritaskan item pertama di RecyclerView katalog anime (Hero button atau kartu anime)
+        RecyclerView rvGrid = host.findViewById(R.id.rv_anime_grid);
+        if (rvGrid != null && rvGrid.getVisibility() == View.VISIBLE && rvGrid.getChildCount() > 0) {
+            View firstChild = rvGrid.getChildAt(0);
+            if (firstChild != null) {
+                View btnHeroPlay = firstChild.findViewById(R.id.btn_hero_play);
+                if (btnHeroPlay != null && btnHeroPlay.getVisibility() == View.VISIBLE) {
+                    return btnHeroPlay.requestFocus();
+                }
+                if (firstChild.requestFocus()) {
+                    return true;
+                }
+            }
+        }
+
+        // 2. Fallback ke chip sub-filter jika sedang tampil
+        View scrollSub = host.findViewById(R.id.scroll_sub_filters);
+        ViewGroup layoutChips = host.findViewById(R.id.layout_sub_chips);
+        if (scrollSub != null && scrollSub.getVisibility() == View.VISIBLE
+                && layoutChips != null && layoutChips.getChildCount() > 0) {
+            for (int i = 0; i < layoutChips.getChildCount(); i++) {
+                View chip = layoutChips.getChildAt(i);
+                if (chip != null && chip.isFocusable() && chip.requestFocus()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void applyInsets(int topInset, int bottomInset, float density) {
@@ -87,7 +219,7 @@ public final class DeviceNav {
 
         View currentFocus = host.getCurrentFocus();
         if (currentFocus != null && layoutTvSideRail != null) {
-            // Jika fokus sedang di grid anime atau sub-filter, kembalikan fokus ke menu samping kiri
+            // Jika fokus sedang di grid anime atau sub-filter, kembalikan fokus ke menu samping kiri (otomatis expand)
             boolean isInRail = isViewDescendantOf(currentFocus, layoutTvSideRail);
             if (!isInRail) {
                 View activeMenuItem = getActiveRailItem();

@@ -171,6 +171,9 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.EpisodeV
             layoutBody = itemView.findViewById(R.id.layout_ep_body);
             tvStatusBadge = itemView.findViewById(R.id.tv_ep_status_badge);
             tvTitle = itemView.findViewById(R.id.tv_ep_title);
+            if (card != null) {
+                id.shisen.app.util.TvFocusHelper.attachCardFocus(card, 1.08f);
+            }
         }
     }
 }

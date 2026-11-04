@@ -1,8 +1,10 @@
 package id.shisen.app.util;
 
+import android.content.res.ColorStateList;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import androidx.core.content.ContextCompat;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import id.shisen.app.R;
 
@@ -17,10 +19,14 @@ public final class TvFocusHelper {
     private TvFocusHelper() {}
 
     /**
-     * Terapkan animasi skala dan elevasi saat View menerima atau kehilangan fokus D-Pad.
+     * Terapkan animasi skala, elevasi, dan stroke highlight saat View menerima fokus D-Pad.
      */
     public static void attachFocusScale(View view, float focusedScale) {
         if (view == null) return;
+        final int origStrokeWidth = (view instanceof MaterialButton) ? ((MaterialButton) view).getStrokeWidth() : 0;
+        final ColorStateList origStrokeColor = (view instanceof MaterialButton) ? ((MaterialButton) view).getStrokeColor() : null;
+        final int focusStrokePx = Math.max(4, (int) (2f * view.getResources().getDisplayMetrics().density));
+
         view.setOnFocusChangeListener((v, hasFocus) -> {
             float targetScale = hasFocus ? focusedScale : 1.0f;
             float targetZ = hasFocus ? 10f : 0f;
@@ -32,6 +38,17 @@ public final class TvFocusHelper {
                     .setDuration(160)
                     .setInterpolator(INTERPOLATOR)
                     .start();
+
+            if (v instanceof MaterialButton) {
+                MaterialButton mb = (MaterialButton) v;
+                if (hasFocus) {
+                    mb.setStrokeColor(ColorStateList.valueOf(0xFFFFFFFF));
+                    mb.setStrokeWidth(focusStrokePx);
+                } else {
+                    mb.setStrokeColor(origStrokeColor);
+                    mb.setStrokeWidth(origStrokeWidth);
+                }
+            }
         });
     }
 
