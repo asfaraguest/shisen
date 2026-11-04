@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout_main_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="@drawable/bg_anime_canvas_shinkai">
+
+    <!-- 1. LEFT-SIDE NAVIGATION RAIL (TV Leanback Menu) -->
+    <LinearLayout
+        android:id="@+id/layout_tv_side_rail"
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_tv_side_rail"
+        android:orientation="vertical"
+        android:paddingTop="18dp"
+        android:paddingBottom="14dp"
+        android:paddingHorizontal="10dp">
+
+        <!-- Shisen Brand Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="8dp"
+            android:paddingBottom="14dp">
+
+            <TextView
+                android:id="@+id/tv_app_logo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SHISEN"
+                android:textColor="@color/accent_glacial"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-black"
+                android:letterSpacing="0.08"
+                android:focusable="false" />
+
+            <TextView
+                android:id="@+id/tv_app_logo_kanji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="@string/app_logo_kanji"
+                android:textColor="@color/anime_iris_violet"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-bold"
+                android:focusable="false" />
+        </LinearLayout>
+
+        <!-- Search Bar Trigger in Left Rail -->
+        <LinearLayout
+            android:id="@+id/btn_search_trigger"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_tv_nav_focused"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:nextFocusRight="@+id/rv_anime_grid">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_search"
+                app:tint="@color/accent_glacial"
+                android:contentDescription="Cari" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/search_capsule"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- TV Menu Items Scrollable (To accommodate all screen sizes) -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scrollbars="none"
+            android:overScrollMode="never">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- 1. Musim Ini -->
+                <LinearLayout
+                    android:id="@+id/menu_item_musim"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/bg_tv_nav_focused"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:nextFocusRight="@+id/rv_anime_grid">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_tab_season"
+                        app:tint="@color/accent_glacial" />
+
+                    <TextView
+                        android:id="@+id/tv_menu_musim"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/menu_this_season"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <!-- 2. Sedang Tayang (Airing) -->
+                <LinearLayout
+                    android:id="@+id/menu_item_airing"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/bg_tv_nav_focused"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:nextFocusRight="@+id/rv_anime_grid">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_tab_airing"
+                        app:tint="@color/accent_glacial" />
+
+                    <TextView
+                        android:id="@+id/tv_menu_airing"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/menu_airing"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <!-- 3. Jadwal Rilis -->
+                <LinearLayout
+                    android:id="@+id/menu_item_jadwal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/bg_tv_nav_focused"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:nextFocusRight="@+id/rv_anime_grid">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_tab_schedule"
+                        app:tint="@color/accent_glacial" />
+
+                    <TextView
+                        android:id="@+id/tv_menu_jadwal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/menu_schedule"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <!-- 4. Riwayat Tonton -->
+                <LinearLayout
+                    android:id="@+id/menu_item_riwayat"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/bg_tv_nav_focused"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:nextFocusRight="@+id/rv_anime_grid">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_tab_history"
+                        app:tint="@color/accent_glacial" />
+
+                    <TextView
+                        android:id="@+id/tv_menu_riwayat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/menu_history"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <!-- 5. Favorit -->
+                <LinearLayout
+                    android:id="@+id/menu_item_favorit"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/bg_tv_nav_focused"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:nextFocusRight="@+id/rv_anime_grid">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_tab_favorite"
+                        app:tint="@color/accent_glacial" />
+
+                    <TextView
+                        android:id="@+id/tv_menu_favorit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/menu_favorites"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <!-- 6. Katalog -->
+                <LinearLayout
+                    android:id="@+id/menu_item_katalog"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/bg_tv_nav_focused"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:nextFocusRight="@+id/rv_anime_grid">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_tab_catalog"
+                        app:tint="@color/accent_glacial" />
+
+                    <TextView
+                        android:id="@+id/tv_menu_katalog"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/menu_catalog"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <!-- 7. Genre -->
+                <LinearLayout
+                    android:id="@+id/menu_item_genre"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/bg_tv_nav_focused"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:nextFocusRight="@+id/rv_anime_grid">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_tab_genre"
+                        app:tint="@color/accent_glacial" />
+
+                    <TextView
+                        android:id="@+id/tv_menu_genre"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/menu_genre"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- 8. Pengaturan Terpadu (Settings) -->
+        <LinearLayout
+            android:id="@+id/menu_item_settings"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_tv_nav_focused"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:nextFocusRight="@+id/rv_anime_grid">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_settings"
+                app:tint="@color/accent_glacial" />
+
+            <TextView
+                android:id="@+id/tv_menu_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/menu_settings"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="12.5sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 2. MAIN CONTENT STAGE (Right Side) -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp">
+
+        <!-- TV TOPBAR HEADER: Category Badge, Sub-Filters, Pagination Controls -->
+        <FrameLayout
+            android:id="@+id/layout_aurora_top"
+            android:layout_width="match_parent"
+            android:layout_height="48dp">
+
+            <!-- Normal TV Header Bar -->
+            <LinearLayout
+                android:id="@+id/layout_top_normal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Active Category Badge -->
+                <TextView
+                    android:id="@+id/tv_current_menu_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/badge_this_season"
+                    android:textColor="@color/text_frost_bright"
+                    android:background="@drawable/bg_badge_frost"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:letterSpacing="0.06"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp" />
+
+                <!-- Loading Spinner -->
+                <ProgressBar
+                    android:id="@+id/pb_header_loading"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="10dp"
+                    android:indeterminateTint="@color/accent_glacial"
+                    android:visibility="gone" />
+
+                <!-- Contextual Bar: Title + Clear History All -->
+                <LinearLayout
+                    android:id="@+id/layout_contextual_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tv_contextual_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/menu_history"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif-bold" />
+
+                    <TextView
+                        android:id="@+id/btn_clear_history_all"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_tv_button_focused"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="@string/action_clear_all"
+                        android:textColor="#EF4444"
+                        android:textSize="11sp"
+                        android:fontFamily="sans-serif-bold" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <!-- INLINE TV PAGINATION CONTROLS (Easily reachable via D-pad) -->
+                <LinearLayout
+                    android:id="@+id/layout_pagination"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/btn_prev_page"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_tv_button_focused"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="14dp"
+                        android:text="@string/page_prev"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif-bold" />
+
+                    <TextView
+                        android:id="@+id/tv_page_indicator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginHorizontal="6dp"
+                        android:background="@drawable/bg_badge_frost"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text=""
+                        android:textColor="@color/accent_glacial"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif-bold" />
+
+                    <TextView
+                        android:id="@+id/btn_next_page"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_tv_button_focused"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingHorizontal="14dp"
+                        android:text="@string/page_next"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif-bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- TV Fluid Search Input Container -->
+            <LinearLayout
+                android:id="@+id/layout_top_search_fluid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:visibility="gone">
+
+                <ImageButton
+                    android:id="@+id/btn_collapse_search"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_tv_button_focused"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/accent_glacial"
+                    android:padding="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="Tutup Pencarian" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_search_capsule"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="@color/text_frost_subtle" />
+
+                    <EditText
+                        android:id="@+id/et_search"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:background="@android:color/transparent"
+                        android:hint="@string/search_hint"
+                        android:textColorHint="@color/text_frost_dim"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="13sp"
+                        android:fontFamily="sans-serif"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:singleLine="true" />
+
+                    <ImageView
+                        android:id="@+id/btn_clear_search"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_close"
+                        app:tint="@color/text_frost_subtle"
+                        android:visibility="gone"
+                        android:contentDescription="Clear Text" />
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- Sub-filter chips row (Jadwal / Airing / Genre) -->
+        <HorizontalScrollView
+            android:id="@+id/scroll_sub_filters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:overScrollMode="never"
+            android:paddingVertical="4dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/layout_sub_chips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <!-- Main Feed: SwipeRefreshLayout + RecyclerView Grid -->
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <!-- 5-Column Landscape TV Grid -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_anime_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="24dp"
+                    android:focusable="true"
+                    android:descendantFocusability="afterDescendants" />
+
+                <!-- Empty State -->
+                <LinearLayout
+                    android:id="@+id/layout_empty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:id="@+id/tv_empty_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/empty_state_title"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="@dimen/text_headline"
+                        android:fontFamily="sans-serif-bold" />
+
+                    <TextView
+                        android:id="@+id/tv_empty_desc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/empty_state_desc"
+                        android:textColor="@color/text_frost_subtle"
+                        android:textSize="@dimen/text_body"
+                        android:gravity="center" />
+                </LinearLayout>
+            </FrameLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -2,6 +2,19 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.0-beta.1] - 2026-11-04
+
+### Ditambahkan
+- **Varian Khusus Shisen TV (視線 TV) dengan APK Terpisah (`shisen-tv-release-*.apk`)**:
+  - Gradle Product Flavors (`mobile` dan `tv`) di `:app` menghasilkan dua APK signed terpisah: `shisen-release-v1.1.0-beta.1.apk` (Mobile) dan `shisen-tv-release-v1.1.0-beta.1.apk` (Android TV).
+  - Integrasi Android TV Leanback (`android.software.leanback`, `android.hardware.touchscreen` false, banner 16:9 `@drawable/banner_tv`, dan launcher intent-filter `LEANBACK_LAUNCHER`).
+  - **Left-Side Navigation Rail**: Menu samping kiri bergaya Android TV modern untuk navigasi instan ke Pencarian, Musim Ini, Sedang Tayang, Jadwal, Riwayat, Favorit, Katalog, Genre, dan Pengaturan.
+  - **Fluid UI & TV Focus Engine (`TvFocusHelper.java`)**: Animasi pop-up / scale-up 1.05x–1.08x halus saat kartu atau item menu disorot dengan remote D-Pad, dilengkapi efek elevasi dinamis dan border Glacial Cyan glow (`#38BDF8`).
+  - **Layout Lanskap 5 Kolom TV**: Tampilan grid anime optimal untuk resolusi TV 1080p/4K dengan descendant focusability halus.
+  - **Bebas Floating Button**: Eliminasi FAB menu pop-up dan floating pagination dock di varian TV; tombol pagination (`< Hal X/Y >`) dipindahkan rapi ke bar header atas agar mudah dijangkau via remote kontrol D-Pad.
+  - **D-Pad Player Remote Controls (`PlayerKeys.java`)**: Mendukung tombol D-Pad Center/Play/Pause untuk toggle video, D-Pad Left/Right untuk lompat seek 10 detik, dan D-Pad Up untuk akses cepat pemilihan subtitle / server.
+  - **Arsitektur Delegasi Navigasi (`DeviceNav.java`)**: Memisahkan kontrol input perangkat antara mobile dan TV tanpa fork `MainActivity` maupun duplikasi logika backend/data.
+
 ## [0.1.0-beta.26] - 2026-10-30
 
 ### Diperbaiki

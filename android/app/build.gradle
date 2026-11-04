@@ -68,10 +68,25 @@ android {
         }
     }
 
+    flavorDimensions "device"
+    productFlavors {
+        mobile {
+            dimension "device"
+        }
+        tv {
+            dimension "device"
+            applicationIdSuffix ".tv"
+        }
+    }
+
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             if (variant.buildType.name == "release") {
-                outputFileName = "shisen-release-v${defaultConfig.versionName}.apk"
+                if (variant.flavorName == "tv") {
+                    outputFileName = "shisen-tv-release-v${defaultConfig.versionName}.apk"
+                } else {
+                    outputFileName = "shisen-release-v${defaultConfig.versionName}.apk"
+                }
             }
         }
     }

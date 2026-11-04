@@ -152,15 +152,24 @@ public class AppUpdateManager {
                 String downloadUrl = null;
                 long apkSize = 0;
                 JSONArray assets = releaseObj.optJSONArray("assets");
+                boolean isTvFlavor = "tv".equalsIgnoreCase(id.shisen.app.BuildConfig.FLAVOR);
                 if (assets != null) {
                     for (int i = 0; i < assets.length(); i++) {
                         JSONObject a = assets.getJSONObject(i);
                         String name = a.optString("name", "");
                         if (name.endsWith(".apk")) {
-                            downloadUrl = a.optString("browser_download_url", null);
-                            apkSize = a.optLong("size", 0);
-                            if (name.contains("shisen-release") || name.contains("menatap-release") || name.contains("miru-release")) {
-                                break; // Preferred official signed asset
+                            if (isTvFlavor) {
+                                if (name.contains("shisen-tv-release")) {
+                                    downloadUrl = a.optString("browser_download_url", null);
+                                    apkSize = a.optLong("size", 0);
+                                    break;
+                                }
+                            } else {
+                                if (name.contains("shisen-release") && !name.contains("tv")) {
+                                    downloadUrl = a.optString("browser_download_url", null);
+                                    apkSize = a.optLong("size", 0);
+                                    break;
+                                }
                             }
                         }
                     }

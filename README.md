@@ -60,9 +60,11 @@ Integrasi backend mengikuti paritas menu dari [Tatap](https://github.com/asfarag
 
 APK rilis resmi (signed, production keystore):
 
-- [GitHub Releases](https://github.com/asfaraguest/shisen/releases) — `shisen-release-v0.1.0-beta.26.apk`
+- [GitHub Releases](https://github.com/asfaraguest/shisen/releases):
+  - **Mobile:** `shisen-release-v1.1.0-beta.1.apk`
+  - **Android TV:** `shisen-tv-release-v1.1.0-beta.1.apk`
 
-> Hanya asset `shisen-release-*.apk` yang dipublikasikan. `menatap-release-*.apk` tidak di-upload.
+> Asset rilis resmi: `shisen-release-*.apk` dan `shisen-tv-release-*.apk`.
 
 ---
 
@@ -70,11 +72,17 @@ APK rilis resmi (signed, production keystore):
 
 ```bash
 cd android
+# Build kedua APK (Mobile & TV):
 ./gradlew assembleRelease
+
+# Atau build salah satu varian:
+./gradlew assembleMobileRelease
+./gradlew assembleTvRelease
 ```
 
 Output akan tersedia di:
-`android/app/build/outputs/apk/release/shisen-release-v0.1.0-beta.26.apk`
+- `android/app/build/outputs/apk/mobile/release/shisen-release-v1.1.0-beta.1.apk`
+- `android/app/build/outputs/apk/tv/release/shisen-tv-release-v1.1.0-beta.1.apk`
 
 ---
 

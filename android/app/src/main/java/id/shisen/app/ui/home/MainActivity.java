@@ -79,14 +79,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Root Layout & Theme Support
-    private FrameLayout layoutMainRoot;
+    private View layoutMainRoot;
 
     // Top Aurora Bar & Dynamic Fluid Search Views
     private FrameLayout layoutAuroraTop;
     private LinearLayout layoutTopNormal;
     private TextView tvAppLogo;
     private TextView tvAppLogoKanji;
-    private TextView tvCurrentMenuBadge;
+    public TextView tvCurrentMenuBadge;
     private ProgressBar pbLoading;
     private LinearLayout btnSearchTrigger;
 
@@ -111,16 +111,15 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvEmptyTitle;
     private TextView tvEmptyDesc;
 
-    // Folded Floating Menu Components (Unfolds upwards from bottom-right FAB)
-    private View scrimFoldedMenu;
-    private LinearLayout layoutFoldedMenu;
-    private FrameLayout fabMenuTrigger;
-    private ImageView ivFabIcon;
-    private boolean isFoldedMenuOpen = false;
+    private id.shisen.app.ui.DeviceNav deviceNav;
 
-    // Menu Items in Folded Floating Menu
-    private View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre, menuItemSettings;
-    private TextView tvMenuMusim, tvMenuAiring, tvMenuJadwal, tvMenuRiwayat, tvMenuFavorit, tvMenuKatalog, tvMenuGenre;
+    // Menu Items in Folded Floating Menu / TV Left Rail
+    public View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre, menuItemSettings;
+    public TextView tvMenuMusim, tvMenuAiring, tvMenuJadwal, tvMenuRiwayat, tvMenuFavorit, tvMenuKatalog, tvMenuGenre;
+
+    public MainTab getCurrentTab() {
+        return currentTab;
+    }
 
     private AnimeAdapter gridAdapter;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -278,6 +277,8 @@ public class MainActivity extends AppCompatActivity {
         selectedDayOfWeek = wibCal.get(Calendar.DAY_OF_WEEK);
 
         initViews();
+        deviceNav = new id.shisen.app.ui.DeviceNav(this);
+        deviceNav.init(getWindow().getDecorView());
         setupWindowInsets();
         setupRecyclerView();
         setupListeners();
@@ -372,11 +373,6 @@ public class MainActivity extends AppCompatActivity {
         tvEmptyTitle = findViewById(R.id.tv_empty_title);
         tvEmptyDesc = findViewById(R.id.tv_empty_desc);
 
-        scrimFoldedMenu = findViewById(R.id.scrim_folded_menu);
-        layoutFoldedMenu = findViewById(R.id.layout_folded_menu);
-        fabMenuTrigger = findViewById(R.id.fab_menu_trigger);
-        ivFabIcon = findViewById(R.id.iv_fab_icon);
-
         menuItemMusim = findViewById(R.id.menu_item_musim);
         menuItemAiring = findViewById(R.id.menu_item_airing);
         menuItemJadwal = findViewById(R.id.menu_item_jadwal);
@@ -424,28 +420,8 @@ public class MainActivity extends AppCompatActivity {
                 layoutAuroraTop.setPadding(0, topInset, 0, 0);
             }
 
-            if (fabMenuTrigger != null) {
-                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) fabMenuTrigger.getLayoutParams();
-                if (lp != null) {
-                    lp.bottomMargin = (int) (20 * density) + bottomInset;
-                    fabMenuTrigger.setLayoutParams(lp);
-                }
-            }
-
-            if (layoutPagination != null) {
-                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) layoutPagination.getLayoutParams();
-                if (lp != null) {
-                    lp.bottomMargin = (int) (20 * density) + bottomInset;
-                    layoutPagination.setLayoutParams(lp);
-                }
-            }
-
-            if (layoutFoldedMenu != null) {
-                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) layoutFoldedMenu.getLayoutParams();
-                if (lp != null) {
-                    lp.bottomMargin = (int) (84 * density) + bottomInset;
-                    layoutFoldedMenu.setLayoutParams(lp);
-                }
+            if (deviceNav != null) {
+                deviceNav.applyInsets(topInset, bottomInset, density);
             }
 
             if (rvGrid != null) {
@@ -506,6 +482,9 @@ public class MainActivity extends AppCompatActivity {
     private int calculateGridSpan() {
         float density = getResources().getDisplayMetrics().density;
         int widthDp = (int) (getResources().getDisplayMetrics().widthPixels / density);
+        if (deviceNav != null) {
+            return deviceNav.getGridSpan(widthDp);
+        }
         if (widthDp >= 900) return 4;
         if (widthDp >= 600) return 3;
         return 2;
@@ -558,30 +537,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // 1. Folded Floating Menu Triggers (Bottom-Right FAB + Scrim)
-        fabMenuTrigger.setOnClickListener(v -> {
-            HapticHelper.performClick(v);
-            toggleFoldedMenu();
-        });
-
-        scrimFoldedMenu.setOnClickListener(v -> {
-            if (isFoldedMenuOpen) {
-                setFoldedMenuOpen(false);
-            }
-        });
-
-        // 7 Folded Menu Items
-        menuItemMusim.setOnClickListener(v -> selectMenuItem(MainTab.MUSIM));
-        menuItemAiring.setOnClickListener(v -> selectMenuItem(MainTab.AIRING));
-        menuItemJadwal.setOnClickListener(v -> selectMenuItem(MainTab.JADWAL));
-        menuItemRiwayat.setOnClickListener(v -> selectMenuItem(MainTab.RIWAYAT));
-        menuItemFavorit.setOnClickListener(v -> selectMenuItem(MainTab.FAVORIT));
-        menuItemKatalog.setOnClickListener(v -> selectMenuItem(MainTab.KATALOG));
-        menuItemGenre.setOnClickListener(v -> selectMenuItem(MainTab.GENRE));
+        // 7 Menu Items
+        if (menuItemMusim != null) menuItemMusim.setOnClickListener(v -> selectMenuItem(MainTab.MUSIM));
+        if (menuItemAiring != null) menuItemAiring.setOnClickListener(v -> selectMenuItem(MainTab.AIRING));
+        if (menuItemJadwal != null) menuItemJadwal.setOnClickListener(v -> selectMenuItem(MainTab.JADWAL));
+        if (menuItemRiwayat != null) menuItemRiwayat.setOnClickListener(v -> selectMenuItem(MainTab.RIWAYAT));
+        if (menuItemFavorit != null) menuItemFavorit.setOnClickListener(v -> selectMenuItem(MainTab.FAVORIT));
+        if (menuItemKatalog != null) menuItemKatalog.setOnClickListener(v -> selectMenuItem(MainTab.KATALOG));
+        if (menuItemGenre != null) menuItemGenre.setOnClickListener(v -> selectMenuItem(MainTab.GENRE));
 
         if (menuItemSettings != null) {
             menuItemSettings.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
-                setFoldedMenuOpen(false);
+                if (deviceNav != null) deviceNav.onTabChanged(currentTab);
                 openSettingsDialog(false);
             });
         }
@@ -692,8 +660,8 @@ public class MainActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (isFoldedMenuOpen) {
-                    setFoldedMenuOpen(false);
+                if (deviceNav != null && deviceNav.handleBackPressed()) {
+                    return;
                 } else if (isSearchExpanded) {
                     collapseFluidSearch();
                 } else {
@@ -704,81 +672,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // --- FOLDED FLOATING MENU EXPANSION LOGIC ---
-
-    private void toggleFoldedMenu() {
-        setFoldedMenuOpen(!isFoldedMenuOpen);
-    }
-
-    private void setFoldedMenuOpen(boolean open) {
-        if (isFoldedMenuOpen == open) return;
-        isFoldedMenuOpen = open;
-        HapticHelper.performTick();
-
-        if (open) {
-            scrimFoldedMenu.setVisibility(View.VISIBLE);
-            scrimFoldedMenu.setAlpha(0f);
-            scrimFoldedMenu.animate().alpha(1.0f).setDuration(200).start();
-
-            layoutFoldedMenu.setVisibility(View.VISIBLE);
-            layoutFoldedMenu.setAlpha(0f);
-            layoutFoldedMenu.setTranslationY(80f);
-            layoutFoldedMenu.animate()
-                    .alpha(1.0f)
-                    .translationY(0f)
-                    .setDuration(240)
-                    .setInterpolator(new OvershootInterpolator(0.85f))
-                    .start();
-
-            ivFabIcon.animate()
-                    .rotation(90f)
-                    .scaleX(0.2f)
-                    .scaleY(0.2f)
-                    .setDuration(110)
-                    .withEndAction(() -> {
-                        ivFabIcon.setImageResource(R.drawable.ic_sword_cross);
-                        ivFabIcon.animate()
-                                .rotation(0f)
-                                .scaleX(1.0f)
-                                .scaleY(1.0f)
-                                .setDuration(130)
-                                .start();
-                    })
-                    .start();
-        } else {
-            scrimFoldedMenu.animate()
-                    .alpha(0f)
-                    .setDuration(180)
-                    .withEndAction(() -> scrimFoldedMenu.setVisibility(View.GONE))
-                    .start();
-
-            layoutFoldedMenu.animate()
-                    .alpha(0f)
-                    .translationY(50f)
-                    .setDuration(180)
-                    .withEndAction(() -> layoutFoldedMenu.setVisibility(View.GONE))
-                    .start();
-
-            ivFabIcon.animate()
-                    .rotation(-90f)
-                    .scaleX(0.2f)
-                    .scaleY(0.2f)
-                    .setDuration(90)
-                    .withEndAction(() -> {
-                        ivFabIcon.setImageResource(R.drawable.ic_menu);
-                        ivFabIcon.animate()
-                                .rotation(0f)
-                                .scaleX(1.0f)
-                                .scaleY(1.0f)
-                                .setDuration(110)
-                                .start();
-                    })
-                    .start();
+    /* package */ void selectMenuItem(MainTab tab) {
+        if (deviceNav != null) {
+            deviceNav.onTabChanged(tab);
         }
-    }
-
-    private void selectMenuItem(MainTab tab) {
-        setFoldedMenuOpen(false);
         if (tab == MainTab.GENRE) {
             showGenreSelectorDialog();
             return;
@@ -799,34 +696,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateTabsUI() {
-        View[] items = {menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre};
-        TextView[] titles = {tvMenuMusim, tvMenuAiring, tvMenuJadwal, tvMenuRiwayat, tvMenuFavorit, tvMenuKatalog, tvMenuGenre};
-        MainTab[] tabEnums = {MainTab.MUSIM, MainTab.AIRING, MainTab.JADWAL, MainTab.RIWAYAT, MainTab.FAVORIT, MainTab.KATALOG, MainTab.GENRE};
-        String[] badges = {
-                getString(R.string.badge_this_season),
-                getString(R.string.badge_airing),
-                getString(R.string.badge_schedule),
-                getString(R.string.badge_history),
-                getString(R.string.badge_favorites),
-                getString(R.string.badge_catalog),
-                getString(R.string.badge_genre)
-        };
-
-        int activeColor = ContextCompat.getColor(this, R.color.accent_glacial);
-        int inactiveColor = ContextCompat.getColor(this, R.color.text_frost_bright);
-
-        for (int i = 0; i < items.length; i++) {
-            boolean isActive = (tabEnums[i] == currentTab);
-            if (isActive) {
-                items[i].setBackgroundResource(R.drawable.bg_folded_menu_pill_active);
-                titles[i].setTextColor(activeColor);
-                titles[i].setTypeface(null, android.graphics.Typeface.BOLD);
-                tvCurrentMenuBadge.setText(badges[i]);
-            } else {
-                items[i].setBackgroundResource(R.drawable.bg_folded_menu_pill);
-                titles[i].setTextColor(inactiveColor);
-                titles[i].setTypeface(null, android.graphics.Typeface.NORMAL);
+        if (deviceNav != null) {
+            deviceNav.onTabChanged(currentTab);
+        }
+        if (tvCurrentMenuBadge != null) {
+            String badge = "";
+            switch (currentTab) {
+                case MUSIM: badge = getString(R.string.badge_this_season); break;
+                case AIRING: badge = getString(R.string.badge_airing); break;
+                case JADWAL: badge = getString(R.string.badge_schedule); break;
+                case RIWAYAT: badge = getString(R.string.badge_history); break;
+                case FAVORIT: badge = getString(R.string.badge_favorites); break;
+                case KATALOG: badge = getString(R.string.badge_catalog); break;
+                case GENRE: badge = getString(R.string.badge_genre); break;
             }
+            tvCurrentMenuBadge.setText(badge);
         }
     }
 
@@ -835,7 +719,7 @@ public class MainActivity extends AppCompatActivity {
     private void expandFluidSearch() {
         if (isSearchExpanded) return;
         isSearchExpanded = true;
-        if (isFoldedMenuOpen) setFoldedMenuOpen(false);
+        if (deviceNav != null) deviceNav.onTabChanged(currentTab);
 
         layoutTopNormal.animate()
                 .alpha(0f)
@@ -1820,7 +1704,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void openSettingsDialog(boolean focusTheme) {
+    /* package */ void openSettingsDialog(boolean focusTheme) {
         SettingsDialog.show(this, focusTheme, new SettingsDialog.OnSettingsChangeListener() {
             @Override
             public void onThemeChanged() {

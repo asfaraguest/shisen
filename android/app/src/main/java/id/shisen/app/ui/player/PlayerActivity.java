@@ -3100,4 +3100,29 @@ public class PlayerActivity extends AppCompatActivity {
             player = null;
         }
     }
+
+    @Override
+    public boolean dispatchKeyEvent(android.view.KeyEvent event) {
+        if (id.shisen.app.ui.player.PlayerKeys.handle(this, event)) {
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    public void togglePlayPause() {
+        if (player == null) return;
+        if (player.isPlaying()) {
+            player.pause();
+        } else {
+            player.play();
+        }
+    }
+
+    public void handleTvSeek(long deltaMs) {
+        seekRelative(deltaMs);
+    }
+
+    public void openSubtitleMenu() {
+        showSubtitleSelectorDialog();
+    }
 }
