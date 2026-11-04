@@ -44,7 +44,9 @@ def update_version(new_version):
         with open(README_FILE, "r", encoding="utf-8") as f:
             readme_content = f.read()
         readme_content = re.sub(r"(?:shisen|menatap)-release-v[0-9a-zA-Z\.\-]+\.apk", f"shisen-release-v{new_version}.apk", readme_content)
+        readme_content = re.sub(r"shisen-tv-release-v[0-9a-zA-Z\.\-]+\.apk", f"shisen-tv-release-v{new_version}.apk", readme_content)
         readme_content = re.sub(r"releases/tag/v[0-9a-zA-Z\.\-]+", f"releases/tag/v{new_version}", readme_content)
+        readme_content = re.sub(r"releases/download/v[0-9a-zA-Z\.\-]+", f"releases/download/v{new_version}", readme_content)
         with open(README_FILE, "w", encoding="utf-8") as f:
             f.write(readme_content)
 
