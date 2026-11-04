@@ -228,6 +228,9 @@ public class DetailActivity extends AppCompatActivity {
 
     private void setupWindowInsets() {
         if (layoutDetailRoot == null) return;
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            return;
+        }
         ViewCompat.setOnApplyWindowInsetsListener(layoutDetailRoot, (v, windowInsets) -> {
             androidx.core.graphics.Insets statusBars = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars());
             androidx.core.graphics.Insets displayCutout = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout());
@@ -388,6 +391,9 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private int calculateEpisodeSpan() {
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            return 5;
+        }
         return calculateEpisodeSpan(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().density);
     }
 

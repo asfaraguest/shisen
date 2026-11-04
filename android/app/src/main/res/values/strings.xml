@@ -90,6 +90,7 @@
     <string name="label_genre_title">GENRE: %s</string>
 
     <!-- Detail Screen -->
+    <string name="detail_header_info">Detail Anime</string>
     <string name="detail_synopsis_title">SINOPSIS ANIME</string>
     <string name="detail_related_seasons_title">MUSIM &amp; SERI TERKAIT</string>
     <string name="detail_related_movies_title">FILM &amp; MOVIE TERKAIT</string>

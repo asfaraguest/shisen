@@ -90,6 +90,7 @@
     <string name="label_genre_title">ジャンル: %s</string>
 
     <!-- Detail Screen -->
+    <string name="detail_header_info">アニメ詳細</string>
     <string name="detail_synopsis_title">あらすじ</string>
     <string name="detail_related_seasons_title">関連シリーズ</string>
     <string name="detail_related_movies_title">劇場版・映画</string>

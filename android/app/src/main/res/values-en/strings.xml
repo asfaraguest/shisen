@@ -90,6 +90,7 @@
     <string name="label_genre_title">GENRE: %s</string>
 
     <!-- Detail Screen -->
+    <string name="detail_header_info">Anime Details</string>
     <string name="detail_synopsis_title">ANIME SYNOPSIS</string>
     <string name="detail_related_seasons_title">RELATED SEASONS</string>
     <string name="detail_related_movies_title">RELATED MOVIES</string>

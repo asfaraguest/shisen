@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TV 10-Foot UI Component Dimensions -->
+    <dimen name="card_poster_height">230dp</dimen>
+    <dimen name="card_margin">8dp</dimen>
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="hero_corner_radius">14dp</dimen>
+    <dimen name="hero_banner_height">240dp</dimen>
+
+    <!-- TV Card spacing tokens -->
+    <dimen name="card_badge_margin">8dp</dimen>
+    <dimen name="card_badge_padding_h">8dp</dimen>
+    <dimen name="card_badge_padding_v">4dp</dimen>
+    <dimen name="card_body_padding_h">12dp</dimen>
+    <dimen name="card_body_padding_top">10dp</dimen>
+    <dimen name="card_body_padding_bottom">12dp</dimen>
+    <dimen name="card_title_meta_gap">4dp</dimen>
+    <dimen name="card_horizontal_margin">8dp</dimen>
+    <dimen name="card_related_margin_end">8dp</dimen>
+
+    <!-- TV Semantic Typography Scale (Optimized for 10-foot viewing distance) -->
+    <dimen name="text_display_large">26sp</dimen>
+    <dimen name="text_headline">20sp</dimen>
+    <dimen name="text_title_large">18sp</dimen>
+    <dimen name="text_title_medium">16sp</dimen>
+    <dimen name="text_title">16.5sp</dimen>
+    <dimen name="text_body_large">15sp</dimen>
+    <dimen name="text_body">14sp</dimen>
+    <dimen name="text_subhead">13sp</dimen>
+    <dimen name="text_caption">12sp</dimen>
+    <dimen name="text_badge">11sp</dimen>
+
+    <!-- Player Dimensions on TV -->
+    <dimen name="player_title_text_size">18sp</dimen>
+    <dimen name="tv_overscan_horizontal">24dp</dimen>
+</resources>

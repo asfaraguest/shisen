@@ -25,11 +25,11 @@ public final class TvFocusHelper {
         if (view == null) return;
         final int origStrokeWidth = (view instanceof MaterialButton) ? ((MaterialButton) view).getStrokeWidth() : 0;
         final ColorStateList origStrokeColor = (view instanceof MaterialButton) ? ((MaterialButton) view).getStrokeColor() : null;
-        final int focusStrokePx = Math.max(4, (int) (2f * view.getResources().getDisplayMetrics().density));
+        final int focusStrokePx = Math.max(4, (int) (2.5f * view.getResources().getDisplayMetrics().density));
 
         view.setOnFocusChangeListener((v, hasFocus) -> {
             float targetScale = hasFocus ? focusedScale : 1.0f;
-            float targetZ = hasFocus ? 10f : 0f;
+            float targetZ = hasFocus ? 14f : 0f;
 
             v.animate()
                     .scaleX(targetScale)
@@ -42,7 +42,7 @@ public final class TvFocusHelper {
             if (v instanceof MaterialButton) {
                 MaterialButton mb = (MaterialButton) v;
                 if (hasFocus) {
-                    mb.setStrokeColor(ColorStateList.valueOf(0xFFFFFFFF));
+                    mb.setStrokeColor(ColorStateList.valueOf(0xFF38BDF8));
                     mb.setStrokeWidth(focusStrokePx);
                 } else {
                     mb.setStrokeColor(origStrokeColor);
@@ -53,16 +53,20 @@ public final class TvFocusHelper {
     }
 
     /**
-     * Terapkan animasi skala + stroke highlight untuk MaterialCardView.
+     * Terapkan animasi skala + luminous stroke highlight untuk MaterialCardView.
      */
     public static void attachCardFocus(MaterialCardView card, float focusedScale) {
         if (card == null) return;
         final int defaultStrokeColor = ContextCompat.getColor(card.getContext(), R.color.frost_border);
         final int focusedStrokeColor = ContextCompat.getColor(card.getContext(), R.color.accent_glacial);
+        final int defaultStrokePx = Math.max(1, (int) (1.0f * card.getResources().getDisplayMetrics().density));
+        final int focusStrokePx = Math.max(5, (int) (3.0f * card.getResources().getDisplayMetrics().density));
+        final ColorStateList defaultBgColor = card.getCardBackgroundColor();
+        final ColorStateList focusedBgColor = ColorStateList.valueOf(0xFF15223A);
 
         card.setOnFocusChangeListener((v, hasFocus) -> {
             float targetScale = hasFocus ? focusedScale : 1.0f;
-            float targetZ = hasFocus ? 12f : 0f;
+            float targetZ = hasFocus ? 16f : 0f;
 
             card.animate()
                     .scaleX(targetScale)
@@ -73,7 +77,10 @@ public final class TvFocusHelper {
                     .start();
 
             card.setStrokeColor(hasFocus ? focusedStrokeColor : defaultStrokeColor);
-            card.setStrokeWidth(hasFocus ? 3 : 1);
+            card.setStrokeWidth(hasFocus ? focusStrokePx : defaultStrokePx);
+            if (defaultBgColor != null) {
+                card.setCardBackgroundColor(hasFocus ? focusedBgColor : defaultBgColor);
+            }
         });
     }
 }
