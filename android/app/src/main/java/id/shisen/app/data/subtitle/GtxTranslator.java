@@ -52,8 +52,8 @@ public class GtxTranslator {
 
         new Thread(() -> {
             try {
-                // 1. Cek Cache Lokal di Disk
-                String cacheKey = sha1(sourceIdentifier + "_gtx_id");
+                // 1. Cek Cache Lokal di Disk (v2 dengan leksikon luwes)
+                String cacheKey = sha1(sourceIdentifier + "_gtx_id_v2");
                 File cacheDir = new File(context.getCacheDir(), "sub_cache");
                 if (!cacheDir.exists()) cacheDir.mkdirs();
                 File cacheFile = new File(cacheDir, cacheKey + ".json");
@@ -141,7 +141,7 @@ public class GtxTranslator {
     private static List<String> translateBatch(OkHttpClient client, List<SubtitleCue> batch) {
         StringBuilder joined = new StringBuilder();
         for (int i = 0; i < batch.size(); i++) {
-            String text = batch.get(i).text;
+            String text = SmartLexicon.preprocessEnglishForGtx(batch.get(i).text);
             String escaped = text.replace("&", "&amp;")
                     .replace("<", "&lt;")
                     .replace(">", "&gt;")
