@@ -51,8 +51,8 @@
     <string name="day_today_suffix"> (Hari Ini)</string>
 
     <!-- Pagination -->
-    <string name="page_prev">‹ Prev</string>
-    <string name="page_next">Next ›</string>
+    <string name="page_prev">‹ Sebelumnya</string>
+    <string name="page_next">Berikutnya ›</string>
     <string name="page_indicator_format">Hal %d</string>
 
     <!-- Hero Card Actions & Badges -->

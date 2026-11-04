@@ -51,8 +51,8 @@
     <string name="day_today_suffix"> (Hoy)</string>
 
     <!-- Pagination -->
-    <string name="page_prev">‹ Ant</string>
-    <string name="page_next">Sig ›</string>
+    <string name="page_prev">‹ Anterior</string>
+    <string name="page_next">Siguiente ›</string>
     <string name="page_indicator_format">Pág %d</string>
 
     <!-- Hero Card Actions & Badges -->

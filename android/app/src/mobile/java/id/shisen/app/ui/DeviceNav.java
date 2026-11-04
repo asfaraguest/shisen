@@ -29,7 +29,6 @@ public final class DeviceNav {
     private View scrimFoldedMenu;
     private ScrollView scrollFoldedMenu;
     private LinearLayout layoutFoldedMenu;
-    private View layoutFloatingDockBar;
     private FrameLayout fabMenuTrigger;
     private ImageView ivFabIcon;
     private boolean isFoldedMenuOpen = false;
@@ -46,7 +45,6 @@ public final class DeviceNav {
         scrimFoldedMenu = root.findViewById(R.id.scrim_folded_menu);
         scrollFoldedMenu = root.findViewById(R.id.scroll_folded_menu);
         layoutFoldedMenu = root.findViewById(R.id.layout_folded_menu);
-        layoutFloatingDockBar = root.findViewById(R.id.layout_floating_dock_bar);
         fabMenuTrigger = root.findViewById(R.id.fab_menu_trigger);
         ivFabIcon = root.findViewById(R.id.iv_fab_icon);
         layoutPagination = root.findViewById(R.id.layout_pagination);
@@ -70,26 +68,18 @@ public final class DeviceNav {
     public void applyInsets(int topInset, int bottomInset, float density) {
         int baseBottomMargin = (int) (18 * density) + bottomInset;
 
-        if (layoutFloatingDockBar != null) {
-            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) layoutFloatingDockBar.getLayoutParams();
+        if (fabMenuTrigger != null) {
+            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) fabMenuTrigger.getLayoutParams();
             if (lp != null) {
                 lp.bottomMargin = baseBottomMargin;
-                layoutFloatingDockBar.setLayoutParams(lp);
+                fabMenuTrigger.setLayoutParams(lp);
             }
-        } else {
-            if (fabMenuTrigger != null) {
-                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) fabMenuTrigger.getLayoutParams();
-                if (lp != null) {
-                    lp.bottomMargin = baseBottomMargin;
-                    fabMenuTrigger.setLayoutParams(lp);
-                }
-            }
-            if (layoutPagination != null) {
-                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) layoutPagination.getLayoutParams();
-                if (lp != null) {
-                    lp.bottomMargin = baseBottomMargin;
-                    layoutPagination.setLayoutParams(lp);
-                }
+        }
+        if (layoutPagination != null) {
+            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) layoutPagination.getLayoutParams();
+            if (lp != null) {
+                lp.bottomMargin = baseBottomMargin;
+                layoutPagination.setLayoutParams(lp);
             }
         }
 

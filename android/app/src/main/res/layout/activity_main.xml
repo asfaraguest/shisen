@@ -546,104 +546,87 @@
     </LinearLayout>
     </ScrollView>
 
-    <!-- FLOATING BOTTOM DOCK BAR (Dinamic Non-Overlapping Container) -->
+    <!-- FLOATING TRANSPARENT PAGINATION BAR (True Center Horizontal) -->
     <LinearLayout
-        android:id="@+id/layout_floating_dock_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
+        android:id="@+id/layout_pagination"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="18dp"
-        android:paddingHorizontal="14dp"
-        android:orientation="horizontal"
+        android:background="@drawable/bg_floating_pagination"
+        android:elevation="18dp"
         android:gravity="center_vertical"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:elevation="18dp">
+        android:orientation="horizontal"
+        android:paddingHorizontal="4dp"
+        android:paddingVertical="3dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
 
-        <!-- Area Kiri/Tengah Fleksibel: Menampung Pagination Bar secara terpusat -->
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:clipChildren="false">
-
-            <LinearLayout
-                android:id="@+id/layout_pagination"
-                android:layout_width="wrap_content"
-                android:layout_height="42dp"
-                android:layout_gravity="center"
-                android:background="@drawable/bg_floating_pagination"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="4dp"
-                android:paddingVertical="3dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/btn_prev_page"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_floating_page_button"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:gravity="center"
-                    android:paddingHorizontal="12dp"
-                    android:text="@string/page_prev"
-                    android:textColor="@color/text_frost_bright"
-                    android:textSize="11.5sp"
-                    android:fontFamily="sans-serif-bold" />
-
-                <TextView
-                    android:id="@+id/tv_page_indicator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginHorizontal="4dp"
-                    android:background="@drawable/bg_floating_page_indicator"
-                    android:gravity="center"
-                    android:paddingHorizontal="10dp"
-                    android:text=""
-                    android:textColor="@color/accent_glacial"
-                    android:textSize="11.5sp"
-                    android:fontFamily="sans-serif-bold" />
-
-                <TextView
-                    android:id="@+id/btn_next_page"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_floating_page_button"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:gravity="center"
-                    android:paddingHorizontal="12dp"
-                    android:text="@string/page_next"
-                    android:textColor="@color/text_frost_bright"
-                    android:textSize="11.5sp"
-                    android:fontFamily="sans-serif-bold" />
-            </LinearLayout>
-        </FrameLayout>
-
-        <!-- Area Kanan: Floating Menu Trigger Button (FAB) -->
-        <FrameLayout
-            android:id="@+id/fab_menu_trigger"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/bg_fab_trigger"
+        <TextView
+            android:id="@+id/btn_prev_page"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_floating_page_button"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:paddingHorizontal="10dp"
+            android:text="@string/page_prev"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="11.5sp"
+            android:fontFamily="sans-serif-bold" />
 
-            <ImageView
-                android:id="@+id/iv_fab_icon"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_menu"
-                app:tint="@color/accent_glacial"
-                android:contentDescription="Menu Folded Trigger" />
-        </FrameLayout>
+        <TextView
+            android:id="@+id/tv_page_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/bg_floating_page_indicator"
+            android:gravity="center"
+            android:paddingHorizontal="10dp"
+            android:text=""
+            android:textColor="@color/accent_glacial"
+            android:textSize="11.5sp"
+            android:fontFamily="sans-serif-bold" />
+
+        <TextView
+            android:id="@+id/btn_next_page"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_floating_page_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:paddingHorizontal="10dp"
+            android:text="@string/page_next"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="11.5sp"
+            android:fontFamily="sans-serif-bold" />
     </LinearLayout>
+
+    <!-- FLOATING MENU TRIGGER BUTTON (Bottom-Right FAB) -->
+    <FrameLayout
+        android:id="@+id/fab_menu_trigger"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="18dp"
+        android:background="@drawable/bg_fab_trigger"
+        android:elevation="18dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/iv_fab_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_menu"
+            app:tint="@color/accent_glacial"
+            android:contentDescription="Menu Folded Trigger" />
+    </FrameLayout>
 </FrameLayout>
