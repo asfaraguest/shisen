@@ -221,6 +221,23 @@ public class DetailActivity extends AppCompatActivity {
                 id.shisen.app.util.TvFocusHelper.attachFocusScale(btn, 1.05f);
             }
         }
+
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            View.OnKeyListener toEpisodesListener = (v, keyCode, event) -> {
+                if (event.getAction() == android.view.KeyEvent.ACTION_DOWN && keyCode == android.view.KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    if (rvEpisodes != null && rvEpisodes.getChildCount() > 0) {
+                        View first = rvEpisodes.getChildAt(0);
+                        if (first != null && first.requestFocus()) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            };
+            if (btnBookmark != null) btnBookmark.setOnKeyListener(toEpisodesListener);
+            if (tvSynopsisToggle != null) tvSynopsisToggle.setOnKeyListener(toEpisodesListener);
+        }
+
         if (btnPlayPrimary != null) {
             btnPlayPrimary.post(btnPlayPrimary::requestFocus);
         }

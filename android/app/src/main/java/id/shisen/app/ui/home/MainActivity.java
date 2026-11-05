@@ -647,6 +647,8 @@ public class MainActivity extends AppCompatActivity {
                     if (rvGrid != null) {
                         return rvGrid.requestFocus();
                     }
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                    return true;
                 } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                     int sel = etSearch.getSelectionStart();
                     if (sel <= 0 && btnCollapseSearch != null) {
@@ -677,6 +679,8 @@ public class MainActivity extends AppCompatActivity {
                         if (focusFirstGridItem()) {
                             return true;
                         }
+                    } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                        return true;
                     } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                         if (deviceNav != null) {
                             View railSearch = findViewById(R.id.btn_search_trigger);
@@ -1815,13 +1819,18 @@ public class MainActivity extends AppCompatActivity {
 
             if (isSearchExpanded) {
                 // Dari search box atau collapse button, D-Pad Down langsung beralih ke konten anime
-                if ((focus == etSearch || focus == btnCollapseSearch) && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-                    hideKeyboard();
-                    if (focusFirstGridItem()) {
+                if (focus == etSearch || focus == btnCollapseSearch) {
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                        hideKeyboard();
+                        if (focusFirstGridItem()) {
+                            return true;
+                        }
+                        if (rvGrid != null) {
+                            return rvGrid.requestFocus();
+                        }
+                    } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                        // Di atas search box tidak ada elemen lain; tahan fokus agar tidak crash/terlempar
                         return true;
-                    }
-                    if (rvGrid != null) {
-                        return rvGrid.requestFocus();
                     }
                 }
                 // Dari item baris paling atas di anime grid, D-Pad Up kembali ke search box
@@ -1831,10 +1840,11 @@ public class MainActivity extends AppCompatActivity {
                         if (parentCard.getParent() instanceof View) {
                             parentCard = (View) parentCard.getParent();
                         } else {
+                            parentCard = null;
                             break;
                         }
                     }
-                    if (parentCard != null) {
+                    if (parentCard != null && parentCard.getParent() == rvGrid) {
                         int pos = rvGrid.getChildAdapterPosition(parentCard);
                         if (pos >= 0 && pos < calculateGridSpan()) {
                             if (etSearch != null && etSearch.requestFocus()) {

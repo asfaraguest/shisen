@@ -191,6 +191,7 @@
                         app:cornerRadius="24dp"
                         android:clickable="true"
                         android:focusable="true"
+                        android:nextFocusRight="@+id/btn_toggle_bookmark"
                         android:stateListAnimator="@null" />
 
                     <Button
@@ -209,6 +210,8 @@
                         android:paddingHorizontal="16dp"
                         android:clickable="true"
                         android:focusable="true"
+                        android:nextFocusLeft="@+id/btn_play_primary"
+                        android:nextFocusRight="@+id/rv_detail_episodes"
                         android:stateListAnimator="@null" />
                 </LinearLayout>
 
@@ -262,6 +265,7 @@
                             android:fontFamily="sans-serif-bold"
                             android:clickable="true"
                             android:focusable="true"
+                            android:nextFocusRight="@+id/rv_detail_episodes"
                             android:paddingVertical="3dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -325,6 +329,7 @@
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     android:focusable="true"
+                    android:nextFocusLeft="@+id/btn_toggle_bookmark"
                     android:descendantFocusability="afterDescendants" />
 
                 <!-- Section: Related Seasons & Series -->

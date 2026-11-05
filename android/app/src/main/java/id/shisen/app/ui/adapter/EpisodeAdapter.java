@@ -121,6 +121,24 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.EpisodeV
 
         attachSpringTouchFeedback(holder.card);
 
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            holder.card.setOnKeyListener((v, keyCode, event) -> {
+                if (event.getAction() == android.view.KeyEvent.ACTION_DOWN && keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT) {
+                    int pos = holder.getBindingAdapterPosition();
+                    if (pos != RecyclerView.NO_POSITION && pos % 5 == 0) {
+                        if (context instanceof android.app.Activity) {
+                            View target = ((android.app.Activity) context).findViewById(R.id.btn_toggle_bookmark);
+                            if (target == null) target = ((android.app.Activity) context).findViewById(R.id.btn_play_primary);
+                            if (target != null && target.requestFocus()) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            });
+        }
+
         holder.card.setOnClickListener(v -> {
             HapticHelper.performClick(v);
             if (listener != null) {

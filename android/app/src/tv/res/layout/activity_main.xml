@@ -545,6 +545,7 @@
                     android:focusable="true"
                     android:nextFocusRight="@+id/et_search"
                     android:nextFocusDown="@+id/rv_anime_grid"
+                    android:nextFocusUp="@+id/btn_collapse_search"
                     android:contentDescription="Tutup Pencarian" />
 
                 <LinearLayout
@@ -578,7 +579,8 @@
                         android:inputType="text"
                         android:singleLine="true"
                         android:nextFocusLeft="@+id/btn_collapse_search"
-                        android:nextFocusDown="@+id/rv_anime_grid" />
+                        android:nextFocusDown="@+id/rv_anime_grid"
+                        android:nextFocusUp="@+id/et_search" />
 
                     <ImageView
                         android:id="@+id/btn_clear_search"

@@ -2860,7 +2860,12 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     public boolean isControllerVisible() {
-        return playerView != null && playerView.isControllerFullyVisible();
+        if (playerView == null) return false;
+        View focus = getCurrentFocus();
+        if (focus != null && focus != playerView) {
+            return true;
+        }
+        return playerView.isControllerFullyVisible();
     }
 
     public void showTvController(boolean requestPrimaryFocus) {
@@ -2870,6 +2875,13 @@ public class PlayerActivity extends AppCompatActivity {
         if (requestPrimaryFocus && btnExoPlayPause != null) {
             btnExoPlayPause.requestFocus();
         }
+    }
+
+    public void hideTvController() {
+        if (playerView != null) {
+            playerView.hideController();
+        }
+        hideTopBar(false);
     }
 
     public boolean performSkipIfVisible() {

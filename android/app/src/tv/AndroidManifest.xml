@@ -10,11 +10,16 @@
         android:required="false" />
 
     <application
-        android:banner="@drawable/banner_tv">
+        android:banner="@drawable/banner_tv"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round">
 
         <activity
             android:name=".ui.home.MainActivity"
             android:screenOrientation="landscape"
+            android:banner="@drawable/banner_tv"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

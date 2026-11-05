@@ -16,6 +16,10 @@ public final class PlayerKeys {
 
     public static boolean handleBack(PlayerActivity host) {
         if (host == null) return false;
+        if (host.isControllerVisible()) {
+            host.hideTvController();
+            return true;
+        }
         host.finish();
         return true;
     }
