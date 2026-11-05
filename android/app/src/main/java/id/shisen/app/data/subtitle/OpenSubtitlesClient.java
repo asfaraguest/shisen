@@ -115,13 +115,9 @@ public class OpenSubtitlesClient {
                     }
 
                     // Hapus watermark/iklan dan terapkan leksikon universal
-                    List<SubtitleCue> cleanCues = new ArrayList<>();
-                    for (SubtitleCue c : cues) {
-                        if (AD_PATTERN.matcher(c.text).find()) {
-                            continue;
-                        }
+                    List<SubtitleCue> cleanCues = SmartLexicon.sanitizeAdsAndWatermarks(cues);
+                    for (SubtitleCue c : cleanCues) {
                         c.text = SmartLexicon.applyUniversalLexicon(c.text);
-                        cleanCues.add(c);
                     }
 
                     if (callback != null) callback.onSuccess(cleanCues);

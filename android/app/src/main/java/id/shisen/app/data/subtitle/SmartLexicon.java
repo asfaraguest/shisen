@@ -48,6 +48,53 @@ public class SmartLexicon {
         "^\\s*[\\(\\[\\*].*[\\)\\]\\*]\\s*$"
     );
 
+    public static final Pattern FULL_LINE_AD_PATTERN = Pattern.compile(
+        "(?i)(?:\\b(slot|gacor|judi|togel|casino|betting|poker|pragmatic|maxwin|deposit|bonus|zeus|olympus)\\b)|" +
+        "(?:\\b(diterjemahkan oleh|translated by|alih bahasa|penerjemah:|typesetter:|encoder:|timer:|karaoke fx:|presented by:|rip by:|kunjungi website|join discord|dukung kami di)\\b)|" +
+        "(?:\\b(subtitles downloaded from|sync and correct|synchronize|advertisement)\\b)|" +
+        "(?:^(?:https?://|www\\.|t\\.me/|discord\\.gg/|opensubtitles|subdl|subscene|yify|animesub))"
+    );
+
+    public static final Pattern INLINE_AD_PATTERN = Pattern.compile(
+        "(?i)\\(?(?:https?://\\S+|www\\.\\S+|t\\.me/\\S+|discord\\.gg/\\S+|linktr\\.ee/\\S+|subscene\\.com|opensubtitles\\.(?:org|com))\\)?"
+    );
+
+    public static List<SubtitleCue> sanitizeAdsAndWatermarks(List<SubtitleCue> cues) {
+        if (cues == null || cues.isEmpty()) return new ArrayList<>();
+        List<SubtitleCue> clean = new ArrayList<>(cues.size());
+        for (SubtitleCue c : cues) {
+            if (c == null || c.text == null) continue;
+            String stripped = cleanAdText(c.text);
+            if (stripped.isEmpty()) {
+                continue;
+            }
+            clean.add(new SubtitleCue(c.startMs, c.endMs, stripped));
+        }
+        return clean;
+    }
+
+    public static String cleanAdText(String text) {
+        if (text == null) return "";
+        String t = text.trim();
+        if (t.isEmpty()) return "";
+
+        // 1. Bersihkan iklan/link inline terlebih dahulu
+        if (INLINE_AD_PATTERN.matcher(t).find()) {
+            t = INLINE_AD_PATTERN.matcher(t).replaceAll("").trim();
+            t = t.replaceAll("^[\\s(\\[{\\-_:]+|[\\s)\\]}\\-_:]+$", "").trim();
+        }
+
+        // 2. Jika seluruh baris adalah iklan judi, spam, atau credit fansub, buang baris ini
+        if (FULL_LINE_AD_PATTERN.matcher(t).find()) {
+            return "";
+        }
+
+        if (t.length() < 2 || t.matches("^[\\p{Punct}\\s]+$")) {
+            return "";
+        }
+        return t;
+    }
+
     private static final List<Rule> UNIVERSAL_RULES = new ArrayList<>();
     private static final List<Rule> CASUAL_RULES = new ArrayList<>();
     private static final List<Rule> AIGTX_SMOOTH_RULES = new ArrayList<>();
@@ -822,6 +869,7 @@ public class SmartLexicon {
         CASUAL_RULES.add(new Rule("\\bwanita tersebut\\b", "cewek itu"));
         CASUAL_RULES.add(new Rule("\\blelaki tersebut\\b", "cowok itu"));
         CASUAL_RULES.add(new Rule("\\btersesatlah\\b", "pergi sana"));
+        CASUAL_RULES.add(new Rule("(?i)\\bjangan khawatir tentang (?:saya|aku)\\b", "nggak usah khawatirin aku"));
         CASUAL_RULES.add(new Rule("\\bjangan khawatir\\b", "tenang aja"));
         CASUAL_RULES.add(new Rule("\\btak perlu khawatir\\b", "tenang aja"));
         CASUAL_RULES.add(new Rule("\\bterima kasih banyak\\b", "makasih banyak"));
@@ -950,6 +998,38 @@ public class SmartLexicon {
         AIGTX_SMOOTH_RULES.add(new Rule("\\bdi atas tubuh matiku\\b", "langkahi dulu mayatku"));
         AIGTX_SMOOTH_RULES.add(new Rule("\\bjangan biarkan penjagamu turun\\b", "jangan lengah"));
         AIGTX_SMOOTH_RULES.add(new Rule("\\bperhatikan punggungmu\\b", "waspadalah di belakangmu"));
+
+        // Aturan Bahasa Lisan Fansub (De-formalisasi Output Google Translate & DeepL)
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bmengapa\\b", "kenapa"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bbagaimana jika\\b", "gimana kalau"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bbagaimana mungkin\\b", "mana mungkin"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bseperti ini\\b", "kayak gini"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bseperti itu\\b", "kayak gitu"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\btetapi\\b", "tapi"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bnamun\\b", "tapi"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bsebenarnya\\b", "sebenernya"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\btentunya\\b", "tentu aja"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bapakah anda bercanda\\b", "kamu bercanda?"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bapa yang sedang terjadi\\b", "ada apa ini sebenarnya?"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bjangan khawatir tentang saya\\b", "nggak usah khawatirin aku"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\btolong tinggalkan saya sendiri\\b", "tinggalin aku sendiri!"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bsaya tidak tahu apa-apa\\b", "aku nggak tahu apa-apa kok"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bini bukan urusan anda\\b", "ini bukan urusanmu!"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bkamu tidak\\b", "kamu nggak"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\baku tidak\\b", "aku nggak"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bdia tidak\\b", "dia nggak"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bmereka tidak\\b", "mereka nggak"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bkita tidak\\b", "kita nggak"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\btidak akan\\b", "nggak bakal"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\btidak bisa\\b", "nggak bisa"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\btidak mau\\b", "nggak mau"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bsedang apa\\b", "lagi apa"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bsangat senang\\b", "seneng banget"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bsangat cepat\\b", "cepet banget"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bsangat kuat\\b", "kuat banget"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bsangat lelah\\b", "capek banget"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bsangat marah\\b", "marah banget"));
+        AIGTX_SMOOTH_RULES.add(new Rule("(?i)\\bsangat memalukan\\b", "memalukan banget"));
     }
 
     private static void initCasualPronouns() {

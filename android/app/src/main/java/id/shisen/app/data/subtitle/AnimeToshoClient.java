@@ -197,12 +197,13 @@ public class AnimeToshoClient {
                         return;
                     }
 
-                    // Terapkan leksikon universal
-                    for (SubtitleCue c : cues) {
+                    // Sanitasi iklan/watermark dan terapkan leksikon universal
+                    List<SubtitleCue> cleanCues = SmartLexicon.sanitizeAdsAndWatermarks(cues);
+                    for (SubtitleCue c : cleanCues) {
                         c.text = SmartLexicon.applyUniversalLexicon(c.text);
                     }
 
-                    if (callback != null) callback.onSuccess(cues);
+                    if (callback != null) callback.onSuccess(cleanCues);
                 }
             } catch (Exception e) {
                 if (callback != null) callback.onError("Error mengunduh subtitle: " + e.getMessage());

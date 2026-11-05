@@ -151,4 +151,30 @@ public class SmartLexiconTest {
         assertEquals("kamu sudah gila",
                 SmartLexicon.applyUniversalLexicon("kamu kehilangan akal"));
     }
+
+    @Test
+    public void testSanitizeAdsAndWatermarks() {
+        List<SubtitleCue> cues = new ArrayList<>();
+        cues.add(new SubtitleCue(1000, 3000, "Daftar slot gacor deposit bonus di www.judislot.xyz"));
+        cues.add(new SubtitleCue(3500, 5000, "Ayo cepat lari!"));
+        cues.add(new SubtitleCue(5500, 7000, "Diterjemahkan oleh Fansub Indonesia"));
+        cues.add(new SubtitleCue(7500, 9000, "Tunggu aku! (subscene.com)"));
+
+        List<SubtitleCue> cleaned = SmartLexicon.sanitizeAdsAndWatermarks(cues);
+        assertEquals(2, cleaned.size());
+        assertEquals("Ayo cepat lari!", cleaned.get(0).text);
+        assertEquals("Tunggu aku!", cleaned.get(1).text);
+    }
+
+    @Test
+    public void testColloquialFansub() {
+        assertEquals("kenapa", SmartLexicon.sanitizeGtxPlusId("mengapa", false));
+        assertEquals("gimana kalau", SmartLexicon.sanitizeGtxPlusId("bagaimana jika", false));
+        assertEquals("kayak gini", SmartLexicon.sanitizeGtxPlusId("seperti ini", false));
+        assertEquals("kayak gitu", SmartLexicon.sanitizeGtxPlusId("seperti itu", false));
+        assertEquals("tapi", SmartLexicon.sanitizeGtxPlusId("tetapi", false));
+        assertEquals("sebenernya", SmartLexicon.sanitizeGtxPlusId("sebenarnya", false));
+        assertEquals("ada apa ini sebenarnya?", SmartLexicon.sanitizeGtxPlusId("apa yang sedang terjadi", false));
+        assertEquals("nggak usah khawatirin aku", SmartLexicon.sanitizeGtxPlusId("jangan khawatir tentang saya", false));
+    }
 }
