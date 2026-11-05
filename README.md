@@ -15,7 +15,7 @@
   <p>
     <a href="https://github.com/asfaraguest/shisen/releases/download/v1.0.1/shisen-release-v1.0.1.apk"><img src="https://img.shields.io/badge/Download-Shisen%20Mobile%20(Stable)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download Shisen Mobile Stable APK"></a>
     <br>
-    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.0-beta.9/shisen-tv-release-v1.1.0-beta.9.apk"><img src="https://img.shields.io/badge/Download%20Beta-Shisen%20TV%20(Android%20TV)-00B4D8?style=for-the-badge&logo=androidtv&logoColor=white" alt="Download Shisen TV Beta APK"></a>
+    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.0-beta.10/shisen-tv-release-v1.1.0-beta.10.apk"><img src="https://img.shields.io/badge/Download%20Beta-Shisen%20TV%20(Android%20TV)-00B4D8?style=for-the-badge&logo=androidtv&logoColor=white" alt="Download Shisen TV Beta APK"></a>
   </p>
 
   <p>
