@@ -584,6 +584,12 @@ Output:
         return SecureStore.getInstance(context).remove(KEY_PREF_MODEL);
     }
 
+    public static boolean isGemmaModel(String model) {
+        if (model == null) return false;
+        String m = model.toLowerCase();
+        return m.contains("gemma") || m.contains("genma");
+    }
+
     public static String getDefaultModel(Provider provider) {
         if (provider == null) return "gemini-2.5-flash";
         switch (provider) {
@@ -594,7 +600,7 @@ Output:
             case OPENROUTER:
                 return "google/gemini-2.0-flash-exp:free";
             case OLLAMA:
-                return "gpt-oss:20b";
+                return "gemma4:31b";
             case GEMINI:
             default:
                 return "gemini-2.5-flash";
@@ -610,6 +616,7 @@ Output:
                 list.add("gemini-2.0-flash");
                 list.add("gemini-1.5-flash");
                 list.add("gemini-1.5-pro");
+                list.add("gemma-2-9b-it");
                 break;
             case GROQ:
                 list.add("llama-3.3-70b-versatile");
@@ -624,10 +631,12 @@ Output:
                 break;
             case OPENROUTER:
                 list.add("google/gemini-2.0-flash-exp:free");
+                list.add("google/gemma-2-9b-it:free");
                 list.add("deepseek/deepseek-chat");
                 list.add("meta-llama/llama-3.3-70b-instruct");
                 break;
             case OLLAMA:
+                list.add("gemma4:31b");
                 list.add("gpt-oss:20b");
                 list.add("gpt-oss:120b");
                 list.add("llama3.2");
@@ -864,10 +873,16 @@ Output:
         }
 
         JSONArray messages = new JSONArray();
-        JSONObject sysMsg = new JSONObject();
-        sysMsg.put("role", "system");
-        sysMsg.put("content", systemPrompt);
-        messages.put(sysMsg);
+        boolean gemma = isGemmaModel(model);
+        if (gemma) {
+            // Model Gemma secara arsitektural menolak role: "system" pada API chat format OpenAI
+            userPrompt = systemPrompt + "\n\n" + userPrompt;
+        } else {
+            JSONObject sysMsg = new JSONObject();
+            sysMsg.put("role", "system");
+            sysMsg.put("content", systemPrompt);
+            messages.put(sysMsg);
+        }
 
         JSONObject userMsg = new JSONObject();
         userMsg.put("role", "user");
@@ -1064,6 +1079,9 @@ Output:
     public String callGemini(String text, String apiKey, String customPrompt, String model) throws Exception {
         String base = customBaseUrl != null ? customBaseUrl : "https://generativelanguage.googleapis.com";
         String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "gemini-2.5-flash";
+        if (effectiveModel.startsWith("models/")) {
+            effectiveModel = effectiveModel.substring(7);
+        }
         String url = base + "/v1beta/models/" + effectiveModel + ":generateContent";
 
         String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
@@ -1128,19 +1146,26 @@ Output:
         String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
                 ? customPrompt.trim() : DEFAULT_FANSUB_PROMPT_ID;
 
-        JSONObject sysMsg = new JSONObject();
-        sysMsg.put("role", "system");
-        sysMsg.put("content", instruction);
-
-        JSONObject userMsg = new JSONObject();
-        userMsg.put("role", "user");
-        userMsg.put("content", text);
+        String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "llama-3.3-70b-versatile";
+        boolean gemma = isGemmaModel(effectiveModel);
 
         JSONArray messages = new JSONArray();
-        messages.put(sysMsg);
-        messages.put(userMsg);
+        if (gemma) {
+            JSONObject userMsg = new JSONObject();
+            userMsg.put("role", "user");
+            userMsg.put("content", instruction + "\n\n" + text);
+            messages.put(userMsg);
+        } else {
+            JSONObject sysMsg = new JSONObject();
+            sysMsg.put("role", "system");
+            sysMsg.put("content", instruction);
+            JSONObject userMsg = new JSONObject();
+            userMsg.put("role", "user");
+            userMsg.put("content", text);
+            messages.put(sysMsg);
+            messages.put(userMsg);
+        }
 
-        String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "llama-3.3-70b-versatile";
         JSONObject bodyObj = new JSONObject();
         bodyObj.put("model", effectiveModel);
         bodyObj.put("messages", messages);
@@ -1184,19 +1209,26 @@ Output:
         String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
                 ? customPrompt.trim() : DEFAULT_FANSUB_PROMPT_ID;
 
-        JSONObject sysMsg = new JSONObject();
-        sysMsg.put("role", "system");
-        sysMsg.put("content", instruction);
-
-        JSONObject userMsg = new JSONObject();
-        userMsg.put("role", "user");
-        userMsg.put("content", text);
+        String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "gpt-4o-mini";
+        boolean gemma = isGemmaModel(effectiveModel);
 
         JSONArray messages = new JSONArray();
-        messages.put(sysMsg);
-        messages.put(userMsg);
+        if (gemma) {
+            JSONObject userMsg = new JSONObject();
+            userMsg.put("role", "user");
+            userMsg.put("content", instruction + "\n\n" + text);
+            messages.put(userMsg);
+        } else {
+            JSONObject sysMsg = new JSONObject();
+            sysMsg.put("role", "system");
+            sysMsg.put("content", instruction);
+            JSONObject userMsg = new JSONObject();
+            userMsg.put("role", "user");
+            userMsg.put("content", text);
+            messages.put(sysMsg);
+            messages.put(userMsg);
+        }
 
-        String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "gpt-4o-mini";
         JSONObject bodyObj = new JSONObject();
         bodyObj.put("model", effectiveModel);
         bodyObj.put("messages", messages);

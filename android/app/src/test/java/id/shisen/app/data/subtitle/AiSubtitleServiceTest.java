@@ -226,19 +226,56 @@ public class AiSubtitleServiceTest {
         assertEquals("llama-3.3-70b-versatile", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GROQ));
         assertEquals("gpt-4o-mini", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENAI));
         assertEquals("google/gemini-2.0-flash-exp:free", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENROUTER));
-        assertEquals("gpt-oss:20b", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OLLAMA));
+        assertEquals("gemma4:31b", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OLLAMA));
 
         java.util.List<String> geminiModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.GEMINI);
         assertTrue(geminiModels.size() >= 3);
         assertEquals("gemini-2.5-flash", geminiModels.get(0));
+        assertTrue(geminiModels.contains("gemma-2-9b-it"));
 
         java.util.List<String> groqModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.GROQ);
         assertTrue(groqModels.size() >= 4);
         assertEquals("llama-3.3-70b-versatile", groqModels.get(0));
+        assertTrue(groqModels.contains("gemma2-9b-it"));
+
+        java.util.List<String> ollamaModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.OLLAMA);
+        assertEquals("gemma4:31b", ollamaModels.get(0));
 
         // Effective model fallback when custom model is null or empty
         assertEquals("gemini-2.5-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, ""));
         assertEquals("custom-gemini-model", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "custom-gemini-model"));
+    }
+
+    @Test
+    public void testGemmaModelBypassesSystemRole() throws Exception {
+        String mockResponse = "{\n" +
+                "  \"choices\": [\n" +
+                "    {\n" +
+                "      \"message\": {\n" +
+                "        \"role\": \"assistant\",\n" +
+                "        \"content\": \"Hasil terjemahan gemma.\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(mockResponse));
+
+        String key = "gsk_test_key";
+        String customModel = "gemma4:31b";
+        String translated = service.callGroq("Test gemma phrase", key, "Custom Fansub Rule", customModel);
+
+        assertEquals("Hasil terjemahan gemma.", translated);
+
+        RecordedRequest req = server.takeRequest();
+        String body = req.getBody().readUtf8();
+        assertTrue(body.contains("\"model\":\"gemma4:31b\""));
+        assertFalse("Gemma payload must not contain system role message", body.contains("\"role\":\"system\""));
+        assertTrue("Gemma payload must merge instructions into user message", body.contains("Custom Fansub Rule"));
+        assertTrue(body.contains("Test gemma phrase"));
     }
 
     @Test
@@ -261,13 +298,14 @@ public class AiSubtitleServiceTest {
                 .setBody(mockResponse));
 
         String key = "AIzaSyTestKey";
-        String customModel = "gemini-1.5-pro";
+        String customModel = "models/gemma-2-9b-it";
         String translated = service.callGemini("Custom model test", key, null, customModel);
 
         assertEquals("Terjemahan model kustom.", translated);
 
         RecordedRequest req = server.takeRequest();
-        assertTrue(req.getPath().contains("/models/gemini-1.5-pro:generateContent"));
+        assertTrue(req.getPath().contains("/models/gemma-2-9b-it:generateContent"));
+        assertFalse(req.getPath().contains("/models/models/"));
     }
 
     @Test
