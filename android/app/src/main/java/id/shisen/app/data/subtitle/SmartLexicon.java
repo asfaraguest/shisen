@@ -64,6 +64,7 @@ public class SmartLexicon {
         initUniversalBatch5();
         initUniversalBatch6();
         initUniversalBatch7();
+        initGemmaMimicBatch();
         initCasualBatch1();
         initCasualBatch2();
         initAigtxSmooth();
@@ -713,6 +714,48 @@ public class SmartLexicon {
         UNIVERSAL_RULES.add(new Rule("\\bproduction method\\b", "Metode Pembuatan"));
     }
 
+    private static void initGemmaMimicBatch() {
+        // --- 99% Gemma4:31b Fansub Mimic & Anti-Machine Stiffness Rules ---
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bambil tindakan menghindar\\b", "lakukan manuver menghindar"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bpukulan langsung\\b", "kena telak"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\btembak sesuai keinginan\\b", "tembak sesuka hati"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\btertangkap dalam tembakan silang\\b", "terjebak dalam baku tembak"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bmenari ke jebakan\\b", "masuk ke jebakan"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bmemegang tali\\b", "dalang di balik semua ini"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bwarga harta karun\\b", "warga kehormatan"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bdi perut binatang\\b", "di sarang musuh"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\btubuh siswa\\b", "seluruh siswa"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bdomba korban\\b", "tumbal"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bbanjir tinggi\\b", "incaranmu tinggi juga"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bmembidik tinggi\\b", "incaranmu tinggi juga"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bbayi besar\\b", "cengeng banget"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\blihat\\?\\s*katanya!?\\b", "tuh, kan! apa kubilang!"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bberapa curiga itu\\b", "mencurigakan sekali, kan"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bberapa curiga\\b", "mencurigakan sekali"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bberapa manis\\b", "manis sekali"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bberapa lucu\\b", "lucu banget"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bkamu kehilangan akal sehat\\b", "kamu sudah kehilangan akal sehat"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bkamu kehilangan akal\\b", "kamu sudah gila"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bpucat kayak hantu\\b", "pucat pasi"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\btutup mulutmu\\b", "diam"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\btinggalkan aku sendiri\\b", "jangan ganggu aku"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bdesa daun\\b", "Desa Konoha"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bdesa pasir\\b", "Desa Suna"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bdesa bunyi\\b", "Desa Otogakure"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bdesa kabut\\b", "Desa Kirigakure"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bpenjara bawah tanah\\b", "dungeon"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bapakah kamu baik-baik saja\\b", "kamu nggak apa-apa?"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bpesanan naik\\b", "pesanan siap"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bkembali ke bentuk semula\\b", "kembali ke wujud asli kalian"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bsangat embarrassing\\b", "memalukan sekali"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bdi siang hari yang bolong\\b", "di siang bolong"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bsegera keluar bertempur\\b", "segera meluncur bertempur"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\btarget terkunci pada\\b", "target terkunci"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bpembunuh anak kecil\\b", "pembunuh kekanak-kanakan"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bsemua bersorak\\b", "jayalah"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bapakah anda mengerti\\b", "paham, kan?"));
+    }
+
     private static void initCasualBatch1() {
         CASUAL_RULES.add(new Rule("\\bsaya tidak tahu anda ada di sana\\b", "aku nggak tahu kamu ada di sana"));
         CASUAL_RULES.add(new Rule("\\bsaya nggak tahu anda ada di sana\\b", "aku nggak tahu kamu ada di sana"));
@@ -1035,6 +1078,47 @@ public class SmartLexicon {
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwhat are you talking about\\b", "ngomong apa sih kamu"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwhat are you doing\\b", "kamu lagi ngapain"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwhere are you going\\b", "kamu mau ke mana"));
+
+        // --- Aturan Pre-processing Gemma4:31b Fansub Mimic (Anti-Stiffness) ---
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\ball units,? sortie\\b", "all units, deploy now"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bsortie immediately\\b", "deploy immediately"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\btake evasive action\\b", "dodge now"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bdirect hit\\b", "clean hit"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bfire at will\\b", "shoot freely"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bcaught in the crossfire\\b", "trapped in gunfight"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bin the belly of the beast\\b", "in the lion's den"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bdance right into my trap\\b", "fall right into my trap"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bpulling the strings\\b", "masterminding everything"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bstudent body\\b", "all students"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bsacrificial lamb\\b", "scapegoat"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\baiming high\\b", "your standards are high"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhotties\\b", "pretty girls"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bcuties\\b", "cute girls"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bit goes without saying\\b", "obviously"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bmiddle of nowhere\\b", "remote place"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bbig baby\\b", "crybaby"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bsee\\? told ya!?\\b", "see? I told you"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhow suspicious\\b", "so suspicious"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhow cute\\b", "so cute"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bin broad daylight\\b", "openly in daylight"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhave you lost your mind\\b", "are you insane"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bpale as a ghost\\b", "dead pale"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bshut up\\b", "be quiet"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhold on\\b", "wait a minute"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bgive me a break\\b", "you have got to be kidding me"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bbring it on\\b", "come at me"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bcut it out\\b", "stop it"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bget lost\\b", "go away"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bleave me alone\\b", "don't bother me"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bcouncil president\\b", "student council president"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhypothetically speaking\\b", "misalkan saja"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\brevert to your original form\\b", "return to your true form"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhidden leaf village\\b", "Konoha village"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhidden leaf\\b", "Konoha"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhidden sand village\\b", "Suna village"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhidden sand\\b", "Suna"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bcurse mark\\b", "cursed seal"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bdomain expansion\\b", "Ryoiki Tenkai"));
     }
 
     public static String preprocessEnglishForGtx(String text) {

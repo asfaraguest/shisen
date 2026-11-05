@@ -402,6 +402,69 @@ public class SubtitleManager {
         loadAiSubtitleFromTracks(tracks, title, episode, false);
     }
 
+    public void loadGtxMimicSubtitleFromTracks(List<SubtitleTrack> tracks, String title, int episode, boolean forceRefresh) {
+        if (tracks == null || tracks.isEmpty()) {
+            if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan untuk AI Fansub");
+            return;
+        }
+
+        final SubtitleTrack sourceEn = SubtitleTrack.findEnglishTrack(tracks);
+        if (sourceEn == null) {
+            if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan untuk AI Fansub");
+            return;
+        }
+        final int loadId = ++currentLoadId;
+        synchronized (this) {
+            activeLanguage = "id";
+            activeEngine = "ai";
+            clearCues();
+        }
+
+        if (listener != null) listener.onSubtitleLoading("Menyiapkan sumber subtitle English...");
+
+        new Thread(() -> {
+            try {
+                List<SubtitleCue> enCues = fetchCuesFromUrl(sourceEn.url, sourceEn.referer);
+                if (loadId != currentLoadId) return;
+                if (enCues == null || enCues.isEmpty()) {
+                    if (listener != null) listener.onSubtitleError("Gagal mengambil teks subtitle sumber");
+                    return;
+                }
+                GtxTranslator.translateAsync(context, sourceEn.url, enCues, forceRefresh, new GtxTranslator.TranslateCallback() {
+                    @Override
+                    public void onProgress(int progress, int total) {
+                        if (loadId != currentLoadId) return;
+                        int pct = total > 0 ? (progress * 100 / total) : 0;
+                        if (listener != null) listener.onSubtitleLoading("Menerjemahkan AI Fansub (" + pct + "%)...");
+                    }
+
+                    @Override
+                    public void onSuccess(List<SubtitleCue> translatedCues) {
+                        if (loadId != currentLoadId) return;
+                        synchronized (SubtitleManager.this) {
+                            activeCues = translatedCues;
+                            lastCueIndex = -1;
+                            activeLabel = "Bahasa Indonesia [AI Fansub]";
+                            activeLanguage = "id";
+                            activeEngine = "ai";
+                            if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
+                        }
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        if (loadId != currentLoadId) return;
+                        if (listener != null) listener.onSubtitleError("Gagal menerjemahkan subtitle: " + error);
+                    }
+                });
+            } catch (Exception e) {
+                if (loadId == currentLoadId && listener != null) {
+                    listener.onSubtitleError("Gagal mengunduh subtitle sumber: " + e.getMessage());
+                }
+            }
+        }).start();
+    }
+
     public void loadAiSubtitleFromTracks(List<SubtitleTrack> tracks, String title, int episode, boolean forceRefresh) {
         if (tracks == null || tracks.isEmpty()) {
             if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan untuk AI Fansub");
@@ -447,6 +510,36 @@ public class SubtitleManager {
     public void loadAiSubtitle(List<SubtitleCue> enCues, String sourceUrl, boolean forceRefresh, int loadId) {
         String apiKey = AiSubtitleService.getKey(context);
         if (apiKey.isEmpty()) {
+            if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+                GtxTranslator.translateAsync(context, sourceUrl, enCues, forceRefresh, new GtxTranslator.TranslateCallback() {
+                    @Override
+                    public void onProgress(int progress, int total) {
+                        if (loadId != currentLoadId) return;
+                        int pct = total > 0 ? (progress * 100 / total) : 0;
+                        if (listener != null) listener.onSubtitleLoading("Menerjemahkan AI Fansub (" + pct + "%)...");
+                    }
+
+                    @Override
+                    public void onSuccess(List<SubtitleCue> translatedCues) {
+                        if (loadId != currentLoadId) return;
+                        synchronized (SubtitleManager.this) {
+                            activeCues = translatedCues;
+                            lastCueIndex = -1;
+                            activeLabel = "Bahasa Indonesia [AI Fansub]";
+                            activeLanguage = "id";
+                            activeEngine = "ai";
+                            if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
+                        }
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        if (loadId != currentLoadId) return;
+                        if (listener != null) listener.onSubtitleError("Gagal menerjemahkan subtitle: " + error);
+                    }
+                });
+                return;
+            }
             if (listener != null) listener.onSubtitleError("Kunci API LLM belum diatur");
             return;
         }

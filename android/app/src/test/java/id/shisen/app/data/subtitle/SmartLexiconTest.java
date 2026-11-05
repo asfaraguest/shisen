@@ -127,4 +127,28 @@ public class SmartLexiconTest {
         assertEquals("aku nggak mau pergi", result.get(0).text);
         assertTrue(result.get(1).text.contains("kamu") || result.get(1).text.contains("Apa kamu"));
     }
+
+    @Test
+    public void testGemmaMimicPreprocess() {
+        assertEquals("All units, deploy now!",
+                SmartLexicon.preprocessEnglishForGtx("All units, sortie!"));
+        assertEquals("Dodge now!",
+                SmartLexicon.preprocessEnglishForGtx("Take evasive action!"));
+        assertEquals("Obviously, he was a crybaby.",
+                SmartLexicon.preprocessEnglishForGtx("It goes without saying, he was a big baby."));
+    }
+
+    @Test
+    public void testGemmaMimicPostprocess() {
+        assertEquals("lakukan manuver menghindar",
+                SmartLexicon.applyUniversalLexicon("ambil tindakan menghindar"));
+        assertEquals("kena telak",
+                SmartLexicon.applyUniversalLexicon("pukulan langsung"));
+        assertEquals("mereka adalah tumbal",
+                SmartLexicon.applyUniversalLexicon("mereka adalah domba korban"));
+        assertEquals("incaranmu tinggi juga",
+                SmartLexicon.applyUniversalLexicon("banjir tinggi"));
+        assertEquals("kamu sudah gila",
+                SmartLexicon.applyUniversalLexicon("kamu kehilangan akal"));
+    }
 }

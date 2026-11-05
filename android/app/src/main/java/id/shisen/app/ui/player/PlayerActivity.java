@@ -2052,18 +2052,24 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
-        // 2. [AI] Bahasa Indonesia (AI Fansub LLM)
+        // 2. [AI] Bahasa Indonesia (AI Fansub LLM / GTX Gemma Mimic)
         boolean isAiSelected = isSubOn && "id".equals(curLang) && "ai".equals(curEngine);
         options.add(getString(R.string.player_sub_option_ai) + (isAiSelected ? activeBadge : ""));
         actions.add(() -> {
+            subtitleManager.setSubEnabled(true);
+            subtitleManager.setMode("id", "ai");
+            if (PlayerKeys.isTv()) {
+                if (currentStreamSource != null) {
+                    subtitleManager.loadGtxMimicSubtitleFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), false);
+                }
+                return;
+            }
             String aiKey = AiSubtitleService.getKey(this);
             if (aiKey == null || aiKey.trim().isEmpty()) {
                 Toast.makeText(this, R.string.player_sub_ai_not_configured, Toast.LENGTH_LONG).show();
                 showAiSubtitleSettingsDialog();
                 return;
             }
-            subtitleManager.setSubEnabled(true);
-            subtitleManager.setMode("id", "ai");
             if (currentStreamSource != null) {
                 subtitleManager.loadAiSubtitleFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), false);
             }
@@ -2085,13 +2091,15 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
 
-        // 4. AI Subtitle BYOK & Custom Prompt Quick Configuration
-        String aiKey = AiSubtitleService.getKey(this);
-        String aiLabel = (aiKey != null && !aiKey.isEmpty())
-                ? getString(R.string.player_sub_option_ai_fmt, AiSubtitleService.Provider.detect(aiKey).displayName)
-                : getString(R.string.player_sub_option_ai_default);
-        options.add(aiLabel);
-        actions.add(this::showAiSubtitleSettingsDialog);
+        // 4. AI Subtitle BYOK & Custom Prompt Quick Configuration (Hanya untuk Mobile)
+        if (!PlayerKeys.isTv()) {
+            String aiKey = AiSubtitleService.getKey(this);
+            String aiLabel = (aiKey != null && !aiKey.isEmpty())
+                    ? getString(R.string.player_sub_option_ai_fmt, AiSubtitleService.Provider.detect(aiKey).displayName)
+                    : getString(R.string.player_sub_option_ai_default);
+            options.add(aiLabel);
+            actions.add(this::showAiSubtitleSettingsDialog);
+        }
 
         // 5. [EN] English (Original)
         boolean isEnSelected = isSubOn && "en".equals(curLang) && "raw".equals(curEngine);

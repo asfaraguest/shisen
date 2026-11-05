@@ -69,15 +69,21 @@
             android:background="@color/frost_border" />
 
         <!-- ================= SECTION 1: TEMA TAMPILAN ================= -->
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/container_section_theme"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/settings_section_theme"
-            android:textColor="@color/accent_glacial"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-bold"
-            android:letterSpacing="0.06" />
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/settings_section_theme"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.06" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -290,6 +296,7 @@
             android:layout_height="1dp"
             android:layout_marginTop="16dp"
             android:background="@color/frost_border" />
+        </LinearLayout>
 
         <!-- ================= SECTION: BAHASA ANTARMUKA ================= -->
         <TextView
@@ -368,22 +375,28 @@
                  android:fontFamily="sans-serif-medium" />
          </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="16dp"
-            android:background="@color/frost_border" />
-
         <!-- ================= SECTION 2: SISTEM & KONTEN (SAFE MODE + HAPTIC) ================= -->
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/container_section_safety"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/settings_section_safety"
-            android:textColor="@color/accent_glacial"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-bold"
-            android:letterSpacing="0.06" />
+            android:orientation="vertical">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:background="@color/frost_border" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/settings_section_safety"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.06" />
 
         <!-- Safe Mode Switch -->
         <LinearLayout
@@ -466,20 +479,27 @@
                 app:thumbTint="@color/accent_glacial"
                 app:trackTint="@color/frost_elevated" />
         </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="16dp"
-            android:background="@color/frost_border" />
+        </LinearLayout>
 
         <!-- ================= SECTION 3: AI SUBTITLE BYOK & MODEL SELECTOR ================= -->
         <LinearLayout
+            android:id="@+id/container_section_ai"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:background="@color/frost_border" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
             <TextView
                 android:layout_width="0dp"
@@ -654,6 +674,7 @@
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-bold"
                 android:textAllCaps="false" />
+        </LinearLayout>
         </LinearLayout>
 
         <View

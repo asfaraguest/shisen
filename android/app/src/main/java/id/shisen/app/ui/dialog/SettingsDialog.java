@@ -63,17 +63,27 @@ public class SettingsDialog {
             dialog.dismiss();
         });
 
-        // 1. Theme Selection
-        setupThemeSection(dialogView, activity, listener);
+        // Khusus Shisen TV: hanya memuat opsi Bahasa dan Update
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            View sectionTheme = dialogView.findViewById(R.id.container_section_theme);
+            View sectionSafety = dialogView.findViewById(R.id.container_section_safety);
+            View sectionAi = dialogView.findViewById(R.id.container_section_ai);
+            if (sectionTheme != null) sectionTheme.setVisibility(View.GONE);
+            if (sectionSafety != null) sectionSafety.setVisibility(View.GONE);
+            if (sectionAi != null) sectionAi.setVisibility(View.GONE);
+        } else {
+            // 1. Theme Selection
+            setupThemeSection(dialogView, activity, listener);
 
-        // 2. Language Selection (Trilingual: ID / EN / JA)
+            // 3. Safe Mode & Haptic
+            setupSystemSection(dialogView, activity, listener);
+
+            // 4. AI Subtitle & Model Selector
+            setupAiSubtitleSection(dialogView, activity, dialog);
+        }
+
+        // 2. Language Selection (ID / EN / JA / ES)
         setupLanguageSection(dialogView, activity, listener, dialog);
-
-        // 3. Safe Mode & Haptic
-        setupSystemSection(dialogView, activity, listener);
-
-        // 4. AI Subtitle & Model Selector
-        setupAiSubtitleSection(dialogView, activity, dialog);
 
         // 5. About & Update
         setupAboutSection(dialogView, activity);
