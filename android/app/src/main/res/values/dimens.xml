@@ -34,4 +34,5 @@
     <!-- Player Dimensions -->
     <dimen name="player_title_text_size">16sp</dimen>
     <dimen name="tv_overscan_horizontal">16dp</dimen>
+    <dimen name="tv_overscan_vertical">10dp</dimen>
 </resources>

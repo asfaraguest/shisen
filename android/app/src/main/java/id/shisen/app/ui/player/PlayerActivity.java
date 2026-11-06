@@ -2133,7 +2133,7 @@ public class PlayerActivity extends AppCompatActivity {
                 actions.add(() -> {
                     Toast.makeText(this, R.string.player_toast_retranslating, Toast.LENGTH_SHORT).show();
                     if (currentStreamSource != null) {
-                        subtitleManager.loadAiSubtitleFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), true);
+                        subtitleManager.loadAiOrMimicSubtitleFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), true);
                     }
                 });
             } else {
