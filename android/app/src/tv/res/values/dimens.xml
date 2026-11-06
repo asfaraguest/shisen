@@ -34,6 +34,6 @@
     <dimen name="player_title_text_size">18sp</dimen>
 
     <!-- TV Safe Area Overscan Padding (Proteksi anti terpotong di tepi layar) -->
-    <dimen name="tv_overscan_horizontal">16dp</dimen>
-    <dimen name="tv_overscan_vertical">10dp</dimen>
+    <dimen name="tv_overscan_horizontal">0dp</dimen>
+    <dimen name="tv_overscan_vertical">0dp</dimen>
 </resources>

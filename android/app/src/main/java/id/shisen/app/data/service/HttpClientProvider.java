@@ -106,6 +106,7 @@ public class HttpClientProvider {
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(20, TimeUnit.SECONDS)
                 .writeTimeout(15, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
                 .connectionPool(new ConnectionPool(25, 60, TimeUnit.SECONDS))
                 .followRedirects(true)
                 .followSslRedirects(true);

@@ -32,8 +32,15 @@ public class DesyncSSLSocketFactory extends SSLSocketFactory {
     @Override
     public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
         boolean shouldDesync = DynamicBlockedHosts.isBlocked(host);
-        Socket wrapped = new DesyncSocketWrapper(s, host, shouldDesync);
-        return delegate.createSocket(wrapped, host, port, autoClose);
+        if (!shouldDesync) {
+            return delegate.createSocket(s, host, port, autoClose);
+        }
+        try {
+            Socket wrapped = new DesyncSocketWrapper(s, host, true);
+            return delegate.createSocket(wrapped, host, port, autoClose);
+        } catch (IOException e) {
+            return delegate.createSocket(s, host, port, autoClose);
+        }
     }
 
     @Override

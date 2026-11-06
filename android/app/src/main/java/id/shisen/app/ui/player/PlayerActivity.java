@@ -217,6 +217,7 @@ public class PlayerActivity extends AppCompatActivity {
     private Anime anime;
     private final List<Episode> episodeList = new ArrayList<>();
     private int currentIndex = 0;
+    private int streamRetryAttempts = 0;
     private EpisodeAdapter episodeAdapter;
     private static final ExecutorService dbExecutor = Executors.newSingleThreadExecutor();
     private long lastHistorySaveTime = 0;
@@ -676,6 +677,9 @@ public class PlayerActivity extends AppCompatActivity {
                 } else {
                     if (layoutBuffering != null) layoutBuffering.setVisibility(View.GONE);
                 }
+                if (playbackState == Player.STATE_READY) {
+                    streamRetryAttempts = 0;
+                }
 
                 if (playbackState == Player.STATE_ENDED) {
                     if (anime != null && currentIndex >= 0 && currentIndex < episodeList.size()) {
@@ -712,7 +716,22 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onPlayerError(@NonNull androidx.media3.common.PlaybackException error) {
                 if (layoutBuffering != null) layoutBuffering.setVisibility(View.GONE);
-                String msg = error.getCause() != null ? error.getCause().getMessage() : error.getMessage();
+                Throwable cause = error.getCause();
+                String msg = cause != null ? cause.getMessage() : error.getMessage();
+                boolean isSocketClosed = msg != null && (msg.contains("Socket is closed")
+                        || msg.contains("Socket closed")
+                        || msg.contains("Software caused connection abort"));
+                if (player != null && !isFinishing() && isSocketClosed && streamRetryAttempts < 2) {
+                    streamRetryAttempts++;
+                    long currentPos = player.getCurrentPosition();
+                    player.prepare();
+                    if (currentPos > 0) {
+                        player.seekTo(currentPos);
+                    }
+                    player.play();
+                    return;
+                }
+                streamRetryAttempts = 0;
                 Toast.makeText(PlayerActivity.this, getString(R.string.player_toast_stream_failed, msg), Toast.LENGTH_LONG).show();
             }
         });
