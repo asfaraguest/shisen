@@ -481,6 +481,38 @@
         </LinearLayout>
         </LinearLayout>
 
+        <!-- Button Toggle BYOK AI (Khusus Android TV) -->
+        <LinearLayout
+            android:id="@+id/btn_toggle_byok_ai"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input_field"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="14dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Konfigurasi BYOK AI (Ollama/Groq/Gemini)"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/tv_toggle_byok_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▼"
+                android:textColor="@color/accent_glacial"
+                android:textSize="12sp" />
+        </LinearLayout>
+
         <!-- ================= SECTION 3: AI SUBTITLE BYOK & MODEL SELECTOR ================= -->
         <LinearLayout
             android:id="@+id/container_section_ai"

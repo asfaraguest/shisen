@@ -5,6 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
+    android:paddingStart="@dimen/tv_overscan_horizontal"
+    android:paddingEnd="@dimen/tv_overscan_horizontal"
+    android:paddingTop="@dimen/tv_overscan_vertical"
+    android:paddingBottom="@dimen/tv_overscan_vertical"
+    android:clipToPadding="false"
     android:background="@drawable/bg_anime_canvas_shinkai">
 
     <!-- 1. LEFT-SIDE NAVIGATION RAIL (TV Leanback Menu - Auto Expand/Collapse) -->

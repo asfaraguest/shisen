@@ -423,11 +423,19 @@ public class PlayerActivity extends AppCompatActivity {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             int orientation = getResources().getConfiguration().orientation;
             if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                int padH = PlayerKeys.isTv() ? (int) dpToPx(32) : (int) dpToPx(16);
+                int padTop = PlayerKeys.isTv() ? (int) dpToPx(24) : (int) dpToPx(14);
+                int padBottom = (int) dpToPx(20);
                 if (layoutTopBar != null) {
-                    int padH = (int) dpToPx(16);
-                    int padTop = (int) dpToPx(14);
-                    int padBottom = (int) dpToPx(20);
                     layoutTopBar.setPadding(padH + insets.left, padTop + insets.top, padH + insets.right, padBottom);
+                }
+                if (btnSkipOpEd != null && PlayerKeys.isTv()) {
+                    ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) btnSkipOpEd.getLayoutParams();
+                    if (lp != null) {
+                        lp.bottomMargin = (int) dpToPx(48);
+                        lp.rightMargin = (int) dpToPx(36);
+                        btnSkipOpEd.setLayoutParams(lp);
+                    }
                 }
             } else {
                 if (rvPortraitEpisodes != null) {
@@ -2052,20 +2060,14 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
-        // 2. [AI] Bahasa Indonesia (AI Fansub LLM)
+        // 2. [AI] Bahasa Indonesia (AI Fansub LLM / AI Mimic GPT-4.1)
         boolean isAiSelected = isSubOn && "id".equals(curLang) && "ai".equals(curEngine);
         options.add(getString(R.string.player_sub_option_ai) + (isAiSelected ? activeBadge : ""));
         actions.add(() -> {
-            String aiKey = AiSubtitleService.getKey(this);
-            if (aiKey == null || aiKey.trim().isEmpty()) {
-                Toast.makeText(this, R.string.player_sub_ai_not_configured, Toast.LENGTH_LONG).show();
-                showAiSubtitleSettingsDialog();
-                return;
-            }
             subtitleManager.setSubEnabled(true);
             subtitleManager.setMode("id", "ai");
             if (currentStreamSource != null) {
-                subtitleManager.loadAiSubtitleFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), false);
+                subtitleManager.loadAiOrMimicSubtitleFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), false);
             }
         });
 

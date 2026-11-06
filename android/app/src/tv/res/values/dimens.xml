@@ -32,5 +32,8 @@
 
     <!-- Player Dimensions on TV -->
     <dimen name="player_title_text_size">18sp</dimen>
-    <dimen name="tv_overscan_horizontal">24dp</dimen>
+
+    <!-- TV Safe Area Overscan Padding (Proteksi anti terpotong di tepi layar) -->
+    <dimen name="tv_overscan_horizontal">28dp</dimen>
+    <dimen name="tv_overscan_vertical">18dp</dimen>
 </resources>

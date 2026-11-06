@@ -63,14 +63,40 @@ public class SettingsDialog {
             dialog.dismiss();
         });
 
-        // Khusus Shisen TV: hanya memuat opsi Bahasa dan Update
+        // Khusus Shisen TV: sembunyikan Tema dan Safety, sediakan toggle untuk BYOK AI
         if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
             View sectionTheme = dialogView.findViewById(R.id.container_section_theme);
             View sectionSafety = dialogView.findViewById(R.id.container_section_safety);
             View sectionAi = dialogView.findViewById(R.id.container_section_ai);
+            View btnToggleByok = dialogView.findViewById(R.id.btn_toggle_byok_ai);
+            TextView tvToggleIcon = dialogView.findViewById(R.id.tv_toggle_byok_icon);
+
             if (sectionTheme != null) sectionTheme.setVisibility(View.GONE);
             if (sectionSafety != null) sectionSafety.setVisibility(View.GONE);
-            if (sectionAi != null) sectionAi.setVisibility(View.GONE);
+
+            setupAiSubtitleSection(dialogView, activity, dialog);
+
+            if (sectionAi != null) {
+                sectionAi.setVisibility(View.GONE);
+            }
+
+            if (btnToggleByok != null) {
+                btnToggleByok.setVisibility(View.VISIBLE);
+                id.shisen.app.util.TvFocusHelper.attachFocusScale(btnToggleByok, 1.04f);
+                btnToggleByok.setOnClickListener(v -> {
+                    HapticHelper.performClick(v);
+                    if (sectionAi != null) {
+                        boolean isVisible = sectionAi.getVisibility() == View.VISIBLE;
+                        sectionAi.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+                        if (tvToggleIcon != null) {
+                            tvToggleIcon.setText(isVisible ? "▼" : "▲");
+                        }
+                        if (!isVisible) {
+                            sectionAi.requestFocus();
+                        }
+                    }
+                });
+            }
         } else {
             // 1. Theme Selection
             setupThemeSection(dialogView, activity, listener);

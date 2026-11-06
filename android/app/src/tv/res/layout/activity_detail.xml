@@ -33,8 +33,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:paddingHorizontal="24dp"
-        android:paddingVertical="18dp">
+        android:paddingHorizontal="@dimen/tv_overscan_horizontal"
+        android:paddingVertical="@dimen/tv_overscan_vertical">
 
         <!-- ================= PANEL KIRI: HERO INFO & ACTIONS (~420dp) ================= -->
         <androidx.core.widget.NestedScrollView
