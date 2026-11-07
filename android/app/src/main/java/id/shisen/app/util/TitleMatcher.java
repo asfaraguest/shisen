@@ -18,7 +18,8 @@ public class TitleMatcher {
             "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th",
             "second", "third", "fourth", "fifth", "sixth",
             "1", "2", "3", "4", "5", "6", "7", "8", "9",
-            "ii", "iii", "iv", "v", "vi", "vii", "viii"
+            "ii", "iii", "iv", "v", "vi", "vii", "viii",
+            "indo", "indonesia"
     ));
 
     private static final Set<String> MOVIE_KEYWORDS = new HashSet<>(Arrays.asList(
@@ -72,7 +73,7 @@ public class TitleMatcher {
 
     public static String stripQualifiers(String s) {
         if (s == null) return "";
-        return s.replaceAll("(?i)\\b(tv|sub|dub|uncensored|censored)\\b|\\((?:tv|sub|dub|uncensored|censored)\\)|\\[(?:tv|sub|dub|uncensored|censored)\\]", "").trim();
+        return s.replaceAll("(?i)\\b(tv|sub|dub|uncensored|censored|indo|indonesia)\\b|\\((?:tv|sub|dub|uncensored|censored|indo|indonesia)\\)|\\[(?:tv|sub|dub|uncensored|censored|indo|indonesia)\\]", "").trim();
     }
 
     public static String cleanSlug(String slug) {
@@ -417,7 +418,8 @@ public class TitleMatcher {
                 }
             }
             double r = (double) common.size() / Math.max(sigA.size(), sigB.size());
-            return r >= 0.75 && common.size() >= 3 && nonGenericCommon >= 1;
+            int minNeeded = Math.min(2, Math.min(sigA.size(), sigB.size()));
+            return r >= 0.75 && common.size() >= minNeeded && nonGenericCommon >= 1;
         }
 
         double overlap = (double) common.size() / Math.max(sigA.size(), sigB.size());
@@ -525,6 +527,12 @@ public class TitleMatcher {
                 bestScore = score;
                 bestSlug = c.slug;
                 if (score == 100) break;
+            }
+        }
+        if (bestSlug == null && candidates.size() == 1) {
+            Anime c = candidates.get(0);
+            if (c != null && c.slug != null && !c.slug.isEmpty() && isAnimeSeasonCompatible(anime, c)) {
+                bestSlug = c.slug;
             }
         }
         return bestSlug;

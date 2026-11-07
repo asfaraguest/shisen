@@ -103,7 +103,7 @@
             <TextView
                 android:id="@+id/tv_title"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="@dimen/card_title_height"
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:text="Judul Anime"

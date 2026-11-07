@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- TV 10-Foot UI Component Dimensions -->
-    <dimen name="card_poster_height">230dp</dimen>
-    <dimen name="card_margin">8dp</dimen>
+    <dimen name="card_poster_height">180dp</dimen>
+    <dimen name="card_margin">6dp</dimen>
+    <dimen name="card_title_height">38dp</dimen>
+    <dimen name="card_poster_h_width">125dp</dimen>
+    <dimen name="card_poster_h_height">175dp</dimen>
+    <dimen name="card_history_h_width">170dp</dimen>
+    <dimen name="card_history_h_height">100dp</dimen>
     <dimen name="card_corner_radius">12dp</dimen>
     <dimen name="hero_corner_radius">14dp</dimen>
-    <dimen name="hero_banner_height">240dp</dimen>
+    <dimen name="hero_banner_height">200dp</dimen>
 
     <!-- TV Card spacing tokens -->
-    <dimen name="card_badge_margin">8dp</dimen>
+    <dimen name="card_badge_margin">6dp</dimen>
     <dimen name="card_badge_padding_h">8dp</dimen>
     <dimen name="card_badge_padding_v">4dp</dimen>
-    <dimen name="card_body_padding_h">12dp</dimen>
-    <dimen name="card_body_padding_top">10dp</dimen>
-    <dimen name="card_body_padding_bottom">12dp</dimen>
+    <dimen name="card_body_padding_h">10dp</dimen>
+    <dimen name="card_body_padding_top">8dp</dimen>
+    <dimen name="card_body_padding_bottom">10dp</dimen>
     <dimen name="card_title_meta_gap">4dp</dimen>
     <dimen name="card_horizontal_margin">8dp</dimen>
     <dimen name="card_related_margin_end">8dp</dimen>
@@ -36,4 +41,8 @@
     <!-- TV Safe Area Overscan Padding (Proteksi anti terpotong di tepi layar) -->
     <dimen name="tv_overscan_horizontal">0dp</dimen>
     <dimen name="tv_overscan_vertical">0dp</dimen>
+
+    <!-- TV Safe Area Detail Content Insets (Melindungi tombol & teks dari bezel terpotong) -->
+    <dimen name="tv_detail_padding_horizontal">24dp</dimen>
+    <dimen name="tv_detail_padding_vertical">16dp</dimen>
 </resources>

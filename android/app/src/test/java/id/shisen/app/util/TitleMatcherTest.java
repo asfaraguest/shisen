@@ -181,5 +181,14 @@ public class TitleMatcherTest {
 
         assertTrue("Bleach should match Bleach (TV)",
                 TitleMatcher.isTitleMatch("Bleach", "Bleach (TV)"));
+
+        assertTrue("Otakudesu Sub Indo qualifier should be stripped and match",
+                TitleMatcher.isTitleMatch("Sousou no Frieren", "Sousou no Frieren Sub Indo"));
+
+        assertTrue("Solo Leveling Sub Indo should match Solo Leveling",
+                TitleMatcher.isTitleMatch("Solo Leveling", "Solo Leveling Sub Indo"));
+
+        assertTrue("Dandadan Sub Indo should match Dandadan",
+                TitleMatcher.isTitleMatch("Dandadan", "Dandadan Sub Indo"));
     }
 }

@@ -301,7 +301,8 @@ public final class DeviceNav {
     }
 
     public int getGridSpan(int widthDp) {
-        // Layar Android TV landscape 1080p/4K optimal pada 5 kolom
+        // Layar Android TV landscape 1080p/4K optimal pada 6 kolom; 720p pada 5 kolom
+        if (widthDp >= 840) return 6;
         return 5;
     }
 }

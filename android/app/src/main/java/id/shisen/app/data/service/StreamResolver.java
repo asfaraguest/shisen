@@ -248,8 +248,10 @@ public class StreamResolver {
         final String targetTitle = primaryQuery;
         final String altTitle = (anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
                 ? anime.romajiTitle : "";
+        final String cleanTarget = TitleMatcher.cleanSearchQuery(targetTitle);
+        final String primarySearch = (!cleanTarget.isEmpty()) ? cleanTarget : targetTitle;
 
-        HiAnimeClient.searchAnime(targetTitle, new HiAnimeClient.Callback<List<Anime>>() {
+        HiAnimeClient.searchAnime(primarySearch, new HiAnimeClient.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> results) {
                 String pickedSlug = pickBestSlug(results, anime, targetTitle, altTitle);
@@ -257,35 +259,62 @@ public class StreamResolver {
                     cacheSlug(anime.slug, pickedSlug);
                     if (anime.id > 0) cacheSlug(String.valueOf(anime.id), pickedSlug);
                     fetchHiAnimeEpAndResolve(pickedSlug, anime, episode, callback);
-                } else if (!altTitle.isEmpty() && !altTitle.equalsIgnoreCase(targetTitle)) {
-                    HiAnimeClient.searchAnime(altTitle, new HiAnimeClient.Callback<List<Anime>>() {
+                } else if (!targetTitle.equalsIgnoreCase(primarySearch)) {
+                    HiAnimeClient.searchAnime(targetTitle, new HiAnimeClient.Callback<List<Anime>>() {
                         @Override
-                        public void onSuccess(List<Anime> res2) {
-                            String picked2 = pickBestSlug(res2, anime, targetTitle, altTitle);
-                            if (picked2 != null) {
-                                cacheSlug(anime.slug, picked2);
-                                if (anime.id > 0) cacheSlug(String.valueOf(anime.id), picked2);
-                                fetchHiAnimeEpAndResolve(picked2, anime, episode, callback);
+                        public void onSuccess(List<Anime> resOrig) {
+                            String pickedOrig = pickBestSlug(resOrig, anime, targetTitle, altTitle);
+                            if (pickedOrig != null) {
+                                cacheSlug(anime.slug, pickedOrig);
+                                if (anime.id > 0) cacheSlug(String.valueOf(anime.id), pickedOrig);
+                                fetchHiAnimeEpAndResolve(pickedOrig, anime, episode, callback);
                             } else {
-                                callback.onError(new IOException("Judul tidak cocok di HiAnime"));
+                                tryAltSearch(anime, episode, targetTitle, altTitle, callback);
                             }
                         }
 
                         @Override
                         public void onError(Throwable t) {
-                            callback.onError(t);
+                            tryAltSearch(anime, episode, targetTitle, altTitle, callback);
                         }
                     });
                 } else {
-                    callback.onError(new IOException("Anime tidak ditemukan di HiAnime"));
+                    tryAltSearch(anime, episode, targetTitle, altTitle, callback);
                 }
             }
 
             @Override
             public void onError(Throwable t) {
-                callback.onError(t);
+                tryAltSearch(anime, episode, targetTitle, altTitle, callback);
             }
         });
+    }
+
+    private static void tryAltSearch(Anime anime, Episode episode, String targetTitle, String altTitle, Callback callback) {
+        if (!altTitle.isEmpty() && !altTitle.equalsIgnoreCase(targetTitle)) {
+            String cleanAlt = TitleMatcher.cleanSearchQuery(altTitle);
+            String altSearch = (!cleanAlt.isEmpty()) ? cleanAlt : altTitle;
+            HiAnimeClient.searchAnime(altSearch, new HiAnimeClient.Callback<List<Anime>>() {
+                @Override
+                public void onSuccess(List<Anime> res2) {
+                    String picked2 = pickBestSlug(res2, anime, targetTitle, altTitle);
+                    if (picked2 != null) {
+                        cacheSlug(anime.slug, picked2);
+                        if (anime.id > 0) cacheSlug(String.valueOf(anime.id), picked2);
+                        fetchHiAnimeEpAndResolve(picked2, anime, episode, callback);
+                    } else {
+                        callback.onError(new IOException("Judul tidak cocok di HiAnime"));
+                    }
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    callback.onError(t);
+                }
+            });
+        } else {
+            callback.onError(new IOException("Anime tidak ditemukan di HiAnime"));
+        }
     }
 
     private static String pickBestSlug(List<Anime> candidates, Anime anime, String target, String alt) {
@@ -381,45 +410,64 @@ public class StreamResolver {
         OtakudesuScraper.searchAnime(searchQ, new OtakudesuScraper.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> results) {
-                if (results == null || results.isEmpty()) {
-                    callback.onError(new IOException("Anime tidak ditemukan di Otakudesu"));
-                    return;
-                }
-
-                String otakuSlug = TitleMatcher.pickBestSlug(results, anime, anime.title, anime.romajiTitle);
-                if (otakuSlug == null) {
-                    callback.onError(new IOException("Judul tidak cocok di Otakudesu"));
-                    return;
-                }
-
-                OtakudesuScraper.getEpisodes(otakuSlug, new OtakudesuScraper.Callback<List<Episode>>() {
-                    @Override
-                    public void onSuccess(List<Episode> episodes) {
-                        for (Episode ep : episodes) {
-                            if (ep.number == episode.number) {
-                                String epSlugOrUrl = (ep.url != null && !ep.url.isEmpty()) ? ep.url : ep.slug;
-                                OtakudesuScraper.resolveStream(epSlugOrUrl, new OtakudesuScraper.Callback<StreamSource>() {
-                                    @Override
-                                    public void onSuccess(StreamSource result) {
-                                        callback.onSuccess(result);
-                                    }
-
-                                    @Override
-                                    public void onError(Throwable t) {
-                                        callback.onError(t);
-                                    }
-                                });
-                                return;
-                            }
+                if ((results == null || results.isEmpty()) && anime.title != null && !anime.title.equalsIgnoreCase(searchQ)) {
+                    String cleanEn = anime.title.replaceAll("(?i)(season|part|s\\d+|2nd|3rd|4th)\\b", "").trim();
+                    OtakudesuScraper.searchAnime(cleanEn, new OtakudesuScraper.Callback<List<Anime>>() {
+                        @Override
+                        public void onSuccess(List<Anime> res2) {
+                            processOtakudesuResults(res2, anime, episode, callback);
                         }
-                        callback.onError(new IOException("Episode " + episode.number + " belum dirilis di Otakudesu"));
-                    }
 
-                    @Override
-                    public void onError(Throwable t) {
-                        callback.onError(t);
+                        @Override
+                        public void onError(Throwable t) {
+                            callback.onError(new IOException("Anime tidak ditemukan di Otakudesu"));
+                        }
+                    });
+                    return;
+                }
+                processOtakudesuResults(results, anime, episode, callback);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
+    private static void processOtakudesuResults(List<Anime> results, Anime anime, Episode episode, Callback callback) {
+        if (results == null || results.isEmpty()) {
+            callback.onError(new IOException("Anime tidak ditemukan di Otakudesu"));
+            return;
+        }
+
+        String otakuSlug = TitleMatcher.pickBestSlug(results, anime, anime.title, anime.romajiTitle);
+        if (otakuSlug == null) {
+            callback.onError(new IOException("Judul tidak cocok di Otakudesu"));
+            return;
+        }
+
+        OtakudesuScraper.getEpisodes(otakuSlug, new OtakudesuScraper.Callback<List<Episode>>() {
+            @Override
+            public void onSuccess(List<Episode> episodes) {
+                for (Episode ep : episodes) {
+                    if (ep.number == episode.number) {
+                        String epSlugOrUrl = (ep.url != null && !ep.url.isEmpty()) ? ep.url : ep.slug;
+                        OtakudesuScraper.resolveStream(epSlugOrUrl, new OtakudesuScraper.Callback<StreamSource>() {
+                            @Override
+                            public void onSuccess(StreamSource result) {
+                                callback.onSuccess(result);
+                            }
+
+                            @Override
+                            public void onError(Throwable t) {
+                                callback.onError(t);
+                            }
+                        });
+                        return;
                     }
-                });
+                }
+                callback.onError(new IOException("Episode " + episode.number + " belum dirilis di Otakudesu"));
             }
 
             @Override

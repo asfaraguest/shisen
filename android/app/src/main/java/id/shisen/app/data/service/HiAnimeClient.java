@@ -300,12 +300,12 @@ public class HiAnimeClient {
     public static StreamSource resolveMegaplay(String embedUrl, String referer) throws Exception {
         String pageHtml = fetchString(embedUrl, referer != null ? referer : HI_BASE + "/");
         String dataId = "";
-        Pattern pDataId = Pattern.compile("(?:data-id|data-video-id|data-source-id)=[\"'](\\d+)[\"']");
+        Pattern pDataId = Pattern.compile("(?:data-id|data-video-id|data-source-id)=[\"']([a-zA-Z0-9_-]+)[\"']");
         Matcher mDataId = pDataId.matcher(pageHtml);
         if (mDataId.find()) {
             dataId = mDataId.group(1);
         } else {
-            Pattern pJsId = Pattern.compile("(?:videoId|sourceId|episodeId|id)\\s*[:=]\\s*[\"']?(\\d+)[\"']?");
+            Pattern pJsId = Pattern.compile("(?:videoId|sourceId|episodeId|cid|cidu|id)\\s*[:=]\\s*[\"']?([a-zA-Z0-9_-]+)[\"']?");
             Matcher mJsId = pJsId.matcher(pageHtml);
             if (mJsId.find()) {
                 dataId = mJsId.group(1);
@@ -313,7 +313,7 @@ public class HiAnimeClient {
                 try {
                     Uri embedUri = Uri.parse(embedUrl);
                     String qId = embedUri.getQueryParameter("id");
-                    if (qId != null && qId.matches("\\d+")) {
+                    if (qId != null && !qId.isEmpty()) {
                         dataId = qId;
                     }
                 } catch (Exception ignored) {}
@@ -468,6 +468,9 @@ public class HiAnimeClient {
                 .url(url)
                 .header("User-Agent", HttpClientProvider.USER_AGENT)
                 .header("Accept", "*/*");
+        if (url.contains("getSources") || url.contains("/api/")) {
+            rb.header("X-Requested-With", "XMLHttpRequest");
+        }
         if (referer != null) {
             rb.header("Referer", referer);
         }

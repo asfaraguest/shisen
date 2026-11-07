@@ -558,8 +558,10 @@ public class DetailActivity extends AppCompatActivity {
         final String targetQuery = primaryTitle != null ? primaryTitle : "Anime";
         final String altQuery = (anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
                 ? anime.romajiTitle : "";
+        final String cleanTarget = TitleMatcher.cleanSearchQuery(targetQuery);
+        final String primarySearch = (!cleanTarget.isEmpty()) ? cleanTarget : targetQuery;
 
-        HiAnimeClient.searchAnime(targetQuery, new HiAnimeClient.Callback<List<Anime>>() {
+        HiAnimeClient.searchAnime(primarySearch, new HiAnimeClient.Callback<List<Anime>>() {
             @Override
             public void onSuccess(List<Anime> results) {
                 String matchedSlug = pickBestSlug(results, targetQuery, altQuery);
@@ -581,7 +583,9 @@ public class DetailActivity extends AppCompatActivity {
                         }
                     });
                 } else if (!altQuery.isEmpty() && !altQuery.equalsIgnoreCase(targetQuery)) {
-                    HiAnimeClient.searchAnime(altQuery, new HiAnimeClient.Callback<List<Anime>>() {
+                    String cleanAlt = TitleMatcher.cleanSearchQuery(altQuery);
+                    String altSearch = (!cleanAlt.isEmpty()) ? cleanAlt : altQuery;
+                    HiAnimeClient.searchAnime(altSearch, new HiAnimeClient.Callback<List<Anime>>() {
                         @Override
                         public void onSuccess(List<Anime> res2) {
                             String matched2 = pickBestSlug(res2, targetQuery, altQuery);
