@@ -378,6 +378,18 @@ public class SubtitleManager {
             }
 
             @Override
+            public void onPartialSuccess(List<SubtitleCue> partialCues) {
+                if (loadId != currentLoadId) return;
+                synchronized (SubtitleManager.this) {
+                    if ("id".equals(activeLanguage) && ("smart_merge".equals(activeEngine) || "ai".equals(activeEngine))) {
+                        activeCues = partialCues;
+                        lastCueIndex = -1;
+                        activeLabel = "Bahasa Indonesia [Smart Lexicon]";
+                    }
+                }
+            }
+
+            @Override
             public void onSuccess(List<SubtitleCue> translatedCues) {
                 if (loadId != currentLoadId) return;
                 synchronized (SubtitleManager.this) {
@@ -393,7 +405,9 @@ public class SubtitleManager {
             @Override
             public void onError(String error) {
                 if (loadId != currentLoadId) return;
-                if (listener != null) listener.onSubtitleError("Gagal menerjemahkan subtitle: " + error);
+                // Failover otomatis ke Google GTX bila AI Mimic gagal/error
+                if (listener != null) listener.onSubtitleLoading("AI Mimic terkendala, beralih ke Smart Translator...");
+                runGtxFallback(enCues, sourceUrl, loadId, forceRefresh);
             }
         });
     }
@@ -472,7 +486,9 @@ public class SubtitleManager {
             @Override
             public void onError(String error) {
                 if (loadId != currentLoadId) return;
-                if (listener != null) listener.onSubtitleError("Gagal menerjemahkan subtitle: " + error);
+                // Failover otomatis ke Google GTX bila AI Mimic gagal/error
+                if (listener != null) listener.onSubtitleLoading("AI Mimic terkendala, beralih ke Smart Translator...");
+                runGtxFallback(enCues, sourceUrl, loadId, forceRefresh);
             }
         });
     }

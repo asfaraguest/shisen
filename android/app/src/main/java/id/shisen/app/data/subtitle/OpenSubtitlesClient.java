@@ -12,6 +12,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class OpenSubtitlesClient {
@@ -48,7 +49,10 @@ public class OpenSubtitlesClient {
         new Thread(() -> {
             try {
                 int season = TitleMatcher.extractSeasonNumber(title);
-                OkHttpClient client = HttpClientProvider.getClient();
+                OkHttpClient client = HttpClientProvider.getClient().newBuilder()
+                        .connectTimeout(3, TimeUnit.SECONDS)
+                        .readTimeout(3, TimeUnit.SECONDS)
+                        .build();
                 String cleanTitle = cleanAnimeTitle(title);
                 String imdbId = resolveImdbId(client, cleanTitle);
 

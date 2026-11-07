@@ -126,7 +126,14 @@ public class AnimeToshoClient {
                                 }
                             }
 
-                            // Kunjungi halaman view untuk mengekstrak attachment
+                            // 4. Lewati jika torrent tidak terindikasi rilis bahasa Indonesia / multisub
+                            // Cegah HTTP view scraping berurutan yang membekukan pipeline selama 60-80 detik
+                            if (!isLikelyIndonesianTorrent(tLow)) {
+                                continue;
+                            }
+
+                            // Kunjungi halaman view untuk mengekstrak attachment (maks 2 rilis teratas)
+                            if (results.size() >= 2) break;
                             String viewUrl = "https://animetosho.net/view/" + tId;
                             Request viewReq = new Request.Builder().url(viewUrl).build();
                             try (Response viewResp = client.newCall(viewReq).execute()) {
@@ -217,6 +224,20 @@ public class AnimeToshoClient {
         return l.contains("[ind,") || l.contains("[ind ") || l.contains("(ind)") ||
                 l.contains("indonesian") || l.contains("bahasa indonesia") ||
                 l.contains("cr [ind") || l.contains("[may,") || l.contains("malay");
+    }
+
+    private static boolean isLikelyIndonesianTorrent(String titleLow) {
+        if (titleLow == null) return false;
+        return titleLow.contains("indonesia")
+                || titleLow.contains("indonesian")
+                || titleLow.contains("sub indo")
+                || titleLow.contains("id-sub")
+                || titleLow.contains("id sub")
+                || titleLow.contains("[id]")
+                || titleLow.contains("[ind]")
+                || titleLow.contains("bahasa")
+                || titleLow.contains("multi-sub")
+                || titleLow.contains("multisub");
     }
 
     private static String cleanAnimeTitle(String title) {

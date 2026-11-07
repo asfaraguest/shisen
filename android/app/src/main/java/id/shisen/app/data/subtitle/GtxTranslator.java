@@ -28,6 +28,7 @@ public class GtxTranslator {
         void onProgress(int progress, int total);
         void onSuccess(List<SubtitleCue> translatedCues);
         void onError(String error);
+        default void onPartialSuccess(List<SubtitleCue> partialCues) {}
     }
 
     private static final int BATCH_SIZE = 25;
@@ -90,6 +91,7 @@ public class GtxTranslator {
 
                     if (callback != null) {
                         callback.onProgress(translated.size(), totalCues);
+                        callback.onPartialSuccess(new ArrayList<>(translated));
                     }
                 }
 
