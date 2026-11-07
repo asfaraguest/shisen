@@ -46,6 +46,18 @@ public final class PlayerKeys {
                 host.handleTvSeek(10000);
                 return true;
 
+            case KeyEvent.KEYCODE_MEDIA_NEXT:
+            case KeyEvent.KEYCODE_MEDIA_STEP_FORWARD:
+            case KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD:
+                host.playNextEpisode();
+                return true;
+
+            case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+            case KeyEvent.KEYCODE_MEDIA_STEP_BACKWARD:
+            case KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD:
+                host.playPrevEpisode();
+                return true;
+
             case KeyEvent.KEYCODE_CAPTIONS:
                 host.openSubtitleMenu();
                 return true;

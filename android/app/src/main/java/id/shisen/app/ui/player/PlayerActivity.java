@@ -56,6 +56,7 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.media3.common.C;
+import androidx.media3.common.ForwardingPlayer;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackParameters;
@@ -214,6 +215,7 @@ public class PlayerActivity extends AppCompatActivity {
     private View btnExoFullscreen;
 
     private ExoPlayer player;
+    private ForwardingPlayer forwardingPlayer;
     private Anime anime;
     private final List<Episode> episodeList = new ArrayList<>();
     private int currentIndex = 0;
@@ -611,7 +613,59 @@ public class PlayerActivity extends AppCompatActivity {
         if (perfListener != null) {
             player.addAnalyticsListener(perfListener);
         }
-        playerView.setPlayer(player);
+        forwardingPlayer = new ForwardingPlayer(player) {
+            @Override
+            public boolean isCommandAvailable(int command) {
+                if (command == Player.COMMAND_SEEK_TO_NEXT || command == Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM) {
+                    return getNextEpisodeIndex() != -1;
+                }
+                if (command == Player.COMMAND_SEEK_TO_PREVIOUS || command == Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM) {
+                    return getPrevEpisodeIndex() != -1;
+                }
+                return super.isCommandAvailable(command);
+            }
+
+            @Override
+            public Player.Commands getAvailableCommands() {
+                Player.Commands.Builder builder = super.getAvailableCommands().buildUpon();
+                if (getNextEpisodeIndex() != -1) {
+                    builder.add(Player.COMMAND_SEEK_TO_NEXT);
+                    builder.add(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM);
+                } else {
+                    builder.remove(Player.COMMAND_SEEK_TO_NEXT);
+                    builder.remove(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM);
+                }
+                if (getPrevEpisodeIndex() != -1) {
+                    builder.add(Player.COMMAND_SEEK_TO_PREVIOUS);
+                    builder.add(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM);
+                } else {
+                    builder.remove(Player.COMMAND_SEEK_TO_PREVIOUS);
+                    builder.remove(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM);
+                }
+                return builder.build();
+            }
+
+            @Override
+            public void seekToNext() {
+                playNextEpisode();
+            }
+
+            @Override
+            public void seekToNextMediaItem() {
+                playNextEpisode();
+            }
+
+            @Override
+            public void seekToPrevious() {
+                playPrevEpisode();
+            }
+
+            @Override
+            public void seekToPreviousMediaItem() {
+                playPrevEpisode();
+            }
+        };
+        playerView.setPlayer(forwardingPlayer);
         playerView.setShowNextButton(true);
         playerView.setShowPreviousButton(true);
         playerView.setShowSubtitleButton(true);
@@ -625,7 +679,7 @@ public class PlayerActivity extends AppCompatActivity {
 
             PendingIntent pi = PendingIntent.getActivity(this, 0, sessionIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
-            mediaSession = new MediaSession.Builder(this, player)
+            mediaSession = new MediaSession.Builder(this, forwardingPlayer)
                     .setSessionActivity(pi)
                     // Whitelist controller: hanya app sendiri, controller notifikasi media,
                     // dan sistem tepercaya (lockscreen/headset). Pihak ketiga ditolak.
@@ -738,6 +792,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         // Controller visibility listener to sync landscape top bar
         playerView.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> {
+            if (visibility == View.VISIBLE) {
+                updateNextPrevButtons();
+            }
             boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
             if (isLandscape && !isScreenLocked) {
                 if (visibility == View.VISIBLE) {
@@ -932,6 +989,7 @@ public class PlayerActivity extends AppCompatActivity {
                     playPrevEpisode();
                 });
             }
+            updateNextPrevButtons();
 
             // 5. Subtitle Button (CC)
             btnExoSub = playerView.findViewById(androidx.media3.ui.R.id.exo_subtitle);
@@ -1209,6 +1267,7 @@ public class PlayerActivity extends AppCompatActivity {
             if (newIdx != -1) currentIndex = newIdx;
             episodeAdapter.setCurrentPlayingNumber(currentEpNumber);
         }
+        updateNextPrevButtons();
     }
 
     private float dpToPx(float dp) {
@@ -1511,6 +1570,7 @@ public class PlayerActivity extends AppCompatActivity {
     private void playEpisodeWithServer(int index, String server, long explicitResumeMs) {
         if (index < 0 || index >= episodeList.size()) return;
         currentIndex = index;
+        updateNextPrevButtons();
         preferredServer = server != null ? server : "hianime";
         Episode ep = episodeList.get(index);
 
@@ -1837,17 +1897,64 @@ public class PlayerActivity extends AppCompatActivity {
         } catch (Throwable ignored) {}
     }
 
-    private void playNextEpisode() {
-        if (currentIndex + 1 < episodeList.size()) {
-            Toast.makeText(this, R.string.player_toast_next_ep, Toast.LENGTH_SHORT).show();
-            playEpisode(currentIndex + 1);
+    public int getNextEpisodeIndex() {
+        if (episodeList.isEmpty() || currentIndex < 0 || currentIndex >= episodeList.size()) return -1;
+        Episode curr = episodeList.get(currentIndex);
+        for (int i = 0; i < episodeList.size(); i++) {
+            if (episodeList.get(i).number == curr.number + 1) {
+                return i;
+            }
+        }
+        if (isSortAscending) {
+            return (currentIndex + 1 < episodeList.size()) ? currentIndex + 1 : -1;
+        } else {
+            return (currentIndex - 1 >= 0) ? currentIndex - 1 : -1;
         }
     }
 
-    private void playPrevEpisode() {
-        if (currentIndex - 1 >= 0) {
+    public int getPrevEpisodeIndex() {
+        if (episodeList.isEmpty() || currentIndex < 0 || currentIndex >= episodeList.size()) return -1;
+        Episode curr = episodeList.get(currentIndex);
+        for (int i = 0; i < episodeList.size(); i++) {
+            if (episodeList.get(i).number == curr.number - 1) {
+                return i;
+            }
+        }
+        if (isSortAscending) {
+            return (currentIndex - 1 >= 0) ? currentIndex - 1 : -1;
+        } else {
+            return (currentIndex + 1 < episodeList.size()) ? currentIndex + 1 : -1;
+        }
+    }
+
+    public void playNextEpisode() {
+        int nextIndex = getNextEpisodeIndex();
+        if (nextIndex != -1) {
+            Toast.makeText(this, R.string.player_toast_next_ep, Toast.LENGTH_SHORT).show();
+            playEpisode(nextIndex);
+        }
+    }
+
+    public void playPrevEpisode() {
+        int prevIndex = getPrevEpisodeIndex();
+        if (prevIndex != -1) {
             Toast.makeText(this, R.string.player_toast_prev_ep, Toast.LENGTH_SHORT).show();
-            playEpisode(currentIndex - 1);
+            playEpisode(prevIndex);
+        }
+    }
+
+    private void updateNextPrevButtons() {
+        int nextIdx = getNextEpisodeIndex();
+        int prevIdx = getPrevEpisodeIndex();
+        if (btnExoNext != null) {
+            btnExoNext.setEnabled(nextIdx != -1);
+            btnExoNext.setAlpha(nextIdx != -1 ? 1.0f : 0.35f);
+            btnExoNext.setFocusable(nextIdx != -1);
+        }
+        if (btnExoPrev != null) {
+            btnExoPrev.setEnabled(prevIdx != -1);
+            btnExoPrev.setAlpha(prevIdx != -1 ? 1.0f : 0.35f);
+            btnExoPrev.setFocusable(prevIdx != -1);
         }
     }
 
@@ -3103,6 +3210,7 @@ public class PlayerActivity extends AppCompatActivity {
                 player.release();
             } catch (Throwable ignored) {}
             player = null;
+            forwardingPlayer = null;
         }
     };
 
@@ -3178,6 +3286,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (player != null) {
             player.release();
             player = null;
+            forwardingPlayer = null;
         }
     }
 
