@@ -26,33 +26,44 @@
         <!-- Shisen Brand Header -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="32dp"
+            android:layout_height="36dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="8dp"
+            android:paddingHorizontal="4dp"
             android:layout_marginBottom="10dp">
 
-            <TextView
-                android:id="@+id/tv_app_logo_kanji"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_logo_kanji"
-                android:textColor="@color/anime_iris_violet"
-                android:textSize="13sp"
-                android:fontFamily="sans-serif-black"
-                android:singleLine="true"
+            <ImageView
+                android:id="@+id/iv_app_logo_icon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_shisen_character"
+                android:contentDescription="@string/app_name"
+                android:scaleType="fitCenter"
                 android:focusable="false" />
 
             <TextView
                 android:id="@+id/tv_app_logo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="8dp"
                 android:text="SHISEN"
                 android:textColor="@color/accent_glacial"
                 android:textSize="16sp"
                 android:fontFamily="sans-serif-black"
                 android:letterSpacing="0.08"
+                android:singleLine="true"
+                android:visibility="gone"
+                android:focusable="false" />
+
+            <TextView
+                android:id="@+id/tv_app_logo_kanji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="@string/app_logo_kanji"
+                android:textColor="@color/anime_iris_violet"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-black"
                 android:singleLine="true"
                 android:visibility="gone"
                 android:focusable="false" />

@@ -41,6 +41,7 @@ public final class DeviceNav {
 
         railLabels = new View[]{
                 root.findViewById(R.id.tv_app_logo),
+                root.findViewById(R.id.tv_app_logo_kanji),
                 root.findViewById(R.id.tv_menu_search),
                 host.tvMenuMusim,
                 host.tvMenuAiring,
