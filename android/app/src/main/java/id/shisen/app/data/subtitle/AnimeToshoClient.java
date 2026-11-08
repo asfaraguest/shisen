@@ -57,16 +57,14 @@ public class AnimeToshoClient {
                 List<String> queries = new ArrayList<>();
                 if (season > 1) {
                     queries.add(cleanTitle + " S" + String.format(Locale.US, "%02d", season) + "E" + String.format(Locale.US, "%02d", episode));
-                    queries.add(cleanTitle + " Season " + season + " " + String.format(Locale.US, "%02d", episode));
-                    queries.add(cleanTitle + " S" + season + " " + String.format(Locale.US, "%02d", episode));
-                    queries.add(cleanTitle + " " + String.format(Locale.US, "%02d", episode));
                 } else {
                     queries.add(cleanTitle + " S01E" + String.format(Locale.US, "%02d", episode));
-                    queries.add(cleanTitle + " " + String.format(Locale.US, "%02d", episode));
-                    queries.add(cleanTitle + " E" + String.format(Locale.US, "%02d", episode));
                 }
 
-                OkHttpClient client = HttpClientProvider.getClient();
+                OkHttpClient client = HttpClientProvider.getClient().newBuilder()
+                        .connectTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+                        .readTimeout(2, java.util.concurrent.TimeUnit.SECONDS)
+                        .build();
                 List<SubtitleSearchResult> results = new ArrayList<>();
                 Set<String> cleanTokens = TitleMatcher.cleanTitleTokens(cleanTitle);
 
@@ -89,7 +87,7 @@ public class AnimeToshoClient {
 
                         for (int i = 0; i < Math.min(items.length(), 12); i++) {
                             JSONObject it = items.getJSONObject(i);
-                            String torrentTitle = it.optString("title", it.optString("torrent_name", ""));
+                            String torrentTitle = it.optString("article_title", it.optString("title", it.optString("torrent_name", "")));
                             String tId = it.optString("id", "");
                             if (tId.isEmpty()) continue;
 

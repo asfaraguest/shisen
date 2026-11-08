@@ -144,6 +144,26 @@ public class SubtitleTrack implements Serializable {
         return lbl.contains("sign") || lbl.contains("song") || lbl.contains("lyric") || lbl.contains("forced");
     }
 
+    public static SubtitleTrack findFullIndonesianTrack(List<SubtitleTrack> tracks) {
+        if (tracks == null || tracks.isEmpty()) return null;
+        for (SubtitleTrack t : tracks) {
+            if (isIndonesian(t) && !isSignsOrSongsOnly(t)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    public static SubtitleTrack findForcedIndonesianTrack(List<SubtitleTrack> tracks) {
+        if (tracks == null || tracks.isEmpty()) return null;
+        for (SubtitleTrack t : tracks) {
+            if (isIndonesian(t) && isSignsOrSongsOnly(t)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
     /**
      * Cari track English paling representatif dari daftar subtitle stream.
      * Paritas Tatap backend: Utamakan dialog penuh dan jangan biarkan track Signs/Songs

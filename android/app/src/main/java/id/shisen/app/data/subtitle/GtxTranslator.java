@@ -64,15 +64,30 @@ public class GtxTranslator {
                         String jsonStr = readFile(cacheFile);
                         List<SubtitleCue> cachedCues = deserializeCues(jsonStr);
                         if (!cachedCues.isEmpty() && !AiSubtitleService.containsDominantArabicScript(cachedCues)) {
-                            if (callback != null) callback.onSuccess(cachedCues);
-                            return;
+                            // Validasi apakah cache rusak (berisi teks English mentah dari kegagalan translasi terdahulu)
+                            int same = 0;
+                            for (int ci = 0; ci < cachedCues.size() && ci < cues.size(); ci++) {
+                                if (cachedCues.get(ci).text.equalsIgnoreCase(cues.get(ci).text)) {
+                                    same++;
+                                }
+                            }
+                            boolean isCorruptEnglishCache = !cues.isEmpty() && (same * 100 / cues.size() > 70);
+                            if (isCorruptEnglishCache) {
+                                cacheFile.delete();
+                            } else {
+                                if (callback != null) callback.onSuccess(cachedCues);
+                                return;
+                            }
                         } else if (AiSubtitleService.containsDominantArabicScript(cachedCues)) {
                             cacheFile.delete();
                         }
                     } catch (Exception ignored) {}
                 }
 
-                OkHttpClient client = HttpClientProvider.getClient();
+                OkHttpClient client = HttpClientProvider.getClient().newBuilder()
+                        .connectTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
+                        .readTimeout(6, java.util.concurrent.TimeUnit.SECONDS)
+                        .build();
                 List<SubtitleCue> translated = new ArrayList<>(cues.size());
                 int totalCues = cues.size();
 
@@ -117,7 +132,11 @@ public class GtxTranslator {
     }
 
                 if (callback != null) {
-                    callback.onSuccess(sanitizedCues);
+                    if (translationSuccessful) {
+                        callback.onSuccess(sanitizedCues);
+                    } else {
+                        callback.onError("Terjemahan GTX tidak berhasil");
+                    }
                 }
             } catch (Exception e) {
                 if (callback != null) {
@@ -129,7 +148,10 @@ public class GtxTranslator {
 
     public static List<String> translateBatchSync(Context context, List<SubtitleCue> cues) {
         if (cues == null || cues.isEmpty()) return new ArrayList<>();
-        OkHttpClient client = HttpClientProvider.getClient();
+        OkHttpClient client = HttpClientProvider.getClient().newBuilder()
+                .connectTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(6, java.util.concurrent.TimeUnit.SECONDS)
+                .build();
         List<String> results = new ArrayList<>();
         for (int i = 0; i < cues.size(); i += BATCH_SIZE) {
             int end = Math.min(i + BATCH_SIZE, cues.size());

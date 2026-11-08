@@ -2199,17 +2199,29 @@ public class PlayerActivity extends AppCompatActivity {
 
         // 3. [ID] Asli / Bawaan (jika tersedia di track asli)
         if (currentStreamSource != null && currentStreamSource.subtitles != null) {
-            for (SubtitleTrack st : currentStreamSource.subtitles) {
-                if (st.lang.toLowerCase().contains("id") || st.label.toLowerCase().contains("indonesia")) {
-                    boolean isIdRawSelected = isSubOn && "id".equals(curLang) && "raw".equals(curEngine);
-                    options.add(getString(R.string.player_sub_option_native_id) + (isIdRawSelected ? activeBadge : ""));
-                    actions.add(() -> {
-                        subtitleManager.setSubEnabled(true);
-                        subtitleManager.setMode("id", "raw");
-                        subtitleManager.loadRawTrack(st.url, st.label, "id", st.referer);
-                    });
-                    break;
-                }
+            SubtitleTrack fullIdTrack = SubtitleTrack.findFullIndonesianTrack(currentStreamSource.subtitles);
+            SubtitleTrack forcedIdTrack = SubtitleTrack.findForcedIndonesianTrack(currentStreamSource.subtitles);
+
+            if (fullIdTrack != null) {
+                boolean isIdRawSelected = isSubOn && "id".equals(curLang) && "raw".equals(curEngine)
+                        && fullIdTrack.label.equals(subtitleManager.getActiveLabel());
+                options.add(getString(R.string.player_sub_option_native_id) + (isIdRawSelected ? activeBadge : ""));
+                actions.add(() -> {
+                    subtitleManager.setSubEnabled(true);
+                    subtitleManager.setMode("id", "raw");
+                    subtitleManager.loadRawTrack(fullIdTrack.url, fullIdTrack.label, "id", fullIdTrack.referer);
+                });
+            }
+
+            if (forcedIdTrack != null) {
+                boolean isForcedSelected = isSubOn && "id".equals(curLang) && "raw".equals(curEngine)
+                        && forcedIdTrack.label.equals(subtitleManager.getActiveLabel());
+                options.add("[ID] Bahasa Indonesia (Tanda/Lirik Saja · Forced)" + (isForcedSelected ? activeBadge : ""));
+                actions.add(() -> {
+                    subtitleManager.setSubEnabled(true);
+                    subtitleManager.setMode("id", "raw");
+                    subtitleManager.loadRawTrack(forcedIdTrack.url, forcedIdTrack.label, "id", forcedIdTrack.referer);
+                });
             }
         }
 

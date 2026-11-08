@@ -163,11 +163,51 @@ public class SubtitleManager {
             return;
         }
 
+        // 1. Prioritas Utama: Subtitle Resmi Indonesia (Asli Bawaan Penuh)
+        final SubtitleTrack fullId = SubtitleTrack.findFullIndonesianTrack(tracks);
+        if (fullId != null && !forceRefresh) {
+            final int loadId = ++currentLoadId;
+            synchronized (this) {
+                activeLanguage = "id";
+                activeEngine = "smart_merge";
+                clearCues();
+            }
+            if (listener != null) listener.onSubtitleLoading("Memuat Bahasa Indonesia (Resmi Bawaan)...");
+            new Thread(() -> {
+                try {
+                    List<SubtitleCue> cues = fetchCuesFromUrl(fullId.url, fullId.referer);
+                    if (loadId != currentLoadId) return;
+                    List<SubtitleCue> lexCues = new ArrayList<>(cues.size());
+                    for (SubtitleCue c : cues) {
+                        lexCues.add(new SubtitleCue(c.startMs, c.endMs, SmartLexicon.applyUniversalLexicon(c.text)));
+                    }
+                    synchronized (SubtitleManager.this) {
+                        activeCues = lexCues;
+                        lastCueIndex = -1;
+                        activeLabel = "Bahasa Indonesia [Official Bawaan]";
+                        activeLanguage = "id";
+                        activeEngine = "smart_merge";
+                        if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
+                    }
+                } catch (Exception e) {
+                    if (loadId == currentLoadId) {
+                        loadFromEnglishSource(tracks, title, episode, forceRefresh);
+                    }
+                }
+            }).start();
+            return;
+        }
+
+        loadFromEnglishSource(tracks, title, episode, forceRefresh);
+    }
+
+    private void loadFromEnglishSource(List<SubtitleTrack> tracks, String title, int episode, boolean forceRefresh) {
         final SubtitleTrack sourceEn = SubtitleTrack.findEnglishTrack(tracks);
         if (sourceEn == null) {
             if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan");
             return;
         }
+        final SubtitleTrack forcedId = SubtitleTrack.findForcedIndonesianTrack(tracks);
         final int loadId = ++currentLoadId;
         synchronized (this) {
             activeLanguage = "id";
@@ -179,6 +219,7 @@ public class SubtitleManager {
 
         new Thread(() -> {
             List<SubtitleCue> enCues = new ArrayList<>();
+            List<SubtitleCue> forcedCues = new ArrayList<>();
             try {
                 enCues = fetchCuesFromUrl(sourceEn.url, sourceEn.referer);
                 if (loadId != currentLoadId) return;
@@ -197,7 +238,14 @@ public class SubtitleManager {
                 // Jangan fatal jika download English source gagal! Lanjutkan pencarian fansub Indonesia!
             }
 
+            if (forcedId != null) {
+                try {
+                    forcedCues = fetchCuesFromUrl(forcedId.url, forcedId.referer);
+                } catch (Exception ignored) {}
+            }
+
             final List<SubtitleCue> finalEnCues = enCues;
+            final List<SubtitleCue> finalForcedCues = forcedCues;
 
             // Coba cari rilis subtitle Indonesia dari AnimeTosho (Tier 1)
             AnimeToshoClient.searchIndonesianAsync(title, episode, new AnimeToshoClient.SearchCallback() {
@@ -385,6 +433,7 @@ public class SubtitleManager {
                         activeCues = partialCues;
                         lastCueIndex = -1;
                         activeLabel = "Bahasa Indonesia [Smart Lexicon]";
+                        if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
                     }
                 }
             }
@@ -405,9 +454,7 @@ public class SubtitleManager {
             @Override
             public void onError(String error) {
                 if (loadId != currentLoadId) return;
-                // Failover otomatis ke Google GTX bila AI Mimic gagal/error
-                if (listener != null) listener.onSubtitleLoading("AI Mimic terkendala, beralih ke Smart Translator...");
-                runGtxFallback(enCues, sourceUrl, loadId, forceRefresh);
+                if (listener != null) listener.onSubtitleError("Gagal menerjemahkan subtitle: " + error);
             }
         });
     }
