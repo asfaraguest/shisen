@@ -1265,9 +1265,10 @@ public class PlayerActivity extends AppCompatActivity {
         rvPortraitEpisodes.setLayoutManager(glm);
         rvPortraitEpisodes.setAdapter(episodeAdapter);
 
-        // Mark watched state
+        // Mark watched state (batch lookup)
+        java.util.Set<Integer> watchedSet = MenatapDatabase.getInstance(this).getWatchedEpisodeNumbers(anime != null ? anime.slug : "");
         for (Episode ep : episodeList) {
-            ep.isWatched = MenatapDatabase.getInstance(this).isEpisodeWatched(anime.slug, ep.number);
+            ep.isWatched = watchedSet.contains(ep.number);
         }
         episodeAdapter.setData(episodeList);
         tvPortraitEpCount.setText(getString(R.string.player_episodes_title) + " (" + episodeList.size() + ")");

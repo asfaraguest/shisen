@@ -293,6 +293,18 @@ public class MenatapDatabase extends SQLiteOpenHelper {
         return watched;
     }
 
+    public java.util.Set<Integer> getWatchedEpisodeNumbers(String slug) {
+        java.util.Set<Integer> watched = new java.util.HashSet<>();
+        if (slug == null || slug.isEmpty()) return watched;
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor c = db.rawQuery("SELECT ep FROM watched_eps WHERE slug = ?", new String[]{slug})) {
+            while (c != null && c.moveToNext()) {
+                watched.add(c.getInt(0));
+            }
+        } catch (Exception ignored) {}
+        return watched;
+    }
+
     // --- Bookmarks Methods ---
 
     public void toggleBookmark(Anime anime) {

@@ -123,14 +123,40 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.EpisodeV
 
         if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
             holder.card.setOnKeyListener((v, keyCode, event) -> {
-                if (event.getAction() == android.view.KeyEvent.ACTION_DOWN && keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT) {
-                    int pos = holder.getBindingAdapterPosition();
-                    if (pos != RecyclerView.NO_POSITION && pos % 5 == 0) {
-                        if (context instanceof android.app.Activity) {
-                            View target = ((android.app.Activity) context).findViewById(R.id.btn_toggle_bookmark);
-                            if (target == null) target = ((android.app.Activity) context).findViewById(R.id.btn_play_primary);
-                            if (target != null && target.requestFocus()) {
-                                return true;
+                if (event.getAction() == android.view.KeyEvent.ACTION_DOWN) {
+                    if (keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT) {
+                        int pos = holder.getBindingAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION && pos % 5 == 0) {
+                            if (context instanceof android.app.Activity) {
+                                View target = ((android.app.Activity) context).findViewById(R.id.btn_toggle_bookmark);
+                                if (target == null) target = ((android.app.Activity) context).findViewById(R.id.btn_play_primary);
+                                if (target != null && target.requestFocus()) {
+                                    return true;
+                                }
+                            }
+                        }
+                    } else if (keyCode == android.view.KeyEvent.KEYCODE_DPAD_UP) {
+                        int pos = holder.getBindingAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION && pos < 5) {
+                            if (context instanceof android.app.Activity) {
+                                View rangeScroll = ((android.app.Activity) context).findViewById(R.id.scroll_episode_ranges);
+                                if (rangeScroll != null && rangeScroll.getVisibility() == View.VISIBLE) {
+                                    ViewGroup rangeLayout = ((android.app.Activity) context).findViewById(R.id.layout_episode_ranges);
+                                    if (rangeLayout != null && rangeLayout.getChildCount() > 0) {
+                                        View targetTab = null;
+                                        for (int i = 0; i < rangeLayout.getChildCount(); i++) {
+                                            View child = rangeLayout.getChildAt(i);
+                                            if (child != null && child.isSelected()) {
+                                                targetTab = child;
+                                                break;
+                                            }
+                                        }
+                                        if (targetTab == null) targetTab = rangeLayout.getChildAt(0);
+                                        if (targetTab != null && targetTab.requestFocus()) {
+                                            return true;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

@@ -10,8 +10,10 @@ import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -87,6 +89,11 @@ public class DetailActivity extends AppCompatActivity {
     private Anime anime;
     private EpisodeAdapter episodeAdapter;
     private final List<Episode> episodeList = new ArrayList<>();
+    private final List<Episode> allEpisodeList = new ArrayList<>();
+    private HorizontalScrollView scrollEpisodeRanges;
+    private LinearLayout layoutEpisodeRanges;
+    private int selectedRangeIndex = 0;
+    private static final int RANGE_CHUNK_SIZE = 100;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private int lastWatchedEp = 0;
     private boolean isSynopsisExpanded = false;
@@ -168,6 +175,8 @@ public class DetailActivity extends AppCompatActivity {
         btnPlayPrimary = findViewById(R.id.btn_play_primary);
         btnBookmark = findViewById(R.id.btn_toggle_bookmark);
         pbEpisodesLoading = findViewById(R.id.pb_episodes_loading);
+        scrollEpisodeRanges = findViewById(R.id.scroll_episode_ranges);
+        layoutEpisodeRanges = findViewById(R.id.layout_episode_ranges);
         rvEpisodes = findViewById(R.id.rv_detail_episodes);
 
         layoutRelatedSeasons = findViewById(R.id.layout_related_seasons);
@@ -225,6 +234,14 @@ public class DetailActivity extends AppCompatActivity {
         if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
             View.OnKeyListener toEpisodesListener = (v, keyCode, event) -> {
                 if (event.getAction() == android.view.KeyEvent.ACTION_DOWN && keyCode == android.view.KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    if (scrollEpisodeRanges != null && scrollEpisodeRanges.getVisibility() == View.VISIBLE
+                            && layoutEpisodeRanges != null && layoutEpisodeRanges.getChildCount() > 0) {
+                        View activeTab = layoutEpisodeRanges.getChildAt(selectedRangeIndex);
+                        if (activeTab == null) activeTab = layoutEpisodeRanges.getChildAt(0);
+                        if (activeTab != null && activeTab.requestFocus()) {
+                            return true;
+                        }
+                    }
                     if (rvEpisodes != null && rvEpisodes.getChildCount() > 0) {
                         View first = rvEpisodes.getChildAt(0);
                         if (first != null && first.requestFocus()) {
@@ -420,7 +437,7 @@ public class DetailActivity extends AppCompatActivity {
         rvEpisodes.setLayoutManager(glm);
         rvEpisodes.setAdapter(episodeAdapter);
 
-        episodeAdapter.setListener((episode, position) -> launchPlayer(position));
+        episodeAdapter.setListener((episode, position) -> launchPlayerForEpisode(episode));
     }
 
     @Override
@@ -437,12 +454,16 @@ public class DetailActivity extends AppCompatActivity {
 
     private void refreshWatchedStates() {
         lastWatchedEp = MenatapDatabase.getInstance(this).getLastWatchedEpisode(anime.slug);
+        java.util.Set<Integer> watchedSet = MenatapDatabase.getInstance(this).getWatchedEpisodeNumbers(anime.slug);
+        for (Episode ep : allEpisodeList) {
+            ep.isWatched = watchedSet.contains(ep.number);
+        }
         for (Episode ep : episodeList) {
-            ep.isWatched = MenatapDatabase.getInstance(this).isEpisodeWatched(anime.slug, ep.number);
+            ep.isWatched = watchedSet.contains(ep.number);
         }
         episodeAdapter.notifyDataSetChanged();
 
-        if (episodeList.isEmpty()) {
+        if (allEpisodeList.isEmpty()) {
             boolean isNotYet = "NOT_YET_RELEASED".equalsIgnoreCase(anime.status) ||
                     (("RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status)) && anime.nextAiringEpisode == 1 && anime.airedEpisodesCount == 0);
             if (isNotYet) {
@@ -458,12 +479,7 @@ public class DetailActivity extends AppCompatActivity {
             if (lastWatchedEp > 0) {
                 MenatapDatabase.PlaybackProgress prog = MenatapDatabase.getInstance(this).getEpisodeProgress(anime.slug, lastWatchedEp);
                 if (!prog.shouldResume() && prog.durationMs > 0 && prog.progressMs >= prog.durationMs - 30_000) {
-                    int nextPos = episodeAdapter.findPositionByNumber(lastWatchedEp + 1);
-                    if (nextPos != -1) {
-                        btnPlayPrimary.setText(getString(R.string.detail_resume_format, lastWatchedEp + 1));
-                    } else {
-                        btnPlayPrimary.setText(getString(R.string.detail_resume_format, lastWatchedEp));
-                    }
+                    btnPlayPrimary.setText(getString(R.string.detail_resume_format, lastWatchedEp + 1));
                 } else {
                     btnPlayPrimary.setText(getString(R.string.detail_resume_format, lastWatchedEp));
                 }
@@ -473,6 +489,154 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    private void setupEpisodeData(List<Episode> fullList) {
+        allEpisodeList.clear();
+        if (fullList != null) {
+            allEpisodeList.addAll(fullList);
+        }
+        refreshWatchedStates();
+
+        if (allEpisodeList.size() <= 50) {
+            if (scrollEpisodeRanges != null) scrollEpisodeRanges.setVisibility(View.GONE);
+            episodeList.clear();
+            episodeList.addAll(allEpisodeList);
+            episodeAdapter.setData(episodeList);
+        } else {
+            if (scrollEpisodeRanges != null) scrollEpisodeRanges.setVisibility(View.VISIBLE);
+            int chunkCount = (int) Math.ceil((double) allEpisodeList.size() / RANGE_CHUNK_SIZE);
+            selectedRangeIndex = 0;
+            if (lastWatchedEp > 0) {
+                for (int i = 0; i < chunkCount; i++) {
+                    int startNum = i * RANGE_CHUNK_SIZE + 1;
+                    int endNum = Math.min((i + 1) * RANGE_CHUNK_SIZE, allEpisodeList.size());
+                    if (lastWatchedEp >= startNum && lastWatchedEp <= endNum) {
+                        selectedRangeIndex = i;
+                        break;
+                    }
+                }
+            }
+            renderRangeTabs(chunkCount);
+            applyDisplayedEpisodesForRange(selectedRangeIndex);
+        }
+    }
+
+    private void renderRangeTabs(int chunkCount) {
+        if (layoutEpisodeRanges == null) return;
+        layoutEpisodeRanges.removeAllViews();
+        float density = getResources().getDisplayMetrics().density;
+        int padH = (int) (14 * density);
+        int padV = (int) (6 * density);
+        int marginH = (int) (4 * density);
+
+        for (int i = 0; i < chunkCount; i++) {
+            final int rangeIdx = i;
+            int startEp = i * RANGE_CHUNK_SIZE + 1;
+            int endEp = Math.min((i + 1) * RANGE_CHUNK_SIZE, allEpisodeList.size());
+
+            TextView tab = new TextView(this);
+            tab.setText(startEp + " - " + endEp);
+            tab.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
+            tab.setTypeface(android.graphics.Typeface.create("sans-serif-bold", android.graphics.Typeface.BOLD));
+            tab.setGravity(android.view.Gravity.CENTER);
+            tab.setPadding(padH, padV, padH, padV);
+            tab.setFocusable(true);
+            tab.setClickable(true);
+
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            lp.setMargins(marginH, 0, marginH, 0);
+            tab.setLayoutParams(lp);
+
+            updateTabVisualState(tab, rangeIdx == selectedRangeIndex);
+
+            tab.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                selectEpisodeRange(rangeIdx);
+            });
+
+            tab.setOnFocusChangeListener((v, hasFocus) -> {
+                if (hasFocus && scrollEpisodeRanges != null) {
+                    int scrollX = v.getLeft() - (scrollEpisodeRanges.getWidth() / 2) + (v.getWidth() / 2);
+                    scrollEpisodeRanges.smoothScrollTo(Math.max(0, scrollX), 0);
+                }
+            });
+
+            if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+                id.shisen.app.util.TvFocusHelper.attachFocusScale(tab, 1.06f);
+                tab.setOnKeyListener((v, keyCode, event) -> {
+                    if (event.getAction() == android.view.KeyEvent.ACTION_DOWN) {
+                        if (keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT && rangeIdx == 0) {
+                            if (btnBookmark != null && btnBookmark.requestFocus()) {
+                                return true;
+                            } else if (btnPlayPrimary != null && btnPlayPrimary.requestFocus()) {
+                                return true;
+                            }
+                        } else if (keyCode == android.view.KeyEvent.KEYCODE_DPAD_DOWN) {
+                            if (rvEpisodes != null && rvEpisodes.getChildCount() > 0) {
+                                View first = rvEpisodes.getChildAt(0);
+                                if (first != null && first.requestFocus()) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                });
+            }
+
+            layoutEpisodeRanges.addView(tab);
+        }
+    }
+
+    private void updateTabVisualState(TextView tab, boolean isSelected) {
+        tab.setSelected(isSelected);
+        float density = getResources().getDisplayMetrics().density;
+        android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
+        gd.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        gd.setCornerRadius(8 * density);
+        if (isSelected) {
+            gd.setColor(android.graphics.Color.parseColor("#15233C"));
+            gd.setStroke((int) (1.5f * density), android.graphics.Color.parseColor("#38BDF8"));
+            tab.setBackground(gd);
+            tab.setTextColor(android.graphics.Color.parseColor("#38BDF8"));
+        } else {
+            gd.setColor(android.graphics.Color.parseColor("#1A10162A"));
+            gd.setStroke((int) (1f * density), android.graphics.Color.parseColor("#233252"));
+            tab.setBackground(gd);
+            tab.setTextColor(android.graphics.Color.parseColor("#94A3B8"));
+        }
+    }
+
+    private void selectEpisodeRange(int rangeIdx) {
+        selectedRangeIndex = rangeIdx;
+        if (layoutEpisodeRanges != null) {
+            for (int i = 0; i < layoutEpisodeRanges.getChildCount(); i++) {
+                View child = layoutEpisodeRanges.getChildAt(i);
+                if (child instanceof TextView) {
+                    updateTabVisualState((TextView) child, i == selectedRangeIndex);
+                }
+            }
+        }
+        applyDisplayedEpisodesForRange(selectedRangeIndex);
+        if (rvEpisodes != null) {
+            rvEpisodes.scrollToPosition(0);
+        }
+    }
+
+    private void applyDisplayedEpisodesForRange(int rangeIdx) {
+        episodeList.clear();
+        int start = rangeIdx * RANGE_CHUNK_SIZE;
+        int end = Math.min(start + RANGE_CHUNK_SIZE, allEpisodeList.size());
+        if (start < allEpisodeList.size()) {
+            for (int i = start; i < end; i++) {
+                episodeList.add(allEpisodeList.get(i));
+            }
+        }
+        episodeAdapter.setData(episodeList);
+    }
+
     private void loadAccurateEpisodes() {
         FeedCache.syncAiringProgress(anime);
         boolean isReleasing = "RELEASING".equalsIgnoreCase(anime.status) || "AIRING".equalsIgnoreCase(anime.status);
@@ -480,10 +644,8 @@ public class DetailActivity extends AppCompatActivity {
                 (isReleasing && anime.nextAiringEpisode == 1 && anime.airedEpisodesCount == 0);
 
         if (isNotYetReleased) {
-            episodeList.clear();
-            episodeAdapter.setData(episodeList);
+            setupEpisodeData(new ArrayList<>());
             if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
-            refreshWatchedStates();
             return;
         }
 
@@ -519,11 +681,8 @@ public class DetailActivity extends AppCompatActivity {
                     break;
                 }
             }
-            episodeList.clear();
-            episodeList.addAll(cachedEps);
             anime.airedEpisodesCount = Math.max(anime.airedEpisodesCount, cachedEps.size());
-            refreshWatchedStates();
-            episodeAdapter.setData(episodeList);
+            setupEpisodeData(cachedEps);
             if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
 
             // Jika anime tamat (FINISHED) dan memiliki provider epId valid -> skip scraping 100%!
@@ -541,14 +700,13 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         if (!hasCachedEps) {
-            episodeList.clear();
+            List<Episode> dummyList = new ArrayList<>();
             for (int i = 1; i <= safeAiredCount; i++) {
                 Episode ep = new Episode(i);
                 ep.slug = anime.slug + "-episode-" + i;
-                episodeList.add(ep);
+                dummyList.add(ep);
             }
-            refreshWatchedStates();
-            episodeAdapter.setData(episodeList);
+            setupEpisodeData(dummyList);
             if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.VISIBLE);
         }
 
@@ -746,15 +904,12 @@ public class DetailActivity extends AppCompatActivity {
         FeedCache.getInstance(this).saveEpisodeList(anime.slug, filtered);
         mainHandler.post(() -> {
             if (pbEpisodesLoading != null) pbEpisodesLoading.setVisibility(View.GONE);
-            episodeList.clear();
-            episodeList.addAll(filtered);
             anime.airedEpisodesCount = filtered.size();
-            refreshWatchedStates();
-            episodeAdapter.setData(episodeList);
+            setupEpisodeData(filtered);
 
             if (PlaybackDataHolder.hasData() && PlaybackDataHolder.getAnime() != null &&
                     (PlaybackDataHolder.getAnime().id == anime.id || anime.slug.equals(PlaybackDataHolder.getAnime().slug))) {
-                PlaybackDataHolder.set(anime, episodeList, PlaybackDataHolder.getIndex());
+                PlaybackDataHolder.set(anime, allEpisodeList, PlaybackDataHolder.getIndex());
             }
             triggerAutoPlayIfPending();
         });
@@ -837,40 +992,46 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void startPlaybackAtLastOrFirst() {
-        if (episodeList.isEmpty()) {
+        if (allEpisodeList.isEmpty()) {
             Toast.makeText(this, R.string.detail_loading_episodes, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int targetIndex = 0;
+        Episode targetEp = allEpisodeList.get(0);
         if (lastWatchedEp > 0) {
             MenatapDatabase.PlaybackProgress prog = MenatapDatabase.getInstance(this).getEpisodeProgress(anime.slug, lastWatchedEp);
+            int targetEpNum = lastWatchedEp;
             if (!prog.shouldResume() && prog.durationMs > 0 && prog.progressMs >= prog.durationMs - 30_000) {
-                int nextPos = episodeAdapter.findPositionByNumber(lastWatchedEp + 1);
-                if (nextPos != -1) {
-                    targetIndex = nextPos;
-                } else {
-                    int pos = episodeAdapter.findPositionByNumber(lastWatchedEp);
-                    if (pos != -1) targetIndex = pos;
+                targetEpNum = lastWatchedEp + 1;
+            }
+            for (Episode ep : allEpisodeList) {
+                if (ep.number == targetEpNum) {
+                    targetEp = ep;
+                    break;
                 }
-            } else {
-                int pos = episodeAdapter.findPositionByNumber(lastWatchedEp);
-                if (pos != -1) targetIndex = pos;
             }
         }
-        launchPlayer(targetIndex);
+        launchPlayerForEpisode(targetEp);
     }
 
-    private void launchPlayer(int index) {
-        if (index < 0 || index >= episodeList.size()) return;
+    private void launchPlayerForEpisode(Episode targetEp) {
+        if (targetEp == null || allEpisodeList.isEmpty()) return;
 
-        PlaybackDataHolder.set(anime, episodeList, index);
+        int targetIndex = 0;
+        for (int i = 0; i < allEpisodeList.size(); i++) {
+            if (allEpisodeList.get(i).number == targetEp.number) {
+                targetIndex = i;
+                break;
+            }
+        }
+
+        PlaybackDataHolder.set(anime, allEpisodeList, targetIndex);
 
         Intent intent = new Intent(this, PlayerActivity.class);
         if (anime != null) {
             intent.putExtra("slug", anime.slug);
         }
-        intent.putExtra("selectedIndex", index);
+        intent.putExtra("selectedIndex", targetIndex);
         startActivity(intent);
     }
 

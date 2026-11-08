@@ -321,6 +321,25 @@
                         android:visibility="gone" />
                 </LinearLayout>
 
+                <!-- Horizontal Episode Range Tabs (Muncul otomatis jika episode > 50) -->
+                <HorizontalScrollView
+                    android:id="@+id/scroll_episode_ranges"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none"
+                    android:overScrollMode="never"
+                    android:layout_marginBottom="10dp"
+                    android:focusable="false"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:id="@+id/layout_episode_ranges"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:focusable="false" />
+                </HorizontalScrollView>
+
                 <!-- Grid Episode (Managed by GridLayoutManager in DetailActivity) -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_detail_episodes"
