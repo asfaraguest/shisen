@@ -1225,6 +1225,16 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            if (btnClose != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnClose, 1.05f);
+            if (btnReset != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnReset, 1.05f);
+            if (btnApply != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnApply, 1.05f);
+            View firstChip = dialog.findViewById(R.id.chip_sort_pop);
+            if (firstChip != null) {
+                firstChip.post(firstChip::requestFocus);
+            }
+        }
+
         dialog.show();
     }
 
@@ -1284,6 +1294,13 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void afterTextChanged(Editable s) {}
             });
+        }
+
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            if (btnClose != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnClose, 1.05f);
+            if (btnDismiss != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnDismiss, 1.05f);
+            if (btnReset != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnReset, 1.05f);
+            rvGenres.post(rvGenres::requestFocus);
         }
 
         dialog.show();
@@ -1825,7 +1842,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (isSearchExpanded) {
                 // Dari search box atau collapse button, D-Pad Down langsung beralih ke konten anime
-                if (focus == etSearch || focus == btnCollapseSearch) {
+                if (focus == etSearch || focus == btnCollapseSearch || focus == btnClearSearch) {
                     if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
                         hideKeyboard();
                         if (focusFirstGridItem()) {

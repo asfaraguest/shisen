@@ -63,6 +63,10 @@ public class SettingsDialog {
             dialog.dismiss();
         });
 
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            id.shisen.app.util.TvFocusHelper.attachFocusScale(btnClose, 1.1f);
+        }
+
         // Khusus Shisen TV: sembunyikan Tema dan Safety, sediakan toggle untuk BYOK AI
         if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
             View sectionTheme = dialogView.findViewById(R.id.container_section_theme);
@@ -116,6 +120,13 @@ public class SettingsDialog {
 
         SystemUiHelper.setupCustomDialogBounds(dialog, activity);
         dialog.show();
+
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            View btnLangId = dialogView.findViewById(R.id.btn_lang_id);
+            if (btnLangId != null) {
+                btnLangId.post(btnLangId::requestFocus);
+            }
+        }
     }
 
     private static void setupThemeSection(View root, Activity activity, OnSettingsChangeListener listener) {
@@ -232,6 +243,13 @@ public class SettingsDialog {
         btnLangEn.setOnClickListener(langClickListener);
         btnLangJa.setOnClickListener(langClickListener);
         btnLangEs.setOnClickListener(langClickListener);
+
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            id.shisen.app.util.TvFocusHelper.attachFocusScale(btnLangId, 1.05f);
+            id.shisen.app.util.TvFocusHelper.attachFocusScale(btnLangEn, 1.05f);
+            id.shisen.app.util.TvFocusHelper.attachFocusScale(btnLangJa, 1.05f);
+            id.shisen.app.util.TvFocusHelper.attachFocusScale(btnLangEs, 1.05f);
+        }
     }
 
     private static void setupSystemSection(View root, Activity activity, OnSettingsChangeListener listener) {
@@ -446,6 +464,11 @@ public class SettingsDialog {
                 FeedCache.getInstance(activity).clearAllCache();
                 Toast.makeText(activity, R.string.settings_cache_cleared, Toast.LENGTH_SHORT).show();
             });
+        }
+
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            if (btnCheckUpdate != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnCheckUpdate, 1.04f);
+            if (btnClearCache != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnClearCache, 1.04f);
         }
     }
 }

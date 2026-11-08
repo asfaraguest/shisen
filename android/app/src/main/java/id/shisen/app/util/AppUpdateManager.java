@@ -268,6 +268,16 @@ public class AppUpdateManager {
             });
         }
 
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            if (btnClose != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnClose, 1.1f);
+            if (btnLater != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnLater, 1.05f);
+            if (btnNow != null) {
+                id.shisen.app.util.TvFocusHelper.attachFocusScale(btnNow, 1.05f);
+                btnNow.post(btnNow::requestFocus);
+            }
+            if (tvFallbackBrowser != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(tvFallbackBrowser, 1.05f);
+        }
+
         dialog.show();
     }
 
