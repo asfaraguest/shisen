@@ -3,6 +3,8 @@ package id.shisen.app.util;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Build;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -93,12 +95,77 @@ public class SystemUiHelper {
             android.util.DisplayMetrics dm = context.getResources().getDisplayMetrics();
             int width = calculateDialogWidth(dm.widthPixels, dm.density);
             win.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+
+            if (!isCustomViewWithBackground) {
+                ensureDialogContrast(dialog);
+            }
         };
 
         if (dialog.isShowing()) {
             applyBounds.run();
         } else {
             dialog.setOnShowListener(d -> applyBounds.run());
+        }
+    }
+
+    public static void ensureDialogContrast(android.app.Dialog dialog) {
+        if (dialog == null) return;
+
+        if (dialog instanceof androidx.appcompat.app.AlertDialog) {
+            androidx.appcompat.app.AlertDialog ad = (androidx.appcompat.app.AlertDialog) dialog;
+            android.widget.Button pos = ad.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
+            if (pos != null) pos.setTextColor(0xFF38BDF8);
+            android.widget.Button neg = ad.getButton(android.content.DialogInterface.BUTTON_NEGATIVE);
+            if (neg != null) neg.setTextColor(0xFFF1F5F9);
+            android.widget.Button neu = ad.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
+            if (neu != null) neu.setTextColor(0xFF94A3B8);
+        } else if (dialog instanceof android.app.AlertDialog) {
+            android.app.AlertDialog ad = (android.app.AlertDialog) dialog;
+            android.widget.Button pos = ad.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
+            if (pos != null) pos.setTextColor(0xFF38BDF8);
+            android.widget.Button neg = ad.getButton(android.content.DialogInterface.BUTTON_NEGATIVE);
+            if (neg != null) neg.setTextColor(0xFFF1F5F9);
+            android.widget.Button neu = ad.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
+            if (neu != null) neu.setTextColor(0xFF94A3B8);
+        }
+
+        Window win = dialog.getWindow();
+        if (win != null && win.getDecorView() != null) {
+            applyContrastToHierarchy(win.getDecorView());
+        }
+    }
+
+    private static void applyContrastToHierarchy(View view) {
+        if (view == null) return;
+        if (view instanceof android.widget.TextView) {
+            android.widget.TextView tv = (android.widget.TextView) view;
+            int color = tv.getCurrentTextColor();
+            int r = (color >> 16) & 0xFF;
+            int g = (color >> 8) & 0xFF;
+            int b = color & 0xFF;
+            double luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+            if (luminance < 110) {
+                tv.setTextColor(0xFFF1F5F9);
+            }
+        }
+        if (view instanceof android.widget.ListView) {
+            android.widget.ListView lv = (android.widget.ListView) view;
+            lv.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
+                @Override
+                public void onChildViewAdded(View parent, View child) {
+                    applyContrastToHierarchy(child);
+                }
+                @Override
+                public void onChildViewRemoved(View parent, View child) {}
+            });
+            for (int i = 0; i < lv.getChildCount(); i++) {
+                applyContrastToHierarchy(lv.getChildAt(i));
+            }
+        } else if (view instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) view;
+            for (int i = 0; i < vg.getChildCount(); i++) {
+                applyContrastToHierarchy(vg.getChildAt(i));
+            }
         }
     }
 }

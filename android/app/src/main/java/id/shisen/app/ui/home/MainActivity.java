@@ -1,6 +1,6 @@
 package id.shisen.app.ui.home;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -699,10 +699,10 @@ public class MainActivity extends AppCompatActivity {
         btnClearHistoryAll.setOnClickListener(v -> {
             HapticHelper.performClick(v);
             if (currentTab == MainTab.RIWAYAT) {
-                new AlertDialog.Builder(this)
+                AlertDialog dialog = new AlertDialog.Builder(this)
                         .setTitle(R.string.dialog_clear_history_title)
                         .setMessage(R.string.dialog_clear_history_msg)
-                        .setPositiveButton(R.string.action_clear_all, (dialog, which) -> {
+                        .setPositiveButton(R.string.action_clear_all, (d, which) -> {
                             new Thread(() -> {
                                 MenatapDatabase.getInstance(this).clearAllHistory();
                                 mainHandler.post(() -> {
@@ -712,7 +712,9 @@ public class MainActivity extends AppCompatActivity {
                             }).start();
                         })
                         .setNegativeButton(R.string.dialog_cancel, null)
-                        .show();
+                        .create();
+                id.shisen.app.util.SystemUiHelper.setupDialogBounds(dialog, this);
+                dialog.show();
             } else if (currentTab == MainTab.KATALOG) {
                 resetCatalogFilterState();
                 updateTabsUI();

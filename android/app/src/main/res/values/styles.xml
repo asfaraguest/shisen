@@ -11,5 +11,46 @@
         <item name="colorSecondary">@color/accent_frost_iris</item>
         <item name="android:textColorPrimary">@color/text_frost_bright</item>
         <item name="android:textColorSecondary">@color/text_frost_subtle</item>
+        <item name="colorControlHighlight">#3338BDF8</item>
+        <item name="android:colorControlHighlight">#3338BDF8</item>
+        <item name="colorControlActivated">@color/accent_glacial</item>
+        <item name="android:colorControlActivated">@color/accent_glacial</item>
+
+        <!-- Pastikan modal AlertDialog standar menggunakan tema Dark Frost dengan teks kontras tinggi -->
+        <item name="alertDialogTheme">@style/Theme.Menatap.Dialog.Alert</item>
+        <item name="android:alertDialogTheme">@style/Theme.Menatap.Dialog.Alert</item>
+        <item name="dialogTheme">@style/Theme.Menatap.Dialog.Alert</item>
+        <item name="android:dialogTheme">@style/Theme.Menatap.Dialog.Alert</item>
+    </style>
+
+    <style name="Theme.Menatap.Dialog.Alert" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/bg_dialog_frost</item>
+        <item name="android:background">@color/frost_surface</item>
+        <item name="android:textColorPrimary">@color/text_frost_bright</item>
+        <item name="android:textColorSecondary">@color/text_frost_subtle</item>
+        <item name="android:textColorAlertDialogListItem">@color/text_frost_bright</item>
+        <item name="textColorAlertDialogListItem">@color/text_frost_bright</item>
+        <item name="colorPrimary">@color/accent_glacial</item>
+        <item name="colorAccent">@color/accent_glacial</item>
+        <item name="android:colorAccent">@color/accent_glacial</item>
+        <item name="colorControlActivated">@color/accent_glacial</item>
+        <item name="android:colorControlActivated">@color/accent_glacial</item>
+        <item name="colorControlHighlight">#3338BDF8</item>
+        <item name="android:colorControlHighlight">#3338BDF8</item>
+        <item name="buttonBarPositiveButtonStyle">@style/DialogButtonStyle.Accent</item>
+        <item name="buttonBarNegativeButtonStyle">@style/DialogButtonStyle.Subtle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/DialogButtonStyle.Subtle</item>
+    </style>
+
+    <style name="DialogButtonStyle.Accent" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/accent_glacial</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif-bold</item>
+    </style>
+
+    <style name="DialogButtonStyle.Subtle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/text_frost_bright</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 </resources>

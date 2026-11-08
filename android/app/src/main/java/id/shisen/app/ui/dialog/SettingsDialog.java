@@ -1,7 +1,7 @@
 package id.shisen.app.ui.dialog;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.text.Editable;

@@ -3,7 +3,7 @@ package id.shisen.app.ui.player;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
 import android.app.RemoteAction;
@@ -2549,6 +2549,8 @@ public class PlayerActivity extends AppCompatActivity {
         b.setTitle(R.string.player_dialog_custom_sub_title);
         final EditText input = new EditText(this);
         input.setHint("https://example.com/sub.vtt atau .srt");
+        input.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.text_frost_bright));
+        input.setHintTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.text_frost_dim));
         input.setSingleLine(true);
         input.setPadding(40, 30, 40, 30);
         b.setView(input);
