@@ -47,6 +47,7 @@ public class SecureStore {
     private final SharedPreferences prefs;
     private final Key secretKey;
     private final SecureRandom secureRandom;
+    private final java.util.Map<String, String> memoryCache = new java.util.concurrent.ConcurrentHashMap<>();
 
     private SecureStore(Context context) {
         this(context != null && context.getApplicationContext() != null
@@ -201,6 +202,7 @@ public class SecureStore {
     public boolean putString(String key, String value) {
         if (key == null || prefs == null) return false;
         if (value == null) {
+            memoryCache.remove(key);
             return prefs.edit().remove(key).commit();
         }
         if (secretKey == null) {
@@ -208,7 +210,11 @@ public class SecureStore {
         }
         try {
             String encrypted = encrypt(value);
-            return prefs.edit().putString(key, encrypted).commit();
+            boolean committed = prefs.edit().putString(key, encrypted).commit();
+            if (committed) {
+                memoryCache.put(key, value);
+            }
+            return committed;
         } catch (Throwable e) {
             return false;
         }
@@ -220,6 +226,10 @@ public class SecureStore {
      */
     public String getString(String key, String defaultValue) {
         if (key == null || prefs == null) return defaultValue;
+        String cached = memoryCache.get(key);
+        if (cached != null) {
+            return cached;
+        }
         String raw = prefs.getString(key, null);
         if (raw == null) return defaultValue;
 
@@ -254,7 +264,11 @@ public class SecureStore {
         // 3. Normal Keystore decryption
         try {
             String decrypted = decrypt(raw);
-            return (decrypted != null) ? decrypted : defaultValue;
+            if (decrypted != null) {
+                memoryCache.put(key, decrypted);
+                return decrypted;
+            }
+            return defaultValue;
         } catch (Throwable e) {
             return defaultValue;
         }
@@ -265,10 +279,14 @@ public class SecureStore {
     }
 
     public boolean remove(String key) {
+        if (key != null) {
+            memoryCache.remove(key);
+        }
         return prefs.edit().remove(key).commit();
     }
 
     public boolean clear() {
+        memoryCache.clear();
         return prefs.edit().clear().commit();
     }
 }

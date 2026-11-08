@@ -77,12 +77,9 @@ public class SettingsDialog {
 
             if (sectionTheme != null) sectionTheme.setVisibility(View.GONE);
             if (sectionSafety != null) sectionSafety.setVisibility(View.GONE);
+            if (sectionAi != null) sectionAi.setVisibility(View.GONE);
 
-            setupAiSubtitleSection(dialogView, activity, dialog);
-
-            if (sectionAi != null) {
-                sectionAi.setVisibility(View.GONE);
-            }
+            final boolean[] aiSetupDone = new boolean[]{false};
 
             if (btnToggleByok != null) {
                 btnToggleByok.setVisibility(View.VISIBLE);
@@ -91,6 +88,10 @@ public class SettingsDialog {
                     HapticHelper.performClick(v);
                     if (sectionAi != null) {
                         boolean isVisible = sectionAi.getVisibility() == View.VISIBLE;
+                        if (!isVisible && !aiSetupDone[0]) {
+                            aiSetupDone[0] = true;
+                            setupAiSubtitleSection(dialogView, activity, dialog);
+                        }
                         sectionAi.setVisibility(isVisible ? View.GONE : View.VISIBLE);
                         if (tvToggleIcon != null) {
                             tvToggleIcon.setText(isVisible ? "▼" : "▲");
