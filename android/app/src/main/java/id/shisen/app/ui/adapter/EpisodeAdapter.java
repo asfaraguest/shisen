@@ -119,6 +119,13 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.EpisodeV
             holder.tvStatusBadge.setVisibility(View.GONE);
         }
 
+        if (holder.card.hasFocus()) {
+            float density = context.getResources().getDisplayMetrics().density;
+            holder.card.setStrokeColor(ContextCompat.getColor(context, R.color.accent_glacial));
+            holder.card.setStrokeWidth(Math.max(5, (int) (3.0f * density)));
+            holder.card.setCardBackgroundColor(Color.parseColor("#15223A"));
+        }
+
         attachSpringTouchFeedback(holder.card);
 
         if (id.shisen.app.ui.player.PlayerKeys.isTv()) {

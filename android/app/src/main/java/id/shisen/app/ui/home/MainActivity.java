@@ -716,10 +716,14 @@ public class MainActivity extends AppCompatActivity {
                 id.shisen.app.util.SystemUiHelper.setupDialogBounds(dialog, this);
                 dialog.show();
             } else if (currentTab == MainTab.KATALOG) {
-                resetCatalogFilterState();
-                updateTabsUI();
-                updateSubFilterUI();
-                loadCurrentFeed();
+                if (isCatalogFilterActive()) {
+                    resetCatalogFilterState();
+                    updateTabsUI();
+                    updateSubFilterUI();
+                    loadCurrentFeed();
+                } else {
+                    showCatalogFilterDialog();
+                }
             } else if (currentTab == MainTab.GENRE) {
                 showGenreSelectorDialog();
             }

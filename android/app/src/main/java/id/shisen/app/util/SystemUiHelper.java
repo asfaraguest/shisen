@@ -150,6 +150,7 @@ public class SystemUiHelper {
         }
         if (view instanceof android.widget.ListView) {
             android.widget.ListView lv = (android.widget.ListView) view;
+            lv.setSelector(new android.graphics.drawable.ColorDrawable(0x2638BDF8));
             lv.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
                 @Override
                 public void onChildViewAdded(View parent, View child) {
@@ -160,6 +161,9 @@ public class SystemUiHelper {
             });
             for (int i = 0; i < lv.getChildCount(); i++) {
                 applyContrastToHierarchy(lv.getChildAt(i));
+            }
+            if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+                lv.post(lv::requestFocus);
             }
         } else if (view instanceof ViewGroup) {
             ViewGroup vg = (ViewGroup) view;

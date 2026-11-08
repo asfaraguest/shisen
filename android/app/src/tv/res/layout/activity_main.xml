@@ -595,15 +595,22 @@
                         android:inputType="text"
                         android:singleLine="true"
                         android:nextFocusLeft="@+id/btn_collapse_search"
+                        android:nextFocusRight="@+id/btn_clear_search"
                         android:nextFocusDown="@+id/rv_anime_grid"
                         android:nextFocusUp="@+id/et_search" />
 
                     <ImageView
                         android:id="@+id/btn_clear_search"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:padding="4dp"
+                        android:background="@drawable/bg_tv_button_focused"
                         android:src="@drawable/ic_close"
                         app:tint="@color/text_frost_subtle"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:nextFocusLeft="@+id/et_search"
+                        android:nextFocusDown="@+id/rv_anime_grid"
                         android:visibility="gone"
                         android:contentDescription="Clear Text" />
                 </LinearLayout>

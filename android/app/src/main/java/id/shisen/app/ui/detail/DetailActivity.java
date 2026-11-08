@@ -156,6 +156,9 @@ public class DetailActivity extends AppCompatActivity {
         }
         updateBookmarkUI();
         refreshWatchedStates();
+        if (btnPlayPrimary != null && btnPlayPrimary.isEnabled() && getCurrentFocus() == null) {
+            btnPlayPrimary.post(btnPlayPrimary::requestFocus);
+        }
     }
 
     private void initViews() {
@@ -251,6 +254,7 @@ public class DetailActivity extends AppCompatActivity {
                 }
                 return false;
             };
+            if (btnBack != null) btnBack.setOnKeyListener(toEpisodesListener);
             if (btnBookmark != null) btnBookmark.setOnKeyListener(toEpisodesListener);
             if (tvSynopsisToggle != null) tvSynopsisToggle.setOnKeyListener(toEpisodesListener);
         }
@@ -495,6 +499,9 @@ public class DetailActivity extends AppCompatActivity {
             allEpisodeList.addAll(fullList);
         }
         refreshWatchedStates();
+        if (btnPlayPrimary != null && btnPlayPrimary.isEnabled() && getCurrentFocus() == null) {
+            btnPlayPrimary.post(btnPlayPrimary::requestFocus);
+        }
 
         if (allEpisodeList.size() <= 50) {
             if (scrollEpisodeRanges != null) scrollEpisodeRanges.setVisibility(View.GONE);

@@ -582,17 +582,28 @@ public class PlayerActivity extends AppCompatActivity {
         // - bufferForPlaybackAfterRebuffer: 10.0s (cukup untuk 1 segmen HLS ZokoAnime/Megaplay utuh agar bebas stutter loop)
         // - prioritizeTimeOverSizeThresholds: true (terus buffer hingga target waktu tanpa dipotong batas byte 13MB)
         // - backBuffer: 30s (seek mundur instan tanpa download ulang)
-        DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
-                .setAllocator(new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE))
-                .setBufferDurationsMs(
-                        60_000,
-                        300_000,
-                        4_000,
-                        10_000
-                )
-                .setPrioritizeTimeOverSizeThresholds(true)
-                .setBackBuffer(30_000, true)
-                .build();
+        DefaultLoadControl loadControl;
+        if (PlayerKeys.isTv()) {
+            loadControl = new DefaultLoadControl.Builder()
+                    .setAllocator(new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE))
+                    .setBufferDurationsMs(30_000, 90_000, 3_500, 8_000)
+                    .setTargetBufferBytes(32 * 1024 * 1024)
+                    .setPrioritizeTimeOverSizeThresholds(false)
+                    .setBackBuffer(15_000, true)
+                    .build();
+        } else {
+            loadControl = new DefaultLoadControl.Builder()
+                    .setAllocator(new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE))
+                    .setBufferDurationsMs(
+                            60_000,
+                            300_000,
+                            4_000,
+                            10_000
+                    )
+                    .setPrioritizeTimeOverSizeThresholds(true)
+                    .setBackBuffer(30_000, true)
+                    .build();
+        }
 
         DefaultBandwidthMeter bandwidthMeter = DefaultBandwidthMeter.getSingletonInstance(this);
 
@@ -814,6 +825,12 @@ public class PlayerActivity extends AppCompatActivity {
         playerView.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> {
             if (visibility == View.VISIBLE) {
                 updateNextPrevButtons();
+                if (PlayerKeys.isTv() && btnExoPlayPause != null) {
+                    View curFocus = getCurrentFocus();
+                    if (curFocus == null || curFocus == playerView) {
+                        btnExoPlayPause.post(btnExoPlayPause::requestFocus);
+                    }
+                }
             }
             boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
             if (isLandscape && !isScreenLocked) {
@@ -1257,13 +1274,15 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void setupPortraitRecycler() {
         episodeAdapter = new EpisodeAdapter(this);
-        int spanCount = calculatePortraitEpisodeSpan(
-                getResources().getDisplayMetrics().widthPixels,
-                getResources().getDisplayMetrics().density
-        );
-        GridLayoutManager glm = new GridLayoutManager(this, spanCount);
-        rvPortraitEpisodes.setLayoutManager(glm);
-        rvPortraitEpisodes.setAdapter(episodeAdapter);
+        if (!PlayerKeys.isTv()) {
+            int spanCount = calculatePortraitEpisodeSpan(
+                    getResources().getDisplayMetrics().widthPixels,
+                    getResources().getDisplayMetrics().density
+            );
+            GridLayoutManager glm = new GridLayoutManager(this, spanCount);
+            rvPortraitEpisodes.setLayoutManager(glm);
+            rvPortraitEpisodes.setAdapter(episodeAdapter);
+        }
 
         // Mark watched state (batch lookup)
         java.util.Set<Integer> watchedSet = MenatapDatabase.getInstance(this).getWatchedEpisodeNumbers(anime != null ? anime.slug : "");
@@ -2884,9 +2903,14 @@ public class PlayerActivity extends AppCompatActivity {
             tvSubtitles.setShadowLayer(4.0f, 1.5f, 1.5f, 0xFF000000);
         }
 
-        // 3. Ukuran Huruf
-        float spVal = "small".equals(size) ? 14f : ("large".equals(size) ? 21f : ("xlarge".equals(size) ? 25f : 17f));
+        // 3. Ukuran Huruf & Lebar Maksimum (10-Foot UI di Android TV)
+        float spVal = PlayerKeys.isTv()
+                ? ("small".equals(size) ? 18f : ("large".equals(size) ? 26f : ("xlarge".equals(size) ? 30f : 22f)))
+                : ("small".equals(size) ? 14f : ("large".equals(size) ? 21f : ("xlarge".equals(size) ? 25f : 17f)));
         tvSubtitles.setTextSize(TypedValue.COMPLEX_UNIT_SP, spVal);
+        if (PlayerKeys.isTv()) {
+            tvSubtitles.setMaxWidth((int) (getResources().getDisplayMetrics().widthPixels * 0.82f));
+        }
     }
 
     private void showPlayerUnifiedSettingsDialog() {
@@ -2895,7 +2919,16 @@ public class PlayerActivity extends AppCompatActivity {
                 .getBoolean("pref_auto_skip", false);
 
         String serverDisplay = "hianimes_se".equalsIgnoreCase(preferredServer) ? "HIANIMES.SE" : preferredServer.toUpperCase();
-        String[] menu = {
+        String[] menu = PlayerKeys.isTv() ? new String[]{
+                getString(R.string.player_settings_item_sub, subLabel),
+                getString(R.string.player_settings_item_style),
+                getString(R.string.player_settings_item_offset),
+                getString(R.string.player_settings_item_quality, btnQuality.getText()),
+                getString(R.string.player_settings_item_server, serverDisplay),
+                getString(R.string.player_settings_item_autoskip, (autoSkip ? getString(R.string.label_enabled) : getString(R.string.label_disabled))),
+                getString(R.string.player_settings_item_speed, btnSpeed.getText()),
+                getString(R.string.player_settings_item_aspect, btnAspect.getText())
+        } : new String[]{
                 getString(R.string.player_settings_item_sub, subLabel),
                 getString(R.string.player_settings_item_style),
                 getString(R.string.player_settings_item_offset),
@@ -3031,10 +3064,6 @@ public class PlayerActivity extends AppCompatActivity {
 
     public boolean isControllerVisible() {
         if (playerView == null) return false;
-        View focus = getCurrentFocus();
-        if (focus != null && focus != playerView) {
-            return true;
-        }
         return playerView.isControllerFullyVisible();
     }
 
