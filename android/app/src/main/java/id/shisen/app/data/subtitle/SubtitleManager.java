@@ -414,7 +414,7 @@ public class SubtitleManager {
 
     private void runGtxFallback(List<SubtitleCue> enCues, String sourceUrl, int loadId, boolean forceRefresh) {
         if (enCues.isEmpty()) {
-            if (listener != null) listener.onSubtitleError("Subtitle tidak tersedia untuk episode ini");
+            if (listener != null) listener.onSubtitleError("Subtitle Indonesia belum tersedia");
             return;
         }
         GtxTranslator.translateAsync(context, sourceUrl, enCues, forceRefresh, new GtxTranslator.TranslateCallback() {
@@ -693,9 +693,12 @@ public class SubtitleManager {
     }
 
     private List<SubtitleCue> fetchCuesFromUrl(String url, String preferredReferer) throws Exception {
-        OkHttpClient client = HttpClientProvider.getClient();
+        OkHttpClient client = HttpClientProvider.getClient().newBuilder()
+                .connectTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
+                .build();
 
-        // Rantai referer anti-403 untuk berbagai proteksi hotlinking CDN (Megaplay, EclipseHarbor, EmeraldDrift, dsb.)
+        // Rantai referer anti-403 ringkas (maks 4 kandidat paling efektif)
         List<String> refererCandidates = new ArrayList<>();
         if (preferredReferer != null && !preferredReferer.isEmpty()) {
             refererCandidates.add(preferredReferer);
@@ -715,12 +718,12 @@ public class SubtitleManager {
             }
         } catch (Exception ignored) {}
 
-        for (String cand : NetworkConfig.SUBTITLE_REFERER_CANDIDATES) {
-            if (!refererCandidates.contains(cand)) {
-                refererCandidates.add(cand);
-            }
+        if (!refererCandidates.contains("https://megaplay.buzz/")) {
+            refererCandidates.add("https://megaplay.buzz/");
         }
-        refererCandidates.add(""); // direct request tanpa referer
+        if (!refererCandidates.contains("")) {
+            refererCandidates.add(""); // direct request tanpa referer
+        }
 
         Exception lastErr = null;
         for (String ref : refererCandidates) {

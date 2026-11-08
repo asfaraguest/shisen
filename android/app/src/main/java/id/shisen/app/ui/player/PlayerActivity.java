@@ -596,10 +596,17 @@ public class PlayerActivity extends AppCompatActivity {
 
         DefaultBandwidthMeter bandwidthMeter = DefaultBandwidthMeter.getSingletonInstance(this);
 
+        androidx.media3.common.AudioAttributes audioAttributes = new androidx.media3.common.AudioAttributes.Builder()
+                .setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE)
+                .setUsage(androidx.media3.common.C.USAGE_MEDIA)
+                .build();
+
         player = new ExoPlayer.Builder(this)
                 .setMediaSourceFactory(mediaSourceFactory)
                 .setLoadControl(loadControl)
                 .setBandwidthMeter(bandwidthMeter)
+                .setAudioAttributes(audioAttributes, true)
+                .setHandleAudioBecomingNoisy(true)
                 .build();
 
         // Fase 2.1: Jika pemutaran dilanjutkan dari notifikasi saat layar mati,
@@ -783,6 +790,19 @@ public class PlayerActivity extends AppCompatActivity {
                         player.seekTo(currentPos);
                     }
                     player.play();
+                    return;
+                }
+
+                // Fallback otomatis ke resolusi lebih rendah jika hardware decoder TV / perangkat gagal memutar 1080p
+                boolean isCodecOrRendererError = error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_DECODER_INIT_FAILED
+                        || error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_DECODING_FAILED
+                        || (msg != null && (msg.contains("Decoder") || msg.contains("MediaCodec") || msg.contains("renderer")));
+                if (player != null && !isFinishing() && isCodecOrRendererError && streamRetryAttempts < 2) {
+                    streamRetryAttempts++;
+                    applyHlsTrackSelection("720p");
+                    player.prepare();
+                    player.play();
+                    Toast.makeText(PlayerActivity.this, "Menyesuaikan video ke 720p untuk kompatibilitas perangkat...", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 streamRetryAttempts = 0;
@@ -2078,6 +2098,13 @@ public class PlayerActivity extends AppCompatActivity {
                     maxH = 360; maxW = 640;
                 }
                 builder.setMaxVideoSize(maxW, maxH);
+            }
+        } else if (PlayerKeys.isTv()) {
+            int screenH = getResources().getDisplayMetrics().heightPixels;
+            if (screenH <= 768) {
+                builder.setMaxVideoSize(1280, 720);
+            } else {
+                builder.setMaxVideoSize(1920, 1080);
             }
         }
         player.setTrackSelectionParameters(builder.build());

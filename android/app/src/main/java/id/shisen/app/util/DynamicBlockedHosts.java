@@ -16,7 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class DynamicBlockedHosts {
 
     private static final Set<String> KNOWN_DPI_KEYWORDS = new HashSet<>(Arrays.asList(
-            "dramahot", "zokoanime", "drama1", "puterin", "putarin", "stream121"
+            "dramahot", "zokoanime", "drama1", "puterin", "putarin", "stream121",
+            "mysubsplay", "nexabloom", "emeralddrift"
     ));
 
     private static final Set<String> KNOWN_DPI_HOSTS = new HashSet<>(Arrays.asList(
