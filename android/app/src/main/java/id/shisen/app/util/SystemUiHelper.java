@@ -142,12 +142,16 @@ public class SystemUiHelper {
             int[][] states = new int[][]{
                     new int[]{android.R.attr.state_focused},
                     new int[]{android.R.attr.state_selected},
+                    new int[]{android.R.attr.state_checked},
+                    new int[]{android.R.attr.state_activated},
                     new int[]{}
             };
             int[] colors = new int[]{
                     0xFFFFFFFF, // Putih terang menyala saat terfokus
                     0xFFFFFFFF, // Putih terang menyala saat terpilih
-                    0xFFCBD5E1  // Abu-abu terang kontras saat default
+                    0xFF38BDF8, // Biru aksen menyala untuk opsi yang sedang aktif terpilih/tercentang
+                    0xFF38BDF8, // Biru aksen menyala untuk opsi aktif
+                    0xFFE2E8F0  // Abu-abu terang kontras saat default
             };
             tv.setTextColor(new android.content.res.ColorStateList(states, colors));
 
@@ -165,7 +169,7 @@ public class SystemUiHelper {
             } catch (Throwable t) {
                 lv.setSelector(new android.graphics.drawable.ColorDrawable(0xFF1E3A5F));
             }
-            lv.setDrawSelectorOnTop(true);
+            lv.setDrawSelectorOnTop(false);
 
             float density = lv.getResources().getDisplayMetrics().density;
             int padH = (int) (8 * density);

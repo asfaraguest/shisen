@@ -18,6 +18,24 @@
                 android:color="@color/accent_glacial" />
         </shape>
     </item>
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="8dp" />
+            <solid android:color="#152744" />
+            <stroke
+                android:width="1.5dp"
+                android:color="@color/accent_glacial" />
+        </shape>
+    </item>
+    <item android:state_activated="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="8dp" />
+            <solid android:color="#152744" />
+            <stroke
+                android:width="1.5dp"
+                android:color="@color/accent_glacial" />
+        </shape>
+    </item>
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
             <corners android:radius="8dp" />

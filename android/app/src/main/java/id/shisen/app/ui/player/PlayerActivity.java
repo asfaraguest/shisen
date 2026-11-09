@@ -619,6 +619,7 @@ public class PlayerActivity extends AppCompatActivity {
                 .setAudioAttributes(audioAttributes, true)
                 .setHandleAudioBecomingNoisy(true)
                 .build();
+        player.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT);
 
         // Fase 2.1: Jika pemutaran dilanjutkan dari notifikasi saat layar mati,
         // tahan wake lock jaringan agar audio tidak tersendat. Tidak ada efek saat fg.
@@ -742,6 +743,17 @@ public class PlayerActivity extends AppCompatActivity {
         bindExoControlButtons();
 
         player.addListener(new Player.Listener() {
+            @Override
+            public void onVideoSizeChanged(@NonNull androidx.media3.common.VideoSize videoSize) {
+                if (player != null) {
+                    player.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT);
+                }
+                if (playerView != null) {
+                    playerView.setResizeMode(currentResizeMode);
+                    playerView.post(playerView::requestLayout);
+                }
+            }
+
             @Override
             public void onPlaybackStateChanged(int playbackState) {
                 if (playbackState == Player.STATE_BUFFERING) {
@@ -2128,6 +2140,11 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
         player.setTrackSelectionParameters(builder.build());
+        player.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT);
+        if (playerView != null) {
+            playerView.setResizeMode(currentResizeMode);
+            playerView.post(playerView::requestLayout);
+        }
     }
 
     private void showServerSelectorDialog() {
