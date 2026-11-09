@@ -2,6 +2,15 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.0-beta.29] - 2026-11-09
+
+### Diperbaiki
+- **Highlight Fokus & Penanda Opsi Terpilih pada Dialog Subtitle dan Setting Player TV (`SystemUiHelper.java`, `sel_dialog_item.xml`)**:
+  - Mengaktifkan kembali `drawSelectorOnTop(true)` dengan mengganti fill solid selector menjadi translucent cyan `#2638BDF8` dan stroke border 2.5dp `#38BDF8`, sehingga kotak sorotan fokus D-Pad tampak menyala di lapisan atas tanpa menutupi teks.
+  - Memberikan warna teks biru aksen Glacial Cyan `#38BDF8` pada opsi yang bertanda aktif (seperti `[Aktif]`, `[Active]`) agar opsi yang sedang dipilih langsung terlihat jelas.
+  - Menghapus background default child item di dalam ListView agar tidak menghalangi rendering visual selector.
+  - Mengarahkan seleksi awal D-Pad TV secara otomatis ke posisi opsi yang sedang aktif saat dialog dibuka.
+
 ## [1.1.0-beta.28] - 2026-11-09
 
 ### Diperbaiki

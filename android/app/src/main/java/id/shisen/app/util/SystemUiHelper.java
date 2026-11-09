@@ -156,6 +156,16 @@ public class SystemUiHelper {
         if (view == null) return;
         if (view instanceof android.widget.TextView) {
             android.widget.TextView tv = (android.widget.TextView) view;
+            tv.setBackgroundColor(Color.TRANSPARENT);
+
+            CharSequence text = tv.getText();
+            boolean hasActiveBadge = text != null && (
+                    text.toString().contains("[Aktif]") ||
+                    text.toString().contains("[Active]") ||
+                    text.toString().contains("[有効]") ||
+                    text.toString().contains("[Activo]")
+            );
+
             int[][] states = new int[][]{
                     new int[]{android.R.attr.state_focused},
                     new int[]{android.R.attr.state_selected},
@@ -168,7 +178,7 @@ public class SystemUiHelper {
                     0xFFFFFFFF, // Putih terang menyala saat terpilih
                     0xFF38BDF8, // Biru aksen menyala untuk opsi yang sedang aktif terpilih/tercentang
                     0xFF38BDF8, // Biru aksen menyala untuk opsi aktif
-                    0xFFE2E8F0  // Abu-abu terang kontras saat default
+                    hasActiveBadge ? 0xFF38BDF8 : 0xFFE2E8F0  // Biru aksen untuk opsi bertanda aktif, abu-abu terang saat default
             };
             tv.setTextColor(new android.content.res.ColorStateList(states, colors));
 
@@ -186,7 +196,7 @@ public class SystemUiHelper {
             } catch (Throwable t) {
                 lv.setSelector(new android.graphics.drawable.ColorDrawable(0xFF1E3A5F));
             }
-            lv.setDrawSelectorOnTop(false);
+            lv.setDrawSelectorOnTop(true);
 
             float density = lv.getResources().getDisplayMetrics().density;
             int padH = (int) (8 * density);
@@ -212,6 +222,19 @@ public class SystemUiHelper {
                     lv.requestFocus();
                     if (lv.getAdapter() != null && lv.getAdapter().getCount() > 0) {
                         int target = lv.getCheckedItemPosition();
+                        if (target < 0) {
+                            for (int i = 0; i < lv.getAdapter().getCount(); i++) {
+                                Object item = lv.getAdapter().getItem(i);
+                                if (item != null) {
+                                    String str = item.toString();
+                                    if (str.contains("[Aktif]") || str.contains("[Active]") ||
+                                            str.contains("[有効]") || str.contains("[Activo]")) {
+                                        target = i;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                         if (target < 0 || target >= lv.getAdapter().getCount()) {
                             target = 0;
                         }
