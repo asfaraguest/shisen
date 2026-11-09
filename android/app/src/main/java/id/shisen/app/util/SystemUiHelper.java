@@ -139,18 +139,42 @@ public class SystemUiHelper {
         if (view == null) return;
         if (view instanceof android.widget.TextView) {
             android.widget.TextView tv = (android.widget.TextView) view;
-            int color = tv.getCurrentTextColor();
-            int r = (color >> 16) & 0xFF;
-            int g = (color >> 8) & 0xFF;
-            int b = color & 0xFF;
-            double luminance = (0.299 * r + 0.587 * g + 0.114 * b);
-            if (luminance < 110) {
-                tv.setTextColor(0xFFF1F5F9);
+            int[][] states = new int[][]{
+                    new int[]{android.R.attr.state_focused},
+                    new int[]{android.R.attr.state_selected},
+                    new int[]{}
+            };
+            int[] colors = new int[]{
+                    0xFFFFFFFF, // Putih terang menyala saat terfokus
+                    0xFFFFFFFF, // Putih terang menyala saat terpilih
+                    0xFFCBD5E1  // Abu-abu terang kontras saat default
+            };
+            tv.setTextColor(new android.content.res.ColorStateList(states, colors));
+
+            if (tv instanceof android.widget.CheckedTextView) {
+                android.widget.CheckedTextView ctv = (android.widget.CheckedTextView) tv;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    ctv.setCheckMarkTintList(android.content.res.ColorStateList.valueOf(0xFF38BDF8));
+                }
             }
         }
         if (view instanceof android.widget.ListView) {
             android.widget.ListView lv = (android.widget.ListView) view;
-            lv.setSelector(new android.graphics.drawable.ColorDrawable(0x2638BDF8));
+            try {
+                lv.setSelector(R.drawable.sel_dialog_item);
+            } catch (Throwable t) {
+                lv.setSelector(new android.graphics.drawable.ColorDrawable(0xFF1E3A5F));
+            }
+            lv.setDrawSelectorOnTop(true);
+
+            float density = lv.getResources().getDisplayMetrics().density;
+            int padH = (int) (8 * density);
+            int padV = (int) (4 * density);
+            lv.setPadding(padH, padV, padH, padV);
+            lv.setClipToPadding(false);
+            lv.setDivider(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+            lv.setDividerHeight((int) (4 * density));
+
             lv.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
                 @Override
                 public void onChildViewAdded(View parent, View child) {
@@ -163,7 +187,16 @@ public class SystemUiHelper {
                 applyContrastToHierarchy(lv.getChildAt(i));
             }
             if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
-                lv.post(lv::requestFocus);
+                lv.post(() -> {
+                    lv.requestFocus();
+                    if (lv.getAdapter() != null && lv.getAdapter().getCount() > 0) {
+                        int target = lv.getCheckedItemPosition();
+                        if (target < 0 || target >= lv.getAdapter().getCount()) {
+                            target = 0;
+                        }
+                        lv.setSelection(target);
+                    }
+                });
             }
         } else if (view instanceof ViewGroup) {
             ViewGroup vg = (ViewGroup) view;

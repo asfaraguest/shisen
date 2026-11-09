@@ -2823,6 +2823,17 @@ public class PlayerActivity extends AppCompatActivity {
             autoSaveTask.run();
             dialog.dismiss();
         });
+
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            if (btnClose != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnClose, 1.1f);
+            if (btnSave != null) {
+                id.shisen.app.util.TvFocusHelper.attachFocusScale(btnSave, 1.05f);
+                btnSave.post(btnSave::requestFocus);
+            }
+            if (btnClear != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnClear, 1.05f);
+            if (btnResetPrompt != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnResetPrompt, 1.05f);
+        }
+
         SystemUiHelper.setupCustomDialogBounds(dialog, this);
         dialog.show();
     }
