@@ -578,34 +578,23 @@ public class PlayerActivity extends AppCompatActivity {
 
         DefaultMediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(okHttpFactory);
 
-        // Konfigurasi buffer agresif & stabil:
+        // Konfigurasi buffer agresif & stabil (Baseline Sukses 8 Nov 11:57):
         // - minBufferMs: 60s, maxBufferMs: 300s (5 menit buffer ke depan)
         // - bufferForPlayback: 4.0s
         // - bufferForPlaybackAfterRebuffer: 10.0s (cukup untuk 1 segmen HLS ZokoAnime/Megaplay utuh agar bebas stutter loop)
-        // - prioritizeTimeOverSizeThresholds: true (terus buffer hingga target waktu tanpa dipotong batas byte 13MB)
+        // - prioritizeTimeOverSizeThresholds: true (terus buffer hingga target waktu tanpa dipotong batas byte)
         // - backBuffer: 30s (seek mundur instan tanpa download ulang)
-        DefaultLoadControl loadControl;
-        if (PlayerKeys.isTv()) {
-            loadControl = new DefaultLoadControl.Builder()
-                    .setAllocator(new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE))
-                    .setBufferDurationsMs(30_000, 90_000, 3_500, 8_000)
-                    .setTargetBufferBytes(32 * 1024 * 1024)
-                    .setPrioritizeTimeOverSizeThresholds(false)
-                    .setBackBuffer(15_000, true)
-                    .build();
-        } else {
-            loadControl = new DefaultLoadControl.Builder()
-                    .setAllocator(new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE))
-                    .setBufferDurationsMs(
-                            60_000,
-                            300_000,
-                            4_000,
-                            10_000
-                    )
-                    .setPrioritizeTimeOverSizeThresholds(true)
-                    .setBackBuffer(30_000, true)
-                    .build();
-        }
+        DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
+                .setAllocator(new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE))
+                .setBufferDurationsMs(
+                        60_000,
+                        300_000,
+                        4_000,
+                        10_000
+                )
+                .setPrioritizeTimeOverSizeThresholds(true)
+                .setBackBuffer(30_000, true)
+                .build();
 
         DefaultBandwidthMeter bandwidthMeter = DefaultBandwidthMeter.getSingletonInstance(this);
 

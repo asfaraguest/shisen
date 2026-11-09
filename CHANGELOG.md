@@ -2,6 +2,14 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.0-beta.33] - 2026-11-09
+
+### Dipulihkan & Diperbaiki
+- **Pemulihan Baseline Sukses Jaringan Streaming Coocaa TV (`HttpClientProvider.java`, `DynamicBlockedHosts.java`, `PlayerActivity.java`)**:
+  - Mengembalikan `Dynamic DPI-Blocked Host Learner Interceptor` pada `HttpClientProvider.java` persis seperti kondisi sukses 8 November jam 11:57 WIB (`ad48dd6`), sehingga setiap request CDN video yang mengalami `SSLHandshakeException`, `SocketTimeoutException`, atau `ConnectException` langsung otomatis terdaftar ke dynamic blocked set untuk mendapatkan DPI-bypass desync pada koneksi/retry berikutnya.
+  - Membersihkan `DynamicBlockedHosts.java` dari whitelist restriktif yang sebelumnya menghalangi host CDN video untuk di-desync.
+  - Mengembalikan konfigurasi buffer pemutar video Android TV (`DefaultLoadControl`) ke buffer stabil (`prioritizeTimeOverSizeThresholds: true`, 60s min, 300s max) agar terhindar dari pemutusan throughput segmen video HLS saat terjadi jitter koneksi Wi-Fi TV.
+
 ## [1.1.0-beta.32] - 2026-11-09
 
 ### Diperbaiki

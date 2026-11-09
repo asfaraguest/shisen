@@ -29,9 +29,7 @@ public final class DynamicBlockedHosts {
 
     private static final Set<String> WHITELISTED_HOSTS = new HashSet<>(Arrays.asList(
             "clients5.google.com", "translate.google.com", "translate.googleapis.com",
-            "graphql.anilist.co", "anilist.co", "api.aniskip.com", "raw.githubusercontent.com",
-            "hianime.to", "hianime.sx", "hianimes.se", "animetosho.net", "opensubtitles.org",
-            "rest.opensubtitles.org", "api.opensubtitles.com"
+            "graphql.anilist.co", "anilist.co", "api.aniskip.com", "raw.githubusercontent.com"
     ));
 
     // Bounded thread-safe cache for dynamically learned blocked hosts

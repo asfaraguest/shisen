@@ -111,7 +111,23 @@ public class HttpClientProvider {
                 .followRedirects(true)
                 .followSslRedirects(true);
 
-        // 1. Anti-403 & Header Normalization Interceptor
+        // 1. Dynamic DPI-Blocked Host Learner Interceptor (Baseline Sukses 8 Nov 11:57)
+        builder.addInterceptor(chain -> {
+            Request request = chain.request();
+            try {
+                return chain.proceed(request);
+            } catch (IOException e) {
+                String host = request.url().host();
+                if (e instanceof java.net.SocketTimeoutException
+                        || e instanceof java.net.ConnectException
+                        || e instanceof javax.net.ssl.SSLHandshakeException) {
+                    DynamicBlockedHosts.markBlocked(host);
+                }
+                throw e;
+            }
+        });
+
+        // 2. Anti-403 & Header Normalization Interceptor
         builder.addInterceptor(new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
