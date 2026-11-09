@@ -324,7 +324,7 @@
     <string name="update_release_notes_label">リリースノートと更新内容</string>
     <string name="update_loading_notes">リリースノートを読み込み中...</string>
     <string name="update_later">あとで</string>
-    <string name="update_now">今すぐ更新</string>
+    <string name="update_now">アップデートをダウンロード</string>
     <string name="update_browser_fallback">またはブラウザでリリースページを開く</string>
     <string name="update_downloading_title">Shisen (視線) の更新をダウンロード中</string>
     <string name="update_connecting">GitHubに接続中...</string>

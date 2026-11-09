@@ -2,6 +2,23 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.0-beta.30] - 2026-11-09
+
+### Diperbaiki
+- **In-App Update & Tombol Unduh Pembaruan Permanen (`AppUpdateManager.java`, `dialog_app_update.xml`, `strings.xml`)**:
+  - Mengubah endpoint pemeriksaan rilis dari `/releases/latest` (yang hanya merespons rilis stable dan mengabaikan semua rilis beta) menjadi `https://api.github.com/repos/asfaraguest/shisen/releases?per_page=10` sehingga seluruh rilis beta dapat dideteksi secara akurat oleh perangkat.
+  - Mematenkan penemuan URL unduh deterministik resmi berbasis tag rilis agar `downloadUrl` tidak pernah bernilai null dan langsung memicu unduhan streaming in-app tanpa bergantung pada browser eksternal.
+  - Memperbarui label tombol dialog menjadi "Unduh Pembaruan" (`Download Update`) serta memastikan tombol selalu tampil aktif dan otomatis terfokus D-Pad pada Android TV.
+- **SSL Handshake & Fallback Socket Android 9+ TV (`DesyncSocketWrapper.java`, `DesyncSSLSocketFactory.java`)**:
+  - Menambahkan delegasi publik method `getFileDescriptor$()` ke underlying TCP socket agar Conscrypt BoringSSL di Android 9+ TV (Coocaa) dapat mengakses native OS file descriptor tanpa terhalang blacklist hidden API reflection.
+  - Membungkus pembentukan socket desync dengan `catch (Throwable)` aman yang otomatis fallback ke native SSL socket standar jika terjadi kendala.
+- **Pembersihan Auto-Poisoning & Isolasi DPI Bypass Eksklusif (`DynamicBlockedHosts.java`, `HttpClientProvider.java`)**:
+  - Menghapus interceptor learner yang secara agresif menandai host normal sebagai DPI-blocked saat terjadi timeout sesaat pada koneksi Wi-Fi TV.
+  - Menambahkan whitelist permanen (Google API/Translate, AniList, AniSkip, HiAnime, MegaCloud, AnimeTosho, OpenSubtitles) agar terisolasi dari desync, menjamin DPI bypass TLS ClientHello splitting berjalan eksklusif hanya untuk domain yang diblokir ISP Indonesia.
+- **Header & Timeout Translasi Subtitle Non-English (`GtxTranslator.java`)**:
+  - Menambahkan header `Sec-Fetch-Site: none` dan `Accept: */*` pada request Google Translate untuk mencegah error HTTP 403 Forbidden.
+  - Menaikkan timeout koneksi (10s) dan baca (15s) agar batch penerjemahan subtitle Bahasa Indonesia untuk anime baru tidak putus di jaringan Wi-Fi TV.
+
 ## [1.1.0-beta.29] - 2026-11-09
 
 ### Diperbaiki

@@ -51,11 +51,31 @@ public class AppUpdateManager {
     public static final String GITHUB_OWNER = "asfaraguest";
     public static final String GITHUB_REPO = "shisen";
     public static final String GITHUB_RELEASES_URL = "https://github.com/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/releases";
+    public static final String GITHUB_API_RELEASES = "https://api.github.com/repos/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/releases?per_page=10";
     public static final String GITHUB_API_LATEST_RELEASE = "https://api.github.com/repos/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/releases/latest";
 
     private static final String[] UPDATE_URLS = {
+            GITHUB_API_RELEASES,
             GITHUB_API_LATEST_RELEASE
     };
+
+    public static class UpdateCandidate {
+        public final String tagName;
+        public final String version;
+        public final String notes;
+        public final String downloadUrl;
+        public final long sizeBytes;
+        public final String htmlUrl;
+
+        public UpdateCandidate(String tagName, String version, String notes, String downloadUrl, long sizeBytes, String htmlUrl) {
+            this.tagName = tagName;
+            this.version = version;
+            this.notes = notes;
+            this.downloadUrl = downloadUrl;
+            this.sizeBytes = sizeBytes;
+            this.htmlUrl = htmlUrl;
+        }
+    }
 
     private static volatile AppUpdateManager instance;
 
@@ -111,7 +131,10 @@ public class AppUpdateManager {
         new Thread(() -> {
             try {
                 OkHttpClient client = HttpClientProvider.getClient();
-                JSONObject releaseObj = null;
+                String cleanInstalled = getInstalledVersion(activity);
+                boolean isTvFlavor = "tv".equalsIgnoreCase(id.shisen.app.BuildConfig.FLAVOR);
+                UpdateCandidate candidate = null;
+                boolean connected = false;
                 String lastError = null;
 
                 for (String endpoint : UPDATE_URLS) {
@@ -125,7 +148,8 @@ public class AppUpdateManager {
                         try (Response resp = client.newCall(req).execute()) {
                             if (resp.isSuccessful() && resp.body() != null) {
                                 String json = resp.body().string();
-                                releaseObj = new JSONObject(json);
+                                connected = true;
+                                candidate = findNewerRelease(json, cleanInstalled, isTvFlavor);
                                 break;
                             } else {
                                 lastError = "HTTP " + resp.code();
@@ -136,51 +160,96 @@ public class AppUpdateManager {
                     }
                 }
 
-                if (releaseObj == null) {
+                if (!connected) {
                     onCheckFinished(activity, isManual, false, "Gagal terhubung ke GitHub (" + lastError + ")", null, null, null, 0, null);
                     return;
                 }
 
-                String tagName = releaseObj.optString("tag_name", "");
-                String bodyNotes = releaseObj.optString("body", "Pembaruan kestabilan dan fitur terbaru Shisen (視線).");
-                String htmlUrl = releaseObj.optString("html_url", "https://github.com/asfaraguest/shisen/releases");
-
-                String cleanRemote = tagName.replaceFirst("^v", "");
-                String cleanInstalled = getInstalledVersion(activity);
-
-                // Temukan asset APK resmi
-                String downloadUrl = null;
-                long apkSize = 0;
-                JSONArray assets = releaseObj.optJSONArray("assets");
-                boolean isTvFlavor = "tv".equalsIgnoreCase(id.shisen.app.BuildConfig.FLAVOR);
-                if (assets != null) {
-                    for (int i = 0; i < assets.length(); i++) {
-                        JSONObject a = assets.getJSONObject(i);
-                        String name = a.optString("name", "");
-                        if (name.endsWith(".apk")) {
-                            if (isTvFlavor) {
-                                if (name.contains("shisen-tv-release")) {
-                                    downloadUrl = a.optString("browser_download_url", null);
-                                    apkSize = a.optLong("size", 0);
-                                    break;
-                                }
-                            } else {
-                                if (name.contains("shisen-release") && !name.contains("tv")) {
-                                    downloadUrl = a.optString("browser_download_url", null);
-                                    apkSize = a.optLong("size", 0);
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                if (candidate != null) {
+                    onCheckFinished(activity, isManual, true, null, candidate.version, candidate.notes, candidate.downloadUrl, candidate.sizeBytes, candidate.htmlUrl);
+                } else {
+                    onCheckFinished(activity, isManual, false, null, cleanInstalled, null, null, 0, null);
                 }
-
-                boolean hasUpdate = isNewerVersion(cleanRemote, cleanInstalled);
-                onCheckFinished(activity, isManual, hasUpdate, null, cleanRemote, bodyNotes, downloadUrl, apkSize, htmlUrl);
             } catch (Exception e) {
                 onCheckFinished(activity, isManual, false, "Koneksi terganggu: " + e.getMessage(), null, null, null, 0, null);
             }
         }).start();
+    }
+
+    public static UpdateCandidate findNewerRelease(String json, String installedVersion, boolean isTvFlavor) {
+        if (json == null || json.trim().isEmpty()) return null;
+        String trimmed = json.trim();
+        try {
+            if (trimmed.startsWith("[")) {
+                JSONArray releasesArray = new JSONArray(trimmed);
+                for (int i = 0; i < releasesArray.length(); i++) {
+                    JSONObject rel = releasesArray.optJSONObject(i);
+                    if (rel == null) continue;
+                    UpdateCandidate candidate = parseCandidate(rel, installedVersion, isTvFlavor);
+                    if (candidate != null) {
+                        return candidate;
+                    }
+                }
+            } else if (trimmed.startsWith("{")) {
+                JSONObject rel = new JSONObject(trimmed);
+                return parseCandidate(rel, installedVersion, isTvFlavor);
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    private static UpdateCandidate parseCandidate(JSONObject releaseObj, String installedVersion, boolean isTvFlavor) {
+        if (releaseObj == null) return null;
+        String tagName = releaseObj.optString("tag_name", "");
+        if (tagName.isEmpty()) return null;
+
+        String cleanRemote = tagName.replaceFirst("^v", "");
+        String cleanInstalled = installedVersion != null ? installedVersion.replaceFirst("^v", "") : "";
+
+        if (!isNewerVersion(cleanRemote, cleanInstalled)) {
+            return null;
+        }
+
+        String bodyNotes = releaseObj.optString("body", "Pembaruan kestabilan dan fitur terbaru Shisen (視線).");
+        String htmlUrl = releaseObj.optString("html_url", GITHUB_RELEASES_URL);
+
+        // Cari file APK resmi dari assets
+        String downloadUrl = null;
+        long apkSize = 0;
+        JSONArray assets = releaseObj.optJSONArray("assets");
+        if (assets != null) {
+            for (int i = 0; i < assets.length(); i++) {
+                JSONObject a = assets.optJSONObject(i);
+                if (a == null) continue;
+                String name = a.optString("name", "");
+                if (name.endsWith(".apk")) {
+                    if (isTvFlavor) {
+                        if (name.contains("shisen-tv-release") || name.toLowerCase().contains("tv")) {
+                            downloadUrl = a.optString("browser_download_url", null);
+                            apkSize = a.optLong("size", 0);
+                            break;
+                        }
+                    } else {
+                        if (name.contains("shisen-release") && !name.toLowerCase().contains("tv")) {
+                            downloadUrl = a.optString("browser_download_url", null);
+                            apkSize = a.optLong("size", 0);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback deterministik URL rilis GitHub resmi jika asset belum sempat terindeks di API JSON
+        if (downloadUrl == null || downloadUrl.trim().isEmpty()) {
+            if (isTvFlavor) {
+                downloadUrl = "https://github.com/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/releases/download/" + tagName + "/shisen-tv-release-" + tagName + ".apk";
+            } else {
+                downloadUrl = "https://github.com/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/releases/download/" + tagName + "/shisen-release-" + tagName + ".apk";
+            }
+        }
+
+        return new UpdateCandidate(tagName, cleanRemote, bodyNotes, downloadUrl, apkSize, htmlUrl);
     }
 
     private void onCheckFinished(Activity activity, boolean isManual, boolean hasUpdate, String errorMsg,
@@ -238,10 +307,13 @@ public class AppUpdateManager {
         }
 
         if (btnNow != null) {
+            btnNow.setVisibility(View.VISIBLE);
+            btnNow.setEnabled(true);
+            btnNow.setText(R.string.update_now);
             btnNow.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 dialog.dismiss();
-                if (downloadUrl != null && downloadUrl.endsWith(".apk")) {
+                if (downloadUrl != null && !downloadUrl.trim().isEmpty()) {
                     startStreamingDownload(activity, latestVer, downloadUrl);
                 } else {
                     Toast.makeText(activity, "File APK belum tersedia untuk rilis ini, membuka browser...", Toast.LENGTH_SHORT).show();

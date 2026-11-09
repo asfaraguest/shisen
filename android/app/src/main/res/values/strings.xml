@@ -324,7 +324,7 @@
     <string name="update_release_notes_label">CATATAN RILIS &amp; PEMBARUAN</string>
     <string name="update_loading_notes">Memuat catatan rilis...</string>
     <string name="update_later">Nanti</string>
-    <string name="update_now">Perbarui Sekarang</string>
+    <string name="update_now">Unduh Pembaruan</string>
     <string name="update_browser_fallback">Atau buka tautan rilis di browser</string>
     <string name="update_downloading_title">Mengunduh Pembaruan Shisen (視線)</string>
     <string name="update_connecting">Menghubungkan ke GitHub...</string>

@@ -324,7 +324,7 @@
     <string name="update_release_notes_label">RELEASE NOTES &amp; UPDATES</string>
     <string name="update_loading_notes">Loading release notes...</string>
     <string name="update_later">Later</string>
-    <string name="update_now">Update Now</string>
+    <string name="update_now">Download Update</string>
     <string name="update_browser_fallback">Or open release page in browser</string>
     <string name="update_downloading_title">Downloading Shisen Update</string>
     <string name="update_connecting">Connecting to GitHub...</string>
