@@ -38,7 +38,7 @@ public class DesyncSSLSocketFactory extends SSLSocketFactory {
         try {
             Socket wrapped = new DesyncSocketWrapper(s, host, true);
             return delegate.createSocket(wrapped, host, port, autoClose);
-        } catch (IOException e) {
+        } catch (Throwable e) {
             return delegate.createSocket(s, host, port, autoClose);
         }
     }

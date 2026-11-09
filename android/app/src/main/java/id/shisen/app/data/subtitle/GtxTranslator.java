@@ -85,8 +85,8 @@ public class GtxTranslator {
                 }
 
                 OkHttpClient client = HttpClientProvider.getClient().newBuilder()
-                        .connectTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
-                        .readTimeout(6, java.util.concurrent.TimeUnit.SECONDS)
+                        .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                        .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
                         .build();
                 List<SubtitleCue> translated = new ArrayList<>(cues.size());
                 int totalCues = cues.size();
@@ -149,8 +149,8 @@ public class GtxTranslator {
     public static List<String> translateBatchSync(Context context, List<SubtitleCue> cues) {
         if (cues == null || cues.isEmpty()) return new ArrayList<>();
         OkHttpClient client = HttpClientProvider.getClient().newBuilder()
-                .connectTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
-                .readTimeout(6, java.util.concurrent.TimeUnit.SECONDS)
+                .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
                 .build();
         List<String> results = new ArrayList<>();
         for (int i = 0; i < cues.size(); i += BATCH_SIZE) {
@@ -183,6 +183,9 @@ public class GtxTranslator {
                         .url(endpoint)
                         .post(formBody)
                         .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0")
+                        .header("Sec-Fetch-Site", "none")
+                        .header("Sec-Fetch-Mode", "no-cors")
+                        .header("Accept", "*/*")
                         .build();
 
                 try (Response response = client.newCall(request).execute()) {

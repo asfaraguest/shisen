@@ -111,23 +111,7 @@ public class HttpClientProvider {
                 .followRedirects(true)
                 .followSslRedirects(true);
 
-        // 1. Dynamic DPI-Blocked Host Learner Interceptor
-        builder.addInterceptor(chain -> {
-            Request request = chain.request();
-            try {
-                return chain.proceed(request);
-            } catch (IOException e) {
-                String host = request.url().host();
-                if (e instanceof java.net.SocketTimeoutException
-                        || e instanceof java.net.ConnectException
-                        || e instanceof javax.net.ssl.SSLHandshakeException) {
-                    DynamicBlockedHosts.markBlocked(host);
-                }
-                throw e;
-            }
-        });
-
-        // 2. Anti-403 & Header Normalization Interceptor
+        // 1. Anti-403 & Header Normalization Interceptor
         builder.addInterceptor(new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
@@ -195,7 +179,7 @@ public class HttpClientProvider {
                         }
                         if (original.header("Origin") == null || original.header("Origin").isEmpty()) {
                             String origin = determinedReferer.endsWith("/")
-                                    ? determinedReferer.substring(0, determinedReferer.length() - 1)
+                                     ? determinedReferer.substring(0, determinedReferer.length() - 1)
                                     : determinedReferer;
                             rb.header("Origin", origin);
                         }
@@ -212,14 +196,18 @@ public class HttpClientProvider {
                 if (original.header("Accept-Language") == null) {
                     rb.header("Accept-Language", "en-US,en;q=0.9,id;q=0.8");
                 }
-                if (original.header("Sec-Fetch-Dest") == null) {
-                    rb.header("Sec-Fetch-Dest", "empty");
-                }
-                if (original.header("Sec-Fetch-Mode") == null) {
-                    rb.header("Sec-Fetch-Mode", "cors");
-                }
-                if (original.header("Sec-Fetch-Site") == null) {
-                    rb.header("Sec-Fetch-Site", "cross-site");
+
+                boolean isGoogleOrApi = host.contains("google") || host.contains("googleapis") || host.contains("anilist");
+                if (!isGoogleOrApi && !isDirect) {
+                    if (original.header("Sec-Fetch-Dest") == null) {
+                        rb.header("Sec-Fetch-Dest", "empty");
+                    }
+                    if (original.header("Sec-Fetch-Mode") == null) {
+                        rb.header("Sec-Fetch-Mode", "cors");
+                    }
+                    if (original.header("Sec-Fetch-Site") == null) {
+                        rb.header("Sec-Fetch-Site", "cross-site");
+                    }
                 }
 
                 return chain.proceed(rb.build());

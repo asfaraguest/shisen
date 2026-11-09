@@ -25,10 +25,28 @@ public final class DynamicBlockedHosts {
             "puterin.biz", "putarin.xyz", "stream121.space", "zokoanime.video"
     ));
 
+    private static final Set<String> WHITELISTED_HOSTS = new HashSet<>(Arrays.asList(
+            "clients5.google.com", "translate.google.com", "translate.googleapis.com",
+            "graphql.anilist.co", "anilist.co", "api.aniskip.com", "raw.githubusercontent.com",
+            "hianime.to", "hianime.sx", "hianimes.se", "megacloud.tv", "megaplay.buzz",
+            "rapid-cloud.co", "rabbitstream.net", "animetosho.net", "opensubtitles.org",
+            "rest.opensubtitles.org", "api.opensubtitles.com"
+    ));
+
     // Bounded thread-safe cache for dynamically learned blocked hosts
     private static final Set<String> DYNAMIC_BLOCKED_HOSTS = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private DynamicBlockedHosts() {}
+
+    private static boolean isWhitelisted(String host) {
+        if (host == null) return false;
+        for (String w : WHITELISTED_HOSTS) {
+            if (host.equals(w) || host.endsWith("." + w)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Checks if a host is subject to DPI blocking and requires TLS ClientHello desynchronization.
@@ -37,6 +55,7 @@ public final class DynamicBlockedHosts {
         if (host == null || host.trim().isEmpty()) return false;
         String h = host.toLowerCase(Locale.US).trim();
 
+        if (isWhitelisted(h)) return false;
         if (KNOWN_DPI_HOSTS.contains(h)) return true;
         if (DYNAMIC_BLOCKED_HOSTS.contains(h)) return true;
 
@@ -49,11 +68,14 @@ public final class DynamicBlockedHosts {
     }
 
     /**
-     * Dynamically marks a host as blocked when connection resets, timeouts, or SSL handshake failures occur.
+     * Dynamically marks a host as blocked when connection resets or SSL handshake failures occur on CDN endpoints.
      */
     public static void markBlocked(String host) {
         if (host != null && !host.trim().isEmpty()) {
-            DYNAMIC_BLOCKED_HOSTS.add(host.toLowerCase(Locale.US).trim());
+            String h = host.toLowerCase(Locale.US).trim();
+            if (!isWhitelisted(h)) {
+                DYNAMIC_BLOCKED_HOSTS.add(h);
+            }
         }
     }
 
