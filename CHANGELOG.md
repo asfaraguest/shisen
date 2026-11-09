@@ -2,35 +2,6 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
-## [1.1.0] - 2026-11-09
-
-### Rilis Resmi Shisen v1.1.0 (Stable Release)
-Rilis stabil perdana yang membawa dukungan penuh Android TV (Leanback) secara berdampingan dengan Android Mobile dalam dua APK terpisah yang dioptimalkan secara native.
-
-#### Fitur Utama & Penyempurnaan:
-- **Dukungan Penuh Android TV (Leanback Launcher)**:
-  - Varian APK khusus `shisen-tv-release-v1.1.0.apk` dengan navigasi Leanback TV 100% kompatibel remote D-Pad.
-  - Left-Side Navigation Rail bergaya Android TV modern untuk akses kilat ke Katalog, Musim Ini, Sedang Tayang, Jadwal, Riwayat, Favorit, dan Pengaturan.
-  - Tampilan grid lanskap 5 kolom yang nyaman untuk resolusi layar besar FHD & 4K TV.
-- **TV Focus Engine & Kontras Visual Tinggi**:
-  - Animasi pop-up / zoom halus 1.05x dan border Glacial Cyan glow (`#38BDF8`) saat elemen disorot remote TV.
-  - Highlight fokus kontras tinggi pada seluruh dialog player (Subtitle, Quality, Server, Speed, Offset, dan Settings) dengan border 2.5dp dan fill translucent tanpa menutupi teks.
-  - Penanda otomatis opsi yang sedang aktif bertanda `[Aktif]` dan auto-landing kursor D-Pad pada opsi yang sedang aktif.
-- **Video & Playback Engine**:
-  - `setVideoScalingMode(SCALE_TO_FIT)` aktif di semua resolusi untuk menjamin video 1080p pas di layar tanpa cropping/zoom pada decoder Smart TV.
-  - Integrasi Media3 ExoPlayer 1.2.1 dengan audio focus handling, headset noisy pause, background playback, dan Picture-in-Picture (PiP).
-  - Integrasi AniSkip v2 untuk auto-skip intro dan outro anime.
-- **Subtitle Smart Merge & AI (BYOK)**:
-  - Smart Fansub ID otomatis menggabungkan terjemahan AnimeTosho ID + Google Translate GTX + Smart Lexicon kontekstual.
-  - Integrasi AI Subtitle Bring-Your-Own-Key (BYOK) mendukung Gemini, OpenAI, Groq, DeepSeek, dan Ollama lokal via HTTP localhost.
-- **Streaming Multi-Tier & Isolasi Musim**:
-  - Fallback streaming otomatis 3 tingkat: HiAnime → AniChan → Otakudesu.
-  - Algoritma pencocokan season & split-cour ketat (`TitleMatcher`).
-- **Keamanan & Kestabilan**:
-  - Master Zero-Cleartext HTTP policy dengan DNS-over-HTTPS (DoH).
-  - R8 / ProGuard optimization menghasilkan ukuran APK ultra-ringkas (~5.2 MB Mobile, ~5.4 MB TV).
-  - In-app update seamless otomatis dari versi sebelumnya ke versi stabil.
-
 ## [1.1.0-beta.29] - 2026-11-09
 
 ### Diperbaiki
