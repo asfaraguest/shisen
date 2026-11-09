@@ -17,19 +17,20 @@ public final class DynamicBlockedHosts {
 
     private static final Set<String> KNOWN_DPI_KEYWORDS = new HashSet<>(Arrays.asList(
             "dramahot", "zokoanime", "drama1", "puterin", "putarin", "stream121",
-            "mysubsplay", "nexabloom", "emeralddrift"
+            "mysubsplay", "nexabloom", "emeralddrift", "megacloud", "megaplay",
+            "rapid-cloud", "rabbitstream"
     ));
 
     private static final Set<String> KNOWN_DPI_HOSTS = new HashSet<>(Arrays.asList(
             "hls.dramahot.top", "dramahot.top", "drama1.cfd", "hls1.drama1.cfd",
-            "puterin.biz", "putarin.xyz", "stream121.space", "zokoanime.video"
+            "puterin.biz", "putarin.xyz", "stream121.space", "zokoanime.video",
+            "megacloud.tv", "megaplay.buzz", "rapid-cloud.co", "rabbitstream.net"
     ));
 
     private static final Set<String> WHITELISTED_HOSTS = new HashSet<>(Arrays.asList(
             "clients5.google.com", "translate.google.com", "translate.googleapis.com",
             "graphql.anilist.co", "anilist.co", "api.aniskip.com", "raw.githubusercontent.com",
-            "hianime.to", "hianime.sx", "hianimes.se", "megacloud.tv", "megaplay.buzz",
-            "rapid-cloud.co", "rabbitstream.net", "animetosho.net", "opensubtitles.org",
+            "hianime.to", "hianime.sx", "hianimes.se", "animetosho.net", "opensubtitles.org",
             "rest.opensubtitles.org", "api.opensubtitles.com"
     ));
 

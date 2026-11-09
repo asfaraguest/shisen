@@ -227,8 +227,9 @@ public class SubtitleManager {
                 if (!enCues.isEmpty()) {
                     synchronized (SubtitleManager.this) {
                         sourceEnglishCues = enCues;
-                        // Tampilkan loading indicator, jangan English mentah
                         if (activeCues.isEmpty()) {
+                            activeCues = new ArrayList<>(enCues);
+                            lastCueIndex = -1;
                             activeLabel = "Menerjemahkan ke Bahasa Indonesia...";
                             if (listener != null) listener.onSubtitleLoading(activeLabel);
                         }
@@ -454,7 +455,16 @@ public class SubtitleManager {
             @Override
             public void onError(String error) {
                 if (loadId != currentLoadId) return;
-                if (listener != null) listener.onSubtitleError("Gagal menerjemahkan subtitle: " + error);
+                synchronized (SubtitleManager.this) {
+                    if (activeCues.isEmpty() && !enCues.isEmpty()) {
+                        activeCues = new ArrayList<>(enCues);
+                        lastCueIndex = -1;
+                        activeLabel = "English (Cadangan)";
+                        if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
+                    } else if (listener != null) {
+                        listener.onSubtitleError("Gagal menerjemahkan subtitle: " + error);
+                    }
+                }
             }
         });
     }
@@ -694,8 +704,8 @@ public class SubtitleManager {
 
     private List<SubtitleCue> fetchCuesFromUrl(String url, String preferredReferer) throws Exception {
         OkHttpClient client = HttpClientProvider.getClient().newBuilder()
-                .connectTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
-                .readTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
+                .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
                 .build();
 
         // Rantai referer anti-403 ringkas (maks 4 kandidat paling efektif)

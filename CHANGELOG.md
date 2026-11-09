@@ -2,6 +2,17 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.0-beta.32] - 2026-11-09
+
+### Diperbaiki
+- **SSL Handshake Aborted & Connection Reset pada Coocaa TV (`PlayerActivity.java`, `DynamicBlockedHosts.java`, `DesyncSocketWrapper.java`)**:
+  - Menghapus domain video CDN (`megacloud.tv`, `megaplay.buzz`, `rapid-cloud.co`, `rabbitstream.net`) dari `WHITELISTED_HOSTS` dan mendaftarkannya ke target DPI bypass agar request video yang diblokir oleh ISP terlindungi oleh ClientHello splitting.
+  - Memastikan Conscrypt di Android 9+ TV memproses TLS handshake via `ConscryptEngineSocket` dan Java stream wrapper (`DesyncOutputStream`) alih-alih native C file descriptor bypass.
+  - Menambahkan auto-marking host yang mengalami connection reset ke daftar DPI-blocked serta **failover berjenjang otomatis** pada `PlayerActivity.onPlayerError` (HiAnime → AniChan → Otakudesu) saat terjadi kegagalan SSL/koneksi tanpa harus crash atau menyuruh user mengulang manual.
+- **Tampilan Subtitle Non-English pada Anime Baru (`SubtitleManager.java`)**:
+  - Menaikkan timeout unduh VTT di jaringan TV Wi-Fi (`connectTimeout` 10s, `readTimeout` 15s) agar cue sumber tidak putus.
+  - Menambahkan graceful fallback ke cue bahasa Inggris asli dengan label cadangan saat translasi background masih berlangsung atau mengalami kendala jaringan TV, mencegah layar video blank tanpa teks sama sekali.
+
 ## [1.1.0-beta.31] - 2026-11-09
 
 ### Ditambahkan

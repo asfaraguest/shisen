@@ -804,12 +804,44 @@ public class PlayerActivity extends AppCompatActivity {
                 if (layoutBuffering != null) layoutBuffering.setVisibility(View.GONE);
                 Throwable cause = error.getCause();
                 String msg = cause != null ? cause.getMessage() : error.getMessage();
-                boolean isSocketClosed = msg != null && (msg.contains("Socket is closed")
+
+                boolean isConnectionOrSslError = msg != null && (
+                        msg.contains("Connection reset")
+                        || msg.contains("SSLHandshakeException")
+                        || msg.contains("SSL handshake aborted")
+                        || msg.contains("I/O error during system call")
+                        || msg.contains("Socket is closed")
                         || msg.contains("Socket closed")
-                        || msg.contains("Software caused connection abort"));
-                if (player != null && !isFinishing() && isSocketClosed && streamRetryAttempts < 2) {
+                        || msg.contains("Software caused connection abort")
+                        || msg.contains("Broken pipe")
+                );
+
+                if (currentStreamSource != null && currentStreamSource.url != null) {
+                    try {
+                        Uri u = Uri.parse(currentStreamSource.url);
+                        if (u.getHost() != null) {
+                            id.shisen.app.util.DynamicBlockedHosts.markBlocked(u.getHost());
+                        }
+                    } catch (Throwable ignored) {}
+                }
+
+                if (player != null && !isFinishing() && isConnectionOrSslError && streamRetryAttempts < 3) {
                     streamRetryAttempts++;
                     long currentPos = player.getCurrentPosition();
+
+                    // Failover otomatis antar tier provider jika stream saat ini terblokir/gagal
+                    if (streamRetryAttempts >= 2 && currentIndex >= 0 && currentIndex < episodeList.size()) {
+                        String fallbackServer = "anichan";
+                        if ("anichan".equalsIgnoreCase(preferredServer)) {
+                            fallbackServer = "otakudesu";
+                        } else if ("otakudesu".equalsIgnoreCase(preferredServer)) {
+                            fallbackServer = "hianimes_se";
+                        }
+                        Toast.makeText(PlayerActivity.this, "Koneksi terganggu, beralih ke server alternatif...", Toast.LENGTH_SHORT).show();
+                        playEpisodeWithServer(currentIndex, fallbackServer, currentPos > 0 ? currentPos : -1);
+                        return;
+                    }
+
                     player.prepare();
                     if (currentPos > 0) {
                         player.seekTo(currentPos);

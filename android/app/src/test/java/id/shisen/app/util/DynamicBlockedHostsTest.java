@@ -21,6 +21,8 @@ public class DynamicBlockedHostsTest {
         assertTrue(DynamicBlockedHosts.isBlocked("drama1.cfd"));
         assertTrue(DynamicBlockedHosts.isBlocked("zokoanime.video"));
         assertTrue(DynamicBlockedHosts.isBlocked("stream121.space"));
+        assertTrue(DynamicBlockedHosts.isBlocked("megacloud.tv"));
+        assertTrue(DynamicBlockedHosts.isBlocked("rapid-cloud.co"));
     }
 
     @Test
@@ -29,8 +31,8 @@ public class DynamicBlockedHostsTest {
         assertFalse(DynamicBlockedHosts.isBlocked("translate.google.com"));
         assertFalse(DynamicBlockedHosts.isBlocked("graphql.anilist.co"));
         assertFalse(DynamicBlockedHosts.isBlocked("hianime.to"));
-        assertFalse(DynamicBlockedHosts.isBlocked("megacloud.tv"));
-        assertFalse(DynamicBlockedHosts.isBlocked("rapid-cloud.co"));
+        assertFalse(DynamicBlockedHosts.isBlocked("hianimes.se"));
+        assertFalse(DynamicBlockedHosts.isBlocked("animetosho.net"));
 
         // Attempting to dynamically mark a whitelisted host as blocked must be a no-op
         DynamicBlockedHosts.markBlocked("clients5.google.com");

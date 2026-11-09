@@ -85,30 +85,6 @@ public class DesyncSocketWrapper extends Socket {
     @Override public boolean isInputShutdown() { return delegate.isInputShutdown(); }
     @Override public boolean isOutputShutdown() { return delegate.isOutputShutdown(); }
 
-    /**
-     * Android Conscrypt calls getFileDescriptor$() to pass the OS file descriptor to BoringSSL.
-     * On Android 9+, private field reflection on Socket.impl is blocked, so we must delegate
-     * directly to the underlying connected Socket.
-     */
-    public java.io.FileDescriptor getFileDescriptor$() {
-        try {
-            java.lang.reflect.Method m = Socket.class.getMethod("getFileDescriptor$");
-            return (java.io.FileDescriptor) m.invoke(delegate);
-        } catch (Throwable t) {
-            try {
-                java.lang.reflect.Field implField = Socket.class.getDeclaredField("impl");
-                implField.setAccessible(true);
-                Object impl = implField.get(delegate);
-                if (impl != null) {
-                    java.lang.reflect.Method fdMethod = impl.getClass().getDeclaredMethod("getFileDescriptor");
-                    fdMethod.setAccessible(true);
-                    return (java.io.FileDescriptor) fdMethod.invoke(impl);
-                }
-            } catch (Throwable ignored) {}
-            return null;
-        }
-    }
-
     private static class DesyncOutputStream extends FilterOutputStream {
         private final boolean desyncEnabled;
         private boolean firstWrite = true;
