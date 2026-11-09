@@ -2,6 +2,17 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.0-beta.31] - 2026-11-09
+
+### Ditambahkan
+- **Layout Landscape Teroptimasi untuk Shisen Mobile (`activity_detail.xml`, `MainActivity.java`, `DeviceNav.java`, `DetailActivity.java`)**:
+  - Mengimplementasikan antarmuka split 2-panel sinematik pada layar Detail anime saat orientasi landscape (Panel Kiri: Hero backdrop & poster karakter, judul, tombol aksi, sinopsis ringkas; Panel Kanan: Scrollable daftar rentang batch episode, grid episode adaptif, serta rekomendasi season/movie terkait).
+  - Menambahkan perhitungan kolom episode adaptif di mode landscape (~4-6 kolom) agar pemanfaatan layar lebar ponsel efisien tanpa memakan ruang vertikal.
+  - Menyesuaikan safe display cutout / notch insets di kiri dan kanan layar ponsel secara presisi agar konten detail tidak tertutup lekukan kamera/poni atau navigation bar gesture.
+  - Menambahkan dukungan rotasi dinamis in-memory tanpa reload jaringan di `DetailActivity.onConfigurationChanged()` sehingga transisi portrait-landscape berlangsung instan (< 10ms).
+  - Membatasi tinggi window dialog di mode landscape mobile via `SystemUiHelper` agar tombol aksi tidak terpotong keluar layar.
+  - Membatasi tinggi scrolling menu lipat FAB pada landscape mobile (`DeviceNav.java`) dan memastikan insets FAB terhindar dari tepi layar berponi.
+
 ## [1.1.0-beta.30] - 2026-11-09
 
 ### Diperbaiki

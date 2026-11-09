@@ -429,6 +429,8 @@ public class MainActivity extends AppCompatActivity {
 
             int topInset = Math.max(statusBars.top, displayCutout.top);
             int bottomInset = navBars.bottom;
+            int leftInset = Math.max(navBars.left, displayCutout.left);
+            int rightInset = Math.max(navBars.right, displayCutout.right);
             float density = getResources().getDisplayMetrics().density;
 
             if (layoutAuroraTop != null) {
@@ -438,16 +440,17 @@ public class MainActivity extends AppCompatActivity {
                     lp.height = baseHeight + topInset;
                     layoutAuroraTop.setLayoutParams(lp);
                 }
-                layoutAuroraTop.setPadding(0, topInset, 0, 0);
+                layoutAuroraTop.setPadding(leftInset, topInset, rightInset, 0);
             }
 
             if (deviceNav != null) {
-                deviceNav.applyInsets(topInset, bottomInset, density);
+                deviceNav.applyInsets(topInset, bottomInset, leftInset, rightInset, density);
             }
 
             if (rvGrid != null) {
-                int basePadding = (int) (80 * density);
-                rvGrid.setPadding(rvGrid.getPaddingLeft(), rvGrid.getPaddingTop(), rvGrid.getPaddingRight(), basePadding + bottomInset);
+                int basePaddingBottom = (int) (80 * density);
+                int basePaddingH = (int) (2 * density);
+                rvGrid.setPadding(leftInset + basePaddingH, rvGrid.getPaddingTop(), rightInset + basePaddingH, basePaddingBottom + bottomInset);
             }
 
             return windowInsets;
@@ -506,8 +509,9 @@ public class MainActivity extends AppCompatActivity {
         if (deviceNav != null) {
             return deviceNav.getGridSpan(widthDp);
         }
-        if (widthDp >= 900) return 4;
-        if (widthDp >= 600) return 3;
+        if (widthDp >= 920) return 5;
+        if (widthDp >= 640) return 4;
+        if (widthDp >= 480) return 3;
         return 2;
     }
 
@@ -517,6 +521,9 @@ public class MainActivity extends AppCompatActivity {
         if (rvGrid != null && rvGrid.getLayoutManager() instanceof GridLayoutManager) {
             ((GridLayoutManager) rvGrid.getLayoutManager()).setSpanCount(calculateGridSpan());
             gridAdapter.notifyDataSetChanged();
+        }
+        if (layoutMainRoot != null) {
+            layoutMainRoot.requestApplyInsets();
         }
     }
 

@@ -98,6 +98,7 @@ public class DetailActivity extends AppCompatActivity {
     private int lastWatchedEp = 0;
     private boolean isSynopsisExpanded = false;
     private boolean pendingAutoPlay = false;
+    private AniListClient.RelationsResult cachedRelationsResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -276,10 +277,14 @@ public class DetailActivity extends AppCompatActivity {
 
             int topInset = Math.max(statusBars.top, displayCutout.top);
             int bottomInset = navBars.bottom;
+            int leftInset = Math.max(navBars.left, displayCutout.left);
+            int rightInset = Math.max(navBars.right, displayCutout.right);
             float density = getResources().getDisplayMetrics().density;
 
+            boolean isLand = getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+
             View backdropContainer = findViewById(R.id.fl_detail_backdrop_container);
-            if (backdropContainer != null) {
+            if (backdropContainer != null && !isLand) {
                 ViewGroup.LayoutParams lp = backdropContainer.getLayoutParams();
                 if (lp != null) {
                     lp.height = (int) (230 * density) + topInset;
@@ -287,22 +292,43 @@ public class DetailActivity extends AppCompatActivity {
                 }
             }
 
-            if (btnBack != null) {
-                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) btnBack.getLayoutParams();
-                if (lp != null) {
-                    lp.topMargin = (int) (16 * density) + topInset;
-                    btnBack.setLayoutParams(lp);
+            if (isLand) {
+                View scrollLeft = findViewById(R.id.scroll_detail_left);
+                if (scrollLeft != null) {
+                    scrollLeft.setPadding(
+                            (int) (14 * density) + leftInset,
+                            (int) (12 * density) + topInset,
+                            (int) (14 * density),
+                            (int) (20 * density) + bottomInset
+                    );
                 }
-            }
+                View scrollRight = findViewById(R.id.scroll_detail_right);
+                if (scrollRight != null) {
+                    scrollRight.setPadding(
+                            (int) (14 * density),
+                            (int) (12 * density) + topInset,
+                            (int) (16 * density) + rightInset,
+                            (int) (24 * density) + bottomInset
+                    );
+                }
+            } else {
+                if (btnBack != null) {
+                    ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) btnBack.getLayoutParams();
+                    if (lp != null) {
+                        lp.topMargin = (int) (16 * density) + topInset;
+                        btnBack.setLayoutParams(lp);
+                    }
+                }
 
-            View scrollContent = findViewById(R.id.layout_detail_scroll_content);
-            if (scrollContent != null) {
-                scrollContent.setPadding(
-                        scrollContent.getPaddingLeft(),
-                        scrollContent.getPaddingTop(),
-                        scrollContent.getPaddingRight(),
-                        (int) (50 * density) + bottomInset
-                );
+                View scrollContent = findViewById(R.id.layout_detail_scroll_content);
+                if (scrollContent != null) {
+                    scrollContent.setPadding(
+                            scrollContent.getPaddingLeft(),
+                            scrollContent.getPaddingTop(),
+                            scrollContent.getPaddingRight(),
+                            (int) (50 * density) + bottomInset
+                    );
+                }
             }
 
             return windowInsets;
@@ -432,6 +458,15 @@ public class DetailActivity extends AppCompatActivity {
         if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
             return 5;
         }
+        int orientation = getResources().getConfiguration().orientation;
+        if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            float safeDensity = Math.max(1.0f, getResources().getDisplayMetrics().density);
+            int widthDp = (int) (getResources().getDisplayMetrics().widthPixels / safeDensity);
+            int rightPanelDp = Math.max(300, widthDp - 360);
+            if (rightPanelDp >= 640) return 6;
+            if (rightPanelDp >= 440) return 5;
+            return 4;
+        }
         return calculateEpisodeSpan(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().density);
     }
 
@@ -447,9 +482,35 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(@NonNull android.content.res.Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (rvEpisodes != null && rvEpisodes.getLayoutManager() instanceof GridLayoutManager) {
-            ((GridLayoutManager) rvEpisodes.getLayoutManager()).setSpanCount(calculateEpisodeSpan());
-            episodeAdapter.notifyDataSetChanged();
+        if (!id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            rebindOrientationLayout();
+        } else {
+            if (rvEpisodes != null && rvEpisodes.getLayoutManager() instanceof GridLayoutManager) {
+                ((GridLayoutManager) rvEpisodes.getLayoutManager()).setSpanCount(calculateEpisodeSpan());
+                if (episodeAdapter != null) episodeAdapter.notifyDataSetChanged();
+            }
+            if (layoutDetailRoot != null) {
+                layoutDetailRoot.requestApplyInsets();
+            }
+        }
+    }
+
+    private void rebindOrientationLayout() {
+        setContentView(R.layout.activity_detail);
+        SystemUiHelper.applySystemBarsTheme(this);
+        initViews();
+        setupWindowInsets();
+        bindAnimeData();
+        setupEpisodeRecycler();
+        if (!allEpisodeList.isEmpty()) {
+            setupEpisodeData(new ArrayList<>(allEpisodeList));
+        } else if (pbEpisodesLoading != null) {
+            pbEpisodesLoading.setVisibility(View.VISIBLE);
+        }
+        if (cachedRelationsResult != null) {
+            applyRelationsResult(cachedRelationsResult);
+        } else {
+            loadRelations();
         }
         if (layoutDetailRoot != null) {
             layoutDetailRoot.requestApplyInsets();
@@ -922,27 +983,38 @@ public class DetailActivity extends AppCompatActivity {
         });
     }
 
+    private void applyRelationsResult(AniListClient.RelationsResult result) {
+        if (result == null) return;
+        cachedRelationsResult = result;
+        if (result.seasons != null && !result.seasons.isEmpty()) {
+            if (seasonsAdapter != null) seasonsAdapter.setData(result.seasons);
+            if (tvRelatedSeasonsCount != null) {
+                tvRelatedSeasonsCount.setText(getString(R.string.detail_series_count_format, result.seasons.size()));
+            }
+            if (layoutRelatedSeasons != null) {
+                layoutRelatedSeasons.setVisibility(View.VISIBLE);
+            }
+        } else if (layoutRelatedSeasons != null) {
+            layoutRelatedSeasons.setVisibility(View.GONE);
+        }
+
+        if (result.movies != null && !result.movies.isEmpty()) {
+            if (moviesAdapter != null) moviesAdapter.setData(result.movies);
+            if (tvRelatedMoviesCount != null) {
+                tvRelatedMoviesCount.setText(getString(R.string.detail_movies_count_format, result.movies.size()));
+            }
+            if (layoutRelatedMovies != null) {
+                layoutRelatedMovies.setVisibility(View.VISIBLE);
+            }
+        } else if (layoutRelatedMovies != null) {
+            layoutRelatedMovies.setVisibility(View.GONE);
+        }
+    }
+
     private void loadRelations() {
         AniListClient.RelationsResult cachedRel = FeedCache.getInstance(this).getCachedRelations(anime.id);
         if (cachedRel != null) {
-            if (cachedRel.seasons != null && !cachedRel.seasons.isEmpty()) {
-                seasonsAdapter.setData(cachedRel.seasons);
-                if (tvRelatedSeasonsCount != null) {
-                    tvRelatedSeasonsCount.setText(getString(R.string.detail_series_count_format, cachedRel.seasons.size()));
-                }
-                if (layoutRelatedSeasons != null) {
-                    layoutRelatedSeasons.setVisibility(View.VISIBLE);
-                }
-            }
-            if (cachedRel.movies != null && !cachedRel.movies.isEmpty()) {
-                moviesAdapter.setData(cachedRel.movies);
-                if (tvRelatedMoviesCount != null) {
-                    tvRelatedMoviesCount.setText(getString(R.string.detail_movies_count_format, cachedRel.movies.size()));
-                }
-                if (layoutRelatedMovies != null) {
-                    layoutRelatedMovies.setVisibility(View.VISIBLE);
-                }
-            }
+            applyRelationsResult(cachedRel);
             if (FeedCache.getInstance(this).isRelationsFresh(anime.id)) {
                 return;
             }
@@ -959,29 +1031,11 @@ public class DetailActivity extends AppCompatActivity {
                 }
                 mainHandler.post(() -> {
                     if (isFinishing() || isDestroyed()) return;
-
-                    if (result != null && result.seasons != null && !result.seasons.isEmpty()) {
-                        seasonsAdapter.setData(result.seasons);
-                        if (tvRelatedSeasonsCount != null) {
-                            tvRelatedSeasonsCount.setText(getString(R.string.detail_series_count_format, result.seasons.size()));
-                        }
-                        if (layoutRelatedSeasons != null) {
-                            layoutRelatedSeasons.setVisibility(View.VISIBLE);
-                        }
-                    } else if (layoutRelatedSeasons != null && cachedRel == null) {
-                        layoutRelatedSeasons.setVisibility(View.GONE);
-                    }
-
-                    if (result != null && result.movies != null && !result.movies.isEmpty()) {
-                        moviesAdapter.setData(result.movies);
-                        if (tvRelatedMoviesCount != null) {
-                            tvRelatedMoviesCount.setText(getString(R.string.detail_movies_count_format, result.movies.size()));
-                        }
-                        if (layoutRelatedMovies != null) {
-                            layoutRelatedMovies.setVisibility(View.VISIBLE);
-                        }
-                    } else if (layoutRelatedMovies != null && cachedRel == null) {
-                        layoutRelatedMovies.setVisibility(View.GONE);
+                    if (result != null) {
+                        applyRelationsResult(result);
+                    } else if (cachedRel == null) {
+                        if (layoutRelatedSeasons != null) layoutRelatedSeasons.setVisibility(View.GONE);
+                        if (layoutRelatedMovies != null) layoutRelatedMovies.setVisibility(View.GONE);
                     }
                 });
             }

@@ -42,4 +42,10 @@
     <dimen name="tv_overscan_vertical">0dp</dimen>
     <dimen name="tv_detail_padding_horizontal">0dp</dimen>
     <dimen name="tv_detail_padding_vertical">0dp</dimen>
+
+    <!-- Dialog & Landscape Detail Fallbacks -->
+    <dimen name="dialog_max_width">520dp</dimen>
+    <dimen name="detail_land_left_panel_width">360dp</dimen>
+    <dimen name="detail_land_poster_width">105dp</dimen>
+    <dimen name="detail_land_poster_height">152dp</dimen>
 </resources>

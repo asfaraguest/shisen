@@ -217,6 +217,10 @@ public final class DeviceNav {
         // Pada Android TV / Landscape, insets system bars tidak menggeser layout rail
     }
 
+    public void applyInsets(int topInset, int bottomInset, int leftInset, int rightInset, float density) {
+        applyInsets(topInset, bottomInset, density);
+    }
+
     public void onTabChanged(MainActivity.MainTab tab) {
         updateTvRailHighlight(tab);
     }

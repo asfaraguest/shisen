@@ -99,6 +99,19 @@ public class SystemUiHelper {
             int width = calculateDialogWidth(dm.widthPixels, dm.density);
             win.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
 
+            if (context.getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                    && !id.shisen.app.ui.player.PlayerKeys.isTv()) {
+                View decor = win.getDecorView();
+                if (decor != null) {
+                    decor.post(() -> {
+                        int maxHeight = (int) (dm.heightPixels * 0.90f);
+                        if (decor.getHeight() > maxHeight) {
+                            win.setLayout(width, maxHeight);
+                        }
+                    });
+                }
+            }
+
             if (!isCustomViewWithBackground) {
                 ensureDialogContrast(dialog);
             }

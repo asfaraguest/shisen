@@ -66,12 +66,18 @@ public final class DeviceNav {
     }
 
     public void applyInsets(int topInset, int bottomInset, float density) {
+        applyInsets(topInset, bottomInset, 0, 0, density);
+    }
+
+    public void applyInsets(int topInset, int bottomInset, int leftInset, int rightInset, float density) {
         int baseBottomMargin = (int) (18 * density) + bottomInset;
+        int baseEndMargin = (int) (16 * density) + rightInset;
 
         if (fabMenuTrigger != null) {
             ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) fabMenuTrigger.getLayoutParams();
             if (lp != null) {
                 lp.bottomMargin = baseBottomMargin;
+                lp.setMarginEnd(baseEndMargin);
                 fabMenuTrigger.setLayoutParams(lp);
             }
         }
@@ -85,16 +91,25 @@ public final class DeviceNav {
 
         int menuBottomMargin = baseBottomMargin + (int) (48 * density) + (int) (10 * density);
 
+        boolean isLand = host != null && host.getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+
         if (scrollFoldedMenu != null) {
             ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) scrollFoldedMenu.getLayoutParams();
             if (lp != null) {
                 lp.bottomMargin = menuBottomMargin;
+                lp.setMarginEnd(baseEndMargin);
+                if (isLand) {
+                    lp.height = (int) (210 * density);
+                } else {
+                    lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                }
                 scrollFoldedMenu.setLayoutParams(lp);
             }
         } else if (layoutFoldedMenu != null) {
             ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) layoutFoldedMenu.getLayoutParams();
             if (lp != null) {
                 lp.bottomMargin = menuBottomMargin;
+                lp.setMarginEnd(baseEndMargin);
                 layoutFoldedMenu.setLayoutParams(lp);
             }
         }
@@ -147,8 +162,9 @@ public final class DeviceNav {
     }
 
     public int getGridSpan(int widthDp) {
-        if (widthDp >= 900) return 4;
-        if (widthDp >= 600) return 3;
+        if (widthDp >= 920) return 5;
+        if (widthDp >= 640) return 4;
+        if (widthDp >= 480) return 3;
         return 2;
     }
 
