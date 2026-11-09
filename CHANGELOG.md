@@ -2,6 +2,13 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.0-beta.34] - 2026-11-09
+
+### Diperbaiki
+- **Eliminasi TLS Desync & TCP Reset pada CDN HiAnime Coocaa TV (`DynamicBlockedHosts.java`, `PlayerActivity.java`)**:
+  - Menghapus CDN HiAnime (`megacloud`, `megaplay`, `rapid-cloud`, `rabbitstream`) dari daftar `KNOWN_DPI_KEYWORDS` dan `KNOWN_DPI_HOSTS`, serta mendaftarkannya ke `WHITELISTED_HOSTS`. Hal ini mencegah pemotongan paket TLS ClientHello (desync) pada server Cloudflare/Akamai yang menolak fragmentasi TLS dengan `Connection reset by peer` (`ssl=0x861f25a8`).
+  - Menghapus `DynamicBlockedHosts.markBlocked(u.getHost())` dari handler error pemutar video `PlayerActivity.java`, menghentikan keracunan dinamis CDN video stream menjadi sasaran desync paksa.
+
 ## [1.1.0-beta.33] - 2026-11-09
 
 ### Dipulihkan & Diperbaiki

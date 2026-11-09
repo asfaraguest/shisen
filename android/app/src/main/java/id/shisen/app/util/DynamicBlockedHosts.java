@@ -17,19 +17,19 @@ public final class DynamicBlockedHosts {
 
     private static final Set<String> KNOWN_DPI_KEYWORDS = new HashSet<>(Arrays.asList(
             "dramahot", "zokoanime", "drama1", "puterin", "putarin", "stream121",
-            "mysubsplay", "nexabloom", "emeralddrift", "megacloud", "megaplay",
-            "rapid-cloud", "rabbitstream"
+            "mysubsplay", "nexabloom", "emeralddrift"
     ));
 
     private static final Set<String> KNOWN_DPI_HOSTS = new HashSet<>(Arrays.asList(
             "hls.dramahot.top", "dramahot.top", "drama1.cfd", "hls1.drama1.cfd",
-            "puterin.biz", "putarin.xyz", "stream121.space", "zokoanime.video",
-            "megacloud.tv", "megaplay.buzz", "rapid-cloud.co", "rabbitstream.net"
+            "puterin.biz", "putarin.xyz", "stream121.space", "zokoanime.video"
     ));
 
     private static final Set<String> WHITELISTED_HOSTS = new HashSet<>(Arrays.asList(
             "clients5.google.com", "translate.google.com", "translate.googleapis.com",
-            "graphql.anilist.co", "anilist.co", "api.aniskip.com", "raw.githubusercontent.com"
+            "graphql.anilist.co", "anilist.co", "api.aniskip.com", "raw.githubusercontent.com",
+            "megacloud.tv", "megaplay.buzz", "rapid-cloud.co", "rabbitstream.net",
+            "hianime.to", "hianime.sx", "hianimes.se"
     ));
 
     // Bounded thread-safe cache for dynamically learned blocked hosts

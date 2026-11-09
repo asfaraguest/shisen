@@ -805,15 +805,6 @@ public class PlayerActivity extends AppCompatActivity {
                         || msg.contains("Broken pipe")
                 );
 
-                if (currentStreamSource != null && currentStreamSource.url != null) {
-                    try {
-                        Uri u = Uri.parse(currentStreamSource.url);
-                        if (u.getHost() != null) {
-                            id.shisen.app.util.DynamicBlockedHosts.markBlocked(u.getHost());
-                        }
-                    } catch (Throwable ignored) {}
-                }
-
                 if (player != null && !isFinishing() && isConnectionOrSslError && streamRetryAttempts < 3) {
                     streamRetryAttempts++;
                     long currentPos = player.getCurrentPosition();
