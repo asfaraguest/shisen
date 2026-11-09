@@ -77,6 +77,9 @@ public class SystemUiHelper {
 
     public static void setupDialogBounds(android.app.Dialog dialog, android.content.Context context, boolean isCustomViewWithBackground) {
         if (dialog == null || context == null) return;
+        if (context instanceof id.shisen.app.ui.player.PlayerActivity) {
+            ((id.shisen.app.ui.player.PlayerActivity) context).trackDialog(dialog);
+        }
         Window window = dialog.getWindow();
         if (window == null) return;
 
@@ -111,22 +114,36 @@ public class SystemUiHelper {
     public static void ensureDialogContrast(android.app.Dialog dialog) {
         if (dialog == null) return;
 
+        android.widget.Button pos = null;
+        android.widget.Button neg = null;
+        android.widget.Button neu = null;
         if (dialog instanceof androidx.appcompat.app.AlertDialog) {
             androidx.appcompat.app.AlertDialog ad = (androidx.appcompat.app.AlertDialog) dialog;
-            android.widget.Button pos = ad.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
-            if (pos != null) pos.setTextColor(0xFF38BDF8);
-            android.widget.Button neg = ad.getButton(android.content.DialogInterface.BUTTON_NEGATIVE);
-            if (neg != null) neg.setTextColor(0xFFF1F5F9);
-            android.widget.Button neu = ad.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
-            if (neu != null) neu.setTextColor(0xFF94A3B8);
+            pos = ad.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
+            neg = ad.getButton(android.content.DialogInterface.BUTTON_NEGATIVE);
+            neu = ad.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
         } else if (dialog instanceof android.app.AlertDialog) {
             android.app.AlertDialog ad = (android.app.AlertDialog) dialog;
-            android.widget.Button pos = ad.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
-            if (pos != null) pos.setTextColor(0xFF38BDF8);
-            android.widget.Button neg = ad.getButton(android.content.DialogInterface.BUTTON_NEGATIVE);
-            if (neg != null) neg.setTextColor(0xFFF1F5F9);
-            android.widget.Button neu = ad.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
-            if (neu != null) neu.setTextColor(0xFF94A3B8);
+            pos = ad.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
+            neg = ad.getButton(android.content.DialogInterface.BUTTON_NEGATIVE);
+            neu = ad.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
+        }
+
+        boolean isTv = id.shisen.app.ui.player.PlayerKeys.isTv();
+        if (pos != null) {
+            pos.setTextColor(0xFF38BDF8);
+            pos.setFocusable(true);
+            if (isTv) TvFocusHelper.attachFocusScale(pos, 1.05f);
+        }
+        if (neg != null) {
+            neg.setTextColor(0xFFF1F5F9);
+            neg.setFocusable(true);
+            if (isTv) TvFocusHelper.attachFocusScale(neg, 1.05f);
+        }
+        if (neu != null) {
+            neu.setTextColor(0xFF94A3B8);
+            neu.setFocusable(true);
+            if (isTv) TvFocusHelper.attachFocusScale(neu, 1.05f);
         }
 
         Window win = dialog.getWindow();

@@ -2,6 +2,16 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.0-beta.28] - 2026-11-09
+
+### Diperbaiki
+- **Navigasi D-Pad & Tombol Back pada Dialog Video Player TV (`PlayerKeys.java`, `PlayerActivity.java`, `SystemUiHelper.java`)**:
+  - Memperbaiki pencegatan D-Pad di mana tombol remote (Up, Down, Left, Right, OK) dikonsumsi oleh `PlayerKeys.handle` saat dialog subtitle/pengaturan terbuka, yang sebelumnya menyebabkan kursor dialog macet dan video di latar belakang seek/pause.
+  - Memperbaiki tombol remote Back agar menutup dialog aktif terlebih dahulu dan tidak langsung keluar dari `PlayerActivity`.
+  - Mencegah ExoPlayer controller visibility listener mencuri fokus saat dialog sedang terbuka.
+  - Menjadikan tombol tutup dialog (`btn_close_*`) di seluruh dialog (`dialog_settings`, `dialog_ai_subtitle_settings`, `dialog_catalog_filter`, `dialog_genre_selector`, `dialog_app_update`) `focusable="true"` dan `clickable="true"` agar dapat dijangkau oleh remote D-Pad TV.
+  - Mengaktifkan fokus dan efek visual TV pada tombol aksi dialog bawah (`BUTTON_POSITIVE`, `BUTTON_NEGATIVE`, `BUTTON_NEUTRAL`) di `SystemUiHelper.ensureDialogContrast`.
+
 ## [1.1.0-beta.1] - 2026-11-04
 
 ### Ditambahkan

@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.app.Dialog;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -248,6 +249,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     // Multi-source Subtitle Manager
     private SubtitleManager subtitleManager;
+    private Dialog currentShowingDialog;
 
     private final Runnable subtitleSyncRunnable = new Runnable() {
         @Override
@@ -837,7 +839,7 @@ public class PlayerActivity extends AppCompatActivity {
         playerView.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> {
             if (visibility == View.VISIBLE) {
                 updateNextPrevButtons();
-                if (PlayerKeys.isTv() && btnExoPlayPause != null) {
+                if (PlayerKeys.isTv() && btnExoPlayPause != null && !isAnyDialogShowing()) {
                     View curFocus = getCurrentFocus();
                     if (curFocus == null || curFocus == playerView) {
                         btnExoPlayPause.post(btnExoPlayPause::requestFocus);
@@ -3417,5 +3419,29 @@ public class PlayerActivity extends AppCompatActivity {
 
     public void openSubtitleMenu() {
         showSubtitleSelectorDialog();
+    }
+
+    public void trackDialog(Dialog dialog) {
+        this.currentShowingDialog = dialog;
+    }
+
+    public boolean isAnyDialogShowing() {
+        if (currentShowingDialog != null) {
+            if (currentShowingDialog.isShowing()) {
+                return true;
+            } else {
+                currentShowingDialog = null;
+            }
+        }
+        return false;
+    }
+
+    public void dismissCurrentDialog() {
+        if (currentShowingDialog != null && currentShowingDialog.isShowing()) {
+            try {
+                currentShowingDialog.dismiss();
+            } catch (Throwable ignored) {}
+        }
+        currentShowingDialog = null;
     }
 }

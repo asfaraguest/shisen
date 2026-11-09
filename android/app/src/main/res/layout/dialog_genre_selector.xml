@@ -27,6 +27,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:focusable="true"
+            android:clickable="true"
             android:drawableStart="@drawable/ic_close"
             android:drawableTint="#8892B0"
             android:padding="8dp" />

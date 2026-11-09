@@ -16,6 +16,10 @@ public final class PlayerKeys {
 
     public static boolean handleBack(PlayerActivity host) {
         if (host == null) return false;
+        if (host.isAnyDialogShowing()) {
+            host.dismissCurrentDialog();
+            return true;
+        }
         if (host.isControllerVisible()) {
             host.hideTvController();
             return true;
@@ -27,6 +31,12 @@ public final class PlayerKeys {
     public static boolean handle(PlayerActivity host, KeyEvent event) {
         if (host == null || event == null) return false;
         if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+
+        // Jika dialog sedang aktif (subtitle, settings, quality, speed, style, dll),
+        // jangan intercept D-Pad atau tombol navigasi agar event diteruskan ke dialog window
+        if (host.isAnyDialogShowing()) {
+            return false;
+        }
 
         int code = event.getKeyCode();
 
