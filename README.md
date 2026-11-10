@@ -70,27 +70,100 @@ APK rilis resmi (signed, production keystore):
 
 ---
 
-## Panduan Instalasi di Android TV
+## Panduan Lengkap Instalasi di Android TV
 
-Berikut beberapa cara umum untuk memasang file APK Shisen ke perangkat Android TV:
+Karena aplikasi Shisen didistribusikan langsung dalam bentuk berkas APK (sideload), berikut panduan terperinci langkah demi langkah untuk memasang Shisen pada perangkat Android TV, Google TV, atau Android TV Box (seperti Coocaa, Xiaomi TV, Mi TV Stick, Chromecast with Google TV, Realme TV, dsb).
 
-### Cara 1: Menggunakan "Send Files to TV" (Paling Praktis)
-1. Unduh file `shisen-tv-release-v1.1.0.apk` di smartphone atau komputer Anda.
-2. Pasang aplikasi **Send Files to TV** dan sebuah **File Manager** (seperti *File Commander* atau *AnExplorer*) dari Play Store di TV.
-3. Kirim file APK dari smartphone/PC ke Android TV.
-4. Buka File Manager di TV, buka folder `Download`, lalu klik file APK untuk menginstalnya.
+### Langkah 1: Mengaktifkan Izin Instalasi Sumber Tidak Dikenal (Wajib)
+Secara bawaan, Android TV membatasi pemasangan aplikasi dari luar Google Play Store untuk keamanan. Anda perlu mengizinkan aplikasi perantara (File Manager atau Downloader) agar dapat memasang berkas APK:
+1. Nyalakan TV Anda dan buka menu **Setelan (Settings)** (ikon roda gigi di pojok kanan atas).
+2. Masuk ke:
+   - **Android TV standar (versi 9 / 10 / 11):** Pilih **Preferensi Perangkat (Device Preferences)** > **Keamanan & Pembatasan (Security & Restrictions)** > **Sumber Tidak Dikenal (Unknown Sources)** atau **Instal aplikasi yang tidak dikenal (Install unknown apps)**.
+   - **Google TV / Android 12+:** Pilih **Aplikasi (Apps)** > **Akses aplikasi khusus (Special app access)** > **Instal aplikasi tidak dikenal (Install unknown apps)**.
+3. Cari nama aplikasi yang akan Anda gunakan untuk memasang APK (misal: *Send Files to TV*, *File Commander*, *AnExplorer*, atau *Downloader*), lalu geser sakelar ke posisi **Aktif (Izinkan / Allowed)**.
 
-### Cara 2: Menggunakan Aplikasi "Downloader" (Langsung di TV)
-1. Pasang aplikasi **Downloader by AFTVnews** dari Google Play Store di Android TV.
-2. Buka Downloader, lalu masukkan alamat halaman rilis GitHub Shisen (`https://github.com/asfaraguest/shisen/releases`).
-3. Unduh varian `shisen-tv-release-v1.1.0.apk` dan pilih **Install**.
+---
 
-### Cara 3: Menggunakan Flashdisk (USB)
-1. Simpan file `shisen-tv-release-v1.1.0.apk` ke dalam flashdisk.
-2. Colokkan flashdisk ke port USB pada Android TV.
-3. Buka File Manager di TV, pilih file APK tersebut, lalu jalankan instalasi.
+### Metode A: Menggunakan Aplikasi "Send Files to TV" (Paling Mudah & Cepat)
+Metode ini direkomendasikan jika Anda memiliki smartphone Android atau laptop yang terhubung ke jaringan Wi-Fi yang sama dengan TV.
 
-> **Tips:** Jika TV menampilkan pesan izin keamanan, aktifkan izin **"Instal aplikasi tidak dikenal"** (*Install unknown apps*) pada menu Pengaturan TV (`Pengaturan > Keamanan / Privasi`) untuk aplikasi File Manager atau Downloader yang Anda gunakan.
+#### 1. Persiapan di Smartphone / Komputer:
+- Unduh berkas APK khusus TV: [`shisen-tv-release-v1.1.0.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.0/shisen-tv-release-v1.1.0.apk).
+- Pasang aplikasi **Send Files to TV (SFTV)** dari Google Play Store di smartphone Anda.
+
+#### 2. Persiapan di Android TV:
+- Buka **Google Play Store** di Android TV Anda.
+- Cari dan pasang **Send Files to TV**.
+- Pasang juga satu aplikasi pengelola berkas jika TV belum memilikinya, contohnya: **File Commander**, **AnExplorer**, atau **FX File Explorer**.
+
+#### 3. Proses Pengiriman & Pemasangan:
+1. Pastikan smartphone dan Android TV terhubung ke **jaringan Wi-Fi yang sama**.
+2. Buka aplikasi *Send Files to TV* di TV, lalu pilih opsi **RECEIVE** (layar TV akan menunggu kiriman berkas).
+3. Buka aplikasi *Send Files to TV* di smartphone, pilih opsi **SEND**, lalu navigasikan ke folder unduhan dan pilih berkas `shisen-tv-release-v1.1.0.apk`.
+4. Pilih nama Android TV Anda dari daftar perangkat yang muncul di layar HP.
+5. Tunggu proses transfer selesai (biasanya hanya memakan waktu 5–10 detik).
+6. Buka aplikasi **File Manager** di TV Anda, masuk ke memori internal > folder **Download**.
+7. Klik pada berkas `shisen-tv-release-v1.1.0.apk`, lalu tekan tombol **Instal (Install)**.
+8. Setelah selesai, pilih **Buka (Open)** untuk langsung menikmati Shisen TV.
+
+---
+
+### Metode B: Menggunakan Aplikasi "Downloader" (Langsung di TV Tanpa HP)
+Metode ini cocok jika Anda tidak ingin menggunakan smartphone atau flashdisk dan ingin mengunduh langsung dari TV.
+
+1. Buka **Google Play Store** di Android TV, cari aplikasi bernama **Downloader by AFTVnews**, lalu pasang.
+2. Buka aplikasi Downloader, berikan izin akses penyimpanan saat diminta.
+3. Masuk ke menu **Home** atau **Browser** pada bilah samping kiri Downloader.
+4. Pada kolom isian URL, ketik alamat halaman rilis Shisen:
+   ```text
+   https://github.com/asfaraguest/shisen/releases
+   ```
+5. Navigasikan kursor ke bagian rilis terbaru (`v1.1.0`), lalu klik pada tautan berkas **`shisen-tv-release-v1.1.0.apk`**.
+6. Aplikasi Downloader akan mulai mengunduh file APK.
+7. Setelah unduhan 100% selesai, jendela konfirmasi instalasi akan otomatis muncul di layar TV.
+8. Pilih tombol **Install**. Jika muncul permintaan izin sumber tidak dikenal, klik *Settings* lalu izinkan Downloader untuk menginstal aplikasi, kemudian tekan tombol kembali di remote dan klik **Install** sekali lagi.
+9. Tekan **Done** atau **Open**. Anda bisa memilih opsi *Delete* pada Downloader untuk menghapus berkas installer APK agar menghemat memori internal TV.
+
+---
+
+### Metode C: Menggunakan Flashdisk USB (Tanpa Jaringan Internet Eksternal)
+Metode ini praktis jika Anda lebih nyaman mengunduh lewat PC/laptop atau koneksi Wi-Fi TV lambat.
+
+1. Unduh berkas [`shisen-tv-release-v1.1.0.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.0/shisen-tv-release-v1.1.0.apk) di komputer atau laptop Anda.
+2. Format flashdisk Anda ke sistem berkas **FAT32** atau **exFAT** (format standar agar terbaca oleh Android TV).
+3. Salin (*copy-paste*) file APK tersebut ke dalam flashdisk (sebaiknya letakkan di folder luar/root flashdisk agar mudah dicari).
+4. Cabut flashdisk dengan aman dari komputer, lalu colokkan ke port USB di Android TV atau Android Box Anda.
+5. Pada Android TV, pasang aplikasi **File Manager** (seperti *File Commander* atau *AnExplorer*) dari Play Store jika belum tersedia.
+6. Buka File Manager, pilih drive penyimpanan USB Anda.
+7. Cari dan klik berkas `shisen-tv-release-v1.1.0.apk`.
+8. Tekan tombol **Instal** dan tunggu hingga proses pemasangan selesai.
+
+---
+
+### Metode D: Menggunakan Wireless ADB (Khusus Pengembang / Pengguna Lanjutan)
+Jika Anda terbiasa dengan terminal/ADB:
+1. Aktifkan **Opsi Pengembang (Developer Options)** di TV:
+   - Buka *Setelan > Preferensi Perangkat > Tentang (About)*.
+   - Tekan opsi **Build Number** sebanyak 7 kali berturut-turut menggunakan remote hingga muncul teks *"Anda kini seorang pengembang!"*.
+2. Masuk ke *Opsi Pengembang*, lalu aktifkan opsi **USB Debugging** dan **Network Debugging / Wireless Debugging**.
+3. Cek alamat IP lokal TV Anda pada *Setelan > Jaringan & Internet > Wi-Fi terhubung* (contoh: `192.168.1.50`).
+4. Buka terminal di PC/laptop Anda (pastikan berada di jaringan Wi-Fi yang sama) dan jalankan:
+   ```bash
+   adb connect 192.168.1.50:5555
+   adb install -r shisen-tv-release-v1.1.0.apk
+   ```
+5. Aplikasi Shisen TV akan langsung terpasang dan muncul di layar utama TV Anda.
+
+---
+
+### Tips Tambahan & Pemecahan Masalah
+- **Penting — Gunakan Varian TV:** Pastikan berkas APK yang Anda pasang memiliki kata `tv` pada namanya (`shisen-tv-release-*.apk`). Varian mobile (`shisen-release-*.apk`) ditujukan untuk layar sentuh ponsel dan tidak memiliki tata letak navigasi remote D-Pad Android TV.
+- **Icon Aplikasi di Home Screen:** Shisen TV sudah dilengkapi dengan Leanback Launcher Banner resmi resolusi tinggi. Setelah dipasang, ikon Shisen TV akan otomatis muncul di baris aplikasi utama TV Anda. Jika belum terlihat, cari di daftar *Semua Aplikasi (All Apps)* atau tambahkan secara manual ke baris favorit (*Add to favorites*).
+- **Tombol Remote TV:** Pemutar video Shisen TV dirancang khusus untuk remote fisik TV:
+  - **D-Pad Tengah / Enter:** Membuka overlay kontrol atau Play/Pause.
+  - **D-Pad Kiri / Kanan:** Langsung melompat (seek) mundur/maju 10 detik.
+  - **Tombol Back:** Langsung menutup dialog atau kembali ke halaman detail anime.
+- **Pembaruan Aplikasi Berikutnya:** Shisen TV dilengkapi dengan fitur *In-App Update Checker*. Jika terdapat versi rilis baru di masa mendatang, aplikasi akan menampilkan dialog pembaruan otomatis yang bisa diunduh langsung tanpa perlu instal manual ulang.
 
 ---
 
