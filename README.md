@@ -93,7 +93,7 @@ Output akan tersedia di:
 - Indonesia (default)
 - English
 - 日本語
-- Español (baru)
+- Español
 
 ---
 
