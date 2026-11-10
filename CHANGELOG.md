@@ -2,6 +2,22 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.0] - 2026-11-10
+
+### Rilis Resmi Stable (Mobile & Android TV)
+- **Dukungan Penuh Android TV (10-Foot UI & Leanback Banner)**:
+  - Antarmuka khusus TV dengan navigasi D-Pad remote intuitif, highlight kontras tinggi, dan sidebar adaptif.
+  - Pengaturan buffer streaming stabil (60s min, 300s max) dan adaptasi video 1080p/720p sesuai kemampuan decoder TV.
+  - Penanganan jaringan streaming bebas error SSL/connection reset pada Android 9+ TV (Coocaa, Xiaomi TV, Chromecast, dsb).
+- **Layout Landscape Teroptimasi untuk Mobile**:
+  - Tampilan split 2-panel sinematik pada layar Detail anime saat ponsel dalam orientasi landscape.
+  - Perhitungan grid episode adaptif dan proteksi safe display cutout / notch insets.
+- **Smart Merge Subtitle & Multi-tier Failover**:
+  - Subtitle dwibahasa pintar (Smart Merge ID), fallback VTT resmi, serta terjemahan instan non-English cue.
+  - Failover streaming berjenjang otomatis (HiAnime → AniChan → Otakudesu).
+- **In-App Update Checker**:
+  - Notifikasi otomatis pembaruan versi dengan tombol unduh langsung di dalam dialog aplikasi.
+
 ## [1.1.0-beta.34] - 2026-11-09
 
 ### Diperbaiki
