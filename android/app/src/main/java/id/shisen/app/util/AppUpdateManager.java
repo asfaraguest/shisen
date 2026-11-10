@@ -200,6 +200,7 @@ public class AppUpdateManager {
 
     private static UpdateCandidate parseCandidate(JSONObject releaseObj, String installedVersion, boolean isTvFlavor) {
         if (releaseObj == null) return null;
+        if (releaseObj.optBoolean("draft", false)) return null;
         String tagName = releaseObj.optString("tag_name", "");
         if (tagName.isEmpty()) return null;
 

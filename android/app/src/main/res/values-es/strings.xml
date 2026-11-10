@@ -156,13 +156,13 @@
 
     <!-- Settings Dialog: AI Subtitle Settings -->
     <string name="settings_ai_key_label">API Key / Endpoint URL</string>
-    <string name="settings_ai_key_hint">AIzaSy... / gsk_... / sk-... / Ollama URL</string>
+    <string name="settings_ai_key_hint">AIzaSy... / gsk_... / nvapi-... / sk-or-... / sk-...</string>
     <string name="settings_ai_model_label">Seleccionar Modelo</string>
     <string name="settings_ai_model_desc">Elige un modelo recomendado o ingresa un nombre personalizado:</string>
-    <string name="settings_ai_model_hint">Nombre del modelo (ej: gemini-2.5-flash)</string>
+    <string name="settings_ai_model_hint">Nombre del modelo (ej: gemini-3.8-flash)</string>
     <string name="settings_ai_prompt_label">Prompt de Traducción</string>
     <string name="settings_ai_prompt_hint">Ingresa instrucciones para traducción...</string>
-    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama / OpenRouter</string>
+    <string name="settings_ai_badge_none">Gemini / Groq / NVIDIA NIM / OpenRouter / OpenAI</string>
     <string name="settings_ai_badge_active">Activo: %s</string>
     <string name="settings_ai_badge_detected">Detectado: %s</string>
 
@@ -173,7 +173,7 @@
     <string name="settings_toast_haptic_on">Vibración Táctil ACTIVADA</string>
     <string name="settings_toast_haptic_off">Vibración Táctil DESACTIVADA</string>
     <string name="settings_toast_prompt_reset">Prompt restaurado a valor por defecto</string>
-    <string name="settings_toast_key_required">Ingresa API Key o URL de Ollama</string>
+    <string name="settings_toast_key_required">Ingresa API Key</string>
     <string name="settings_toast_ai_saved">Ajustes IA guardados (%s)</string>
     <string name="settings_toast_ai_cleared">API Key y modelo eliminados</string>
 
@@ -189,7 +189,7 @@
     <string name="player_fit">Ajustar</string>
     <string name="player_sub_off">Subtítulos: OFF</string>
     <string name="player_sub_off_short">Subtítulos: OFF</string>
-    <string name="player_provider">Proveedor: Gemini / Groq / OpenAI / Ollama</string>
+    <string name="player_provider">Proveedor: Gemini / Groq / NVIDIA NIM / OpenRouter / OpenAI</string>
     <string name="player_minimize">Minimizar</string>
     <string name="player_fullscreen">⛶ Pantalla completa</string>
     <string name="main_genre_select">Seleccionar Género...</string>
@@ -366,7 +366,7 @@
     <string name="player_sub_option_native_id">[ID] Indonesio (Original)</string>
     <string name="player_sub_option_native_en">[EN] Inglés (Original)</string>
     <string name="player_sub_option_ai_fmt">✨ Configuración de subtítulos IA y prompt [%s]</string>
-    <string name="player_sub_option_ai_default">✨ Configuración de subtítulos IA (Gemini / Groq / OpenAI / Ollama)...</string>
+    <string name="player_sub_option_ai_default">✨ Configuración de subtítulos IA (Gemini / Groq / NVIDIA NIM)...</string>
     <string name="player_sub_option_refresh_gtx">[Actualizar] Retraducir subtítulos (Limpiar caché)</string>
     <string name="player_sub_option_search_online">[+] Buscar subtítulos en indonesio (AnimeTosho &amp; OpenSubtitles)...</string>
     <string name="player_sub_option_pick_local">[+] Elegir archivo de subtítulos local (.srt / .vtt / .ass)...</string>

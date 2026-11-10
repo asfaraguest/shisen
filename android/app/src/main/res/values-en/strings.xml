@@ -156,13 +156,13 @@
 
     <!-- Settings Dialog: AI Subtitle Section -->
     <string name="settings_ai_key_label">API Key / Endpoint URL</string>
-    <string name="settings_ai_key_hint">AIzaSy... / gsk_... / sk-... / ollama URL</string>
+    <string name="settings_ai_key_hint">AIzaSy... / gsk_... / nvapi-... / sk-or-... / sk-...</string>
     <string name="settings_ai_model_label">Model Selector</string>
     <string name="settings_ai_model_desc">Pick a recommended model or type a custom model name:</string>
-    <string name="settings_ai_model_hint">Model name (e.g. gemini-2.5-flash)</string>
+    <string name="settings_ai_model_hint">Model name (e.g. gemini-3.8-flash)</string>
     <string name="settings_ai_prompt_label">Fansub Prompt</string>
     <string name="settings_ai_prompt_hint">Fansub translation instruction prompt...</string>
-    <string name="settings_ai_badge_none">Gemini / Groq / OpenAI / Ollama / OpenRouter</string>
+    <string name="settings_ai_badge_none">Gemini / Groq / NVIDIA NIM / OpenRouter / OpenAI</string>
     <string name="settings_ai_badge_active">Active: %s</string>
     <string name="settings_ai_badge_detected">Detected: %s</string>
 
@@ -173,7 +173,7 @@
     <string name="settings_toast_haptic_on">Haptic Feedback On</string>
     <string name="settings_toast_haptic_off">Haptic Feedback Off</string>
     <string name="settings_toast_prompt_reset">Prompt reset to the default anime fansub prompt</string>
-    <string name="settings_toast_key_required">Enter an API Key or Ollama URL</string>
+    <string name="settings_toast_key_required">Enter an API Key</string>
     <string name="settings_toast_ai_saved">AI settings saved (%s)</string>
     <string name="settings_toast_ai_cleared">API key &amp; model cleared</string>
 
@@ -189,7 +189,7 @@
     <string name="player_fit">Fit</string>
     <string name="player_sub_off">Subtitle: Off</string>
     <string name="player_sub_off_short">Sub: OFF</string>
-    <string name="player_provider">Provider: Gemini / Groq / OpenAI / Ollama</string>
+    <string name="player_provider">Provider: Gemini / Groq / NVIDIA NIM / OpenRouter / OpenAI</string>
     <string name="player_minimize">Minimize</string>
     <string name="player_fullscreen">⛶ Full</string>
     <string name="main_genre_select">Select Genre...</string>
@@ -366,7 +366,7 @@
     <string name="player_sub_option_native_id">[ID] Indonesian (Original)</string>
     <string name="player_sub_option_native_en">[EN] English (Original)</string>
     <string name="player_sub_option_ai_fmt">✨ AI Subtitle &amp; Prompt Settings [%s]</string>
-    <string name="player_sub_option_ai_default">✨ AI Subtitle Settings (Gemini / Groq / OpenAI / Ollama)...</string>
+    <string name="player_sub_option_ai_default">✨ AI Subtitle Settings (Gemini / Groq / NVIDIA NIM)...</string>
     <string name="player_sub_option_refresh_gtx">[Refresh] Re-translate Subtitles (Clear Cache)</string>
     <string name="player_sub_option_search_online">[+] Search Indonesian Subtitles (AnimeTosho &amp; OpenSubtitles)...</string>
     <string name="player_sub_option_pick_local">[+] Choose Local Subtitle File (.srt / .vtt / .ass)...</string>

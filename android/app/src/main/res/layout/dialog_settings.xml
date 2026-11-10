@@ -501,7 +501,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Konfigurasi BYOK AI (Ollama/Groq/Gemini)"
+                android:text="Konfigurasi BYOK AI (Groq/Gemini/NVIDIA NIM)"
                 android:textColor="@color/text_frost_bright"
                 android:textSize="13sp"
                 android:fontFamily="sans-serif-medium" />

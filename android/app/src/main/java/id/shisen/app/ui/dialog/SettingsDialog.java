@@ -297,12 +297,8 @@ public class SettingsDialog {
         }
 
         String savedModel = AiSubtitleService.getModel(activity);
-        if (savedModel != null && !savedModel.isEmpty()) {
-            etModel.setText(savedModel);
-        } else {
-            AiSubtitleService.Provider p = AiSubtitleService.getActiveProvider(activity);
-            etModel.setText(AiSubtitleService.getDefaultModel(p));
-        }
+        AiSubtitleService.Provider activeProv = AiSubtitleService.getActiveProvider(activity);
+        etModel.setText(AiSubtitleService.getEffectiveModel(activeProv, savedModel));
 
         etPrompt.setText(AiSubtitleService.getCustomPrompt(activity));
 

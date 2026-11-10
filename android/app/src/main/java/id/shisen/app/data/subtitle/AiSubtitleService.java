@@ -441,9 +441,9 @@ Output:
     public enum Provider {
         GEMINI("Google Gemini", "AIzaSy... / AQ..."),
         GROQ("Groq Cloud", "gsk_..."),
-        OPENAI("OpenAI", "sk-..."),
+        NVIDIA_NIM("NVIDIA NIM", "nvapi-..."),
         OPENROUTER("OpenRouter", "sk-or-..."),
-        OLLAMA("Ollama Cloud/Local", "ollama_... / http://...");
+        OPENAI("OpenAI", "sk-...");
 
         public final String displayName;
         public final String placeholder;
@@ -459,13 +459,10 @@ Output:
             if (trimmed.startsWith("gsk_")) return GROQ;
             if (trimmed.startsWith("AQ.") || trimmed.startsWith("AIza") || trimmed.startsWith("AQ")) return GEMINI;
             if (trimmed.startsWith("sk-or-")) return OPENROUTER;
-            if (trimmed.startsWith("ollama") || trimmed.startsWith("ol_") ||
-                    trimmed.matches("^[a-f0-9]{32}\\.[A-Za-z0-9_-]+$")) {
-                return OLLAMA;
-            }
+            if (trimmed.startsWith("nvapi-") || trimmed.startsWith("nvapi_")) return NVIDIA_NIM;
             if (trimmed.startsWith("sk-") || trimmed.startsWith("sk_")) return OPENAI;
-            if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-                return OLLAMA;
+            if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("ollama")) {
+                return NVIDIA_NIM;
             }
             return GEMINI;
         }
@@ -590,20 +587,26 @@ Output:
         return m.contains("gemma") || m.contains("genma");
     }
 
+    private static final java.util.Set<String> DEPRECATED_MODELS = new java.util.HashSet<>(java.util.Arrays.asList(
+            "llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it", "llama-3.1-70b-versatile",
+            "gemini-2.5-flash", "gemini-2.5-pro", "gemma4:31b", "gpt-oss:20b", "gpt-oss:120b", "llama3.2",
+            "qwen2.5:7b", "deepseek/deepseek-chat", "meta-llama/llama-3.3-70b-instruct", "google/gemini-2.0-flash-exp:free"
+    ));
+
     public static String getDefaultModel(Provider provider) {
-        if (provider == null) return "gemini-2.5-flash";
+        if (provider == null) return "gemini-3.8-flash";
         switch (provider) {
             case GROQ:
-                return "llama-3.3-70b-versatile";
+                return "openai/gpt-oss-120b";
+            case NVIDIA_NIM:
+                return "meta/llama-3.3-70b-instruct";
             case OPENAI:
                 return "gpt-4o-mini";
             case OPENROUTER:
-                return "google/gemini-2.0-flash-exp:free";
-            case OLLAMA:
-                return "gemma4:31b";
+                return "google/gemma-4-31b-it:free";
             case GEMINI:
             default:
-                return "gemini-2.5-flash";
+                return "gemini-3.8-flash";
         }
     }
 
@@ -612,35 +615,30 @@ Output:
         if (provider == null) return list;
         switch (provider) {
             case GEMINI:
-                list.add("gemini-2.5-flash");
+                list.add("gemini-3.8-flash");
+                list.add("gemini-4-argon");
                 list.add("gemini-2.0-flash");
-                list.add("gemini-1.5-flash");
-                list.add("gemini-1.5-pro");
-                list.add("gemma-2-9b-it");
                 break;
             case GROQ:
-                list.add("llama-3.3-70b-versatile");
-                list.add("llama-3.1-8b-instant");
-                list.add("mixtral-8x7b-32768");
-                list.add("gemma2-9b-it");
+                list.add("openai/gpt-oss-120b");
+                list.add("openai/gpt-oss-20b");
+                list.add("qwen/qwen3.8-27b");
+                break;
+            case NVIDIA_NIM:
+                list.add("meta/llama-3.3-70b-instruct");
+                list.add("nvidia/llama-3.1-nemotron-70b-instruct");
+                list.add("deepseek-ai/deepseek-r1");
+                break;
+            case OPENROUTER:
+                list.add("google/gemma-4-31b-it:free");
+                list.add("google/gemma-4-26b-a4b-it:free");
+                list.add("nvidia/nemotron-3.5-lightning:free");
+                list.add("nvidia/nemotron-3-ultra-550b-a55b:free");
                 break;
             case OPENAI:
                 list.add("gpt-4o-mini");
                 list.add("gpt-4o");
-                list.add("gpt-3.5-turbo");
-                break;
-            case OPENROUTER:
-                list.add("google/gemini-2.0-flash-exp:free");
-                list.add("google/gemma-2-9b-it:free");
-                list.add("deepseek/deepseek-chat");
-                list.add("meta-llama/llama-3.3-70b-instruct");
-                break;
-            case OLLAMA:
-                list.add("gemma4:31b");
-                list.add("gpt-oss:20b");
-                list.add("gpt-oss:120b");
-                list.add("llama3.2");
-                list.add("qwen2.5:7b");
+                list.add("o3-mini");
                 break;
         }
         return list;
@@ -648,7 +646,11 @@ Output:
 
     public static String getEffectiveModel(Provider provider, String customModel) {
         if (customModel != null && !customModel.trim().isEmpty()) {
-            return customModel.trim();
+            String trimmed = customModel.trim();
+            if (DEPRECATED_MODELS.contains(trimmed)) {
+                return getDefaultModel(provider);
+            }
+            return trimmed;
         }
         return getDefaultModel(provider);
     }
@@ -667,22 +669,22 @@ Output:
         if (customBaseUrl != null && !customBaseUrl.isEmpty()) {
             return customBaseUrl.replaceAll("/+$", "") + "/chat/completions";
         }
+        if (apiKey != null && (apiKey.startsWith("http://") || apiKey.startsWith("https://"))) {
+            String base = apiKey.replaceAll("/+$", "");
+            if (base.endsWith("/v1")) {
+                return base + "/chat/completions";
+            }
+            return base + "/v1/chat/completions";
+        }
         switch (provider) {
             case GROQ:
                 return "https://api.groq.com/openai/v1/chat/completions";
+            case NVIDIA_NIM:
+                return "https://integrate.api.nvidia.com/v1/chat/completions";
             case OPENAI:
                 return "https://api.openai.com/v1/chat/completions";
             case OPENROUTER:
                 return "https://openrouter.ai/api/v1/chat/completions";
-            case OLLAMA:
-                if (apiKey != null && (apiKey.startsWith("http://") || apiKey.startsWith("https://"))) {
-                    String base = apiKey.replaceAll("/+$", "");
-                    if (base.endsWith("/v1")) {
-                        return base + "/chat/completions";
-                    }
-                    return base + "/v1/chat/completions";
-                }
-                return "https://ollama.com/v1/chat/completions";
             case GEMINI:
             default:
                 return "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
@@ -1069,16 +1071,16 @@ Output:
     }
 
     public String callGemini(String text, String apiKey) throws Exception {
-        return callGemini(text, apiKey, DEFAULT_FANSUB_PROMPT_ID, "gemini-2.5-flash");
+        return callGemini(text, apiKey, DEFAULT_FANSUB_PROMPT_ID, getDefaultModel(Provider.GEMINI));
     }
 
     public String callGemini(String text, String apiKey, String customPrompt) throws Exception {
-        return callGemini(text, apiKey, customPrompt, "gemini-2.5-flash");
+        return callGemini(text, apiKey, customPrompt, getDefaultModel(Provider.GEMINI));
     }
 
     public String callGemini(String text, String apiKey, String customPrompt, String model) throws Exception {
         String base = customBaseUrl != null ? customBaseUrl : "https://generativelanguage.googleapis.com";
-        String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "gemini-2.5-flash";
+        String effectiveModel = getEffectiveModel(Provider.GEMINI, model);
         if (effectiveModel.startsWith("models/")) {
             effectiveModel = effectiveModel.substring(7);
         }
@@ -1132,11 +1134,11 @@ Output:
     }
 
     public String callGroq(String text, String apiKey) throws Exception {
-        return callGroq(text, apiKey, DEFAULT_FANSUB_PROMPT_ID, "llama-3.3-70b-versatile");
+        return callGroq(text, apiKey, DEFAULT_FANSUB_PROMPT_ID, getDefaultModel(Provider.GROQ));
     }
 
     public String callGroq(String text, String apiKey, String customPrompt) throws Exception {
-        return callGroq(text, apiKey, customPrompt, "llama-3.3-70b-versatile");
+        return callGroq(text, apiKey, customPrompt, getDefaultModel(Provider.GROQ));
     }
 
     public String callGroq(String text, String apiKey, String customPrompt, String model) throws Exception {
@@ -1146,7 +1148,7 @@ Output:
         String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
                 ? customPrompt.trim() : DEFAULT_FANSUB_PROMPT_ID;
 
-        String effectiveModel = (model != null && !model.trim().isEmpty()) ? model.trim() : "llama-3.3-70b-versatile";
+        String effectiveModel = getEffectiveModel(Provider.GROQ, model);
         boolean gemma = isGemmaModel(effectiveModel);
 
         JSONArray messages = new JSONArray();
@@ -1243,6 +1245,69 @@ Output:
         try (Response resp = httpClient.newCall(request).execute()) {
             if (!resp.isSuccessful()) {
                 throw new IOException("OpenAI API error code: " + resp.code());
+            }
+            String respBody = resp.body() != null ? resp.body().string() : "";
+            JSONObject json = new JSONObject(respBody);
+            JSONArray choices = json.optJSONArray("choices");
+            if (choices != null && choices.length() > 0) {
+                JSONObject msg = choices.getJSONObject(0).optJSONObject("message");
+                if (msg != null) {
+                    return msg.optString("content", text);
+                }
+            }
+            return text;
+        }
+    }
+
+    public String callNvidiaNim(String text, String apiKey) throws Exception {
+        return callNvidiaNim(text, apiKey, DEFAULT_FANSUB_PROMPT_ID, getDefaultModel(Provider.NVIDIA_NIM));
+    }
+
+    public String callNvidiaNim(String text, String apiKey, String customPrompt) throws Exception {
+        return callNvidiaNim(text, apiKey, customPrompt, getDefaultModel(Provider.NVIDIA_NIM));
+    }
+
+    public String callNvidiaNim(String text, String apiKey, String customPrompt, String model) throws Exception {
+        String base = customBaseUrl != null ? customBaseUrl : "https://integrate.api.nvidia.com";
+        String url = base + "/v1/chat/completions";
+
+        String instruction = (customPrompt != null && !customPrompt.trim().isEmpty())
+                ? customPrompt.trim() : DEFAULT_FANSUB_PROMPT_ID;
+
+        String effectiveModel = getEffectiveModel(Provider.NVIDIA_NIM, model);
+        boolean gemma = isGemmaModel(effectiveModel);
+
+        JSONArray messages = new JSONArray();
+        if (gemma) {
+            JSONObject userMsg = new JSONObject();
+            userMsg.put("role", "user");
+            userMsg.put("content", instruction + "\n\n" + text);
+            messages.put(userMsg);
+        } else {
+            JSONObject sysMsg = new JSONObject();
+            sysMsg.put("role", "system");
+            sysMsg.put("content", instruction);
+            JSONObject userMsg = new JSONObject();
+            userMsg.put("role", "user");
+            userMsg.put("content", text);
+            messages.put(sysMsg);
+            messages.put(userMsg);
+        }
+
+        JSONObject bodyObj = new JSONObject();
+        bodyObj.put("model", effectiveModel);
+        bodyObj.put("messages", messages);
+        bodyObj.put("temperature", 0.3);
+
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Authorization", "Bearer " + apiKey)
+                .post(RequestBody.create(bodyObj.toString(), JSON_MEDIA_TYPE))
+                .build();
+
+        try (Response resp = httpClient.newCall(request).execute()) {
+            if (!resp.isSuccessful()) {
+                throw new IOException("NVIDIA NIM API error code: " + resp.code());
             }
             String respBody = resp.body() != null ? resp.body().string() : "";
             JSONObject json = new JSONObject(respBody);

@@ -47,16 +47,16 @@ public class AiSubtitleServiceTest {
         assertEquals(AiSubtitleService.Provider.OPENROUTER,
                 AiSubtitleService.Provider.detect("sk-or-v1-abcdef1234567890"));
 
-        assertEquals(AiSubtitleService.Provider.OLLAMA,
-                AiSubtitleService.Provider.detect("ollama_secret_token_123"));
+        assertEquals(AiSubtitleService.Provider.NVIDIA_NIM,
+                AiSubtitleService.Provider.detect("nvapi-secret-key-123456789"));
 
-        assertEquals(AiSubtitleService.Provider.OLLAMA,
-                AiSubtitleService.Provider.detect("afd1045dafd1045dafd1045dafd1045d.TYA04secret"));
+        assertEquals(AiSubtitleService.Provider.NVIDIA_NIM,
+                AiSubtitleService.Provider.detect("nvapi_secret_token_123"));
 
-        assertEquals(AiSubtitleService.Provider.OLLAMA,
+        assertEquals(AiSubtitleService.Provider.NVIDIA_NIM,
                 AiSubtitleService.Provider.detect("http://192.168.1.50:11434"));
 
-        assertEquals(AiSubtitleService.Provider.OLLAMA,
+        assertEquals(AiSubtitleService.Provider.NVIDIA_NIM,
                 AiSubtitleService.Provider.detect("ollama:http://localhost:11434"));
     }
 
@@ -118,7 +118,7 @@ public class AiSubtitleServiceTest {
         assertEquals("POST", req.getMethod());
         assertEquals("Bearer " + key, req.getHeader("Authorization"));
         String body = req.getBody().readUtf8();
-        assertTrue(body.contains("llama-3.3-70b-versatile"));
+        assertTrue(body.contains("openai/gpt-oss-120b"));
         assertTrue(body.contains("Zoltraak magic has been unleashed."));
     }
 
@@ -222,28 +222,66 @@ public class AiSubtitleServiceTest {
 
     @Test
     public void testModelSelectorDefaultsAndAvailableList() {
-        assertEquals("gemini-2.5-flash", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GEMINI));
-        assertEquals("llama-3.3-70b-versatile", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GROQ));
+        assertEquals("gemini-3.8-flash", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GEMINI));
+        assertEquals("openai/gpt-oss-120b", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GROQ));
         assertEquals("gpt-4o-mini", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENAI));
-        assertEquals("google/gemini-2.0-flash-exp:free", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENROUTER));
-        assertEquals("gemma4:31b", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OLLAMA));
+        assertEquals("google/gemma-4-31b-it:free", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENROUTER));
+        assertEquals("meta/llama-3.3-70b-instruct", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.NVIDIA_NIM));
 
         java.util.List<String> geminiModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.GEMINI);
         assertTrue(geminiModels.size() >= 3);
-        assertEquals("gemini-2.5-flash", geminiModels.get(0));
-        assertTrue(geminiModels.contains("gemma-2-9b-it"));
+        assertEquals("gemini-3.8-flash", geminiModels.get(0));
+        assertTrue(geminiModels.contains("gemini-4-argon"));
 
         java.util.List<String> groqModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.GROQ);
-        assertTrue(groqModels.size() >= 4);
-        assertEquals("llama-3.3-70b-versatile", groqModels.get(0));
-        assertTrue(groqModels.contains("gemma2-9b-it"));
+        assertTrue(groqModels.size() >= 3);
+        assertEquals("openai/gpt-oss-120b", groqModels.get(0));
+        assertTrue(groqModels.contains("openai/gpt-oss-20b"));
 
-        java.util.List<String> ollamaModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.OLLAMA);
-        assertEquals("gemma4:31b", ollamaModels.get(0));
+        java.util.List<String> nvidiaModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.NVIDIA_NIM);
+        assertEquals("meta/llama-3.3-70b-instruct", nvidiaModels.get(0));
+        assertTrue(nvidiaModels.contains("deepseek-ai/deepseek-r1"));
 
         // Effective model fallback when custom model is null or empty
-        assertEquals("gemini-2.5-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, ""));
+        assertEquals("gemini-3.8-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, ""));
         assertEquals("custom-gemini-model", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "custom-gemini-model"));
+
+        // Deprecated model auto-migration
+        assertEquals("gemini-3.8-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "gemini-2.5-flash"));
+        assertEquals("openai/gpt-oss-120b", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GROQ, "llama-3.3-70b-versatile"));
+        assertEquals("openai/gpt-oss-120b", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GROQ, "mixtral-8x7b-32768"));
+        assertEquals("google/gemma-4-31b-it:free", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.OPENROUTER, "google/gemini-2.0-flash-exp:free"));
+    }
+
+    @Test
+    public void testNvidiaNimSubtitleTranslationWithMockWebServer() throws Exception {
+        String mockResponse = "{\n" +
+                "  \"choices\": [\n" +
+                "    {\n" +
+                "      \"message\": {\n" +
+                "        \"role\": \"assistant\",\n" +
+                "        \"content\": \"Terjemahan NVIDIA NIM berhasil.\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(mockResponse));
+
+        String key = "nvapi-test-token-123456789";
+        String translated = service.callNvidiaNim("English text", key);
+
+        assertEquals("Terjemahan NVIDIA NIM berhasil.", translated);
+
+        RecordedRequest req = server.takeRequest();
+        assertEquals("POST", req.getMethod());
+        assertEquals("Bearer " + key, req.getHeader("Authorization"));
+        String body = req.getBody().readUtf8();
+        assertTrue(body.contains("meta/llama-3.3-70b-instruct"));
+        assertTrue(body.contains("English text"));
     }
 
     @Test
@@ -265,14 +303,14 @@ public class AiSubtitleServiceTest {
                 .setBody(mockResponse));
 
         String key = "gsk_test_key";
-        String customModel = "gemma4:31b";
+        String customModel = "google/gemma-4-31b-it:free";
         String translated = service.callGroq("Test gemma phrase", key, "Custom Fansub Rule", customModel);
 
         assertEquals("Hasil terjemahan gemma.", translated);
 
         RecordedRequest req = server.takeRequest();
         String body = req.getBody().readUtf8();
-        assertTrue(body.contains("\"model\":\"gemma4:31b\""));
+        assertTrue(body.contains("\"model\":\"google/gemma-4-31b-it:free\""));
         assertFalse("Gemma payload must not contain system role message", body.contains("\"role\":\"system\""));
         assertTrue("Gemma payload must merge instructions into user message", body.contains("Custom Fansub Rule"));
         assertTrue(body.contains("Test gemma phrase"));
@@ -327,14 +365,14 @@ public class AiSubtitleServiceTest {
                 .setBody(mockResponse));
 
         String key = "gsk_test_key";
-        String customModel = "mixtral-8x7b-32768";
+        String customModel = "qwen/qwen3.8-27b";
         String translated = service.callGroq("Test phrase", key, null, customModel);
 
         assertEquals("Hasil terjemahan mixtral.", translated);
 
         RecordedRequest req = server.takeRequest();
         String body = req.getBody().readUtf8();
-        assertTrue(body.contains("\"model\":\"mixtral-8x7b-32768\""));
+        assertTrue(body.contains("\"model\":\"qwen/qwen3.8-27b\""));
     }
 
     @Test

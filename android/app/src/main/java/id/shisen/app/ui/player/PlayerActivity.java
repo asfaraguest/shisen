@@ -2759,15 +2759,14 @@ public class PlayerActivity extends AppCompatActivity {
             tvBadge.setText(getString(R.string.settings_ai_badge_active, p.displayName));
         }
 
+        AiSubtitleService.Provider activeProv = AiSubtitleService.getActiveProvider(this);
         String savedModel = AiSubtitleService.getModel(this);
-        if (savedModel != null && !savedModel.isEmpty()) {
-            if (etModel != null) etModel.setText(savedModel);
-        } else {
-            AiSubtitleService.Provider p = AiSubtitleService.getActiveProvider(this);
-            if (etModel != null) etModel.setText(AiSubtitleService.getDefaultModel(p));
+        String effectiveModel = AiSubtitleService.getEffectiveModel(activeProv, savedModel);
+        if (etModel != null) {
+            etModel.setText(effectiveModel);
         }
 
-        SettingsDialog.populateModelChips(layoutChips, this, AiSubtitleService.getActiveProvider(this), etModel);
+        SettingsDialog.populateModelChips(layoutChips, this, activeProv, etModel);
 
         if (etCustomPrompt != null) {
             etCustomPrompt.setText(AiSubtitleService.getCustomPrompt(this));
