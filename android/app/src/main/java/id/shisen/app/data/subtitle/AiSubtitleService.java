@@ -441,6 +441,7 @@ Output:
     public enum Provider {
         GEMINI("Google Gemini", "AIzaSy... / AQ..."),
         GROQ("Groq Cloud", "gsk_..."),
+        CEREBRAS("Cerebras (Fast)", "csk-..."),
         NVIDIA_NIM("NVIDIA NIM", "nvapi-..."),
         OPENROUTER("OpenRouter", "sk-or-..."),
         OPENAI("OpenAI", "sk-...");
@@ -457,6 +458,7 @@ Output:
             if (keyOrUrl == null) return GEMINI;
             String trimmed = keyOrUrl.trim();
             if (trimmed.startsWith("gsk_")) return GROQ;
+            if (trimmed.startsWith("csk-")) return CEREBRAS;
             if (trimmed.startsWith("AQ.") || trimmed.startsWith("AIza") || trimmed.startsWith("AQ")) return GEMINI;
             if (trimmed.startsWith("sk-or-")) return OPENROUTER;
             if (trimmed.startsWith("nvapi-") || trimmed.startsWith("nvapi_")) return NVIDIA_NIM;
@@ -588,14 +590,16 @@ Output:
     }
 
     private static final java.util.Set<String> DEPRECATED_MODELS = new java.util.HashSet<>(java.util.Arrays.asList(
-            "llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it", "llama-3.1-70b-versatile",
-            "gemini-2.5-flash", "gemini-2.5-pro", "gemma4:31b", "gpt-oss:20b", "gpt-oss:120b", "llama3.2",
-            "qwen2.5:7b", "deepseek/deepseek-chat", "meta-llama/llama-3.3-70b-instruct", "google/gemini-2.0-flash-exp:free"
+            "mixtral-8x7b-32768", "llama-3.1-70b-versatile",
+            "gemini-2.5-pro", "gemma4:31b", "gpt-oss:20b", "gpt-oss:120b", "llama3.2",
+            "qwen2.5:7b", "deepseek/deepseek-chat"
     ));
 
     public static String getDefaultModel(Provider provider) {
         if (provider == null) return "gemini-3.8-flash";
         switch (provider) {
+            case CEREBRAS:
+                return "llama3.3-70b";
             case GROQ:
                 return "openai/gpt-oss-120b";
             case NVIDIA_NIM:
@@ -618,11 +622,22 @@ Output:
                 list.add("gemini-3.8-flash");
                 list.add("gemini-4-argon");
                 list.add("gemini-2.0-flash");
+                list.add("gemini-3.1-flash-lite");
+                list.add("gemini-3.5-flash");
+                list.add("gemini-3.5-flash-lite");
+                list.add("gemini-flash-lite-latest");
                 break;
             case GROQ:
                 list.add("openai/gpt-oss-120b");
                 list.add("openai/gpt-oss-20b");
                 list.add("qwen/qwen3.8-27b");
+                list.add("llama-3.3-70b-versatile");
+                list.add("llama-3.1-8b-instant");
+                list.add("gemma2-9b-it");
+                break;
+            case CEREBRAS:
+                list.add("llama3.3-70b");
+                list.add("llama3.1-8b");
                 break;
             case NVIDIA_NIM:
                 list.add("meta/llama-3.3-70b-instruct");
@@ -634,6 +649,11 @@ Output:
                 list.add("google/gemma-4-26b-a4b-it:free");
                 list.add("nvidia/nemotron-3.5-lightning:free");
                 list.add("nvidia/nemotron-3-ultra-550b-a55b:free");
+                list.add("google/gemini-2.0-flash-exp:free");
+                list.add("meta-llama/llama-3.3-70b-instruct:free");
+                list.add("deepseek/deepseek-r1:free");
+                list.add("qwen/qwen-2.5-coder-32b-instruct:free");
+                list.add("mistralai/mistral-7b-instruct:free");
                 break;
             case OPENAI:
                 list.add("gpt-4o-mini");
@@ -679,6 +699,8 @@ Output:
         switch (provider) {
             case GROQ:
                 return "https://api.groq.com/openai/v1/chat/completions";
+            case CEREBRAS:
+                return "https://api.cerebras.ai/v1/chat/completions";
             case NVIDIA_NIM:
                 return "https://integrate.api.nvidia.com/v1/chat/completions";
             case OPENAI:

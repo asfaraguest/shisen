@@ -38,6 +38,9 @@ public class AiSubtitleServiceTest {
         assertEquals(AiSubtitleService.Provider.GROQ,
                 AiSubtitleService.Provider.detect("gsk_abc1234567890xyz"));
 
+        assertEquals(AiSubtitleService.Provider.CEREBRAS,
+                AiSubtitleService.Provider.detect("csk-abc1234567890xyz"));
+
         assertEquals(AiSubtitleService.Provider.OPENAI,
                 AiSubtitleService.Provider.detect("sk-proj-abcdef123456"));
 
@@ -246,11 +249,13 @@ public class AiSubtitleServiceTest {
         assertEquals("gemini-3.8-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, ""));
         assertEquals("custom-gemini-model", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "custom-gemini-model"));
 
+        // Active models adapted from Tatap
+        assertEquals("llama-3.3-70b-versatile", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GROQ, "llama-3.3-70b-versatile"));
+        assertEquals("google/gemini-2.0-flash-exp:free", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.OPENROUTER, "google/gemini-2.0-flash-exp:free"));
+
         // Deprecated model auto-migration
-        assertEquals("gemini-3.8-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "gemini-2.5-flash"));
-        assertEquals("openai/gpt-oss-120b", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GROQ, "llama-3.3-70b-versatile"));
+        assertEquals("gemini-3.8-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "gemini-2.5-pro"));
         assertEquals("openai/gpt-oss-120b", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GROQ, "mixtral-8x7b-32768"));
-        assertEquals("google/gemma-4-31b-it:free", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.OPENROUTER, "google/gemini-2.0-flash-exp:free"));
     }
 
     @Test
