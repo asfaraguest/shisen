@@ -37,9 +37,9 @@ public class SubtitleMergeEngine {
             for (int j = 0; j < limitO; j++) {
                 long os = externalCues.get(j).startMs;
                 long diff = bs - os;
-                if (Math.abs(diff) <= 15000) {
-                    // Kuantisasi ke resolusi 200ms
-                    long q = Math.round(diff / 200.0) * 200;
+                if (Math.abs(diff) <= 45000) {
+                    // Kuantisasi ke resolusi 100ms
+                    long q = Math.round(diff / 100.0) * 100;
                     buckets.put(q, buckets.getOrDefault(q, 0) + 1);
                 }
             }
@@ -113,7 +113,7 @@ public class SubtitleMergeEngine {
             long finalE = oe;
             if (bestIdx >= 0) {
                 SubtitleCue bc = builtinCues.get(bestIdx);
-                if (Math.abs(os - bc.startMs) <= 850 && Math.abs(oe - bc.endMs) <= 1100) {
+                if (Math.abs(os - bc.startMs) <= 1500 && Math.abs(oe - bc.endMs) <= 2000) {
                     finalS = bc.startMs;
                     finalE = bc.endMs;
                     snappedCount++;

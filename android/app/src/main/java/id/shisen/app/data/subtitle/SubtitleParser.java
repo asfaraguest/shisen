@@ -54,7 +54,11 @@ public class SubtitleParser {
             long end = parseTimestamp(m.group(2));
             if (start < 0 || end <= start) continue;
 
-            String text = cleanText(m.group(3));
+            String rawDialogue = m.group(3);
+            if (rawDialogue != null && rawDialogue.matches("(?is).*\\{\\\\p[1-9]\\b.*")) {
+                continue;
+            }
+            String text = cleanText(rawDialogue);
             if (!text.isEmpty()) {
                 list.add(new SubtitleCue(start, end, text));
             }

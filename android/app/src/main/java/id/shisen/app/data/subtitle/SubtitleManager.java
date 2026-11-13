@@ -136,8 +136,8 @@ public class SubtitleManager {
                     activeTexts.add(0, c.text); // Pertahankan urutan kronologis
                 }
             }
-            // Batasi pengecekan mundur jika startMs sudah lebih dari 2 menit yang lalu
-            if (effectivePos - c.startMs > 120_000) {
+            // Batasi pengecekan mundur jika startMs sudah lebih dari 15 detik yang lalu
+            if (effectivePos - c.startMs > 15_000) {
                 break;
             }
         }
@@ -227,12 +227,8 @@ public class SubtitleManager {
                 if (!enCues.isEmpty()) {
                     synchronized (SubtitleManager.this) {
                         sourceEnglishCues = enCues;
-                        if (activeCues.isEmpty()) {
-                            activeCues = new ArrayList<>(enCues);
-                            lastCueIndex = -1;
-                            activeLabel = "Menerjemahkan ke Bahasa Indonesia...";
-                            if (listener != null) listener.onSubtitleLoading(activeLabel);
-                        }
+                        activeLabel = "Menerjemahkan ke Bahasa Indonesia...";
+                        if (listener != null) listener.onSubtitleLoading(activeLabel);
                     }
                 }
             } catch (Exception ignored) {

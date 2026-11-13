@@ -235,6 +235,7 @@ public class PlayerActivity extends AppCompatActivity {
     private Runnable progressRunnable;
     private final Handler autoHideHandler = new Handler(Looper.getMainLooper());
     private final Handler subtitleHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingSubLoadRunnable;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private float currentSpeed = 1.0f;
@@ -256,7 +257,9 @@ public class PlayerActivity extends AppCompatActivity {
         public void run() {
             try {
                 if (player != null && subtitleManager != null) {
-                    if (subtitleManager.isSubEnabled()) {
+                    int pbState = player.getPlaybackState();
+                    boolean playerActive = pbState != Player.STATE_IDLE && pbState != Player.STATE_ENDED;
+                    if (playerActive && subtitleManager.isSubEnabled()) {
                         String text = subtitleManager.getCurrentText(player.getCurrentPosition());
                         if (text != null && !text.isEmpty()) {
                             if (!text.equals(tvSubtitles.getText().toString())) {
@@ -266,11 +269,13 @@ public class PlayerActivity extends AppCompatActivity {
                                 tvSubtitles.setVisibility(View.VISIBLE);
                             }
                         } else {
+                            if (tvSubtitles.getText().length() > 0) tvSubtitles.setText("");
                             if (tvSubtitles.getVisibility() != View.GONE) {
                                 tvSubtitles.setVisibility(View.GONE);
                             }
                         }
                     } else {
+                        if (tvSubtitles.getText().length() > 0) tvSubtitles.setText("");
                         if (tvSubtitles.getVisibility() != View.GONE) {
                             tvSubtitles.setVisibility(View.GONE);
                         }
@@ -278,7 +283,7 @@ public class PlayerActivity extends AppCompatActivity {
                 }
             } catch (Throwable ignored) {}
             if (isActivityRunning) {
-                subtitleHandler.postDelayed(this, 80);
+                subtitleHandler.postDelayed(this, 50);
             }
         }
     };
@@ -1658,8 +1663,16 @@ public class PlayerActivity extends AppCompatActivity {
             player.stop();
         }
 
-        // Reset subtitle cues for new episode
+        // Reset subtitle cues & pending load callback for new episode
+        if (pendingSubLoadRunnable != null) {
+            subtitleHandler.removeCallbacks(pendingSubLoadRunnable);
+            pendingSubLoadRunnable = null;
+        }
         subtitleManager.clearCues();
+        if (tvSubtitles != null) {
+            tvSubtitles.setText("");
+            tvSubtitles.setVisibility(View.GONE);
+        }
 
         StreamResolver.resolveWithServer(anime, ep, preferredServer, new StreamResolver.Callback() {
             @Override
@@ -1687,11 +1700,15 @@ public class PlayerActivity extends AppCompatActivity {
 
                     // Beri prioritas throughput 400ms pertama untuk ExoPlayer mengunduh manifest & chunk video awal
                     // sebelum SubtitleManager memulai pencarian/translasi fansub di background
-                    subtitleHandler.postDelayed(() -> {
+                    if (pendingSubLoadRunnable != null) {
+                        subtitleHandler.removeCallbacks(pendingSubLoadRunnable);
+                    }
+                    pendingSubLoadRunnable = () -> {
                         if (isActivityRunning) {
                             subtitleManager.loadFromTracks(source.subtitles, safeTitle, ep.number, false);
                         }
-                    }, 400);
+                    };
+                    subtitleHandler.postDelayed(pendingSubLoadRunnable, 400);
                 });
             }
 
@@ -2389,6 +2406,10 @@ public class PlayerActivity extends AppCompatActivity {
         options.add(getString(R.string.player_sub_option_disable) + (!isSubOn ? activeBadge : ""));
         actions.add(() -> {
             subtitleManager.setSubEnabled(false);
+            if (tvSubtitles != null) {
+                tvSubtitles.setText("");
+                tvSubtitles.setVisibility(View.GONE);
+            }
             btnPortraitSub.setText(R.string.player_sub_off_short);
             btnPortraitSub.setAlpha(0.6f);
             tvSubStatus.setText(R.string.player_sub_off);
