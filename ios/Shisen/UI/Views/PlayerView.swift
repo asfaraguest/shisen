@@ -1,14 +1,40 @@
 import SwiftUI
-import AVKit
+import UIKit
+import AVFoundation
+
+private struct PlayerLayerView: UIViewRepresentable {
+    let player: AVPlayer
+
+    func makeUIView(context: Context) -> PlayerContainerView {
+        let view = PlayerContainerView()
+        view.playerLayer.player = player
+        view.playerLayer.videoGravity = .resizeAspect
+        return view
+    }
+
+    func updateUIView(_ uiView: PlayerContainerView, context: Context) {
+        if uiView.playerLayer.player !== player {
+            uiView.playerLayer.player = player
+        }
+    }
+
+    final class PlayerContainerView: UIView {
+        override class var layerClass: AnyClass { AVPlayerLayer.self }
+        var playerLayer: AVPlayerLayer { layer as! AVPlayerLayer }
+    }
+}
 
 public struct PlayerView: View {
     public let anime: Anime
     public let episode: Episode
-    
+
     @Environment(\.dismiss) private var dismiss
     @StateObject private var subManager = SubtitleManager.shared
-    
+    @AppStorage("auto_skip_intro") private var autoSkipIntro: Bool = true
+    @AppStorage("auto_skip_outro") private var autoSkipOutro: Bool = true
+
     @State private var player: AVPlayer? = nil
+    @State private var timeObserverToken: Any? = nil
     @State private var streamSource: StreamSource? = nil
     @State private var isLoading: Bool = true
     @State private var errorMessage: String? = nil
@@ -19,6 +45,7 @@ public struct PlayerView: View {
     @State private var showSubtitleSheet: Bool = false
     @State private var skipIntervals: [AniSkipInterval] = []
     @State private var activeSkip: AniSkipInterval? = nil
+    @State private var lastAutoSkippedKey: String? = nil
     
     public init(anime: Anime, episode: Episode) {
         self.anime = anime
@@ -30,8 +57,9 @@ public struct PlayerView: View {
             Color.black.ignoresSafeArea()
             
             if let player = player {
-                VideoPlayer(player: player)
+                PlayerLayerView(player: player)
                     .ignoresSafeArea()
+                    .contentShape(Rectangle())
                     .onTapGesture {
                         withAnimation { showControls.toggle() }
                     }
@@ -148,6 +176,21 @@ public struct PlayerView: View {
                         .padding()
                         .background(Color.black.opacity(0.8))
                         .cornerRadius(12)
+                    } else if let player = player {
+                        Button(action: {
+                            if isPlaying {
+                                player.pause()
+                                isPlaying = false
+                            } else {
+                                player.play()
+                                isPlaying = true
+                            }
+                        }) {
+                            Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                                .font(.system(size: 56))
+                                .foregroundColor(.white.opacity(0.9))
+                                .shadow(radius: 8)
+                        }
                     }
                     
                     Spacer()
@@ -191,25 +234,29 @@ public struct PlayerView: View {
             await initializePlayback()
         }
         .onDisappear {
+            if let token = timeObserverToken {
+                player?.removeTimeObserver(token)
+                timeObserverToken = nil
+            }
             player?.pause()
             player = nil
         }
     }
-    
+
     private func initializePlayback() async {
         isLoading = true
         errorMessage = nil
-        
+
         do {
             let source = try await StreamResolver.shared.resolve(anime: anime, episode: episode)
             self.streamSource = source
-            
+
             guard let videoUrl = URL(string: source.url) else {
                 errorMessage = "URL video tidak valid"
                 isLoading = false
                 return
             }
-            
+
             // Set up AVPlayer with custom headers via AVURLAsset
             let asset = AVURLAsset(url: videoUrl, options: [
                 "AVURLAssetHTTPHeaderFieldsKey": source.headers
@@ -217,31 +264,58 @@ public struct PlayerView: View {
             let item = AVPlayerItem(asset: asset)
             let av = AVPlayer(playerItem: item)
             self.player = av
-            
+
+            // Load total duration asynchronously
+            if let cmDuration = try? await asset.load(.duration) {
+                let sec = CMTimeGetSeconds(cmDuration)
+                if sec.isFinite && sec > 0 {
+                    self.duration = sec
+                }
+            }
+
             // Observe time for subtitles and AniSkip
-            av.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.25, preferredTimescale: 600), queue: .main) { time in
+            self.timeObserverToken = av.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.25, preferredTimescale: 600), queue: .main) { time in
                 let sec = CMTimeGetSeconds(time)
+                guard sec.isFinite else { return }
                 self.currentTime = sec
+                if self.duration <= 0, let itemDur = av.currentItem?.duration {
+                    let d = CMTimeGetSeconds(itemDur)
+                    if d.isFinite && d > 0 { self.duration = d }
+                }
                 self.subManager.updatePlaybackPosition(ms: Int64(sec * 1000))
-                
-                // Check AniSkip
+
+                // Check AniSkip + Auto-skip
                 if let match = self.skipIntervals.first(where: { sec >= $0.start && sec <= $0.end }) {
-                    self.activeSkip = match
+                    let key = "\(match.type)_\(Int(match.start))"
+                    let isOp = match.type == "op" || match.type == "mixed-op"
+                    let isEd = match.type == "ed"
+                    if ((isOp && self.autoSkipIntro) || (isEd && self.autoSkipOutro)) && self.lastAutoSkippedKey != key {
+                        self.lastAutoSkippedKey = key
+                        self.skipTo(seconds: match.end)
+                        self.activeSkip = nil
+                    } else {
+                        self.activeSkip = match
+                    }
                 } else {
                     self.activeSkip = nil
                 }
             }
-            
+
             av.play()
             self.isPlaying = true
             self.isLoading = false
-            
+
             // Load Subtitles via SubtitleManager (Smart Merge ID by default)
-            await subManager.loadFromTracks(tracks: source.subtitles, contextTitle: anime.displayTitle)
-            
-            // Fetch AniSkip
-            self.skipIntervals = await AniSkipClient.shared.fetchSkipTimes(malId: anime.id, episodeNumber: episode.number)
-            
+            await subManager.loadFromTracks(tracks: source.subtitles, contextTitle: anime.displayTitle, headers: source.headers)
+
+            // Fetch AniSkip using MAL ID
+            if let malId = anime.idMal {
+                self.skipIntervals = await AniSkipClient.shared.fetchSkipTimes(
+                    malId: malId,
+                    episodeNumber: episode.number,
+                    episodeLength: self.duration > 0 ? self.duration : 1440
+                )
+            }
         } catch {
             self.errorMessage = error.localizedDescription
             self.isLoading = false

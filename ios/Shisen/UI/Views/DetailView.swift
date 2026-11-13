@@ -178,13 +178,7 @@ public struct DetailView: View {
     
     private func loadEpisodes() async {
         isLoadingEpisodes = true
-        // Default: generate standard episode sequence or query HiAnime
-        let total = anime.episodes ?? anime.nextAiringEpisode.map { $0 - 1 } ?? 12
-        var list: [Episode] = []
-        for i in 1...max(1, total) {
-            list.append(Episode(number: i, title: "Episode \(i)", source: "hianime", sourceId: "\(anime.id)-\(i)"))
-        }
-        self.episodes = list
+        self.episodes = await StreamResolver.shared.fetchEpisodes(anime: anime)
         isLoadingEpisodes = false
     }
 }

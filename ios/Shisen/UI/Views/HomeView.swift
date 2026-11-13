@@ -6,6 +6,7 @@ public struct HomeView: View {
     @State private var searchResults: [Anime] = []
     @State private var searchText: String = ""
     @State private var isLoading: Bool = true
+    @State private var errorMessage: String? = nil
     @State private var selectedAnime: Anime? = nil
     
     public init() {}
@@ -95,6 +96,24 @@ public struct HomeView: View {
                                 Spacer()
                             }
                             .padding(.top, 40)
+                        } else if let err = errorMessage, trending.isEmpty && popular.isEmpty {
+                            VStack(spacing: 12) {
+                                Image(systemName: "wifi.exclamationmark")
+                                    .font(.largeTitle)
+                                    .foregroundColor(ShisenTheme.accentRed)
+                                Text(err)
+                                    .font(.subheadline)
+                                    .foregroundColor(ShisenTheme.textSecondary)
+                                    .multilineTextAlignment(.center)
+                                Button("Coba Lagi") {
+                                    Task { await loadHomeData() }
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(ShisenTheme.accent)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 40)
+                            .padding(.horizontal)
                         } else {
                             // Trending Section
                             if !trending.isEmpty {
@@ -153,6 +172,7 @@ public struct HomeView: View {
     
     private func loadHomeData() async {
         isLoading = true
+        errorMessage = nil
         do {
             async let trendingTask = AniListService.shared.fetchTrending(page: 1, perPage: 10)
             async let popularTask = AniListService.shared.fetchPopular(page: 1, perPage: 16)
@@ -160,7 +180,7 @@ public struct HomeView: View {
             self.trending = t
             self.popular = p
         } catch {
-            // Handle error gracefully
+            self.errorMessage = "Gagal memuat katalog anime. Periksa koneksi internet."
         }
         isLoading = false
     }

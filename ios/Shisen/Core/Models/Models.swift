@@ -4,6 +4,7 @@ import Foundation
 
 public struct Anime: Identifiable, Codable, Hashable {
     public let id: Int
+    public let idMal: Int?
     public let titleRomaji: String
     public let titleEnglish: String?
     public let titleNative: String?
@@ -26,6 +27,7 @@ public struct Anime: Identifiable, Codable, Hashable {
     
     public init(
         id: Int,
+        idMal: Int? = nil,
         titleRomaji: String,
         titleEnglish: String? = nil,
         titleNative: String? = nil,
@@ -43,6 +45,7 @@ public struct Anime: Identifiable, Codable, Hashable {
         nextAiringEpisode: Int? = nil
     ) {
         self.id = id
+        self.idMal = idMal
         self.titleRomaji = titleRomaji
         self.titleEnglish = titleEnglish
         self.titleNative = titleNative

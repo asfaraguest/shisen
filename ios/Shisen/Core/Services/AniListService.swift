@@ -12,6 +12,7 @@ public final class AniListService {
           Page(page: $page, perPage: $perPage) {
             media(type: ANIME, sort: TRENDING_DESC) {
               id
+              idMal
               title { romaji english native }
               coverImage { extraLarge large medium color }
               bannerImage
@@ -38,6 +39,7 @@ public final class AniListService {
           Page(page: $page, perPage: $perPage) {
             media(type: ANIME, sort: POPULARITY_DESC) {
               id
+              idMal
               title { romaji english native }
               coverImage { extraLarge large medium color }
               bannerImage
@@ -64,6 +66,7 @@ public final class AniListService {
           Page(page: $page, perPage: $perPage) {
             media(type: ANIME, search: $search, sort: POPULARITY_DESC) {
               id
+              idMal
               title { romaji english native }
               coverImage { extraLarge large medium color }
               bannerImage
@@ -105,6 +108,7 @@ public final class AniListService {
             guard let id = dict["id"] as? Int,
                   let titleDict = dict["title"] as? [String: Any],
                   let romaji = titleDict["romaji"] as? String else { return nil }
+            let idMal = dict["idMal"] as? Int
             
             let english = titleDict["english"] as? String
             let native = titleDict["native"] as? String
@@ -132,6 +136,7 @@ public final class AniListService {
             
             return Anime(
                 id: id,
+                idMal: idMal,
                 titleRomaji: romaji,
                 titleEnglish: english,
                 titleNative: native,
