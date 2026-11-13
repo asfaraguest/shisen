@@ -1,0 +1,72 @@
+name: Build Shisen iOS & Draft Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-build.yml'
+      - 'VERSION'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-ios:
+    name: Build iOS IPA & Attach to Draft
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app || sudo xcode-select -s /Applications/Xcode_15.app || true
+          xcodebuild -version
+
+      - name: Get Version
+        id: version
+        run: |
+          VER=$(cat VERSION | tr -d '\r\n')
+          echo "VERSION=$VER" >> $GITHUB_ENV
+          echo "Current version: $VER"
+
+      - name: Build iOS Archive
+        run: |
+          xcodebuild -project ios/Shisen.xcodeproj \
+            -scheme Shisen \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath build/Shisen.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package IPA
+        run: |
+          mkdir -p build/Payload
+          cp -R build/Shisen.xcarchive/Products/Applications/Shisen.app build/Payload/
+          cd build
+          zip -qr "../shisen-ios-release-v${VERSION}.ipa" Payload
+          cd ..
+          ls -lh "shisen-ios-release-v${VERSION}.ipa"
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "shisen-ios-release-v${{ env.VERSION }}"
+          path: "shisen-ios-release-v${{ env.VERSION }}.ipa"
+
+      - name: Attach IPA to GitHub Draft Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Uploading IPA to draft release v${VERSION}..."
+          gh release upload "v${VERSION}" "shisen-ios-release-v${VERSION}.ipa" --clobber || {
+            echo "Draft release v${VERSION} not found or failed, uploading to existing release..."
+            gh release upload --clobber "v${VERSION}" "shisen-ios-release-v${VERSION}.ipa" || true
+          }

@@ -1,0 +1,407 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000012CE0000100000001 /* ShisenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000012CE0000100000001 /* ShisenApp.swift */; };
+		A10000022CE0000100000001 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000022CE0000100000001 /* Models.swift */; };
+		A10000032CE0000100000001 /* NetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000032CE0000100000001 /* NetworkClient.swift */; };
+		A10000042CE0000100000001 /* DnsOverHttps.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000042CE0000100000001 /* DnsOverHttps.swift */; };
+		A10000052CE0000100000001 /* AniListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000052CE0000100000001 /* AniListService.swift */; };
+		A10000062CE0000100000001 /* AniSkipClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000062CE0000100000001 /* AniSkipClient.swift */; };
+		A10000072CE0000100000001 /* HiAnimeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000072CE0000100000001 /* HiAnimeClient.swift */; };
+		A10000082CE0000100000001 /* AniChanClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000082CE0000100000001 /* AniChanClient.swift */; };
+		A10000092CE0000100000001 /* OtakudesuClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000092CE0000100000001 /* OtakudesuClient.swift */; };
+		A100000A2CE0000100000001 /* StreamResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000A2CE0000100000001 /* StreamResolver.swift */; };
+		A100000B2CE0000100000001 /* SubtitleModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000B2CE0000100000001 /* SubtitleModels.swift */; };
+		A100000C2CE0000100000001 /* SmartLexicon.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000C2CE0000100000001 /* SmartLexicon.swift */; };
+		A100000D2CE0000100000001 /* GtxTranslator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000D2CE0000100000001 /* GtxTranslator.swift */; };
+		A100000E2CE0000100000001 /* AiSubtitleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000E2CE0000100000001 /* AiSubtitleService.swift */; };
+		A100000F2CE0000100000001 /* SubtitleMergeEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000F2CE0000100000001 /* SubtitleMergeEngine.swift */; };
+		A10000102CE0000100000001 /* SubtitleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000102CE0000100000001 /* SubtitleManager.swift */; };
+		A10000112CE0000100000001 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000112CE0000100000001 /* Theme.swift */; };
+		A10000122CE0000100000001 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000122CE0000100000001 /* HomeView.swift */; };
+		A10000132CE0000100000001 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000132CE0000100000001 /* DetailView.swift */; };
+		A10000142CE0000100000001 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000142CE0000100000001 /* PlayerView.swift */; };
+		A10000152CE0000100000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000152CE0000100000001 /* SettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		C10000012CE0000100000001 /* Shisen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shisen.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000012CE0000100000001 /* ShisenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShisenApp.swift; sourceTree = "<group>"; };
+		B10000002CE0000100000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B10000022CE0000100000001 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		B10000032CE0000100000001 /* NetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkClient.swift; sourceTree = "<group>"; };
+		B10000042CE0000100000001 /* DnsOverHttps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DnsOverHttps.swift; sourceTree = "<group>"; };
+		B10000052CE0000100000001 /* AniListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AniListService.swift; sourceTree = "<group>"; };
+		B10000062CE0000100000001 /* AniSkipClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AniSkipClient.swift; sourceTree = "<group>"; };
+		B10000072CE0000100000001 /* HiAnimeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiAnimeClient.swift; sourceTree = "<group>"; };
+		B10000082CE0000100000001 /* AniChanClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AniChanClient.swift; sourceTree = "<group>"; };
+		B10000092CE0000100000001 /* OtakudesuClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtakudesuClient.swift; sourceTree = "<group>"; };
+		B100000A2CE0000100000001 /* StreamResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamResolver.swift; sourceTree = "<group>"; };
+		B100000B2CE0000100000001 /* SubtitleModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtitleModels.swift; sourceTree = "<group>"; };
+		B100000C2CE0000100000001 /* SmartLexicon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartLexicon.swift; sourceTree = "<group>"; };
+		B100000D2CE0000100000001 /* GtxTranslator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GtxTranslator.swift; sourceTree = "<group>"; };
+		B100000E2CE0000100000001 /* AiSubtitleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AiSubtitleService.swift; sourceTree = "<group>"; };
+		B100000F2CE0000100000001 /* SubtitleMergeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtitleMergeEngine.swift; sourceTree = "<group>"; };
+		B10000102CE0000100000001 /* SubtitleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtitleManager.swift; sourceTree = "<group>"; };
+		B10000112CE0000100000001 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		B10000122CE0000100000001 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		B10000132CE0000100000001 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
+		B10000142CE0000100000001 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
+		B10000152CE0000100000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D10000012CE0000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E10000012CE0000100000001 = {
+			isa = PBXGroup;
+			children = (
+				E10000022CE0000100000001 /* Shisen */,
+				E10000072CE0000100000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E10000022CE0000100000001 /* Shisen */ = {
+			isa = PBXGroup;
+			children = (
+				E10000032CE0000100000001 /* App */,
+				E10000042CE0000100000001 /* Core */,
+				E10000052CE0000100000001 /* UI */,
+			);
+			path = Shisen;
+			sourceTree = "<group>";
+		};
+		E10000032CE0000100000001 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				B10000012CE0000100000001 /* ShisenApp.swift */,
+				B10000002CE0000100000001 /* Info.plist */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		E10000042CE0000100000001 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				E10000082CE0000100000001 /* Models */,
+				E10000092CE0000100000001 /* Network */,
+				E100000A2CE0000100000001 /* Services */,
+				E100000B2CE0000100000001 /* Subtitle */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		E10000082CE0000100000001 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B10000022CE0000100000001 /* Models.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E10000092CE0000100000001 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				B10000032CE0000100000001 /* NetworkClient.swift */,
+				B10000042CE0000100000001 /* DnsOverHttps.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		E100000A2CE0000100000001 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B10000052CE0000100000001 /* AniListService.swift */,
+				B10000062CE0000100000001 /* AniSkipClient.swift */,
+				B10000072CE0000100000001 /* HiAnimeClient.swift */,
+				B10000082CE0000100000001 /* AniChanClient.swift */,
+				B10000092CE0000100000001 /* OtakudesuClient.swift */,
+				B100000A2CE0000100000001 /* StreamResolver.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		E100000B2CE0000100000001 /* Subtitle */ = {
+			isa = PBXGroup;
+			children = (
+				B100000B2CE0000100000001 /* SubtitleModels.swift */,
+				B100000C2CE0000100000001 /* SmartLexicon.swift */,
+				B100000D2CE0000100000001 /* GtxTranslator.swift */,
+				B100000E2CE0000100000001 /* AiSubtitleService.swift */,
+				B100000F2CE0000100000001 /* SubtitleMergeEngine.swift */,
+				B10000102CE0000100000001 /* SubtitleManager.swift */,
+			);
+			path = Subtitle;
+			sourceTree = "<group>";
+		};
+		E10000052CE0000100000001 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				E100000C2CE0000100000001 /* Theme */,
+				E100000D2CE0000100000001 /* Views */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		E100000C2CE0000100000001 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				B10000112CE0000100000001 /* Theme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		E100000D2CE0000100000001 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B10000122CE0000100000001 /* HomeView.swift */,
+				B10000132CE0000100000001 /* DetailView.swift */,
+				B10000142CE0000100000001 /* PlayerView.swift */,
+				B10000152CE0000100000001 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E10000072CE0000100000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C10000012CE0000100000001 /* Shisen.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F10000012CE0000100000001 /* Shisen */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = G10000012CE0000100000001 /* Build configuration list for PBXNativeTarget "Shisen" */;
+			buildPhases = (
+				H10000012CE0000100000001 /* Sources */,
+				D10000012CE0000100000001 /* Frameworks */,
+				I10000012CE0000100000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Shisen;
+			productName = Shisen;
+			productReference = C10000012CE0000100000001 /* Shisen.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		010000012CE0000100000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					F10000012CE0000100000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = J10000012CE0000100000001 /* Build configuration list for PBXProject "Shisen" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E10000012CE0000100000001;
+			productRefGroup = E10000072CE0000100000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F10000012CE0000100000001 /* Shisen */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		I10000012CE0000100000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		H10000012CE0000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000012CE0000100000001 /* ShisenApp.swift in Sources */,
+				A10000022CE0000100000001 /* Models.swift in Sources */,
+				A10000032CE0000100000001 /* NetworkClient.swift in Sources */,
+				A10000042CE0000100000001 /* DnsOverHttps.swift in Sources */,
+				A10000052CE0000100000001 /* AniListService.swift in Sources */,
+				A10000062CE0000100000001 /* AniSkipClient.swift in Sources */,
+				A10000072CE0000100000001 /* HiAnimeClient.swift in Sources */,
+				A10000082CE0000100000001 /* AniChanClient.swift in Sources */,
+				A10000092CE0000100000001 /* OtakudesuClient.swift in Sources */,
+				A100000A2CE0000100000001 /* StreamResolver.swift in Sources */,
+				A100000B2CE0000100000001 /* SubtitleModels.swift in Sources */,
+				A100000C2CE0000100000001 /* SmartLexicon.swift in Sources */,
+				A100000D2CE0000100000001 /* GtxTranslator.swift in Sources */,
+				A100000E2CE0000100000001 /* AiSubtitleService.swift in Sources */,
+				A100000F2CE0000100000001 /* SubtitleMergeEngine.swift in Sources */,
+				A10000102CE0000100000001 /* SubtitleManager.swift in Sources */,
+				A10000112CE0000100000001 /* Theme.swift in Sources */,
+				A10000122CE0000100000001 /* HomeView.swift in Sources */,
+				A10000132CE0000100000001 /* DetailView.swift in Sources */,
+				A10000142CE0000100000001 /* PlayerView.swift in Sources */,
+				A10000152CE0000100000001 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		K10000012CE0000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		K10000022CE0000100000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		L10000012CE0000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Shisen/App/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Shisen;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = id.shisen.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		L10000022CE0000100000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Shisen/App/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Shisen;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = id.shisen.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		J10000012CE0000100000001 /* Build configuration list for PBXProject "Shisen" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				K10000012CE0000100000001 /* Debug */,
+				K10000022CE0000100000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		G10000012CE0000100000001 /* Build configuration list for PBXNativeTarget "Shisen" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				L10000012CE0000100000001 /* Debug */,
+				L10000022CE0000100000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 010000012CE0000100000001 /* Project object */;
+}

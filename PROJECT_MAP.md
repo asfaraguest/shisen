@@ -23,6 +23,13 @@ menatap/
 │   │   └── util/ (AppSettings, LocaleHelper, SystemUiHelper, ImageLoader, ...)
 │   ├── app/src/main/res/
 │   └── app/build.gradle
+├── ios/                              # iOS Edition (100% Pure Swift & SwiftUI)
+│   ├── Shisen.xcodeproj
+│   └── Shisen/
+│       ├── App/ (ShisenApp.swift, Info.plist)
+│       ├── Core/ (Models, Network, Services, Subtitle)
+│       └── UI/ (Theme, HomeView, DetailView, PlayerView, SettingsView)
+├── .github/workflows/ios-build.yml   # macOS CI/CD for iOS build & IPA packaging
 ├── backend_reference/                # Tatap Python reference (jangan diubah, hanya rujukan)
 │   ├── backend/ (main.py, api/...)
 │   └── frontend/js/app.js
