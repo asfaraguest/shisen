@@ -2,6 +2,23 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.1-beta.1] - 2026-11-13
+
+### Baru
+- **Debut Perdana Shisen for iOS (`ios/`)**:
+  - Aplikasi native Swift & SwiftUI (iOS 16+) dengan tema *Deep Glacial Obsidian* dan GitHub Actions workflow (`.github/workflows/ios-build.yml`) untuk packaging `.ipa`.
+  - Integrasi resolusi episode & stream 3-tier (`HiAnimeClient` AES-256-CBC, `AniChanClient` AES-GCM, `OtakudesuClient`, `StreamResolver`), `AVPlayerLayer` dengan kontrol kustom, AniSkip berbasis `idMal`, DoH, serta Smart Merge + AI Subtitle.
+- **Katalog Model AI Subtitle & Provider Cerebras (`AiSubtitleService.java`, `SettingsDialog.java`)**:
+  - Pembaruan katalog provider & model LLM AI Subtitle (paritas Tatap v2.12.7): penambahan provider **Cerebras** (`csk-`), penggantian Ollama dengan **NVIDIA NIM**, pembaruan model Google AI Studio, Groq Cloud, OpenRouter Free Tier, serta auto-migrasi konfigurasi model lama.
+
+### Diperbaiki
+- **Flow Gesture Back ke Beranda (`MainActivity.java`)**:
+  - Menekan/melakukan *gesture back* dari menu atau tab mana pun kini mengembalikan pengguna ke tab **Musim Ini** terlebih dahulu sebelum keluar/masuk background, sekaligus menjaga `OnBackPressedCallback` tetap aktif saat dibuka ulang pada Android 12+.
+- **Player Media3 & Tampilan Judul (`PlayerActivity.java`, `Anime.java`, Adapter & Layout)**:
+  - Mencegah tombol CC Media3 terkunci secara tidak sengaja dan menampilkan judul Romaji dengan subjudul Inggris berukuran lebih kecil pada kartu & detail anime.
+- **Sinkronisasi Subtitle Android TV (`SubtitleManager.java`, `SubtitleMergeEngine.java`, `SubtitleParser.java`, `PlayerActivity.java`)**:
+  - Memperketat sinkronisasi, snapping timestamp, dan cleanup subtitle saat berpindah episode atau mengganti track.
+
 ## [1.1.0] - 2026-11-10
 
 ### Rilis Resmi Stable (Mobile & Android TV)
