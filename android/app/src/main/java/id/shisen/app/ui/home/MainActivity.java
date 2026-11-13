@@ -763,8 +763,16 @@ public class MainActivity extends AppCompatActivity {
                 if (deviceNav != null && deviceNav.handleBackPressed()) {
                     return;
                 }
+                if (currentTab != MainTab.MUSIM) {
+                    selectTab(MainTab.MUSIM);
+                    if (menuItemMusim != null && id.shisen.app.ui.player.PlayerKeys.isTv()) {
+                        menuItemMusim.requestFocus();
+                    }
+                    return;
+                }
                 setEnabled(false);
                 getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
             }
         });
     }
