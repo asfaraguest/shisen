@@ -54,11 +54,7 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
     public void onBindViewHolder(@NonNull RelatedViewHolder holder, int position) {
         Anime anime = items.get(position);
 
-        String displayTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
-                ? anime.title
-                : ((anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
-                        ? anime.romajiTitle : "Anime");
-        holder.tvTitle.setText(displayTitle);
+        AnimeAdapter.bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
 
         StringBuilder meta = new StringBuilder();
         if (anime.year > 0) {
@@ -135,6 +131,7 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
         final ImageView ivPoster;
         final TextView tvBadge;
         final TextView tvTitle;
+        final TextView tvAltTitle;
         final TextView tvMeta;
 
         RelatedViewHolder(@NonNull View itemView) {
@@ -142,6 +139,7 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
             ivPoster = itemView.findViewById(R.id.iv_related_poster);
             tvBadge = itemView.findViewById(R.id.tv_related_badge);
             tvTitle = itemView.findViewById(R.id.tv_related_title);
+            tvAltTitle = itemView.findViewById(R.id.tv_related_alt_title);
             tvMeta = itemView.findViewById(R.id.tv_related_meta);
             if (itemView instanceof com.google.android.material.card.MaterialCardView) {
                 id.shisen.app.util.TvFocusHelper.attachCardFocus((com.google.android.material.card.MaterialCardView) itemView, 1.06f);

@@ -51,11 +51,7 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
     public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
         Anime anime = items.get(position);
 
-        String displayTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
-                ? anime.title
-                : ((anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
-                        ? anime.romajiTitle : "Anime");
-        holder.tvTitle.setText(displayTitle);
+        AnimeAdapter.bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
 
         if (anime.lastPlayedEp > 0) {
             holder.tvEp.setText("Ep " + anime.lastPlayedEp);
@@ -110,6 +106,7 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
         ImageView ivThumb;
         TextView tvEp;
         TextView tvTitle;
+        TextView tvAltTitle;
         ProgressBar pbProgress;
 
         public HistoryViewHolder(@NonNull View itemView) {
@@ -117,6 +114,7 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
             ivThumb = itemView.findViewById(R.id.iv_history_thumb);
             tvEp = itemView.findViewById(R.id.tv_history_ep);
             tvTitle = itemView.findViewById(R.id.tv_history_title);
+            tvAltTitle = itemView.findViewById(R.id.tv_history_alt_title);
             pbProgress = itemView.findViewById(R.id.pb_history_progress);
         }
     }

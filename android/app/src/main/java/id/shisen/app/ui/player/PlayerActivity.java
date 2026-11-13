@@ -369,6 +369,10 @@ public class PlayerActivity extends AppCompatActivity {
         pbBuffering = findViewById(R.id.pb_video_buffering);
         tvBufferingText = findViewById(R.id.tv_buffering_text);
         tvSubtitles = findViewById(R.id.tv_subtitles);
+        if (tvSubtitles != null) {
+            tvSubtitles.setClickable(false);
+            tvSubtitles.setFocusable(false);
+        }
 
         hudHoldSpeed = findViewById(R.id.hud_hold_speed);
         tvHoldSpeedIcon = findViewById(R.id.tv_hold_speed_icon);
@@ -468,20 +472,23 @@ public class PlayerActivity extends AppCompatActivity {
                     tvSubStatus.setText(getString(R.string.player_sub_status_lines, label, count));
                     btnPortraitSub.setText(label.contains("Indo") ? "Sub: ID" : (label.contains("Eng") ? "Sub: EN" : "Sub: ON"));
                     btnPortraitSub.setAlpha(1.0f);
-                    updateExoSubButtonState(true);
+                    enforceExoSubButtonReady();
                 });
             }
 
             @Override
             public void onSubtitleLoading(String message) {
-                runOnUiThread(() -> tvSubStatus.setText("Subtitle: " + message));
+                runOnUiThread(() -> {
+                    tvSubStatus.setText("Subtitle: " + message);
+                    enforceExoSubButtonReady();
+                });
             }
 
             @Override
             public void onSubtitleError(String error) {
                 runOnUiThread(() -> {
                     tvSubStatus.setText("Sub: " + error);
-                    updateExoSubButtonState(false);
+                    enforceExoSubButtonReady();
                 });
             }
         });
@@ -794,6 +801,15 @@ public class PlayerActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onEvents(@NonNull Player player, @NonNull Player.Events events) {
+                // Media3 PlayerControlView men-disable exo_subtitle saat track teks internal kosong;
+                // jalankan post agar tombol CC eksternal selalu aktif & dapat diklik/difokuskan.
+                if (playerView != null) {
+                    playerView.post(PlayerActivity.this::enforceExoSubButtonReady);
+                }
+            }
+
+            @Override
             public void onPlayerError(@NonNull androidx.media3.common.PlaybackException error) {
                 if (layoutBuffering != null) layoutBuffering.setVisibility(View.GONE);
                 Throwable cause = error.getCause();
@@ -856,6 +872,7 @@ public class PlayerActivity extends AppCompatActivity {
         playerView.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> {
             if (visibility == View.VISIBLE) {
                 updateNextPrevButtons();
+                playerView.post(this::enforceExoSubButtonReady);
                 if (PlayerKeys.isTv() && btnExoPlayPause != null && !isAnyDialogShowing()) {
                     View curFocus = getCurrentFocus();
                     if (curFocus == null || curFocus == playerView) {
@@ -1063,11 +1080,11 @@ public class PlayerActivity extends AppCompatActivity {
             btnExoSub = playerView.findViewById(androidx.media3.ui.R.id.exo_subtitle);
             if (btnExoSub != null) {
                 btnExoSub.setBackgroundResource(R.drawable.bg_exo_icon_btn);
-                updateExoSubButtonState(subtitleManager.isSubEnabled());
                 btnExoSub.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     showSubtitleSelectorDialog();
                 });
+                enforceExoSubButtonReady();
             }
 
             // 6. Picture-in-Picture (exo_vr)
@@ -1137,8 +1154,20 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
+    private void enforceExoSubButtonReady() {
+        if (btnExoSub != null) {
+            btnExoSub.setVisibility(View.VISIBLE);
+            btnExoSub.setEnabled(true);
+            btnExoSub.setClickable(true);
+            btnExoSub.setFocusable(true);
+            updateExoSubButtonState(subtitleManager != null && subtitleManager.isSubEnabled());
+        }
+    }
+
     private void updateExoSubButtonState(boolean enabled) {
         if (btnExoSub != null) {
+            btnExoSub.setEnabled(true);
+            btnExoSub.setClickable(true);
             btnExoSub.setAlpha(enabled ? 1.0f : 0.55f);
             if (btnExoSub instanceof ImageView) {
                 ((ImageView) btnExoSub).setColorFilter(enabled ? 0xFF38BDF8 : 0xFFFFFFFF);
@@ -1645,10 +1674,9 @@ public class PlayerActivity extends AppCompatActivity {
         preferredServer = server != null ? server : "hianime";
         Episode ep = episodeList.get(index);
 
-        String safeTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
-                ? anime.title : anime.romajiTitle;
-        tvPortraitAnimeTitle.setText(safeTitle);
-        tvPlayerTitle.setText(safeTitle + " · Ep " + ep.number);
+        String displayTitle = anime.getDisplayTitle();
+        tvPortraitAnimeTitle.setText(displayTitle);
+        tvPlayerTitle.setText(displayTitle + " · Ep " + ep.number);
         tvPortraitCurrentEp.setText("Episode " + ep.number + " · Menghubungkan (" + preferredServer.toUpperCase() + ")...");
         episodeAdapter.setCurrentPlayingNumber(ep.number);
         rvPortraitEpisodes.smoothScrollToPosition(index);
@@ -1705,7 +1733,7 @@ public class PlayerActivity extends AppCompatActivity {
                     }
                     pendingSubLoadRunnable = () -> {
                         if (isActivityRunning) {
-                            subtitleManager.loadFromTracks(source.subtitles, safeTitle, ep.number, false);
+                            subtitleManager.loadFromTracks(source.subtitles, getSafeAnimeTitle(), ep.number, false);
                         }
                     };
                     subtitleHandler.postDelayed(pendingSubLoadRunnable, 400);

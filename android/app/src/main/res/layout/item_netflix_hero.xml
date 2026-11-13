@@ -87,7 +87,7 @@
                 android:maxLines="1"
                 android:ellipsize="end" />
 
-            <!-- Anime Title -->
+            <!-- Anime Title (Romaji) -->
             <TextView
                 android:id="@+id/tv_hero_title"
                 android:layout_width="match_parent"
@@ -100,6 +100,20 @@
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:lineSpacingExtra="2dp" />
+
+            <!-- English Subtitle -->
+            <TextView
+                android:id="@+id/tv_hero_alt_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="English Title"
+                android:textColor="@color/text_frost_subtle"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:visibility="gone" />
 
             <!-- Meta Badges Row (Format, Score, Episodes) -->
             <LinearLayout

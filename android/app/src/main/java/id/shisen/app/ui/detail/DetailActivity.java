@@ -348,15 +348,15 @@ public class DetailActivity extends AppCompatActivity {
                 ? anime.banner : characterCoverUrl;
         ImageLoader.load(backdropUrl, ivBackdrop);
 
-        // 3. Judul Utama
-        String safeTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
-                ? anime.title : anime.romajiTitle;
+        // 3. Judul Utama (Romaji)
+        String safeTitle = anime.getDisplayTitle();
         tvTitle.setText(safeTitle);
 
-        // 4. Judul Romaji & Judul Asli Jepang (Kanji/Katakana)
+        // 4. Subjudul English & Judul Asli Jepang (Kanji/Katakana)
         StringBuilder subTitle = new StringBuilder();
-        if (anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle) && !anime.romajiTitle.equalsIgnoreCase(safeTitle)) {
-            subTitle.append(anime.romajiTitle);
+        String engSub = anime.getSecondaryEnglishTitle();
+        if (!engSub.isEmpty()) {
+            subTitle.append(engSub);
         }
         if (anime.nativeTitle != null && !anime.nativeTitle.isEmpty() && !"null".equalsIgnoreCase(anime.nativeTitle)) {
             if (subTitle.length() > 0) subTitle.append(" • ");

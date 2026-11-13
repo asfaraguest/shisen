@@ -87,4 +87,17 @@
         android:fontFamily="sans-serif-medium"
         android:singleLine="true"
         android:ellipsize="end" />
+
+    <TextView
+        android:id="@+id/tv_history_alt_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:text="English Title"
+        android:textColor="@color/text_frost_subtle"
+        android:textSize="10sp"
+        android:fontFamily="sans-serif"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:visibility="gone" />
 </LinearLayout>

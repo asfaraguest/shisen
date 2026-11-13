@@ -72,6 +72,19 @@
                 android:ellipsize="end" />
 
             <TextView
+                android:id="@+id/tv_related_alt_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="English Title"
+                android:textColor="@color/text_frost_subtle"
+                android:textSize="9sp"
+                android:fontFamily="sans-serif"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:visibility="gone" />
+
+            <TextView
                 android:id="@+id/tv_related_meta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

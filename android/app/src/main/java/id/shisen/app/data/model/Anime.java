@@ -50,6 +50,31 @@ public class Anime implements Serializable {
 
     public Anime() {}
 
+    /** Judul utama untuk UI: prioritaskan Romaji, lalu fallback ke title/default. */
+    public String getDisplayTitle() {
+        return getDisplayTitle("Anime");
+    }
+
+    public String getDisplayTitle(String fallback) {
+        if (romajiTitle != null && !romajiTitle.trim().isEmpty() && !"null".equalsIgnoreCase(romajiTitle.trim())) {
+            return romajiTitle.trim();
+        }
+        if (title != null && !title.trim().isEmpty() && !"null".equalsIgnoreCase(title.trim())) {
+            return title.trim();
+        }
+        return fallback != null ? fallback : "Anime";
+    }
+
+    /** Subjudul English bila berbeda dari judul Romaji utama. */
+    public String getSecondaryEnglishTitle() {
+        String primary = getDisplayTitle("");
+        if (title != null && !title.trim().isEmpty() && !"null".equalsIgnoreCase(title.trim())
+                && !title.trim().equalsIgnoreCase(primary)) {
+            return title.trim();
+        }
+        return "";
+    }
+
     public static Anime createHeader(String title, String subtitle) {
         Anime a = new Anime();
         a.isHeader = true;

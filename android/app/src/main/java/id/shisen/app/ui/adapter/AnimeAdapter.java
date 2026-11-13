@@ -188,11 +188,7 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private void bindHero(HeroViewHolder holder, Anime anime) {
         if (anime == null) return;
 
-        String displayTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
-                ? anime.title
-                : ((anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
-                        ? anime.romajiTitle : "Anime Unggulan");
-        holder.tvHeroTitle.setText(displayTitle);
+        bindTitles(holder.tvHeroTitle, holder.tvHeroAltTitle, anime, "Anime Unggulan");
 
         if (anime.genres != null && !anime.genres.isEmpty()) {
             StringBuilder sb = new StringBuilder();
@@ -261,11 +257,7 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     private void bindCard(AnimeViewHolder holder, Anime anime) {
-        String displayTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
-                ? anime.title
-                : ((anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
-                        ? anime.romajiTitle : "Anime");
-        holder.tvTitle.setText(displayTitle);
+        bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
 
         // Format meta string
         String metaText;
@@ -334,7 +326,7 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public static class HeroViewHolder extends RecyclerView.ViewHolder {
         View cardHero;
         ImageView ivHeroBackdrop;
-        TextView tvHeroTrendingTag, tvHeroGenres, tvHeroTitle, tvHeroFormat, tvHeroScore, tvHeroEps;
+        TextView tvHeroTrendingTag, tvHeroGenres, tvHeroTitle, tvHeroAltTitle, tvHeroFormat, tvHeroScore, tvHeroEps;
         Button btnHeroPlay, btnHeroInfo;
 
         public HeroViewHolder(@NonNull View itemView) {
@@ -344,6 +336,7 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             tvHeroTrendingTag = itemView.findViewById(R.id.tv_hero_trending_tag);
             tvHeroGenres = itemView.findViewById(R.id.tv_hero_genres);
             tvHeroTitle = itemView.findViewById(R.id.tv_hero_title);
+            tvHeroAltTitle = itemView.findViewById(R.id.tv_hero_alt_title);
             tvHeroFormat = itemView.findViewById(R.id.tv_hero_format);
             tvHeroScore = itemView.findViewById(R.id.tv_hero_score);
             tvHeroEps = itemView.findViewById(R.id.tv_hero_eps);
@@ -376,13 +369,14 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public static class AnimeViewHolder extends RecyclerView.ViewHolder {
         View cardAnime;
         ImageView ivPoster;
-        TextView tvTitle, tvMeta, tvBadgeEp, tvBadgeScore, tvBadgeType;
+        TextView tvTitle, tvAltTitle, tvMeta, tvBadgeEp, tvBadgeScore, tvBadgeType;
 
         public AnimeViewHolder(@NonNull View itemView) {
             super(itemView);
             cardAnime = itemView.findViewById(R.id.card_anime);
             ivPoster = itemView.findViewById(R.id.iv_poster);
             tvTitle = itemView.findViewById(R.id.tv_title);
+            tvAltTitle = itemView.findViewById(R.id.tv_alt_title);
             tvMeta = itemView.findViewById(R.id.tv_meta);
             tvBadgeEp = itemView.findViewById(R.id.tv_badge_ep);
             tvBadgeScore = itemView.findViewById(R.id.tv_badge_score);
@@ -390,6 +384,22 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
             if (cardAnime instanceof com.google.android.material.card.MaterialCardView) {
                 id.shisen.app.util.TvFocusHelper.attachCardFocus((com.google.android.material.card.MaterialCardView) cardAnime, 1.05f);
+            }
+        }
+    }
+
+    public static void bindTitles(TextView primary, TextView secondary, Anime anime, String fallback) {
+        if (anime == null) return;
+        if (primary != null) {
+            primary.setText(anime.getDisplayTitle(fallback));
+        }
+        if (secondary != null) {
+            String eng = anime.getSecondaryEnglishTitle();
+            if (!eng.isEmpty()) {
+                secondary.setText(eng);
+                secondary.setVisibility(View.VISIBLE);
+            } else {
+                secondary.setVisibility(View.GONE);
             }
         }
     }

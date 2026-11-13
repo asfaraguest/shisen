@@ -51,11 +51,7 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
     public void onBindViewHolder(@NonNull PosterViewHolder holder, int position) {
         Anime anime = items.get(position);
 
-        String displayTitle = (anime.title != null && !anime.title.isEmpty() && !"null".equalsIgnoreCase(anime.title))
-                ? anime.title
-                : ((anime.romajiTitle != null && !anime.romajiTitle.isEmpty() && !"null".equalsIgnoreCase(anime.romajiTitle))
-                        ? anime.romajiTitle : "Anime");
-        holder.tvTitle.setText(displayTitle);
+        AnimeAdapter.bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
 
         String meta = (anime.year > 0 ? (anime.year + " · ") : "") + (anime.format != null ? anime.format : "TV");
         holder.tvMeta.setText(meta);
@@ -115,6 +111,7 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
         TextView tvBadgeScore;
         TextView tvBadgeEp;
         TextView tvTitle;
+        TextView tvAltTitle;
         TextView tvMeta;
 
         public PosterViewHolder(@NonNull View itemView) {
@@ -123,6 +120,7 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
             tvBadgeScore = itemView.findViewById(R.id.tv_badge_score);
             tvBadgeEp = itemView.findViewById(R.id.tv_badge_ep);
             tvTitle = itemView.findViewById(R.id.tv_title);
+            tvAltTitle = itemView.findViewById(R.id.tv_alt_title);
             tvMeta = itemView.findViewById(R.id.tv_meta);
         }
     }

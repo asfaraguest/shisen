@@ -78,7 +78,8 @@
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="match_parent"
-        android:layout_height="34dp"
+        android:layout_height="wrap_content"
+        android:minLines="2"
         android:layout_marginTop="@dimen/card_badge_margin"
         android:text="Judul Anime"
         android:textColor="@color/text_frost_bright"
@@ -87,6 +88,19 @@
         android:maxLines="2"
         android:ellipsize="end"
         android:lineSpacingExtra="1dp" />
+
+    <TextView
+        android:id="@+id/tv_alt_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:text="English Title"
+        android:textColor="@color/text_frost_subtle"
+        android:textSize="9.5sp"
+        android:fontFamily="sans-serif"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tv_meta"
