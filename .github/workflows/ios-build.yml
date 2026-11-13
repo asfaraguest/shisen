@@ -16,7 +16,7 @@ permissions:
 jobs:
   build-ios:
     name: Build iOS IPA & Attach to Draft
-    runs-on: macos-14
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Code
