@@ -85,11 +85,10 @@ public final class SubtitleManager: ObservableObject {
             let textsToTranslate = enCues.map { $0.text }
             let translated = await GtxTranslator.shared.translateBatch(texts: textsToTranslate, targetLang: "id")
             
-            var translatedCues: [Cue] = []
-            for (idx, cue) in enCues.enumerated() {
+            let translatedCues: [Cue] = enCues.enumerated().map { idx, cue in
                 let transText = idx < translated.count ? translated[idx] : cue.text
                 let sanitized = SmartLexicon.shared.sanitizeCue(transText)
-                translatedCues.append(Cue(startMs: cue.startMs, endMs: cue.endMs, text: sanitized, originalText: cue.text))
+                return Cue(startMs: cue.startMs, endMs: cue.endMs, text: sanitized, originalText: cue.text)
             }
             
             await MainActor.run {

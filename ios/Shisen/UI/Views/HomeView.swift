@@ -79,9 +79,10 @@ public struct HomeView: View {
                                 
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                                     ForEach(searchResults) { anime in
-                                        AnimeCard(anime: anime) {
-                                            selectedAnime = anime
+                                        NavigationLink(value: anime) {
+                                            AnimeCardContent(anime: anime)
                                         }
+                                        .buttonStyle(.plain)
                                     }
                                 }
                                 .padding(.horizontal)
@@ -106,9 +107,10 @@ public struct HomeView: View {
                                     ScrollView(.horizontal, showsIndicators: false) {
                                         LazyHStack(spacing: 14) {
                                             ForEach(trending) { anime in
-                                                AnimeCard(anime: anime, isHorizontal: true) {
-                                                    selectedAnime = anime
+                                                NavigationLink(value: anime) {
+                                                    AnimeCardContent(anime: anime, isHorizontal: true)
                                                 }
+                                                .buttonStyle(.plain)
                                             }
                                         }
                                         .padding(.horizontal)
@@ -126,9 +128,10 @@ public struct HomeView: View {
                                     
                                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                                         ForEach(popular) { anime in
-                                            AnimeCard(anime: anime) {
-                                                selectedAnime = anime
+                                            NavigationLink(value: anime) {
+                                                AnimeCardContent(anime: anime)
                                             }
+                                            .buttonStyle(.plain)
                                         }
                                     }
                                     .padding(.horizontal)
@@ -139,7 +142,7 @@ public struct HomeView: View {
                     .padding(.bottom, 32)
                 }
             }
-            .navigationDestination(item: $selectedAnime) { anime in
+            .navigationDestination(for: Anime.self) { anime in
                 DetailView(anime: anime)
             }
             .task {
@@ -176,48 +179,44 @@ public struct HomeView: View {
     }
 }
 
-public struct AnimeCard: View {
+public struct AnimeCardContent: View {
     public let anime: Anime
     public var isHorizontal: Bool = false
-    public let onTap: () -> Void
     
     public var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 8) {
-                ZStack(alignment: .topTrailing) {
-                    AsyncImage(url: URL(string: anime.coverImage ?? "")) { phase in
-                        if let image = phase.image {
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } else {
-                            Rectangle()
-                                .fill(ShisenTheme.surfaceElevated)
-                        }
-                    }
-                    .frame(width: isHorizontal ? 140 : nil, height: isHorizontal ? 200 : 230)
-                    .clipped()
-                    .cornerRadius(12)
-                    
-                    if let score = anime.averageScore {
-                        Text("\(score)%")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(Color.black.opacity(0.75))
-                            .cornerRadius(6)
-                            .padding(6)
+        VStack(alignment: .leading, spacing: 8) {
+            ZStack(alignment: .topTrailing) {
+                AsyncImage(url: URL(string: anime.coverImage ?? "")) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else {
+                        Rectangle()
+                            .fill(ShisenTheme.surfaceElevated)
                     }
                 }
+                .frame(width: isHorizontal ? 140 : nil, height: isHorizontal ? 200 : 230)
+                .clipped()
+                .cornerRadius(12)
                 
-                Text(anime.displayTitle)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(ShisenTheme.textPrimary)
-                    .lineLimit(2)
-                    .frame(width: isHorizontal ? 140 : nil, alignment: .leading)
+                if let score = anime.averageScore {
+                    Text("\(score)%")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(Color.black.opacity(0.75))
+                        .cornerRadius(6)
+                        .padding(6)
+                }
             }
+            
+            Text(anime.displayTitle)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(ShisenTheme.textPrimary)
+                .lineLimit(2)
+                .frame(width: isHorizontal ? 140 : nil, alignment: .leading)
         }
-        .buttonStyle(.plain)
     }
 }

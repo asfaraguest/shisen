@@ -16,11 +16,15 @@ public struct Cue: Identifiable, Hashable {
 }
 
 public struct SubtitleTrack: Identifiable, Hashable, Codable {
-    public let id = UUID()
+    public var id = UUID()
     public let url: String
     public let label: String
     public let lang: String
     public let isDefault: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case url, label, lang, isDefault
+    }
     
     public init(url: String, label: String, lang: String = "en", isDefault: Bool = false) {
         self.url = url
