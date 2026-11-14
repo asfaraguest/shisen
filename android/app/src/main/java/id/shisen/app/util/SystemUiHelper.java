@@ -86,9 +86,8 @@ public class SystemUiHelper {
         if (isCustomViewWithBackground) {
             window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
         } else {
-            // Untuk AlertDialog atau dialog standar tanpa layout kustom berlatar:
-            // Pasang bg_dialog_frost agar memiliki latar belakang solid frost_surface yang elegan dan tidak transparan!
-            window.setBackgroundDrawableResource(R.drawable.bg_dialog_frost);
+            // Gunakan latar bertema aktif agar semua AlertDialog/dialog daftar selaras tema
+            window.setBackgroundDrawable(AnimeThemeManager.createDialogFrostDrawable(context));
         }
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
@@ -112,7 +111,10 @@ public class SystemUiHelper {
                 }
             }
 
-            if (!isCustomViewWithBackground) {
+            if (isCustomViewWithBackground) {
+                View content = win.findViewById(android.R.id.content);
+                AnimeThemeManager.applyCustomDialogTheme(content, context);
+            } else {
                 ensureDialogContrast(dialog);
             }
         };
@@ -142,9 +144,10 @@ public class SystemUiHelper {
             neu = ad.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
         }
 
+        int accent = AnimeThemeManager.getPrimaryAccentColor(dialog.getContext());
         boolean isTv = id.shisen.app.ui.player.PlayerKeys.isTv();
         if (pos != null) {
-            pos.setTextColor(0xFF38BDF8);
+            pos.setTextColor(accent);
             pos.setFocusable(true);
             if (isTv) TvFocusHelper.attachFocusScale(pos, 1.05f);
         }
@@ -161,11 +164,11 @@ public class SystemUiHelper {
 
         Window win = dialog.getWindow();
         if (win != null && win.getDecorView() != null) {
-            applyContrastToHierarchy(win.getDecorView());
+            applyContrastToHierarchy(win.getDecorView(), accent);
         }
     }
 
-    private static void applyContrastToHierarchy(View view) {
+    private static void applyContrastToHierarchy(View view, int accent) {
         if (view == null) return;
         if (view instanceof android.widget.TextView) {
             android.widget.TextView tv = (android.widget.TextView) view;
@@ -189,25 +192,25 @@ public class SystemUiHelper {
             int[] colors = new int[]{
                     0xFFFFFFFF, // Putih terang menyala saat terfokus
                     0xFFFFFFFF, // Putih terang menyala saat terpilih
-                    0xFF38BDF8, // Biru aksen menyala untuk opsi yang sedang aktif terpilih/tercentang
-                    0xFF38BDF8, // Biru aksen menyala untuk opsi aktif
-                    hasActiveBadge ? 0xFF38BDF8 : 0xFFE2E8F0  // Biru aksen untuk opsi bertanda aktif, abu-abu terang saat default
+                    accent,     // Aksen tema aktif untuk opsi yang terpilih/tercentang
+                    accent,     // Aksen tema aktif untuk opsi aktif
+                    hasActiveBadge ? accent : 0xFFE2E8F0
             };
             tv.setTextColor(new android.content.res.ColorStateList(states, colors));
 
             if (tv instanceof android.widget.CheckedTextView) {
                 android.widget.CheckedTextView ctv = (android.widget.CheckedTextView) tv;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    ctv.setCheckMarkTintList(android.content.res.ColorStateList.valueOf(0xFF38BDF8));
+                    ctv.setCheckMarkTintList(android.content.res.ColorStateList.valueOf(accent));
                 }
             }
         }
         if (view instanceof android.widget.ListView) {
             android.widget.ListView lv = (android.widget.ListView) view;
             try {
-                lv.setSelector(R.drawable.sel_dialog_item);
+                lv.setSelector(AnimeThemeManager.createDialogItemSelectorDrawable(lv.getContext()));
             } catch (Throwable t) {
-                lv.setSelector(new android.graphics.drawable.ColorDrawable(0xFF1E3A5F));
+                lv.setSelector(new android.graphics.drawable.ColorDrawable(AnimeThemeManager.getBorderColor(lv.getContext())));
             }
             lv.setDrawSelectorOnTop(true);
 
@@ -222,13 +225,13 @@ public class SystemUiHelper {
             lv.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
                 @Override
                 public void onChildViewAdded(View parent, View child) {
-                    applyContrastToHierarchy(child);
+                    applyContrastToHierarchy(child, accent);
                 }
                 @Override
                 public void onChildViewRemoved(View parent, View child) {}
             });
             for (int i = 0; i < lv.getChildCount(); i++) {
-                applyContrastToHierarchy(lv.getChildAt(i));
+                applyContrastToHierarchy(lv.getChildAt(i), accent);
             }
             if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
                 lv.post(() -> {
@@ -258,7 +261,7 @@ public class SystemUiHelper {
         } else if (view instanceof ViewGroup) {
             ViewGroup vg = (ViewGroup) view;
             for (int i = 0; i < vg.getChildCount(); i++) {
-                applyContrastToHierarchy(vg.getChildAt(i));
+                applyContrastToHierarchy(vg.getChildAt(i), accent);
             }
         }
     }

@@ -218,10 +218,30 @@ public class SettingsDialog {
     }
 
     private static void applyDialogTheme(View root, Activity activity) {
+        AnimeThemeManager.applyCustomDialogTheme(root, activity);
         int accent = AnimeThemeManager.getPrimaryAccentColor(activity);
         int border = AnimeThemeManager.getBorderColor(activity);
         android.content.res.ColorStateList accentTint = android.content.res.ColorStateList.valueOf(accent);
         android.content.res.ColorStateList borderTint = android.content.res.ColorStateList.valueOf(border);
+
+        // Perbarui latar card pilihan tema sesuai tema aktif
+        String current = AnimeThemeManager.getTheme(activity);
+        int[] cardIds = {R.id.card_theme_shinkai, R.id.card_theme_sakura, R.id.card_theme_cyber, R.id.card_theme_ghibli};
+        String[] themeKeys = {AnimeThemeManager.THEME_SHINKAI, AnimeThemeManager.THEME_SAKURA, AnimeThemeManager.THEME_CYBER, AnimeThemeManager.THEME_GHIBLI};
+        for (int i = 0; i < cardIds.length; i++) {
+            View card = root.findViewById(cardIds[i]);
+            if (card != null) {
+                boolean active = themeKeys[i].equals(current);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        card,
+                        AnimeThemeManager.createPillDrawable(
+                                activity,
+                                AnimeThemeManager.getSurfaceColor(activity),
+                                active ? accent : border,
+                                active ? 1.5f : 1f,
+                                12f));
+            }
+        }
 
         updateLanguageChips(root, activity);
 

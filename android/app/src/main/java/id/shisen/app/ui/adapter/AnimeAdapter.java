@@ -152,11 +152,15 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private void bindHeader(HeaderViewHolder holder, Anime header) {
         if (header == null) return;
         int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
+        int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
         if (holder.viewLaneIndicator != null) {
             holder.viewLaneIndicator.setBackgroundColor(accent);
         }
         if (holder.tvLaneTitle != null) {
             holder.tvLaneTitle.setTextColor(accent);
+        }
+        if (holder.itemView instanceof ViewGroup && ((ViewGroup) holder.itemView).getChildCount() > 1) {
+            ((ViewGroup) holder.itemView).getChildAt(1).setBackgroundColor(border);
         }
         if ("CUR".equalsIgnoreCase(header.headerType)) {
             String s = getLocalizedSeasonName(context, header.season);
@@ -321,6 +325,8 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (anime.format != null && !anime.format.isEmpty()) {
             holder.tvBadgeType.setVisibility(View.VISIBLE);
             holder.tvBadgeType.setText(anime.format.toUpperCase(Locale.US));
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    holder.tvBadgeType, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
         } else {
             holder.tvBadgeType.setVisibility(View.GONE);
         }
@@ -339,7 +345,12 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             holder.tvBadgeEp.setVisibility(View.VISIBLE);
             holder.tvBadgeEp.setText(badge);
             boolean isFinished = "FINISHED".equalsIgnoreCase(anime.status) || "TAMAT".equalsIgnoreCase(anime.status);
-            holder.tvBadgeEp.setBackgroundResource(isFinished ? R.drawable.bg_badge_mint : R.drawable.bg_badge_frost);
+            if (isFinished) {
+                holder.tvBadgeEp.setBackgroundResource(R.drawable.bg_badge_mint);
+            } else {
+                id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                        holder.tvBadgeEp, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
+            }
         } else {
             holder.tvBadgeEp.setVisibility(View.GONE);
         }

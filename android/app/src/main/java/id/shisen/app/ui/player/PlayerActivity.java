@@ -15,7 +15,10 @@ import android.content.SharedPreferences;
 import android.app.Dialog;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import androidx.core.graphics.ColorUtils;
+import id.shisen.app.util.AnimeThemeManager;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -430,6 +433,105 @@ public class PlayerActivity extends AppCompatActivity {
 
         setupClickListeners();
         setupWindowInsets();
+        applyPlayerTheme();
+    }
+
+    /** Menyelaraskan seluruh elemen Portrait Video Mode dan overlay HUD video dengan tema aktif. */
+    private void applyPlayerTheme() {
+        int accent = AnimeThemeManager.getPrimaryAccentColor(this);
+        int surface = AnimeThemeManager.getSurfaceColor(this);
+        int border = AnimeThemeManager.getBorderColor(this);
+        int elevated = AnimeThemeManager.getElevatedColor(this);
+        int voidColor = AnimeThemeManager.getVoidColor(this);
+        ColorStateList accentTint = ColorStateList.valueOf(accent);
+        ColorStateList borderTint = ColorStateList.valueOf(border);
+        ColorStateList elevatedTint = ColorStateList.valueOf(elevated);
+
+        if (layoutPortraitBottom != null) {
+            layoutPortraitBottom.setBackgroundColor(voidColor);
+            if (layoutPortraitBottom.getChildCount() > 0) {
+                layoutPortraitBottom.getChildAt(0).setBackgroundColor(surface);
+            }
+        }
+        if (tvPortraitCurrentEp != null) tvPortraitCurrentEp.setTextColor(accent);
+        if (tvPortraitEpCount != null) tvPortraitEpCount.setTextColor(accent);
+        if (btnPortraitBack != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    btnPortraitBack, AnimeThemeManager.createFrostedIconButtonDrawable(this));
+        }
+
+        Button[] portraitPills = {btnPortraitSub, btnPortraitQuality, btnPortraitSpeed, btnPortraitPip};
+        for (Button pill : portraitPills) {
+            if (pill instanceof com.google.android.material.button.MaterialButton) {
+                com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) pill;
+                mb.setBackgroundTintList(elevatedTint);
+                mb.setStrokeColor(borderTint);
+            }
+        }
+        if (btnPortraitPip instanceof com.google.android.material.button.MaterialButton) {
+            ((com.google.android.material.button.MaterialButton) btnPortraitPip).setIconTint(accentTint);
+        }
+        if (btnPortraitSort instanceof com.google.android.material.button.MaterialButton) {
+            com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnPortraitSort;
+            mb.setBackgroundTintList(ColorStateList.valueOf(surface));
+            mb.setStrokeColor(borderTint);
+        }
+        if (btnPortraitFullscreen instanceof com.google.android.material.button.MaterialButton) {
+            com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnPortraitFullscreen;
+            mb.setBackgroundTintList(ColorStateList.valueOf(ColorUtils.blendARGB(voidColor, accent, 0.14f)));
+            mb.setStrokeColor(accentTint);
+            mb.setTextColor(accent);
+        }
+
+        if (hudHoldSpeed != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(hudHoldSpeed,
+                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x4D), 1f, 20f));
+        }
+        if (tvHoldSpeedIcon != null) tvHoldSpeedIcon.setTextColor(accent);
+
+        if (hudOsd != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(hudOsd,
+                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x4D), 1f, 20f));
+        }
+        if (tvOsdIcon != null) tvOsdIcon.setTextColor(accent);
+        if (pbOsdBar != null) {
+            pbOsdBar.setProgressTintList(accentTint);
+            pbOsdBar.setProgressBackgroundTintList(borderTint);
+        }
+
+        if (layoutSafetyUnlock != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(layoutSafetyUnlock,
+                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x4D), 1f, 20f));
+            if (layoutSafetyUnlock instanceof ViewGroup && ((ViewGroup) layoutSafetyUnlock).getChildCount() > 0) {
+                View first = ((ViewGroup) layoutSafetyUnlock).getChildAt(0);
+                if (first instanceof ImageView) ((ImageView) first).setImageTintList(accentTint);
+            }
+        }
+
+        if (layoutBuffering != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(layoutBuffering,
+                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x33), 1f, 16f));
+        }
+        if (pbBuffering != null) pbBuffering.setIndeterminateTintList(accentTint);
+        if (tvBufferingText != null) tvBufferingText.setTextColor(accent);
+
+        if (tvRippleLeft != null) tvRippleLeft.setBackground(AnimeThemeManager.createRippleSeekDrawable(this, true));
+        if (tvRippleRight != null) tvRippleRight.setBackground(AnimeThemeManager.createRippleSeekDrawable(this, false));
+
+        if (btnSkipOpEd instanceof com.google.android.material.button.MaterialButton) {
+            com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnSkipOpEd;
+            mb.setBackgroundTintList(ColorStateList.valueOf(AnimeThemeManager.withAlpha(voidColor, 0xD9)));
+            mb.setStrokeColor(accentTint);
+            mb.setIconTint(accentTint);
+            mb.setTextColor(accent);
+        }
+
+        if (btnScreenLock != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(btnScreenLock, AnimeThemeManager.createBadgeFrostDrawable(this));
+        }
+        if (btnPlayerBack != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(btnPlayerBack, AnimeThemeManager.createExoButtonDrawable(this, false));
+        }
     }
 
     private void setupWindowInsets() {
@@ -1005,12 +1107,13 @@ public class PlayerActivity extends AppCompatActivity {
                 ((TextView) durView).setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
             }
 
+            int exoAccent = AnimeThemeManager.getPrimaryAccentColor(this);
             TimeBar timeBar = playerView.findViewById(androidx.media3.ui.R.id.exo_progress);
             if (timeBar instanceof DefaultTimeBar) {
                 DefaultTimeBar dtb = (DefaultTimeBar) timeBar;
-                dtb.setPlayedColor(0xFF38BDF8);
-                dtb.setScrubberColor(0xFF38BDF8);
-                dtb.setBufferedColor(0x6638BDF8);
+                dtb.setPlayedColor(exoAccent);
+                dtb.setScrubberColor(exoAccent);
+                dtb.setBufferedColor(AnimeThemeManager.withAlpha(exoAccent, 0x66));
                 dtb.setUnplayedColor(0x33FFFFFF);
                 dtb.setKeyTimeIncrement(10000);
                 dtb.addListener(new TimeBar.OnScrubListener() {
@@ -1037,7 +1140,8 @@ public class PlayerActivity extends AppCompatActivity {
                 btnExoPlayPause = playerView.findViewById(androidx.media3.ui.R.id.exo_play);
             }
             if (btnExoPlayPause != null) {
-                btnExoPlayPause.setBackgroundResource(R.drawable.bg_exo_play_center);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnExoPlayPause, AnimeThemeManager.createExoButtonDrawable(this, true));
             }
 
             // 2. Rewind (-5s)
@@ -1046,7 +1150,8 @@ public class PlayerActivity extends AppCompatActivity {
                 btnExoRew = playerView.findViewById(androidx.media3.ui.R.id.exo_rew_with_amount);
             }
             if (btnExoRew != null) {
-                btnExoRew.setBackgroundResource(R.drawable.bg_exo_icon_btn);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnExoRew, AnimeThemeManager.createExoButtonDrawable(this, false));
                 btnExoRew.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     seekRelative(-5000);
@@ -1060,7 +1165,8 @@ public class PlayerActivity extends AppCompatActivity {
                 btnExoFfwd = playerView.findViewById(androidx.media3.ui.R.id.exo_ffwd_with_amount);
             }
             if (btnExoFfwd != null) {
-                btnExoFfwd.setBackgroundResource(R.drawable.bg_exo_icon_btn);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnExoFfwd, AnimeThemeManager.createExoButtonDrawable(this, false));
                 btnExoFfwd.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     seekRelative(5000);
@@ -1071,7 +1177,8 @@ public class PlayerActivity extends AppCompatActivity {
             // 4. Next & Prev Episode
             btnExoNext = playerView.findViewById(androidx.media3.ui.R.id.exo_next);
             if (btnExoNext != null) {
-                btnExoNext.setBackgroundResource(R.drawable.bg_exo_icon_btn);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnExoNext, AnimeThemeManager.createExoButtonDrawable(this, false));
                 btnExoNext.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     playNextEpisode();
@@ -1080,7 +1187,8 @@ public class PlayerActivity extends AppCompatActivity {
 
             btnExoPrev = playerView.findViewById(androidx.media3.ui.R.id.exo_prev);
             if (btnExoPrev != null) {
-                btnExoPrev.setBackgroundResource(R.drawable.bg_exo_icon_btn);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnExoPrev, AnimeThemeManager.createExoButtonDrawable(this, false));
                 btnExoPrev.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     playPrevEpisode();
@@ -1091,7 +1199,8 @@ public class PlayerActivity extends AppCompatActivity {
             // 5. Subtitle Button (CC)
             btnExoSub = playerView.findViewById(androidx.media3.ui.R.id.exo_subtitle);
             if (btnExoSub != null) {
-                btnExoSub.setBackgroundResource(R.drawable.bg_exo_icon_btn);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnExoSub, AnimeThemeManager.createExoButtonDrawable(this, false));
                 btnExoSub.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     showSubtitleSelectorDialog();
@@ -1103,7 +1212,8 @@ public class PlayerActivity extends AppCompatActivity {
             btnExoPip = playerView.findViewById(androidx.media3.ui.R.id.exo_vr);
             if (btnExoPip != null) {
                 boolean showPip = isPipSupported();
-                btnExoPip.setBackgroundResource(R.drawable.bg_exo_icon_btn);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnExoPip, AnimeThemeManager.createExoButtonDrawable(this, false));
                 if (btnExoPip instanceof ImageView) {
                     ((ImageView) btnExoPip).setImageResource(R.drawable.ic_pip);
                 }
@@ -1120,7 +1230,8 @@ public class PlayerActivity extends AppCompatActivity {
             btnExoSettings = playerView.findViewById(androidx.media3.ui.R.id.exo_settings);
             if (btnExoSettings != null) {
                 btnExoSettings.setVisibility(View.VISIBLE);
-                btnExoSettings.setBackgroundResource(R.drawable.bg_exo_icon_btn);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnExoSettings, AnimeThemeManager.createExoButtonDrawable(this, false));
                 btnExoSettings.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     showPlayerUnifiedSettingsDialog();
@@ -1131,7 +1242,8 @@ public class PlayerActivity extends AppCompatActivity {
             btnExoFullscreen = playerView.findViewById(androidx.media3.ui.R.id.exo_fullscreen);
             if (btnExoFullscreen != null) {
                 btnExoFullscreen.setVisibility(View.VISIBLE);
-                btnExoFullscreen.setBackgroundResource(R.drawable.bg_exo_icon_btn);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnExoFullscreen, AnimeThemeManager.createExoButtonDrawable(this, false));
                 btnExoFullscreen.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     int orient = getResources().getConfiguration().orientation;
@@ -1185,7 +1297,7 @@ public class PlayerActivity extends AppCompatActivity {
             btnExoSub.setClickable(true);
             btnExoSub.setAlpha(enabled ? 1.0f : 0.55f);
             if (btnExoSub instanceof ImageView) {
-                ((ImageView) btnExoSub).setColorFilter(enabled ? 0xFF38BDF8 : 0xFFFFFFFF);
+                ((ImageView) btnExoSub).setColorFilter(enabled ? AnimeThemeManager.getPrimaryAccentColor(this) : 0xFFFFFFFF);
             }
         }
     }

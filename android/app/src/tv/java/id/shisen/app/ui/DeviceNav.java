@@ -229,6 +229,9 @@ public final class DeviceNav {
         if (host == null) return;
         int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
         if (host.menuItemSettings != null) {
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    host.menuItemSettings,
+                    id.shisen.app.util.AnimeThemeManager.createTvFocusDrawable(host, true));
             tintRailIcon(host.menuItemSettings, accent);
         }
         updateTvRailHighlight(host.getCurrentTab());
@@ -267,6 +270,9 @@ public final class DeviceNav {
         for (int i = 0; i < items.length; i++) {
             if (items[i] == null || titles[i] == null) continue;
             boolean isActive = (tabEnums[i] == currentTab);
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    items[i],
+                    id.shisen.app.util.AnimeThemeManager.createTvFocusDrawable(host, true));
             items[i].setSelected(isActive);
             tintRailIcon(items[i], activeColor);
             titles[i].setTextColor(isActive ? activeColor : inactiveColor);

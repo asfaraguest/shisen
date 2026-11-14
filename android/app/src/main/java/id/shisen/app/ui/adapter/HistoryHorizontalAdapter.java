@@ -50,6 +50,23 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
     @Override
     public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
         Anime anime = items.get(position);
+        int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
+        int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
+        int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
+        int elevated = id.shisen.app.util.AnimeThemeManager.getElevatedColor(context);
+
+        if (holder.cardHistory instanceof com.google.android.material.card.MaterialCardView) {
+            com.google.android.material.card.MaterialCardView card = (com.google.android.material.card.MaterialCardView) holder.cardHistory;
+            card.setCardBackgroundColor(surface);
+            card.setStrokeColor(border);
+        }
+        if (holder.tvEp != null) {
+            holder.tvEp.setTextColor(accent);
+        }
+        if (holder.pbProgress != null) {
+            holder.pbProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(accent));
+            holder.pbProgress.setProgressBackgroundTintList(android.content.res.ColorStateList.valueOf(elevated));
+        }
 
         AnimeAdapter.bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
 
@@ -103,6 +120,7 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
     }
 
     static class HistoryViewHolder extends RecyclerView.ViewHolder {
+        View cardHistory;
         ImageView ivThumb;
         TextView tvEp;
         TextView tvTitle;
@@ -111,6 +129,7 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
 
         public HistoryViewHolder(@NonNull View itemView) {
             super(itemView);
+            cardHistory = itemView.findViewById(R.id.card_history);
             ivThumb = itemView.findViewById(R.id.iv_history_thumb);
             tvEp = itemView.findViewById(R.id.tv_history_ep);
             tvTitle = itemView.findViewById(R.id.tv_history_title);

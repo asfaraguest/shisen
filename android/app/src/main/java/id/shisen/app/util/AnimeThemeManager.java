@@ -13,11 +13,17 @@ import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 
 import id.shisen.app.R;
 
@@ -140,6 +146,10 @@ public class AnimeThemeManager {
 
     public static int getVoidColor(Context context) {
         return getVoidColorForTheme(getTheme(context));
+    }
+
+    public static int getElevatedColor(Context context) {
+        return ColorUtils.blendARGB(getSurfaceColor(context), getBorderColor(context), 0.45f);
     }
 
     public static int getVoidColorForTheme(String theme) {
@@ -460,5 +470,248 @@ public class AnimeThemeManager {
         int bottom = view.getPaddingBottom();
         view.setBackground(drawable);
         view.setPadding(left, top, right, bottom);
+    }
+
+    public static Drawable createPillDrawable(Context context, int fillColor, int strokeColor, float strokeDp, float radiusDp) {
+        float d = density(context);
+        GradientDrawable gd = new GradientDrawable();
+        gd.setColor(fillColor);
+        if (strokeDp > 0 && strokeColor != Color.TRANSPARENT) {
+            gd.setStroke(Math.max(1, (int) (strokeDp * d)), strokeColor);
+        }
+        gd.setCornerRadius(radiusDp * d);
+        return gd;
+    }
+
+    public static Drawable createDialogFrostDrawable(Context context) {
+        return createPillDrawable(context, getSurfaceColor(context), getBorderColor(context), 1f, 16f);
+    }
+
+    public static Drawable createBadgeFrostDrawable(Context context) {
+        return createPillDrawable(context, withAlpha(getVoidColor(context), 0xCC), getBorderColor(context), 1f, 6f);
+    }
+
+    public static Drawable createDialogItemSelectorDrawable(Context context) {
+        int accent = getPrimaryAccentColor(context);
+        float d = density(context);
+        float r = 10f * d;
+        StateListDrawable sld = new StateListDrawable();
+
+        GradientDrawable pressed = new GradientDrawable();
+        pressed.setColor(withAlpha(accent, 0x4D));
+        pressed.setStroke(Math.max(1, (int) d), accent);
+        pressed.setCornerRadius(r);
+        sld.addState(new int[]{android.R.attr.state_pressed}, pressed);
+
+        int[] focusAttrs = {
+                android.R.attr.state_focused,
+                android.R.attr.state_selected,
+                android.R.attr.state_checked,
+                android.R.attr.state_activated
+        };
+        for (int attr : focusAttrs) {
+            GradientDrawable st = new GradientDrawable();
+            st.setColor(withAlpha(accent, 0x26));
+            st.setStroke(Math.max(1, (int) (1.2f * d)), accent);
+            st.setCornerRadius(r);
+            sld.addState(new int[]{attr}, st);
+        }
+
+        GradientDrawable normal = new GradientDrawable();
+        normal.setColor(Color.TRANSPARENT);
+        sld.addState(new int[]{}, normal);
+        return sld;
+    }
+
+    public static Drawable createRippleSeekDrawable(Context context, boolean isLeft) {
+        int accent = getPrimaryAccentColor(context);
+        float d = density(context);
+        float r = 120f * d;
+        GradientDrawable gd = new GradientDrawable();
+        gd.setColor(withAlpha(accent, 0x26));
+        gd.setStroke(Math.max(1, (int) d), withAlpha(accent, 0x40));
+        gd.setCornerRadii(isLeft
+                ? new float[]{0f, 0f, r, r, r, r, 0f, 0f}
+                : new float[]{r, r, 0f, 0f, 0f, 0f, r, r});
+        return gd;
+    }
+
+    public static Drawable createExoButtonDrawable(Context context, boolean isCenterPlay) {
+        int accent = getPrimaryAccentColor(context);
+        int surface = getSurfaceColor(context);
+        int voidColor = getVoidColor(context);
+        float d = density(context);
+        StateListDrawable sld = new StateListDrawable();
+
+        GradientDrawable focused = new GradientDrawable();
+        focused.setShape(GradientDrawable.OVAL);
+        focused.setColor(ColorUtils.blendARGB(surface, accent, 0.12f));
+        focused.setStroke(Math.max(2, (int) (2f * d)), accent);
+        sld.addState(new int[]{android.R.attr.state_focused}, focused);
+
+        GradientDrawable pressed = new GradientDrawable();
+        pressed.setShape(GradientDrawable.OVAL);
+        pressed.setColor(withAlpha(accent, 0x33));
+        sld.addState(new int[]{android.R.attr.state_pressed}, pressed);
+
+        GradientDrawable normal = new GradientDrawable();
+        normal.setShape(GradientDrawable.OVAL);
+        if (isCenterPlay) {
+            normal.setColor(withAlpha(voidColor, 0xB3));
+            normal.setStroke(Math.max(1, (int) d), withAlpha(accent, 0x40));
+        } else {
+            normal.setColor(Color.TRANSPARENT);
+        }
+        sld.addState(new int[]{}, normal);
+        return sld;
+    }
+
+    public static Drawable createTvFocusDrawable(Context context, boolean isNavRail) {
+        int accent = getPrimaryAccentColor(context);
+        float d = density(context);
+        float r = (isNavRail ? 12f : 10f) * d;
+        StateListDrawable sld = new StateListDrawable();
+
+        GradientDrawable pressed = new GradientDrawable();
+        pressed.setColor(withAlpha(accent, 0x40));
+        pressed.setCornerRadius(r);
+        sld.addState(new int[]{android.R.attr.state_pressed}, pressed);
+
+        GradientDrawable focused = new GradientDrawable();
+        focused.setColor(withAlpha(accent, 0x33));
+        focused.setStroke(Math.max(2, (int) ((isNavRail ? 2.5f : 2f) * d)), accent);
+        focused.setCornerRadius(r);
+        sld.addState(new int[]{android.R.attr.state_focused}, focused);
+
+        if (isNavRail) {
+            GradientDrawable selected = new GradientDrawable();
+            selected.setColor(withAlpha(accent, 0x24));
+            selected.setStroke(Math.max(1, (int) (1.5f * d)), accent);
+            selected.setCornerRadius(r);
+            sld.addState(new int[]{android.R.attr.state_selected}, selected);
+        }
+
+        GradientDrawable normal = new GradientDrawable();
+        normal.setColor(Color.TRANSPARENT);
+        sld.addState(new int[]{}, normal);
+        return sld;
+    }
+
+    /** Memetakan warna statis Shinkai pada dialog XML kustom agar selaras dengan tema aktif. */
+    public static void applyCustomDialogTheme(View root, Context context) {
+        if (root == null || context == null) return;
+        int accent = getPrimaryAccentColor(context);
+        int surface = getSurfaceColor(context);
+        int border = getBorderColor(context);
+        int elevated = getElevatedColor(context);
+        int voidColor = getVoidColor(context);
+
+        View panel = root;
+        if (panel instanceof android.widget.FrameLayout && ((ViewGroup) panel).getChildCount() > 0) {
+            panel = ((ViewGroup) panel).getChildAt(0);
+        }
+        if (panel instanceof android.widget.ScrollView && ((ViewGroup) panel).getChildCount() > 0) {
+            panel = ((ViewGroup) panel).getChildAt(0);
+        }
+        if (panel != null && panel.getBackground() != null) {
+            applyBackgroundPreservingPadding(panel, createDialogFrostDrawable(context));
+        }
+
+        remapDialogChildren(panel, context, accent, surface, border, elevated, voidColor);
+    }
+
+    private static boolean isAnyThemeAccent(int c) {
+        return c == 0xFF38BDF8 || c == 0xFFFB7185 || c == 0xFF00F0FF || c == 0xFF10B981;
+    }
+
+    private static boolean isAnyThemeSurface(int c) {
+        return c == 0xFF10162A || c == 0xFF1C1226 || c == 0xFF0E1424 || c == 0xFF0E211E;
+    }
+
+    private static boolean isAnyThemeBorder(int c) {
+        return c == 0xFF233252 || c == 0xFF381D47 || c == 0xFF1E2C4A || c == 0xFF1B3D37 || c == 0xFF243859;
+    }
+
+    private static boolean isAnyThemeElevated(int c) {
+        return c == 0xFF161F38 || c == 0xFF16233B
+                || c == ColorUtils.blendARGB(0xFF10162A, 0xFF233252, 0.45f)
+                || c == ColorUtils.blendARGB(0xFF1C1226, 0xFF381D47, 0.45f)
+                || c == ColorUtils.blendARGB(0xFF0E1424, 0xFF1E2C4A, 0.45f)
+                || c == ColorUtils.blendARGB(0xFF0E211E, 0xFF1B3D37, 0.45f);
+    }
+
+    private static void remapDialogChildren(View view, Context context, int accent, int surface, int border, int elevated, int voidColor) {
+        if (view == null) return;
+        int id = view.getId();
+        // Jangan ubah swatch pratinjau kartu tema di dialog pengaturan/pemilih tema
+        if (id == R.id.rb_theme_shinkai || id == R.id.rb_theme_sakura
+                || id == R.id.rb_theme_cyber || id == R.id.rb_theme_ghibli) {
+            return;
+        }
+
+        if (view instanceof com.google.android.material.button.MaterialButton) {
+            com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) view;
+            ColorStateList bgTint = mb.getBackgroundTintList();
+            if (bgTint != null) {
+                int c = bgTint.getDefaultColor();
+                if (isAnyThemeAccent(c)) mb.setBackgroundTintList(ColorStateList.valueOf(accent));
+                else if (isAnyThemeElevated(c)) mb.setBackgroundTintList(ColorStateList.valueOf(elevated));
+                else if (isAnyThemeSurface(c)) mb.setBackgroundTintList(ColorStateList.valueOf(surface));
+            }
+            ColorStateList sc = mb.getStrokeColor();
+            if (sc != null) {
+                int s = sc.getDefaultColor();
+                if (isAnyThemeBorder(s)) mb.setStrokeColor(ColorStateList.valueOf(border));
+                else if (isAnyThemeAccent(s)) mb.setStrokeColor(ColorStateList.valueOf(accent));
+            }
+            ColorStateList iconTint = mb.getIconTint();
+            if (iconTint != null && isAnyThemeAccent(iconTint.getDefaultColor())) {
+                mb.setIconTint(ColorStateList.valueOf(accent));
+            }
+        }
+
+        if (view instanceof androidx.appcompat.widget.SwitchCompat) {
+            androidx.appcompat.widget.SwitchCompat sw = (androidx.appcompat.widget.SwitchCompat) view;
+            sw.setThumbTintList(ColorStateList.valueOf(accent));
+            sw.setTrackTintList(ColorStateList.valueOf(elevated));
+        } else if (view instanceof TextView) {
+            TextView tv = (TextView) view;
+            int cur = tv.getCurrentTextColor();
+            if (isAnyThemeAccent(cur)) {
+                tv.setTextColor(accent);
+            } else if (cur == 0xFF0A0D18 || cur == 0xFF090D16 || cur == 0xFF0F0815 || cur == 0xFF060810 || cur == 0xFF06100E) {
+                tv.setTextColor(0xFF080C14);
+            }
+            if (tv instanceof CompoundButton) {
+                ((CompoundButton) tv).setButtonTintList(ColorStateList.valueOf(accent));
+            }
+        } else if (view instanceof ImageView) {
+            ImageView iv = (ImageView) view;
+            ColorStateList tint = iv.getImageTintList();
+            if (tint != null && isAnyThemeAccent(tint.getDefaultColor())) {
+                iv.setImageTintList(ColorStateList.valueOf(accent));
+            }
+        } else if (view instanceof ProgressBar) {
+            ProgressBar pb = (ProgressBar) view;
+            pb.setIndeterminateTintList(ColorStateList.valueOf(accent));
+            pb.setProgressTintList(ColorStateList.valueOf(accent));
+            pb.setProgressBackgroundTintList(ColorStateList.valueOf(border));
+        } else if (view.getBackground() instanceof android.graphics.drawable.ColorDrawable) {
+            int bgColor = ((android.graphics.drawable.ColorDrawable) view.getBackground()).getColor();
+            if (isAnyThemeBorder(bgColor)) {
+                view.setBackgroundColor(border);
+            } else if (isAnyThemeElevated(bgColor)) {
+                view.setBackgroundColor(elevated);
+            } else if (isAnyThemeSurface(bgColor)) {
+                view.setBackgroundColor(surface);
+            }
+        }
+
+        if (view instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) view;
+            for (int i = 0; i < vg.getChildCount(); i++) {
+                remapDialogChildren(vg.getChildAt(i), context, accent, surface, border, elevated, voidColor);
+            }
+        }
     }
 }

@@ -395,10 +395,27 @@ public class MainActivity extends AppCompatActivity {
             if (!isTv) {
                 AnimeThemeManager.applyBackgroundPreservingPadding(
                         btnSearchTrigger, AnimeThemeManager.createSearchCapsuleDrawable(this));
+            } else {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnSearchTrigger, AnimeThemeManager.createTvFocusDrawable(this, false));
             }
         }
         if (btnCollapseSearch != null) {
             btnCollapseSearch.setImageTintList(android.content.res.ColorStateList.valueOf(accent));
+            if (isTv) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnCollapseSearch, AnimeThemeManager.createTvFocusDrawable(this, false));
+            }
+        }
+        if (layoutTopSearchFluid != null) {
+            if (isTv && layoutTopSearchFluid instanceof ViewGroup && ((ViewGroup) layoutTopSearchFluid).getChildCount() > 1) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        ((ViewGroup) layoutTopSearchFluid).getChildAt(1),
+                        AnimeThemeManager.createSearchCapsuleDrawable(this));
+            } else if (!isTv) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        layoutTopSearchFluid, AnimeThemeManager.createSearchCapsuleDrawable(this));
+            }
         }
         if (!isTv && layoutAuroraTop != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(
@@ -407,7 +424,20 @@ public class MainActivity extends AppCompatActivity {
         if (tvPageIndicator != null) {
             tvPageIndicator.setTextColor(accent);
         }
-        if (!isTv) {
+        if (isTv) {
+            if (btnPrevPage != null) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnPrevPage, AnimeThemeManager.createTvFocusDrawable(this, false));
+            }
+            if (btnNextPage != null) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnNextPage, AnimeThemeManager.createTvFocusDrawable(this, false));
+            }
+            if (tvPageIndicator != null) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        tvPageIndicator, AnimeThemeManager.createBadgeFrostDrawable(this));
+            }
+        } else {
             if (layoutPagination != null) {
                 AnimeThemeManager.applyBackgroundPreservingPadding(
                         layoutPagination, AnimeThemeManager.createPaginationBarDrawable(this));
@@ -435,6 +465,9 @@ public class MainActivity extends AppCompatActivity {
         }
         if (scrollSubFilters != null && scrollSubFilters.getVisibility() == View.VISIBLE) {
             updateSubFilterUI();
+        }
+        if (gridAdapter != null) {
+            gridAdapter.notifyDataSetChanged();
         }
     }
 
@@ -1039,7 +1072,7 @@ public class MainActivity extends AppCompatActivity {
             );
             dLp.setMargins((int) (4 * getResources().getDisplayMetrics().density), 0, (int) (8 * getResources().getDisplayMetrics().density), 0);
             div.setLayoutParams(dLp);
-            div.setBackgroundColor(Color.parseColor("#243859"));
+            div.setBackgroundColor(AnimeThemeManager.getBorderColor(this));
             layoutSubChips.addView(div);
 
             // Quick Sort Chips
@@ -1090,7 +1123,7 @@ public class MainActivity extends AppCompatActivity {
             );
             dLp.setMargins((int) (4 * getResources().getDisplayMetrics().density), 0, (int) (8 * getResources().getDisplayMetrics().density), 0);
             div.setLayoutParams(dLp);
-            div.setBackgroundColor(Color.parseColor("#243859"));
+            div.setBackgroundColor(AnimeThemeManager.getBorderColor(this));
             layoutSubChips.addView(div);
 
             // Top Quick Genres for Instant Access
@@ -1499,6 +1532,9 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             GenreItem item = filteredList.get(position);
             holder.tvName.setText(item.title);
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    holder.itemView,
+                    AnimeThemeManager.createChipDrawable(holder.itemView.getContext(), false));
             holder.itemView.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 if (listener != null) listener.onGenreClick(item.slug, item.title);

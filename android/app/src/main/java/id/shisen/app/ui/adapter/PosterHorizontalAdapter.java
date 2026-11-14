@@ -50,6 +50,13 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
     @Override
     public void onBindViewHolder(@NonNull PosterViewHolder holder, int position) {
         Anime anime = items.get(position);
+        int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
+        int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
+        if (holder.cardPoster instanceof com.google.android.material.card.MaterialCardView) {
+            com.google.android.material.card.MaterialCardView card = (com.google.android.material.card.MaterialCardView) holder.cardPoster;
+            card.setCardBackgroundColor(surface);
+            card.setStrokeColor(border);
+        }
 
         AnimeAdapter.bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
 
@@ -67,9 +74,13 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
         if (badge != null && !badge.isEmpty()) {
             holder.tvBadgeEp.setVisibility(View.VISIBLE);
             holder.tvBadgeEp.setText(badge);
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    holder.tvBadgeEp, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
         } else if (anime.epsCounter != null && !anime.epsCounter.isEmpty() && !"null".equalsIgnoreCase(anime.epsCounter)) {
             holder.tvBadgeEp.setVisibility(View.VISIBLE);
             holder.tvBadgeEp.setText(anime.epsCounter);
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    holder.tvBadgeEp, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
         } else {
             holder.tvBadgeEp.setVisibility(View.GONE);
         }
@@ -107,6 +118,7 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
     }
 
     static class PosterViewHolder extends RecyclerView.ViewHolder {
+        View cardPoster;
         ImageView ivPoster;
         TextView tvBadgeScore;
         TextView tvBadgeEp;
@@ -116,6 +128,7 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
 
         public PosterViewHolder(@NonNull View itemView) {
             super(itemView);
+            cardPoster = itemView.findViewById(R.id.card_poster);
             ivPoster = itemView.findViewById(R.id.iv_poster);
             tvBadgeScore = itemView.findViewById(R.id.tv_badge_score);
             tvBadgeEp = itemView.findViewById(R.id.tv_badge_ep);
