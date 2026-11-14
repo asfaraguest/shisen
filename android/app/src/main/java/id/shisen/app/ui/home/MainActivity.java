@@ -48,8 +48,10 @@ import id.shisen.app.data.subtitle.AiSubtitleService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 
 import id.shisen.app.R;
@@ -59,6 +61,7 @@ import id.shisen.app.ui.dialog.SettingsDialog;
 import id.shisen.app.util.AppSettings;
 import id.shisen.app.data.model.Anime;
 import id.shisen.app.data.service.AniListClient;
+import id.shisen.app.data.service.HiAnimeClient;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import id.shisen.app.util.AnimeThemeManager;
@@ -202,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
             new GenreItem("Demons", "demons"),
             new GenreItem("Detective", "detective"),
             new GenreItem("Drama", "drama"),
+            new GenreItem("Ecchi", "ecchi"),
             new GenreItem("Educational", "educational"),
             new GenreItem("Fantasy", "fantasy"),
             new GenreItem("Gag Humor", "gag-humor"),
@@ -304,6 +308,7 @@ public class MainActivity extends AppCompatActivity {
         setupRecyclerView();
         setupListeners();
         setupBackHandler();
+        AniListClient.setSafeModeEnabled(AppSettings.isSafeMode(this));
 
         // Bersihkan sisa APK pembaruan lama di subfolder updates/ cache
         AppUpdateManager.cleanupAtStart(this);
@@ -1271,7 +1276,14 @@ public class MainActivity extends AppCompatActivity {
             setGenreFilter(title);
         });
         rvGenres.setAdapter(genreAdapter);
-        genreAdapter.setData(TATAP_GENRES);
+        boolean safeMode = AppSettings.isSafeMode(this);
+        List<GenreItem> visibleGenres = new ArrayList<>();
+        for (GenreItem item : TATAP_GENRES) {
+            if (!safeMode || !"ecchi".equalsIgnoreCase(item.slug)) {
+                visibleGenres.add(item);
+            }
+        }
+        genreAdapter.setData(visibleGenres);
 
         if (btnClose != null) {
             btnClose.setOnClickListener(v -> {
@@ -1509,21 +1521,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getCurrentCacheKey() {
+        String safeSuffix = "_safe" + (AppSettings.isSafeMode(this) ? 1 : 0);
         String searchQuery = etSearch.getText().toString().trim();
         if (!searchQuery.isEmpty()) {
-            return "feed_search_" + searchQuery.toLowerCase(Locale.US).trim() + "_p" + currentPage;
+            return "feed_search_" + searchQuery.toLowerCase(Locale.US).trim() + "_p" + currentPage + safeSuffix;
         }
         if (currentTab == MainTab.MUSIM) {
-            return "feed_musim_p" + currentPage;
+            return "feed_musim_p" + currentPage + safeSuffix;
         } else if (currentTab == MainTab.AIRING) {
-            return "feed_airing_" + selectedAiringLane + "_p" + currentPage;
+            return "feed_airing_" + selectedAiringLane + "_p" + currentPage + safeSuffix;
         } else if (currentTab == MainTab.JADWAL) {
-            return "feed_jadwal_" + selectedDayOfWeek;
+            return "feed_jadwal_" + selectedDayOfWeek + safeSuffix;
         } else if (currentTab == MainTab.KATALOG) {
             return "feed_katalog_" + filterCatalogSort + "_" + filterCatalogYear + "_" + filterCatalogSeason +
-                    "_" + filterCatalogMonth + "_" + filterCatalogType + "_" + filterCatalogStatus + "_p" + currentPage;
+                    "_" + filterCatalogMonth + "_" + filterCatalogType + "_" + filterCatalogStatus + "_p" + currentPage + safeSuffix;
         } else if (currentTab == MainTab.GENRE) {
-            return "feed_genre_" + selectedGenre + "_p" + currentPage;
+            return "feed_genre_" + selectedGenre + "_p" + currentPage + safeSuffix;
         }
         return null;
     }
@@ -1547,6 +1560,12 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
             }
+        } else {
+            gridAdapter.updateFeed(null, new ArrayList<>());
+            layoutEmpty.setVisibility(View.VISIBLE);
+            tvEmptyTitle.setText(R.string.empty_no_data_title);
+            tvEmptyDesc.setText(R.string.empty_no_data_desc);
+            if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
         }
     }
 
@@ -1587,10 +1606,11 @@ public class MainActivity extends AppCompatActivity {
             AniListClient.getCurrentSeasonAiring(currentPage, 35, new AniListClient.PagedCallback<List<Anime>>() {
                 @Override
                 public void onSuccess(List<Anime> rawResult, boolean hasNextPage, int total) {
-                    final List<Anime> result = AppSettings.filterSafe(MainActivity.this, rawResult);
-                    if (cacheKey != null && result != null && !result.isEmpty()) {
-                        FeedCache.getInstance(MainActivity.this).put(cacheKey, result, hasNextPage, total);
+                    // Simpan data mentah sebelum filter Safe Mode agar toggle Safe Mode tidak meracuni cache
+                    if (cacheKey != null && rawResult != null && !rawResult.isEmpty()) {
+                        FeedCache.getInstance(MainActivity.this).put(cacheKey, rawResult, hasNextPage, total);
                     }
+                    final List<Anime> result = AppSettings.filterSafe(MainActivity.this, rawResult);
                     mainHandler.post(() -> {
                         setLoading(false);
                         if (result != null && !result.isEmpty()) {
@@ -1715,12 +1735,60 @@ public class MainActivity extends AppCompatActivity {
                     tvContextualTitle.setText(getString(R.string.label_genre_title, selectedGenre.toUpperCase(Locale.US)));
                     btnClearHistoryAll.setText(R.string.action_select_genre);
                     btnClearHistoryAll.setVisibility(View.VISIBLE);
-                    AniListClient.getByGenre(selectedGenre, currentPage, 40, createPagedCallback(getString(R.string.error_load_genre, selectedGenre), 40, cacheKey, hasStaleData));
+                    if (!AppSettings.isSafeQuery(this, selectedGenre)) {
+                        setLoading(false);
+                        displayResults(new ArrayList<>(), getString(R.string.empty_safemode_title), getString(R.string.empty_safemode_desc), 40, false, false);
+                        break;
+                    }
+                    AniListClient.getByGenre(selectedGenre, currentPage, 40, new AniListClient.PagedCallback<List<Anime>>() {
+                        @Override
+                        public void onSuccess(List<Anime> result, boolean hasNextPage, int total) {
+                            if (result != null && !result.isEmpty()) {
+                                if (cacheKey != null) {
+                                    FeedCache.getInstance(MainActivity.this).put(cacheKey, result, hasNextPage, total);
+                                }
+                                displayResults(result, getString(R.string.empty_no_data_title), getString(R.string.empty_no_data_desc), 40, hasNextPage, hasStaleData);
+                            } else {
+                                // Fallback ke HiAnime untuk genre katalog Tatap yang tidak ada di AniList
+                                browseGenreHiAnime(selectedGenre, currentPage, cacheKey, hasStaleData);
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable t) {
+                            browseGenreHiAnime(selectedGenre, currentPage, cacheKey, hasStaleData);
+                        }
+                    });
                     break;
                 default:
                     break;
             }
         }
+    }
+
+    private void browseGenreHiAnime(String genre, int page, String cacheKey, boolean hasStaleData) {
+        AniListClient.Callback<List<Anime>> cb = createCallback(getString(R.string.error_load_genre, genre), 40, cacheKey, hasStaleData);
+        HiAnimeClient.browseByGenre(getGenreSlug(genre), page, new HiAnimeClient.Callback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result) {
+                cb.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                cb.onError(t);
+            }
+        });
+    }
+
+    private String getGenreSlug(String genreTitle) {
+        if (genreTitle == null) return "";
+        for (GenreItem item : TATAP_GENRES) {
+            if (item.title.equalsIgnoreCase(genreTitle)) {
+                return item.slug;
+            }
+        }
+        return genreTitle.toLowerCase(Locale.US).trim().replace(" ", "-");
     }
 
     private void performSearch(String query) {
@@ -1729,7 +1797,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void performSearch(String query, int page) {
-        final String cacheKey = "feed_search_" + query.toLowerCase(Locale.US).trim() + "_p" + page;
+        final String cacheKey = "feed_search_" + query.toLowerCase(Locale.US).trim() + "_p" + page
+                + "_safe" + (AppSettings.isSafeMode(this) ? 1 : 0);
         FeedCache.CachePayload cached = FeedCache.getInstance(this).getImmediate(cacheKey);
         final boolean hasStaleData = (cached != null && !cached.items.isEmpty());
 
@@ -1760,7 +1829,116 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        AniListClient.search(query, page, 40, createPagedCallback(getString(R.string.error_search_failed), 40, cacheKey, hasStaleData));
+        if (page == 1) {
+            searchDualSource(query, cacheKey, hasStaleData);
+        } else {
+            AniListClient.search(query, page, 40, createPagedCallback(getString(R.string.error_search_failed), 40, cacheKey, hasStaleData));
+        }
+    }
+
+    private void searchDualSource(String query, String cacheKey, boolean hasStaleData) {
+        final Object lock = new Object();
+        final int[] pending = {2};
+        @SuppressWarnings("unchecked")
+        final List<Anime>[] anilistRaw = new List[1];
+        @SuppressWarnings("unchecked")
+        final List<Anime>[] hiRaw = new List[1];
+        final boolean[] hasNext = {false};
+        final Throwable[] anilistErr = new Throwable[1];
+
+        Runnable finish = () -> {
+            List<Anime> merged = mergeAnimeLists(anilistRaw[0], hiRaw[0]);
+            if (merged.isEmpty() && anilistErr[0] != null) {
+                mainHandler.post(() -> {
+                    setLoading(false);
+                    if (!hasStaleData) {
+                        Toast.makeText(MainActivity.this, getString(R.string.error_search_failed) + ": " + anilistErr[0].getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                return;
+            }
+            if (cacheKey != null && !merged.isEmpty()) {
+                FeedCache.getInstance(MainActivity.this).put(cacheKey, merged, hasNext[0], merged.size());
+            }
+            displayResults(merged, getString(R.string.empty_no_data_title), getString(R.string.empty_no_data_desc), 40, hasNext[0], hasStaleData);
+        };
+
+        AniListClient.search(query, 1, 40, new AniListClient.PagedCallback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result, boolean next, int total) {
+                boolean done;
+                synchronized (lock) {
+                    anilistRaw[0] = result;
+                    hasNext[0] = next;
+                    pending[0]--;
+                    done = (pending[0] == 0);
+                }
+                if (done) finish.run();
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                boolean done;
+                synchronized (lock) {
+                    anilistErr[0] = t;
+                    pending[0]--;
+                    done = (pending[0] == 0);
+                }
+                if (done) finish.run();
+            }
+        });
+
+        HiAnimeClient.searchAnime(query, new HiAnimeClient.Callback<List<Anime>>() {
+            @Override
+            public void onSuccess(List<Anime> result) {
+                boolean done;
+                synchronized (lock) {
+                    hiRaw[0] = result;
+                    pending[0]--;
+                    done = (pending[0] == 0);
+                }
+                if (done) finish.run();
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                boolean done;
+                synchronized (lock) {
+                    pending[0]--;
+                    done = (pending[0] == 0);
+                }
+                if (done) finish.run();
+            }
+        });
+    }
+
+    private List<Anime> mergeAnimeLists(List<Anime> primary, List<Anime> extra) {
+        List<Anime> merged = new ArrayList<>();
+        Set<String> seenKeys = new HashSet<>();
+        if (primary != null) {
+            for (Anime a : primary) {
+                if (a == null) continue;
+                merged.add(a);
+                String k = normalizeAnimeKey(a);
+                if (!k.isEmpty()) seenKeys.add(k);
+            }
+        }
+        if (extra != null) {
+            for (Anime a : extra) {
+                if (a == null) continue;
+                String k = normalizeAnimeKey(a);
+                if (k.isEmpty() || !seenKeys.contains(k)) {
+                    merged.add(a);
+                    if (!k.isEmpty()) seenKeys.add(k);
+                }
+            }
+        }
+        return merged;
+    }
+
+    private String normalizeAnimeKey(Anime a) {
+        String raw = a.title != null && !a.title.isEmpty() ? a.title : (a.slug != null ? a.slug : "");
+        return raw.toLowerCase(Locale.US).replaceAll("[^a-z0-9]", "");
     }
 
     private AniListClient.PagedCallback<List<Anime>> createPagedCallback(String errorPrefix, int pageSize, String cacheKey, boolean hasStaleData) {
@@ -1906,6 +2084,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSafeModeChanged(boolean isSafeMode) {
+                AniListClient.setSafeModeEnabled(isSafeMode);
+                // Paksa re-fetch dari API agar perubahan filter isAdult langsung terlihat
+                swipeRefresh.setRefreshing(true);
                 loadCurrentFeed();
             }
 

@@ -66,76 +66,102 @@ public class HiAnimeClient {
                 String html = fetchString(url, HI_BASE + "/");
 
                 Document doc = Jsoup.parse(html, url);
-                List<Anime> results = new ArrayList<>();
-                Elements items = doc.select(".flw-item, .film-item, [class*='film-item'], [class*='item-qtip'], .film_list-wrap .inner");
-                if (items.isEmpty()) {
-                    items = doc.select("[class*='search'] a[href*='/watch/']");
-                }
-
-                for (Element el : items) {
-                    Element titleEl = el.selectFirst(".film-name a, [class*='film-name'] a, [class*='title'] a, a.dynamic-name, a[href*='/watch/']");
-                    if (titleEl == null) {
-                        if ("a".equalsIgnoreCase(el.tagName()) && el.hasAttr("href") && el.attr("href").contains("/watch/")) {
-                            titleEl = el;
-                        } else {
-                            continue;
-                        }
-                    }
-
-                    String title = titleEl.attr("title").trim();
-                    if (title.isEmpty()) title = titleEl.text().trim();
-                    String romaji = titleEl.attr("data-jname").trim();
-
-                    String href = titleEl.attr("href").trim();
-                    String slug = href;
-                    if (slug.contains("/watch/")) {
-                        slug = slug.substring(slug.indexOf("/watch/") + "/watch/".length());
-                    } else if (slug.contains("hianime.at/")) {
-                        slug = slug.substring(slug.indexOf("hianime.at/") + "hianime.at/".length());
-                    }
-                    if (slug.startsWith("/")) slug = slug.substring(1);
-                    if (slug.contains("?")) slug = slug.substring(0, slug.indexOf("?"));
-                    if (slug.endsWith("/")) slug = slug.substring(0, slug.length() - 1);
-
-                    if (slug.toLowerCase().contains("hentai") || title.toLowerCase().contains("hentai") || romaji.toLowerCase().contains("hentai")) {
-                        continue;
-                    }
-
-                    Element posterEl = el.selectFirst("img.film-poster-img, [class*='film-poster'] img, img[data-src], img[src]");
-                    String poster = posterEl != null ? posterEl.attr("data-src") : "";
-                    if (poster.isEmpty() && posterEl != null) {
-                        poster = posterEl.attr("src");
-                    }
-
-                    Anime a = new Anime();
-                    a.title = title;
-                    if (!romaji.isEmpty() && !"null".equalsIgnoreCase(romaji)) {
-                        a.romajiTitle = romaji;
-                    }
-                    a.slug = slug;
-                    a.poster = poster;
-
-                    Element subEl = el.selectFirst(".tick-sub, [class*='tick-sub'], .tick-eps");
-                    if (subEl != null) {
-                        try {
-                            a.airedEpisodesCount = Integer.parseInt(subEl.text().replaceAll("[^0-9]", "").trim());
-                            a.epsCounter = a.airedEpisodesCount + " Ep";
-                        } catch (Exception ignored) {}
-                    }
-
-                    Element typeEl = el.selectFirst(".fdi-item, [class*='fdi-item']");
-                    if (typeEl != null) {
-                        a.format = typeEl.text().trim();
-                    }
-
-                    results.add(a);
-                }
-
-                callback.onSuccess(results);
+                callback.onSuccess(parseCardsFromDoc(doc));
             } catch (Throwable e) {
                 callback.onError(e);
             }
         });
+    }
+
+    /** Ambil daftar anime per genre langsung dari HiAnime /browse sebagai fallback genre MAL/HiAnime. */
+    public static void browseByGenre(String genreSlug, int page, Callback<List<Anime>> callback) {
+        if (genreSlug == null || genreSlug.trim().isEmpty() || genreSlug.toLowerCase().contains("hentai")) {
+            callback.onSuccess(Collections.emptyList());
+            return;
+        }
+        HttpClientProvider.execute(() -> {
+            try {
+                int p = Math.max(1, page);
+                String url = HI_BASE + "/browse?genre=" + URLEncoder.encode(genreSlug.trim().toLowerCase(), "UTF-8") + "&page=" + p;
+                String html = fetchString(url, HI_BASE + "/");
+                Document doc = Jsoup.parse(html, url);
+                callback.onSuccess(parseCardsFromDoc(doc));
+            } catch (Throwable e) {
+                callback.onError(e);
+            }
+        });
+    }
+
+    private static List<Anime> parseCardsFromDoc(Document doc) {
+        List<Anime> results = new ArrayList<>();
+        if (doc == null) return results;
+        // Buang sidebar agar daftar trending di samping tidak ikut terbaca sebagai hasil
+        doc.select("#main-sidebar, #sidebar, .sidebar").remove();
+
+        Elements items = doc.select(".flw-item, .film-item, [class*='film-item'], [class*='item-qtip'], .film_list-wrap .inner");
+        if (items.isEmpty()) {
+            items = doc.select("[class*='search'] a[href*='/watch/']");
+        }
+
+        for (Element el : items) {
+            Element titleEl = el.selectFirst(".film-name a, [class*='film-name'] a, [class*='title'] a, a.dynamic-name, a[href*='/watch/']");
+            if (titleEl == null) {
+                if ("a".equalsIgnoreCase(el.tagName()) && el.hasAttr("href") && el.attr("href").contains("/watch/")) {
+                    titleEl = el;
+                } else {
+                    continue;
+                }
+            }
+
+            String title = titleEl.attr("title").trim();
+            if (title.isEmpty()) title = titleEl.text().trim();
+            String romaji = titleEl.attr("data-jname").trim();
+
+            String href = titleEl.attr("href").trim();
+            String slug = href;
+            if (slug.contains("/watch/")) {
+                slug = slug.substring(slug.indexOf("/watch/") + "/watch/".length());
+            } else if (slug.contains("hianime.at/")) {
+                slug = slug.substring(slug.indexOf("hianime.at/") + "hianime.at/".length());
+            }
+            if (slug.startsWith("/")) slug = slug.substring(1);
+            if (slug.contains("?")) slug = slug.substring(0, slug.indexOf("?"));
+            if (slug.endsWith("/")) slug = slug.substring(0, slug.length() - 1);
+
+            if (slug.toLowerCase().contains("hentai") || title.toLowerCase().contains("hentai") || romaji.toLowerCase().contains("hentai")) {
+                continue;
+            }
+
+            Element posterEl = el.selectFirst("img.film-poster-img, [class*='film-poster'] img, img[data-src], img[src]");
+            String poster = posterEl != null ? posterEl.attr("data-src") : "";
+            if (poster.isEmpty() && posterEl != null) {
+                poster = posterEl.attr("src");
+            }
+
+            Anime a = new Anime();
+            a.title = title;
+            if (!romaji.isEmpty() && !"null".equalsIgnoreCase(romaji)) {
+                a.romajiTitle = romaji;
+            }
+            a.slug = slug;
+            a.poster = poster;
+
+            Element subEl = el.selectFirst(".tick-sub, [class*='tick-sub'], .tick-eps");
+            if (subEl != null) {
+                try {
+                    a.airedEpisodesCount = Integer.parseInt(subEl.text().replaceAll("[^0-9]", "").trim());
+                    a.epsCounter = a.airedEpisodesCount + " Ep";
+                } catch (Exception ignored) {}
+            }
+
+            Element typeEl = el.selectFirst(".fdi-item, [class*='fdi-item']");
+            if (typeEl != null) {
+                a.format = typeEl.text().trim();
+            }
+
+            results.add(a);
+        }
+        return results;
     }
 
     public static void getEpisodes(String slug, Callback<List<Episode>> callback) {

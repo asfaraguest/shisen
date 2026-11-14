@@ -41,8 +41,22 @@ public class AniListClient {
         void onError(Throwable t);
     }
 
+    private static volatile boolean safeModeEnabled = true;
+
+    public static void setSafeModeEnabled(boolean enabled) {
+        safeModeEnabled = enabled;
+    }
+
+    public static boolean isSafeModeEnabled() {
+        return safeModeEnabled;
+    }
+
+    private static String adultFilterClause() {
+        return safeModeEnabled ? ", isAdult: false" : "";
+    }
+
     private static final String MEDIA_FIELDS =
-            "id idMal title { romaji english native } coverImage { extraLarge large } " +
+            "id idMal isAdult title { romaji english native } coverImage { extraLarge large } " +
             "bannerImage averageScore status format episodes duration season seasonYear " +
             "description(asHtml: false) genres studios(isMain: true) { nodes { name } } " +
             "nextAiringEpisode { episode airingAt timeUntilAiring }";
@@ -128,8 +142,8 @@ public class AniListClient {
                 "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
                 "pageInfo { hasNextPage total currentPage } " +
-                "media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
-                MEDIA_FIELDS + " } } }", cur.season, cur.year);
+                "media(season: %s, seasonYear: %d, status_not: NOT_YET_RELEASED, sort: POPULARITY_DESC, type: ANIME%s, genre_not_in: [\"Hentai\"]) { " +
+                MEDIA_FIELDS + " } } }", cur.season, cur.year, adultFilterClause());
 
         executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
             @Override
@@ -207,8 +221,8 @@ public class AniListClient {
                     "query GetPreviousSeason($page: Int, $perPage: Int) { " +
                     "Page(page: $page, perPage: $perPage) { " +
                     "pageInfo { hasNextPage total currentPage } " +
-                    "media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
-                    MEDIA_FIELDS + " } } }", prev.season, prev.year);
+                    "media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME%s, genre_not_in: [\"Hentai\"]) { " +
+                    MEDIA_FIELDS + " } } }", prev.season, prev.year, adultFilterClause());
 
             executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
                 @Override
@@ -239,8 +253,8 @@ public class AniListClient {
                     "query GetCurrentSeasonAiring($page: Int, $perPage: Int) { " +
                     "Page(page: $page, perPage: $perPage) { " +
                     "pageInfo { hasNextPage total currentPage } " +
-                    "media(season: %s, seasonYear: %d, status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
-                    MEDIA_FIELDS + " } } }", cur.season, cur.year);
+                    "media(season: %s, seasonYear: %d, status: RELEASING, sort: POPULARITY_DESC, type: ANIME%s, genre_not_in: [\"Hentai\"]) { " +
+                    MEDIA_FIELDS + " } } }", cur.season, cur.year, adultFilterClause());
 
             executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
                 @Override
@@ -270,7 +284,7 @@ public class AniListClient {
             String query = "query GetLongRunning($page: Int, $perPage: Int) { " +
                     "Page(page: $page, perPage: $perPage) { " +
                     "pageInfo { hasNextPage total currentPage } " +
-                    "media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                    "media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME" + adultFilterClause() + ", genre_not_in: [\"Hentai\"]) { " +
                     MEDIA_FIELDS + " } } }";
 
             executePagedQuery(query, page, perPage, new PagedCallback<List<Anime>>() {
@@ -298,21 +312,22 @@ public class AniListClient {
         }
 
         // 4. Default / ALL (Semua 3 Jalur): Tampilan 3-Jalur terstruktur dalam 1 kueri multi-node efisien
+        String adultClause = adultFilterClause();
         String query = String.format(Locale.US,
                 "query GetMasihTayangAll($page: Int) { " +
-                "cur: Page(page: $page, perPage: 12) { " +
+                "cur: Page(page: $page, perPage: 20) { " +
                 "  pageInfo { hasNextPage total currentPage } " +
-                "  media(season: %s, seasonYear: %d, status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                "  media(season: %s, seasonYear: %d, status: RELEASING, sort: POPULARITY_DESC, type: ANIME%s, genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } " +
-                "prev: Page(page: $page, perPage: 12) { " +
+                "prev: Page(page: $page, perPage: 20) { " +
                 "  pageInfo { hasNextPage total currentPage } " +
-                "  media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                "  media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME%s, genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } " +
                 "longMedia: Page(page: $page, perPage: 25) { " +
                 "  pageInfo { hasNextPage total currentPage } " +
-                "  media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                "  media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME%s, genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }",
-                cur.season, cur.year, prev.season, prev.year);
+                cur.season, cur.year, adultClause, prev.season, prev.year, adultClause, adultClause);
 
         try {
             JSONObject variables = new JSONObject();
@@ -345,6 +360,10 @@ public class AniListClient {
                                 a.isLongRunning = true;
                                 seenIds.add(a.id);
                                 longRunningList.add(a);
+                            } else if (!(cur.season.equalsIgnoreCase(a.season) && cur.year == a.year)) {
+                                // Carry-over 2+ musim atau Donghua/ONA ongoing tanpa seasonYear agar tidak hilang
+                                seenIds.add(a.id);
+                                prevSeasonList.add(a);
                             }
                         }
 
@@ -440,7 +459,7 @@ public class AniListClient {
         String query = "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
                 "pageInfo { hasNextPage total currentPage } " +
-                "media(sort: TRENDING_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                "media(sort: TRENDING_DESC, type: ANIME" + adultFilterClause() + ", genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }";
         executePagedQuery(query, page, perPage, callback);
     }
@@ -456,8 +475,8 @@ public class AniListClient {
                 "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
                 "pageInfo { hasNextPage total currentPage } " +
-                "media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
-                MEDIA_FIELDS + " } } }", season.toUpperCase(), year);
+                "media(season: %s, seasonYear: %d, sort: POPULARITY_DESC, type: ANIME%s, genre_not_in: [\"Hentai\"]) { " +
+                MEDIA_FIELDS + " } } }", season.toUpperCase(), year, adultFilterClause());
         executePagedQuery(query, page, perPage, callback);
     }
 
@@ -465,7 +484,7 @@ public class AniListClient {
         String query = "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
                 "pageInfo { hasNextPage total currentPage } " +
-                "media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                "media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME" + adultFilterClause() + ", genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }";
         executePagedQuery(query, page, perPage, callback);
     }
@@ -474,7 +493,7 @@ public class AniListClient {
         String query = "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
                 "pageInfo { hasNextPage total currentPage } " +
-                "media(sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                "media(sort: POPULARITY_DESC, type: ANIME" + adultFilterClause() + ", genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }";
         executePagedQuery(query, page, perPage, callback);
     }
@@ -489,14 +508,7 @@ public class AniListClient {
         getCatalogCrossFiltered(sort, "", "", "", format, "", page, perPage, callback);
     }
 
-    public static void getCatalogCrossFiltered(String sort, String year, String season, String month, String type, String status, int page, int perPage, PagedCallback<List<Anime>> callback) {
-        String sortOrder = "POPULARITY_DESC";
-        if ("score".equalsIgnoreCase(sort)) sortOrder = "SCORE_DESC";
-        else if ("latest".equalsIgnoreCase(sort)) sortOrder = "START_DATE_DESC";
-        else if ("trending".equalsIgnoreCase(sort)) sortOrder = "TRENDING_DESC";
-        else if ("az".equalsIgnoreCase(sort)) sortOrder = "TITLE_ROMAJI";
-        else if ("most_favorite".equalsIgnoreCase(sort)) sortOrder = "FAVOURITES_DESC";
-
+    /* package */ static String buildCatalogFilters(String year, String season, String month, String type, String status) {
         StringBuilder filters = new StringBuilder();
         if (type != null && !type.trim().isEmpty() && !"ALL".equalsIgnoreCase(type.trim())) {
             filters.append(", format: ").append(type.trim().toUpperCase(Locale.US));
@@ -508,7 +520,8 @@ public class AniListClient {
                 filters.append(", status: FINISHED");
             }
         }
-        if (season != null && !season.trim().isEmpty() && !"ALL".equalsIgnoreCase(season.trim())) {
+        boolean hasSeason = season != null && !season.trim().isEmpty() && !"ALL".equalsIgnoreCase(season.trim());
+        if (hasSeason) {
             filters.append(", season: ").append(season.trim().toUpperCase(Locale.US));
         }
 
@@ -523,14 +536,23 @@ public class AniListClient {
                             int start = yInt * 10000 + m * 100 + 1;
                             int end = yInt * 10000 + m * 100 + 31;
                             filters.append(", startDate_greater: ").append(start).append(", startDate_lesser: ").append(end);
-                        } else {
+                        } else if (hasSeason) {
                             filters.append(", seasonYear: ").append(y);
+                        } else {
+                            filters.append(", startDate_greater: ").append(y).append("0101, startDate_lesser: ").append(y).append("1231");
                         }
                     } catch (Exception e) {
-                        filters.append(", seasonYear: ").append(y);
+                        if (hasSeason) {
+                            filters.append(", seasonYear: ").append(y);
+                        } else {
+                            filters.append(", startDate_greater: ").append(y).append("0101, startDate_lesser: ").append(y).append("1231");
+                        }
                     }
-                } else {
+                } else if (hasSeason) {
                     filters.append(", seasonYear: ").append(y);
+                } else {
+                    // Pakai startDate agar Movie/OVA/Special/ONA tanpa seasonYear tetap muncul
+                    filters.append(", startDate_greater: ").append(y).append("0101, startDate_lesser: ").append(y).append("1231");
                 }
             } else if ("2015-2019".equals(y)) {
                 filters.append(", startDate_greater: 20150101, startDate_lesser: 20191231");
@@ -542,13 +564,25 @@ public class AniListClient {
                 filters.append(", startDate_lesser: 20000101");
             }
         }
+        return filters.toString();
+    }
+
+    public static void getCatalogCrossFiltered(String sort, String year, String season, String month, String type, String status, int page, int perPage, PagedCallback<List<Anime>> callback) {
+        String sortOrder = "POPULARITY_DESC";
+        if ("score".equalsIgnoreCase(sort)) sortOrder = "SCORE_DESC";
+        else if ("latest".equalsIgnoreCase(sort)) sortOrder = "START_DATE_DESC";
+        else if ("trending".equalsIgnoreCase(sort)) sortOrder = "TRENDING_DESC";
+        else if ("az".equalsIgnoreCase(sort)) sortOrder = "TITLE_ROMAJI";
+        else if ("most_favorite".equalsIgnoreCase(sort)) sortOrder = "FAVOURITES_DESC";
+
+        String filters = buildCatalogFilters(year, season, month, type, status);
 
         String query = String.format(Locale.US,
                 "query ($page: Int, $perPage: Int) { " +
                 "Page(page: $page, perPage: $perPage) { " +
                 "pageInfo { hasNextPage total currentPage } " +
-                "media(sort: %s, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]%s) { " +
-                MEDIA_FIELDS + " } } }", sortOrder, filters.toString());
+                "media(sort: %s, type: ANIME%s, genre_not_in: [\"Hentai\"]%s) { " +
+                MEDIA_FIELDS + " } } }", sortOrder, adultFilterClause(), filters);
         executePagedQuery(query, page, perPage, callback);
     }
 
@@ -566,6 +600,22 @@ public class AniListClient {
         });
     }
 
+    private static String mapGenreAlias(String genre) {
+        if (genre == null) return "";
+        String lower = genre.trim().toLowerCase(Locale.US);
+        switch (lower) {
+            case "shoujo ai": return "Girls Love";
+            case "shounen ai": return "Boys Love";
+            case "idols (female)":
+            case "idols (male)": return "Idol";
+            case "dementia": return "Avant Garde";
+            case "organized crime": return "Crime";
+            case "action & adventure": return "Action";
+            case "sci-fi & fantasy": return "Sci-Fi";
+            default: return genre.trim();
+        }
+    }
+
     public static void getByGenre(String genre, int page, int perPage, PagedCallback<List<Anime>> callback) {
         if (genre == null || genre.trim().isEmpty()) {
             getPopular(page, perPage, new Callback<List<Anime>>() {
@@ -581,7 +631,7 @@ public class AniListClient {
             });
             return;
         }
-        String clean = genre.trim();
+        String clean = mapGenreAlias(genre);
         boolean isOfficialGenre = ANILIST_OFFICIAL_GENRES.contains(clean.toLowerCase(Locale.US));
 
         String query;
@@ -589,13 +639,13 @@ public class AniListClient {
             query = "query ($page: Int, $perPage: Int, $genre: String) { " +
                     "Page(page: $page, perPage: $perPage) { " +
                     "pageInfo { hasNextPage total currentPage } " +
-                    "media(genre: $genre, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                    "media(genre: $genre, sort: POPULARITY_DESC, type: ANIME" + adultFilterClause() + ", genre_not_in: [\"Hentai\"]) { " +
                     MEDIA_FIELDS + " } } }";
         } else {
             query = "query ($page: Int, $perPage: Int, $tag: String) { " +
                     "Page(page: $page, perPage: $perPage) { " +
                     "pageInfo { hasNextPage total currentPage } " +
-                    "media(tag: $tag, sort: POPULARITY_DESC, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                    "media(tag: $tag, sort: POPULARITY_DESC, type: ANIME" + adultFilterClause() + ", genre_not_in: [\"Hentai\"]) { " +
                     MEDIA_FIELDS + " } } }";
         }
 
@@ -651,63 +701,80 @@ public class AniListClient {
                 long startEpoch = cal.getTimeInMillis() / 1000;
                 long endEpoch = startEpoch + 86400 - 1;
 
-                String query = String.format(Locale.US,
-                        "query { Page(page: 1, perPage: 50) { " +
-                        "airingSchedules(airingAt_greater: %d, airingAt_lesser: %d) { " +
-                        "episode airingAt media { %s } } } }",
-                        startEpoch, endEpoch, MEDIA_FIELDS);
-
-                JSONObject body = new JSONObject();
-                body.put("query", query);
-
-                executePostCustom(body.toString(), new Callback<JSONObject>() {
-                    @Override
-                    public void onSuccess(JSONObject root) {
-                        try {
-                            JSONArray arr = root.getJSONObject("data").getJSONObject("Page").getJSONArray("airingSchedules");
-                            List<Anime> list = new ArrayList<>();
-                            List<Integer> seenIds = new ArrayList<>();
-                            for (int i = 0; i < arr.length(); i++) {
-                                JSONObject item = arr.getJSONObject(i);
-                                JSONObject media = item.optJSONObject("media");
-                                if (media != null) {
-                                    Anime a = parseMediaNode(media);
-                                    if (a != null && !seenIds.contains(a.id)) {
-                                        seenIds.add(a.id);
-                                        int ep = item.optInt("episode", 0);
-                                        if (ep > 0) a.epsCounter = "Ep " + ep;
-                                        long airingAt = item.optLong("airingAt", 0);
-                                        if (airingAt > 0) {
-                                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm 'WIB'", Locale.US);
-                                            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Jakarta"));
-                                            a.airingDay = sdf.format(new java.util.Date(airingAt * 1000L));
-                                        }
-                                        list.add(a);
-                                    }
-                                }
-                            }
-                            callback.onSuccess(list);
-                        } catch (Exception e) {
-                            callback.onError(e);
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        callback.onError(t);
-                    }
-                });
+                fetchSchedulePage(startEpoch, endEpoch, 1, 3, new ArrayList<>(), new HashSet<>(), callback);
             } catch (Exception e) {
                 callback.onError(e);
             }
         }).start();
     }
 
+    private static void fetchSchedulePage(long startEpoch, long endEpoch, int page, int maxPages,
+                                          List<Anime> acc, Set<Integer> seenIds, Callback<List<Anime>> callback) {
+        try {
+            String query = String.format(Locale.US,
+                    "query { Page(page: %d, perPage: 50) { " +
+                    "pageInfo { hasNextPage } " +
+                    "airingSchedules(airingAt_greater: %d, airingAt_lesser: %d) { " +
+                    "episode airingAt media { %s } } } }",
+                    page, startEpoch, endEpoch, MEDIA_FIELDS);
+
+            JSONObject body = new JSONObject();
+            body.put("query", query);
+
+            executePostCustom(body.toString(), new Callback<JSONObject>() {
+                @Override
+                public void onSuccess(JSONObject root) {
+                    try {
+                        JSONObject pageObj = root.getJSONObject("data").getJSONObject("Page");
+                        JSONArray arr = pageObj.getJSONArray("airingSchedules");
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm 'WIB'", Locale.US);
+                        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Jakarta"));
+                        for (int i = 0; i < arr.length(); i++) {
+                            JSONObject item = arr.getJSONObject(i);
+                            JSONObject media = item.optJSONObject("media");
+                            if (media == null) continue;
+                            Anime a = parseMediaNode(media);
+                            if (a != null && !seenIds.contains(a.id)) {
+                                seenIds.add(a.id);
+                                int ep = item.optInt("episode", 0);
+                                if (ep > 0) a.epsCounter = "Ep " + ep;
+                                long airingAt = item.optLong("airingAt", 0);
+                                if (airingAt > 0) {
+                                    a.airingDay = sdf.format(new java.util.Date(airingAt * 1000L));
+                                }
+                                acc.add(a);
+                            }
+                        }
+                        JSONObject pi = pageObj.optJSONObject("pageInfo");
+                        boolean hasNext = pi != null && pi.optBoolean("hasNextPage", false);
+                        if (hasNext && page < maxPages) {
+                            fetchSchedulePage(startEpoch, endEpoch, page + 1, maxPages, acc, seenIds, callback);
+                        } else {
+                            callback.onSuccess(acc);
+                        }
+                    } catch (Exception e) {
+                        if (!acc.isEmpty()) callback.onSuccess(acc);
+                        else callback.onError(e);
+                    }
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    if (!acc.isEmpty()) callback.onSuccess(acc);
+                    else callback.onError(t);
+                }
+            });
+        } catch (Exception e) {
+            if (!acc.isEmpty()) callback.onSuccess(acc);
+            else callback.onError(e);
+        }
+    }
+
     public static void search(String keyword, int page, int perPage, PagedCallback<List<Anime>> callback) {
         String query = "query ($page: Int, $perPage: Int, $search: String) { " +
                 "Page(page: $page, perPage: $perPage) { " +
                 "pageInfo { hasNextPage total currentPage } " +
-                "media(search: $search, sort: SEARCH_MATCH, type: ANIME, isAdult: false, genre_not_in: [\"Hentai\"]) { " +
+                "media(search: $search, sort: SEARCH_MATCH, type: ANIME" + adultFilterClause() + ", genre_not_in: [\"Hentai\"]) { " +
                 MEDIA_FIELDS + " } } }";
 
         try {
@@ -740,25 +807,26 @@ public class AniListClient {
         });
     }
 
-    private static final String RELATIONS_QUERY =
-            "query ($id: Int, $search: String) { " +
-            "  Media(id: $id, search: $search, type: ANIME, isAdult: false) { " +
-            "    id " +
-            "    title { romaji english native } " +
-            "    format " +
-            "    relations { " +
-            "      edges { " +
-            "        relationType " +
-            "        node { " +
-            "          id idMal title { romaji english native } coverImage { extraLarge large medium } " +
-            "          bannerImage averageScore status format episodes season seasonYear " +
-            "          description(asHtml: false) genres studios(isMain: true) { nodes { name } } " +
-            "          nextAiringEpisode { episode airingAt timeUntilAiring } " +
-            "        } " +
-            "      } " +
-            "    } " +
-            "  } " +
-            "}";
+    private static String buildRelationsQuery() {
+        return "query ($id: Int, $search: String) { " +
+                "  Media(id: $id, search: $search, type: ANIME" + adultFilterClause() + ") { " +
+                "    id " +
+                "    title { romaji english native } " +
+                "    format " +
+                "    relations { " +
+                "      edges { " +
+                "        relationType " +
+                "        node { " +
+                "          id idMal isAdult title { romaji english native } coverImage { extraLarge large medium } " +
+                "          bannerImage averageScore status format episodes season seasonYear " +
+                "          description(asHtml: false) genres studios(isMain: true) { nodes { name } } " +
+                "          nextAiringEpisode { episode airingAt timeUntilAiring } " +
+                "        } " +
+                "      } " +
+                "    } " +
+                "  } " +
+                "}";
+    }
 
     public static void getRelations(int animeId, String searchTitle, Callback<RelationsResult> callback) {
         if (animeId <= 0 && (searchTitle == null || searchTitle.trim().isEmpty())) {
@@ -775,7 +843,7 @@ public class AniListClient {
             }
 
             JSONObject body = new JSONObject();
-            body.put("query", RELATIONS_QUERY);
+            body.put("query", buildRelationsQuery());
             body.put("variables", variables);
 
             executePostCustom(body.toString(), new Callback<JSONObject>() {
@@ -831,9 +899,9 @@ public class AniListClient {
             StringBuilder queryBuilder = new StringBuilder("query { ");
             for (int i = 0; i < candidateIds.size(); i++) {
                 queryBuilder.append("m").append(i).append(": Media(id: ").append(candidateIds.get(i))
-                        .append(", type: ANIME, isAdult: false) { ")
+                        .append(", type: ANIME").append(adultFilterClause()).append(") { ")
                         .append("relations { edges { relationType node { ")
-                        .append("id idMal title { romaji english native } coverImage { extraLarge large medium } ")
+                        .append("id idMal isAdult title { romaji english native } coverImage { extraLarge large medium } ")
                         .append("bannerImage averageScore status format episodes season seasonYear ")
                         .append("description(asHtml: false) genres studios(isMain: true) { nodes { name } } ")
                         .append("nextAiringEpisode { episode airingAt timeUntilAiring } ")
@@ -1459,10 +1527,11 @@ public class AniListClient {
     }
 
     public static Anime parseMediaNode(JSONObject m) {
-        if (m == null || m.optBoolean("isAdult", false)) return null;
+        if (m == null) return null;
         Anime a = new Anime();
         a.id = m.optInt("id", 0);
         a.idMal = m.optInt("idMal", 0);
+        a.isAdult = m.optBoolean("isAdult", false);
         
         JSONObject titleObj = m.optJSONObject("title");
         if (titleObj != null) {
@@ -1489,6 +1558,11 @@ public class AniListClient {
         a.slug = a.title.toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
         if (a.slug.isEmpty()) {
             a.slug = "anime-" + a.id;
+        }
+        if (a.title.toLowerCase(Locale.US).contains("hentai")
+                || a.romajiTitle.toLowerCase(Locale.US).contains("hentai")
+                || a.slug.contains("hentai")) {
+            return null;
         }
 
         JSONObject coverObj = m.optJSONObject("coverImage");

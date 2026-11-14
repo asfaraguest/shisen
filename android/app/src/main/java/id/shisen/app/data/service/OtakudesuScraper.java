@@ -333,6 +333,6 @@ public class OtakudesuScraper {
     private static boolean isHentai(String title) {
         if (title == null) return false;
         String t = title.toLowerCase(Locale.US);
-        return t.contains("hentai") || t.contains("overflow") || t.contains("uncensored");
+        return t.contains("hentai") || t.contains("overflow");
     }
 }

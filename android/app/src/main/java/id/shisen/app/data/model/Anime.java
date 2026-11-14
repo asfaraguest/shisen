@@ -32,6 +32,7 @@ public class Anime implements Serializable {
     public String synopsis = "";
     public List<String> genres = new ArrayList<>();
     public String studio = "";
+    public boolean isAdult = false;
     public boolean isFavorite = false;
     public int lastPlayedEp = 0;
     public long lastPlayedProgressMs = 0;
@@ -138,6 +139,7 @@ public class Anime implements Serializable {
         a.headerTitle = safeStr(json, "header_title", "");
         a.headerSubtitle = safeStr(json, "header_subtitle", "");
         a.isLongRunning = json.optBoolean("is_long_running", false);
+        a.isAdult = json.optBoolean("is_adult", false);
         
         JSONArray gArr = json.optJSONArray("genres");
         if (gArr != null) {
@@ -184,6 +186,7 @@ public class Anime implements Serializable {
             json.put("header_title", headerTitle);
             json.put("header_subtitle", headerSubtitle);
             json.put("is_long_running", isLongRunning);
+            json.put("is_adult", isAdult);
             JSONArray gArr = new JSONArray();
             for (String g : genres) {
                 gArr.put(g);
@@ -222,6 +225,7 @@ public class Anime implements Serializable {
         if (this.year <= 0 && src.year > 0) this.year = src.year;
         if ((this.synopsis == null || this.synopsis.isEmpty()) && src.synopsis != null) this.synopsis = src.synopsis;
         if ((this.studio == null || this.studio.isEmpty()) && src.studio != null) this.studio = src.studio;
+        if (src.isAdult) this.isAdult = true;
         if ((this.genres == null || this.genres.isEmpty()) && src.genres != null && !src.genres.isEmpty()) {
             this.genres = new ArrayList<>(src.genres);
         }

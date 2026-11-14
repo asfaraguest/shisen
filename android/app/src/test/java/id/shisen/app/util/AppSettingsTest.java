@@ -112,4 +112,25 @@ public class AppSettingsTest {
         assertEquals("Anime Satu", filteredOff.get(0).title);
         assertEquals("Ecchi Spesial", filteredOff.get(1).title);
     }
+
+    @Test
+    public void testIsSafeAnimeIsAdultFlag() {
+        Anime adultEcchi = new Anime();
+        adultEcchi.id = 10;
+        adultEcchi.title = "Interspecies Reviewers";
+        adultEcchi.genres = Arrays.asList("Comedy", "Ecchi");
+        adultEcchi.isAdult = true;
+
+        assertFalse(AppSettings.isSafeAnime(adultEcchi, true));
+        assertTrue(AppSettings.isSafeAnime(adultEcchi, false));
+
+        Anime adultHentai = new Anime();
+        adultHentai.id = 11;
+        adultHentai.title = "Blocked Adult OVA";
+        adultHentai.genres = Arrays.asList("Hentai");
+        adultHentai.isAdult = true;
+
+        assertFalse(AppSettings.isSafeAnime(adultHentai, true));
+        assertFalse(AppSettings.isSafeAnime(adultHentai, false));
+    }
 }

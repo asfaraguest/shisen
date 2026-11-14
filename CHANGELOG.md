@@ -2,6 +2,17 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.1-beta.2] - 2026-11-14
+
+### Diperbaiki
+- **Safe Mode Dinamis & Blokir Permanen Hentai (`AniListClient.java`, `AppSettings.java`, `MainActivity.java`, `OtakudesuScraper.java`)**:
+  - Menyelaraskan status Safe Mode ke kueri GraphQL AniList secara dinamis (`isAdult: false` hanya aktif saat Safe Mode ON; saat OFF, judul dewasa non-Hentai seperti Ecchi tetap tampil), sembari menjaga blokir permanen `Hentai` di seluruh lapisan dan memisahkan kunci `FeedCache` (`_safe1`/`_safe0`).
+  - Memastikan cache tab **Musim Ini** menyimpan data mentah sebelum filtering, menambahkan chip **Ecchi** ke pemilih genre saat Safe Mode OFF, serta menghapus false positive filter `"uncensored"` pada judul non-Hentai di `OtakudesuScraper`.
+- **Paritas Katalog & Pencarian Dual-Source vs Tatap (`MainActivity.java`, `AniListClient.java`, `HiAnimeClient.java`)**:
+  - Pencarian halaman pertama kini menggabungkan hasil **AniList** dan **HiAnime** (*dual-source merge*) dengan deduplikasi judul/slug sebelum filter Safe Mode.
+  - Menambahkan fallback `HiAnimeClient.browseByGenre(...)` dan pemetaan alias tag/genre AniList (~20 genre katalog seperti `Isekai`, `Martial Arts`, `Harem`, `Seinen`, `Shounen`) pada tab Genre.
+  - Mengecualikan status `NOT_YET_RELEASED` di tab Musim Ini, memperluas cakupan `Masih Tayang` (`ALL` hingga 20 entri + mempertahankan carry-over/seasonless ongoing), memperluas pagination Jadwal hingga 3 halaman, serta menggunakan rentang `startDate` saat filter Katalog Tahun diisi tanpa Musim agar Movie/OVA/ONA/Special tidak terlewat.
+
 ## [1.1.1-beta.1] - 2026-11-13
 
 ### Baru

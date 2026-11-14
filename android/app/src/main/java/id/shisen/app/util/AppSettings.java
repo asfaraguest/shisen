@@ -96,7 +96,10 @@ public class AppSettings {
             return true;
         }
 
-        // Jika Safe Mode aktif, saring konten ecchi, erotica, dan adult tags
+        // Jika Safe Mode aktif, saring konten isAdult, ecchi, erotica, dan adult tags
+        if (anime.isAdult) {
+            return false;
+        }
         if (anime.genres != null) {
             for (String g : anime.genres) {
                 if (g != null && ADULT_TAGS.contains(g.trim().toLowerCase(Locale.US))) {
