@@ -225,6 +225,27 @@ public final class DeviceNav {
         updateTvRailHighlight(tab);
     }
 
+    public void applyTheme() {
+        if (host == null) return;
+        int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
+        if (host.menuItemSettings != null) {
+            tintRailIcon(host.menuItemSettings, accent);
+        }
+        updateTvRailHighlight(host.getCurrentTab());
+    }
+
+    private void tintRailIcon(View item, int color) {
+        if (!(item instanceof android.view.ViewGroup)) return;
+        android.view.ViewGroup vg = (android.view.ViewGroup) item;
+        for (int i = 0; i < vg.getChildCount(); i++) {
+            View child = vg.getChildAt(i);
+            if (child instanceof android.widget.ImageView) {
+                ((android.widget.ImageView) child).setImageTintList(android.content.res.ColorStateList.valueOf(color));
+                break;
+            }
+        }
+    }
+
     private void updateTvRailHighlight(MainActivity.MainTab currentTab) {
         if (host == null) return;
         View[] items = {
@@ -240,13 +261,14 @@ public final class DeviceNav {
                 MainActivity.MainTab.RIWAYAT, MainActivity.MainTab.FAVORIT, MainActivity.MainTab.KATALOG, MainActivity.MainTab.GENRE
         };
 
-        int activeColor = ContextCompat.getColor(host, R.color.accent_glacial);
+        int activeColor = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
         int inactiveColor = ContextCompat.getColor(host, R.color.text_frost_bright);
 
         for (int i = 0; i < items.length; i++) {
             if (items[i] == null || titles[i] == null) continue;
             boolean isActive = (tabEnums[i] == currentTab);
             items[i].setSelected(isActive);
+            tintRailIcon(items[i], activeColor);
             titles[i].setTextColor(isActive ? activeColor : inactiveColor);
             titles[i].setTypeface(null, isActive ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
         }

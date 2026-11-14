@@ -152,9 +152,7 @@ public class DetailActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         SystemUiHelper.applySystemBarsTheme(this);
-        if (layoutDetailRoot != null) {
-            layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
-        }
+        applyDetailTheme();
         updateBookmarkUI();
         refreshWatchedStates();
         if (btnPlayPrimary != null && btnPlayPrimary.isEnabled() && getCurrentFocus() == null) {
@@ -164,9 +162,6 @@ public class DetailActivity extends AppCompatActivity {
 
     private void initViews() {
         layoutDetailRoot = findViewById(R.id.layout_detail_root);
-        if (layoutDetailRoot != null) {
-            layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
-        }
         ivBackdrop = findViewById(R.id.iv_detail_backdrop);
         ivPoster = findViewById(R.id.iv_detail_poster);
         btnBack = findViewById(R.id.btn_detail_back);
@@ -260,9 +255,82 @@ public class DetailActivity extends AppCompatActivity {
             if (tvSynopsisToggle != null) tvSynopsisToggle.setOnKeyListener(toEpisodesListener);
         }
 
+        applyDetailTheme();
         if (btnPlayPrimary != null) {
             btnPlayPrimary.post(btnPlayPrimary::requestFocus);
         }
+    }
+
+    private void applyDetailTheme() {
+        if (layoutDetailRoot != null) {
+            layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+        }
+        int accent = AnimeThemeManager.getPrimaryAccentColor(this);
+        int surface = AnimeThemeManager.getSurfaceColor(this);
+        int border = AnimeThemeManager.getBorderColor(this);
+
+        View scrim = findViewById(R.id.view_detail_gradient_scrim);
+        if (scrim != null) {
+            scrim.setBackground(AnimeThemeManager.createDetailHeroScrimDrawable(this));
+        }
+        if (btnBack != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    btnBack, AnimeThemeManager.createFrostedIconButtonDrawable(this));
+        }
+        if (btnPlayPrimary != null) {
+            btnPlayPrimary.setBackgroundTintList(null);
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    btnPlayPrimary, AnimeThemeManager.createFrostedGlassButtonDrawable(this, true, true));
+            btnPlayPrimary.setTextColor(Color.WHITE);
+        }
+        if (btnBookmark != null) {
+            if (anime != null) {
+                updateBookmarkUI();
+            } else {
+                btnBookmark.setBackgroundTintList(null);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnBookmark, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false, false));
+                btnBookmark.setTextColor(ContextCompat.getColor(this, R.color.text_frost_bright));
+            }
+        }
+
+        com.google.android.material.card.MaterialCardView cardPoster = findViewById(R.id.card_detail_poster);
+        if (cardPoster != null) {
+            cardPoster.setCardBackgroundColor(surface);
+            cardPoster.setStrokeColor(AnimeThemeManager.withAlpha(accent, 0x99));
+        }
+        com.google.android.material.card.MaterialCardView cardSynopsis = findViewById(R.id.card_detail_synopsis);
+        if (cardSynopsis != null) {
+            cardSynopsis.setCardBackgroundColor(surface);
+            cardSynopsis.setStrokeColor(border);
+        }
+
+        if (tvMeta != null) tvMeta.setTextColor(accent);
+        if (tvSynopsisToggle != null) tvSynopsisToggle.setTextColor(accent);
+        int[] headerIds = {
+                R.id.tv_synopsis_header,
+                R.id.tv_episode_header,
+                R.id.tv_related_seasons_header,
+                R.id.tv_related_movies_header
+        };
+        for (int id : headerIds) {
+            TextView tvHeader = findViewById(id);
+            if (tvHeader != null) tvHeader.setTextColor(accent);
+        }
+        if (pbEpisodesLoading != null) {
+            pbEpisodesLoading.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(accent));
+        }
+        if (layoutEpisodeRanges != null) {
+            for (int i = 0; i < layoutEpisodeRanges.getChildCount(); i++) {
+                View child = layoutEpisodeRanges.getChildAt(i);
+                if (child instanceof TextView) {
+                    updateTabVisualState((TextView) child, child.isSelected());
+                }
+            }
+        }
+        if (episodeAdapter != null) episodeAdapter.notifyDataSetChanged();
+        if (seasonsAdapter != null) seasonsAdapter.notifyDataSetChanged();
+        if (moviesAdapter != null) moviesAdapter.notifyDataSetChanged();
     }
 
     private void setupWindowInsets() {
@@ -287,7 +355,8 @@ public class DetailActivity extends AppCompatActivity {
             if (backdropContainer != null && !isLand) {
                 ViewGroup.LayoutParams lp = backdropContainer.getLayoutParams();
                 if (lp != null) {
-                    lp.height = (int) (230 * density) + topInset;
+                    // Cover memenuhi separuh tinggi viewport agar tampil lega dengan gradasi halus ke bawah
+                    lp.height = Math.max((int) (360 * density), getResources().getDisplayMetrics().heightPixels / 2);
                     backdropContainer.setLayoutParams(lp);
                 }
             }
@@ -336,17 +405,24 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void bindAnimeData() {
+        boolean isLand = getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                || id.shisen.app.ui.player.PlayerKeys.isTv();
         // 1. Character Cover Poster: Prioritas mutlak poster resmi yang memfokuskan visual pada karakter anime terkait
         String characterCoverUrl = (anime.poster != null && !anime.poster.isEmpty() && !"null".equalsIgnoreCase(anime.poster))
                 ? anime.poster : anime.banner;
-        if (ivPoster != null) {
-            ImageLoader.load(characterCoverUrl, ivPoster);
-        }
+        if (!isLand) {
+            // Portrait: tampilkan cover utama mengisi separuh atas layar dengan ketajaman penuh
+            ImageLoader.load(characterCoverUrl, ivBackdrop, 900, 1350);
+        } else {
+            if (ivPoster != null) {
+                ImageLoader.load(characterCoverUrl, ivPoster);
+            }
 
-        // 2. Ambient Backdrop: Gunakan banner lanskap bila ada, atau fallback ke poster karakter dengan efek ambient
-        String backdropUrl = (anime.banner != null && !anime.banner.isEmpty() && !"null".equalsIgnoreCase(anime.banner))
-                ? anime.banner : characterCoverUrl;
-        ImageLoader.load(backdropUrl, ivBackdrop);
+            // 2. Ambient Backdrop: Gunakan banner lanskap bila ada, atau fallback ke poster karakter dengan efek ambient
+            String backdropUrl = (anime.banner != null && !anime.banner.isEmpty() && !"null".equalsIgnoreCase(anime.banner))
+                    ? anime.banner : characterCoverUrl;
+            ImageLoader.load(backdropUrl, ivBackdrop);
+        }
 
         // 3. Judul Utama (Romaji)
         String safeTitle = anime.getDisplayTitle();
@@ -434,15 +510,17 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void updateBookmarkUI() {
+        if (btnBookmark == null || anime == null) return;
         boolean bookmarked = MenatapDatabase.getInstance(this).isBookmarked(anime.slug);
+        btnBookmark.setBackgroundTintList(null);
+        AnimeThemeManager.applyBackgroundPreservingPadding(
+                btnBookmark, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false, bookmarked));
         if (bookmarked) {
             btnBookmark.setText(getString(R.string.detail_saved));
-            btnBookmark.setTextColor(ContextCompat.getColor(this, R.color.accent_glacial));
-            btnBookmark.setBackgroundColor(Color.parseColor("#17253D"));
+            btnBookmark.setTextColor(AnimeThemeManager.getPrimaryAccentColor(this));
         } else {
             btnBookmark.setText(getString(R.string.detail_favorite));
             btnBookmark.setTextColor(ContextCompat.getColor(this, R.color.text_frost_bright));
-            btnBookmark.setBackgroundColor(ContextCompat.getColor(this, R.color.frost_elevated));
         }
     }
 
@@ -499,6 +577,7 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
         SystemUiHelper.applySystemBarsTheme(this);
         initViews();
+        applyDetailTheme();
         setupWindowInsets();
         bindAnimeData();
         setupEpisodeRecycler();
@@ -661,19 +740,22 @@ public class DetailActivity extends AppCompatActivity {
     private void updateTabVisualState(TextView tab, boolean isSelected) {
         tab.setSelected(isSelected);
         float density = getResources().getDisplayMetrics().density;
+        int accent = AnimeThemeManager.getPrimaryAccentColor(this);
+        int surface = AnimeThemeManager.getSurfaceColor(this);
+        int border = AnimeThemeManager.getBorderColor(this);
         android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
         gd.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
         gd.setCornerRadius(8 * density);
         if (isSelected) {
-            gd.setColor(android.graphics.Color.parseColor("#15233C"));
-            gd.setStroke((int) (1.5f * density), android.graphics.Color.parseColor("#38BDF8"));
-            tab.setBackground(gd);
-            tab.setTextColor(android.graphics.Color.parseColor("#38BDF8"));
+            gd.setColor(AnimeThemeManager.withAlpha(accent, 0x33));
+            gd.setStroke((int) (1.5f * density), accent);
+            AnimeThemeManager.applyBackgroundPreservingPadding(tab, gd);
+            tab.setTextColor(accent);
         } else {
-            gd.setColor(android.graphics.Color.parseColor("#1A10162A"));
-            gd.setStroke((int) (1f * density), android.graphics.Color.parseColor("#233252"));
-            tab.setBackground(gd);
-            tab.setTextColor(android.graphics.Color.parseColor("#94A3B8"));
+            gd.setColor(AnimeThemeManager.withAlpha(surface, 0xB3));
+            gd.setStroke((int) (1f * density), border);
+            AnimeThemeManager.applyBackgroundPreservingPadding(tab, gd);
+            tab.setTextColor(ContextCompat.getColor(this, R.color.text_frost_subtle));
         }
     }
 

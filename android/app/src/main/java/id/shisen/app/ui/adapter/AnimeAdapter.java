@@ -151,6 +151,13 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     private void bindHeader(HeaderViewHolder holder, Anime header) {
         if (header == null) return;
+        int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
+        if (holder.viewLaneIndicator != null) {
+            holder.viewLaneIndicator.setBackgroundColor(accent);
+        }
+        if (holder.tvLaneTitle != null) {
+            holder.tvLaneTitle.setTextColor(accent);
+        }
         if ("CUR".equalsIgnoreCase(header.headerType)) {
             String s = getLocalizedSeasonName(context, header.season);
             holder.tvLaneTitle.setText(context.getString(R.string.lane_header_current_season, s, header.year));
@@ -187,6 +194,29 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     private void bindHero(HeroViewHolder holder, Anime anime) {
         if (anime == null) return;
+
+        int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
+        int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
+        int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
+        if (holder.cardHero instanceof com.google.android.material.card.MaterialCardView) {
+            com.google.android.material.card.MaterialCardView card =
+                    (com.google.android.material.card.MaterialCardView) holder.cardHero;
+            card.setCardBackgroundColor(surface);
+            card.setStrokeColor(border);
+        }
+        if (holder.tvHeroTopRank != null) {
+            holder.tvHeroTopRank.setTextColor(accent);
+        }
+        if (holder.tvHeroGenres != null) {
+            holder.tvHeroGenres.setTextColor(accent);
+        }
+        if (holder.btnHeroPlay != null) {
+            holder.btnHeroPlay.setBackgroundTintList(android.content.res.ColorStateList.valueOf(accent));
+        }
+        if (holder.btnHeroInfo instanceof com.google.android.material.button.MaterialButton) {
+            ((com.google.android.material.button.MaterialButton) holder.btnHeroInfo)
+                    .setStrokeColor(android.content.res.ColorStateList.valueOf(border));
+        }
 
         bindTitles(holder.tvHeroTitle, holder.tvHeroAltTitle, anime, "Anime Unggulan");
 
@@ -257,6 +287,14 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     private void bindCard(AnimeViewHolder holder, Anime anime) {
+        if (holder.cardAnime instanceof com.google.android.material.card.MaterialCardView) {
+            com.google.android.material.card.MaterialCardView card =
+                    (com.google.android.material.card.MaterialCardView) holder.cardAnime;
+            card.setCardBackgroundColor(id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context));
+            if (!card.isFocused()) {
+                card.setStrokeColor(id.shisen.app.util.AnimeThemeManager.getBorderColor(context));
+            }
+        }
         bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
 
         // Format meta string
@@ -326,13 +364,14 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public static class HeroViewHolder extends RecyclerView.ViewHolder {
         View cardHero;
         ImageView ivHeroBackdrop;
-        TextView tvHeroTrendingTag, tvHeroGenres, tvHeroTitle, tvHeroAltTitle, tvHeroFormat, tvHeroScore, tvHeroEps;
+        TextView tvHeroTopRank, tvHeroTrendingTag, tvHeroGenres, tvHeroTitle, tvHeroAltTitle, tvHeroFormat, tvHeroScore, tvHeroEps;
         Button btnHeroPlay, btnHeroInfo;
 
         public HeroViewHolder(@NonNull View itemView) {
             super(itemView);
             cardHero = itemView.findViewById(R.id.card_hero);
             ivHeroBackdrop = itemView.findViewById(R.id.iv_hero_backdrop);
+            tvHeroTopRank = itemView.findViewById(R.id.tv_hero_top_rank);
             tvHeroTrendingTag = itemView.findViewById(R.id.tv_hero_trending_tag);
             tvHeroGenres = itemView.findViewById(R.id.tv_hero_genres);
             tvHeroTitle = itemView.findViewById(R.id.tv_hero_title);
@@ -357,10 +396,12 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     public static class HeaderViewHolder extends RecyclerView.ViewHolder {
+        View viewLaneIndicator;
         TextView tvLaneTitle, tvLaneSubtitle;
 
         public HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
+            viewLaneIndicator = itemView.findViewById(R.id.view_lane_indicator);
             tvLaneTitle = itemView.findViewById(R.id.tv_lane_title);
             tvLaneSubtitle = itemView.findViewById(R.id.tv_lane_subtitle);
         }

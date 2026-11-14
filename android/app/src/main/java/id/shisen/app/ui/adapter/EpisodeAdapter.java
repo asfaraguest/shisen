@@ -88,22 +88,26 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.EpisodeV
         boolean isCurrent = (ep.number == currentPlayingNumber);
 
         holder.tvTitle.setText(String.valueOf(ep.number));
+        int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
+        int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
+        int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
+        int activeSurface = androidx.core.graphics.ColorUtils.blendARGB(surface, accent, 0.20f);
 
         if (isCurrent) {
             // Active playing state
-            holder.card.setStrokeColor(ContextCompat.getColor(context, R.color.accent_glacial));
+            holder.card.setStrokeColor(accent);
             holder.card.setStrokeWidth((int) (1.5f * context.getResources().getDisplayMetrics().density));
-            holder.card.setCardBackgroundColor(Color.parseColor("#15233C"));
-            holder.tvTitle.setTextColor(ContextCompat.getColor(context, R.color.accent_glacial));
+            holder.card.setCardBackgroundColor(activeSurface);
+            holder.tvTitle.setTextColor(accent);
 
             holder.tvStatusBadge.setVisibility(View.VISIBLE);
             holder.tvStatusBadge.setText(R.string.episode_now_playing);
-            holder.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.accent_glacial));
+            holder.tvStatusBadge.setTextColor(accent);
         } else if (ep.isWatched) {
             // Watched state
-            holder.card.setStrokeColor(ContextCompat.getColor(context, R.color.frost_border));
+            holder.card.setStrokeColor(border);
             holder.card.setStrokeWidth((int) (1f * context.getResources().getDisplayMetrics().density));
-            holder.card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.frost_surface));
+            holder.card.setCardBackgroundColor(surface);
             holder.tvTitle.setTextColor(ContextCompat.getColor(context, R.color.text_frost_subtle));
 
             holder.tvStatusBadge.setVisibility(View.VISIBLE);
@@ -111,9 +115,9 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.EpisodeV
             holder.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.accent_mint));
         } else {
             // Default unplayed state
-            holder.card.setStrokeColor(ContextCompat.getColor(context, R.color.frost_border));
+            holder.card.setStrokeColor(border);
             holder.card.setStrokeWidth((int) (1f * context.getResources().getDisplayMetrics().density));
-            holder.card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.frost_surface));
+            holder.card.setCardBackgroundColor(surface);
             holder.tvTitle.setTextColor(ContextCompat.getColor(context, R.color.text_frost_bright));
 
             holder.tvStatusBadge.setVisibility(View.GONE);
@@ -121,9 +125,9 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.EpisodeV
 
         if (holder.card.hasFocus()) {
             float density = context.getResources().getDisplayMetrics().density;
-            holder.card.setStrokeColor(ContextCompat.getColor(context, R.color.accent_glacial));
+            holder.card.setStrokeColor(accent);
             holder.card.setStrokeWidth(Math.max(5, (int) (3.0f * density)));
-            holder.card.setCardBackgroundColor(Color.parseColor("#15223A"));
+            holder.card.setCardBackgroundColor(activeSurface);
         }
 
         attachSpringTouchFeedback(holder.card);

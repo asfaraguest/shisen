@@ -356,10 +356,76 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void applyCurrentTheme() {
+        int accent = AnimeThemeManager.getPrimaryAccentColor(this);
+        int surface = AnimeThemeManager.getSurfaceColor(this);
+        boolean isTv = id.shisen.app.ui.player.PlayerKeys.isTv();
+
         if (layoutMainRoot != null) {
             layoutMainRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
         }
         SystemUiHelper.applySystemBarsTheme(this);
+
+        if (tvAppLogoKanji != null) {
+            tvAppLogoKanji.setTextColor(accent);
+        }
+        if (tvCurrentMenuBadge != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    tvCurrentMenuBadge, AnimeThemeManager.createSearchCapsuleDrawable(this));
+        }
+        if (pbLoading != null) {
+            pbLoading.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(accent));
+        }
+        if (btnSearchTrigger != null) {
+            for (int i = 0; i < btnSearchTrigger.getChildCount(); i++) {
+                View child = btnSearchTrigger.getChildAt(i);
+                if (child instanceof ImageView) {
+                    ((ImageView) child).setImageTintList(android.content.res.ColorStateList.valueOf(accent));
+                }
+            }
+            if (!isTv) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnSearchTrigger, AnimeThemeManager.createSearchCapsuleDrawable(this));
+            }
+        }
+        if (btnCollapseSearch != null) {
+            btnCollapseSearch.setImageTintList(android.content.res.ColorStateList.valueOf(accent));
+        }
+        if (!isTv && layoutAuroraTop != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    layoutAuroraTop, AnimeThemeManager.createAuroraHeaderDrawable(this));
+        }
+        if (tvPageIndicator != null) {
+            tvPageIndicator.setTextColor(accent);
+        }
+        if (!isTv) {
+            if (layoutPagination != null) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        layoutPagination, AnimeThemeManager.createPaginationBarDrawable(this));
+            }
+            if (btnPrevPage != null) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnPrevPage, AnimeThemeManager.createPageButtonDrawable(this));
+            }
+            if (btnNextPage != null) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        btnNextPage, AnimeThemeManager.createPageButtonDrawable(this));
+            }
+            if (tvPageIndicator != null) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        tvPageIndicator, AnimeThemeManager.createPageIndicatorDrawable(this));
+            }
+        }
+        if (swipeRefresh != null) {
+            swipeRefresh.setColorSchemeColors(accent);
+            swipeRefresh.setProgressBackgroundColorSchemeColor(surface);
+        }
+        if (deviceNav != null) {
+            deviceNav.applyTheme();
+            deviceNav.onTabChanged(currentTab);
+        }
+        if (scrollSubFilters != null && scrollSubFilters.getVisibility() == View.VISIBLE) {
+            updateSubFilterUI();
+        }
     }
 
     private void initViews() {
@@ -421,8 +487,7 @@ public class MainActivity extends AppCompatActivity {
         tvPageIndicator = findViewById(R.id.tv_page_indicator);
         btnNextPage = findViewById(R.id.btn_next_page);
 
-        swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.accent_glacial));
-        swipeRefresh.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.frost_surface));
+        applyCurrentTheme();
     }
 
     private void setupWindowInsets() {
@@ -1125,7 +1190,7 @@ public class MainActivity extends AppCompatActivity {
                     chip.setClickable(true);
                     id.shisen.app.util.TvFocusHelper.attachFocusScale(chip, 1.05f);
                     boolean selected = values[i].equals(current);
-                    chip.setBackgroundResource(selected ? R.drawable.bg_chip_selected : R.drawable.bg_tab_inactive);
+                    AnimeThemeManager.applyBackgroundPreservingPadding(chip, AnimeThemeManager.createChipDrawable(MainActivity.this, selected));
                     chip.setTextColor(selected ? 0xFF090D16 : 0xFF94A3B8);
                     if (chip.getCompoundDrawables()[0] != null) {
                         chip.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(selected ? 0xFF090D16 : 0xFF94A3B8));
@@ -1136,7 +1201,7 @@ public class MainActivity extends AppCompatActivity {
                             TextView c = dialog.findViewById(ids[j]);
                             if (c != null) {
                                 boolean nowSel = (j == idx);
-                                c.setBackgroundResource(nowSel ? R.drawable.bg_chip_selected : R.drawable.bg_tab_inactive);
+                                AnimeThemeManager.applyBackgroundPreservingPadding(c, AnimeThemeManager.createChipDrawable(MainActivity.this, nowSel));
                                 c.setTextColor(nowSel ? 0xFF090D16 : 0xFF94A3B8);
                                 if (c.getCompoundDrawables()[0] != null) {
                                     c.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(nowSel ? 0xFF090D16 : 0xFF94A3B8));
@@ -1215,6 +1280,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (btnReset != null) {
+            btnReset.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                    AnimeThemeManager.getSurfaceColor(this)));
             btnReset.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 dialog.dismiss();
@@ -1228,6 +1295,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (btnApply != null) {
+            btnApply.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                    AnimeThemeManager.getPrimaryAccentColor(this)));
             btnApply.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 dialog.dismiss();
@@ -1432,14 +1501,18 @@ public class MainActivity extends AppCompatActivity {
         id.shisen.app.util.TvFocusHelper.attachFocusScale(chip, 1.06f);
 
         if (isSelected) {
-            chip.setBackgroundResource(R.drawable.bg_chip_frost_active);
+            chip.setBackground(AnimeThemeManager.createChipDrawable(this, true));
             chip.setTextColor(Color.parseColor("#090D16"));
             chip.setTypeface(null, android.graphics.Typeface.BOLD);
         } else {
-            chip.setBackgroundResource(R.drawable.bg_chip_frost_inactive);
+            chip.setBackground(AnimeThemeManager.createChipDrawable(this, false));
             chip.setTextColor(ContextCompat.getColor(this, R.color.text_frost_subtle));
             chip.setTypeface(null, android.graphics.Typeface.NORMAL);
         }
+        chip.setPadding(
+                (int) (12 * getResources().getDisplayMetrics().density), 0,
+                (int) (12 * getResources().getDisplayMetrics().density), 0
+        );
         return chip;
     }
 

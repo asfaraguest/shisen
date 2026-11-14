@@ -184,8 +184,10 @@
                         android:layout_height="48dp"
                         android:layout_weight="1"
                         android:text="@string/detail_play_ep1"
-                        android:textColor="#090D16"
-                        android:backgroundTint="@color/accent_glacial"
+                        android:textColor="@color/text_frost_bright"
+                        app:backgroundTint="@null"
+                        app:strokeWidth="0dp"
+                        android:paddingHorizontal="18dp"
                         android:textSize="14sp"
                         android:fontFamily="sans-serif-bold"
                         app:cornerRadius="24dp"
@@ -201,11 +203,11 @@
                         android:layout_marginStart="10dp"
                         android:text="@string/detail_favorite"
                         android:textColor="@color/text_frost_bright"
-                        android:backgroundTint="@color/frost_elevated"
+                        app:backgroundTint="@null"
                         android:textSize="13.5sp"
                         android:fontFamily="sans-serif-medium"
                         app:strokeColor="@color/frost_border"
-                        app:strokeWidth="1dp"
+                        app:strokeWidth="0dp"
                         app:cornerRadius="24dp"
                         android:paddingHorizontal="16dp"
                         android:clickable="true"
@@ -217,6 +219,7 @@
 
                 <!-- Expandable Synopsis Card -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_detail_synopsis"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
@@ -233,6 +236,7 @@
                         android:padding="14dp">
 
                         <TextView
+                            android:id="@+id/tv_synopsis_header"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/detail_synopsis_title"
@@ -306,6 +310,7 @@
                     android:layout_marginBottom="12dp">
 
                     <TextView
+                        android:id="@+id/tv_episode_header"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/detail_episodes_title"
@@ -370,6 +375,7 @@
                         android:layout_marginBottom="10dp">
 
                         <TextView
+                            android:id="@+id/tv_related_seasons_header"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -414,6 +420,7 @@
                         android:layout_marginBottom="10dp">
 
                         <TextView
+                            android:id="@+id/tv_related_movies_header"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"

@@ -54,6 +54,18 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
     public void onBindViewHolder(@NonNull RelatedViewHolder holder, int position) {
         Anime anime = items.get(position);
 
+        int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
+        int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
+        int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
+        if (holder.itemView instanceof com.google.android.material.card.MaterialCardView) {
+            com.google.android.material.card.MaterialCardView card =
+                    (com.google.android.material.card.MaterialCardView) holder.itemView;
+            card.setCardBackgroundColor(surface);
+            if (!card.isFocused()) {
+                card.setStrokeColor(border);
+            }
+        }
+
         AnimeAdapter.bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
 
         StringBuilder meta = new StringBuilder();
@@ -62,9 +74,11 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
         }
         meta.append(anime.format != null ? anime.format : "TV");
         holder.tvMeta.setText(meta.toString());
+        holder.tvMeta.setTextColor(accent);
 
         if (anime.relationLabel != null && !anime.relationLabel.isEmpty() && !"null".equalsIgnoreCase(anime.relationLabel)) {
             holder.tvBadge.setText(getLocalizedRelationLabel(anime.relationLabel));
+            holder.tvBadge.setTextColor(accent);
             holder.tvBadge.setVisibility(View.VISIBLE);
         } else {
             holder.tvBadge.setVisibility(View.GONE);

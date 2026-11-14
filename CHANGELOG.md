@@ -4,6 +4,12 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 
 ## [1.1.1-beta.2] - 2026-11-14
 
+### Ditingkatkan
+- **Theming Dinamis Berbasis Tema Aktif (`AnimeThemeManager.java`, `MainActivity.java`, `DeviceNav.java`, `SettingsDialog.java`, `TvFocusHelper.java`, Adapter)**:
+  - Menyelaraskan seluruh aksen UI utama (ikon, tab/chip aktif, *header aurora*, kotak pencarian, pagination, *hero* & kartu anime, rail TV, dialog pengaturan/filter, serta fokus TV/D-pad) mengikuti tema aktif (`Shinkai`, `Sakura`, `Cyberpunk`, `Ghibli`) secara *real-time* tanpa hardcoded `#38BDF8`.
+- **Redesain Hero Cover & Tombol Frosted Glass Halaman Detail (`DetailActivity.java`, `activity_detail.xml`)**:
+  - Menampilkan *cover* anime penuh separuh tinggi layar pada mode portrait dengan gradasi vertikal halus ke warna dasar tema aktif, serta gaya tombol aksi semi-transparan *frosted glass* (`Tonton`, `Favorit`, dan tombol kembali) di varian portrait, landscape, dan TV.
+
 ### Diperbaiki
 - **Safe Mode Dinamis & Blokir Permanen Hentai (`AniListClient.java`, `AppSettings.java`, `MainActivity.java`, `OtakudesuScraper.java`)**:
   - Menyelaraskan status Safe Mode ke kueri GraphQL AniList secara dinamis (`isAdult: false` hanya aktif saat Safe Mode ON; saat OFF, judul dewasa non-Hentai seperti Ecchi tetap tampil), sembari menjaga blokir permanen `Hentai` di seluruh lapisan dan memisahkan kunci `FeedCache` (`_safe1`/`_safe0`).

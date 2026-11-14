@@ -120,6 +120,38 @@ public final class DeviceNav {
         updateFoldedMenuHighlight(tab);
     }
 
+    public void applyTheme() {
+        if (host == null) return;
+        int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
+        if (fabMenuTrigger != null) {
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    fabMenuTrigger,
+                    id.shisen.app.util.AnimeThemeManager.createFabTriggerDrawable(host));
+        }
+        if (ivFabIcon != null) {
+            ivFabIcon.setImageTintList(android.content.res.ColorStateList.valueOf(accent));
+        }
+        if (host.menuItemSettings != null) {
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    host.menuItemSettings,
+                    id.shisen.app.util.AnimeThemeManager.createMenuPillDrawable(host, false));
+            tintMenuIcon(host.menuItemSettings, accent);
+        }
+        updateFoldedMenuHighlight(host.getCurrentTab());
+    }
+
+    private void tintMenuIcon(View item, int color) {
+        if (!(item instanceof ViewGroup)) return;
+        ViewGroup vg = (ViewGroup) item;
+        for (int i = 0; i < vg.getChildCount(); i++) {
+            View child = vg.getChildAt(i);
+            if (child instanceof ImageView) {
+                ((ImageView) child).setImageTintList(android.content.res.ColorStateList.valueOf(color));
+                break;
+            }
+        }
+    }
+
     private void updateFoldedMenuHighlight(MainActivity.MainTab currentTab) {
         if (host == null) return;
         View[] items = {
@@ -135,21 +167,18 @@ public final class DeviceNav {
                 MainActivity.MainTab.RIWAYAT, MainActivity.MainTab.FAVORIT, MainActivity.MainTab.KATALOG, MainActivity.MainTab.GENRE
         };
 
-        int activeColor = ContextCompat.getColor(host, R.color.accent_glacial);
+        int activeColor = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
         int inactiveColor = ContextCompat.getColor(host, R.color.text_frost_bright);
 
         for (int i = 0; i < items.length; i++) {
             if (items[i] == null || titles[i] == null) continue;
             boolean isActive = (tabEnums[i] == currentTab);
-            if (isActive) {
-                items[i].setBackgroundResource(R.drawable.bg_folded_menu_pill_active);
-                titles[i].setTextColor(activeColor);
-                titles[i].setTypeface(null, android.graphics.Typeface.BOLD);
-            } else {
-                items[i].setBackgroundResource(R.drawable.bg_folded_menu_pill);
-                titles[i].setTextColor(inactiveColor);
-                titles[i].setTypeface(null, android.graphics.Typeface.NORMAL);
-            }
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    items[i],
+                    id.shisen.app.util.AnimeThemeManager.createMenuPillDrawable(host, isActive));
+            tintMenuIcon(items[i], activeColor);
+            titles[i].setTextColor(isActive ? activeColor : inactiveColor);
+            titles[i].setTypeface(null, isActive ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
         }
     }
 

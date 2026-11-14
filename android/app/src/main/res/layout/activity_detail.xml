@@ -23,7 +23,7 @@
             <FrameLayout
                 android:id="@+id/fl_detail_backdrop_container"
                 android:layout_width="match_parent"
-                android:layout_height="230dp">
+                android:layout_height="440dp">
 
                 <ImageView
                     android:id="@+id/iv_detail_backdrop"
@@ -34,8 +34,9 @@
 
                 <!-- Bottom Fade Scrim -->
                 <View
+                    android:id="@+id/view_detail_gradient_scrim"
                     android:layout_width="match_parent"
-                    android:layout_height="170dp"
+                    android:layout_height="260dp"
                     android:layout_gravity="bottom"
                     android:background="@drawable/bg_hero_gradient_scrim" />
 
@@ -57,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingHorizontal="16dp"
-                android:layout_marginTop="-75dp">
+                android:layout_marginTop="-135dp">
 
                 <!-- Hero Section: Official Character Cover Card + Primary Info -->
                 <LinearLayout
@@ -71,6 +72,7 @@
                         android:id="@+id/card_detail_poster"
                         android:layout_width="110dp"
                         android:layout_height="160dp"
+                        android:visibility="gone"
                         app:cardCornerRadius="12dp"
                         app:cardElevation="8dp"
                         app:cardBackgroundColor="@color/frost_surface"
@@ -90,7 +92,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="14dp"
+                        android:layout_marginStart="0dp"
                         android:orientation="vertical"
                         android:paddingBottom="4dp">
 
@@ -161,8 +163,10 @@
                         android:layout_height="44dp"
                         android:layout_weight="1"
                         android:text="@string/detail_play_ep1"
-                        android:textColor="#090D16"
-                        android:backgroundTint="@color/accent_glacial"
+                        android:textColor="@color/text_frost_bright"
+                        app:backgroundTint="@null"
+                        app:strokeWidth="0dp"
+                        android:paddingHorizontal="16dp"
                         android:textSize="13.5sp"
                         android:fontFamily="sans-serif-bold"
                         app:cornerRadius="22dp"
@@ -175,11 +179,11 @@
                         android:layout_marginStart="10dp"
                         android:text="@string/detail_favorite"
                         android:textColor="@color/text_frost_bright"
-                        android:backgroundTint="@color/frost_elevated"
+                        app:backgroundTint="@null"
                         android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
                         app:strokeColor="@color/frost_border"
-                        app:strokeWidth="1dp"
+                        app:strokeWidth="0dp"
                         app:cornerRadius="22dp"
                         android:paddingHorizontal="16dp"
                         android:stateListAnimator="@null" />
@@ -187,6 +191,7 @@
 
                 <!-- Expandable Synopsis Card -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_detail_synopsis"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
@@ -203,6 +208,7 @@
                         android:padding="14dp">
 
                         <TextView
+                            android:id="@+id/tv_synopsis_header"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/detail_synopsis_title"
@@ -253,6 +259,7 @@
                         android:gravity="center_vertical">
 
                         <TextView
+                            android:id="@+id/tv_related_seasons_header"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -297,6 +304,7 @@
                         android:gravity="center_vertical">
 
                         <TextView
+                            android:id="@+id/tv_related_movies_header"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"

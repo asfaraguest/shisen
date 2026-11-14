@@ -42,7 +42,7 @@ public final class TvFocusHelper {
             if (v instanceof MaterialButton) {
                 MaterialButton mb = (MaterialButton) v;
                 if (hasFocus) {
-                    mb.setStrokeColor(ColorStateList.valueOf(0xFF38BDF8));
+                    mb.setStrokeColor(ColorStateList.valueOf(AnimeThemeManager.getPrimaryAccentColor(v.getContext())));
                     mb.setStrokeWidth(focusStrokePx);
                 } else {
                     mb.setStrokeColor(origStrokeColor);
@@ -57,12 +57,9 @@ public final class TvFocusHelper {
      */
     public static void attachCardFocus(MaterialCardView card, float focusedScale) {
         if (card == null) return;
-        final int defaultStrokeColor = ContextCompat.getColor(card.getContext(), R.color.frost_border);
-        final int focusedStrokeColor = ContextCompat.getColor(card.getContext(), R.color.accent_glacial);
         final int defaultStrokePx = Math.max(1, (int) (1.0f * card.getResources().getDisplayMetrics().density));
         final int focusStrokePx = Math.max(5, (int) (3.0f * card.getResources().getDisplayMetrics().density));
         final ColorStateList defaultBgColor = card.getCardBackgroundColor();
-        final ColorStateList focusedBgColor = ColorStateList.valueOf(0xFF15223A);
 
         card.setOnFocusChangeListener((v, hasFocus) -> {
             float targetScale = hasFocus ? focusedScale : 1.0f;
@@ -76,11 +73,24 @@ public final class TvFocusHelper {
                     .setInterpolator(INTERPOLATOR)
                     .start();
 
+            int defaultStrokeColor = AnimeThemeManager.getBorderColor(card.getContext());
+            int focusedStrokeColor = AnimeThemeManager.getPrimaryAccentColor(card.getContext());
+            int surfaceColor = AnimeThemeManager.getSurfaceColor(card.getContext());
+            ColorStateList focusedBgColor = ColorStateList.valueOf(
+                    AnimeThemeManager.withAlpha(focusedStrokeColor, 0x22) == 0 ? surfaceColor :
+                            blendOverlay(surfaceColor, focusedStrokeColor)
+            );
+
             card.setStrokeColor(hasFocus ? focusedStrokeColor : defaultStrokeColor);
             card.setStrokeWidth(hasFocus ? focusStrokePx : defaultStrokePx);
-            if (defaultBgColor != null) {
-                card.setCardBackgroundColor(hasFocus ? focusedBgColor : defaultBgColor);
-            }
+            card.setCardBackgroundColor(hasFocus ? focusedBgColor : (defaultBgColor != null ? ColorStateList.valueOf(surfaceColor) : defaultBgColor));
         });
+    }
+
+    private static int blendOverlay(int baseColor, int accentColor) {
+        int r = (int) (((baseColor >> 16) & 0xFF) * 0.85f + ((accentColor >> 16) & 0xFF) * 0.15f);
+        int g = (int) (((baseColor >> 8) & 0xFF) * 0.85f + ((accentColor >> 8) & 0xFF) * 0.15f);
+        int b = (int) ((baseColor & 0xFF) * 0.85f + (accentColor & 0xFF) * 0.15f);
+        return (0xFF << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
     }
 }

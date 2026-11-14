@@ -119,6 +119,8 @@ public class SettingsDialog {
         // 5. About & Update
         setupAboutSection(dialogView, activity);
 
+        applyDialogTheme(dialogView, activity);
+
         SystemUiHelper.setupCustomDialogBounds(dialog, activity);
         dialog.show();
 
@@ -155,6 +157,7 @@ public class SettingsDialog {
             AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_SHINKAI);
             SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_SHINKAI);
             updateRadios.run();
+            applyDialogTheme(root, activity);
             if (listener != null) listener.onThemeChanged();
         });
 
@@ -163,6 +166,7 @@ public class SettingsDialog {
             AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_SAKURA);
             SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_SAKURA);
             updateRadios.run();
+            applyDialogTheme(root, activity);
             if (listener != null) listener.onThemeChanged();
         });
 
@@ -171,6 +175,7 @@ public class SettingsDialog {
             AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_CYBER);
             SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_CYBER);
             updateRadios.run();
+            applyDialogTheme(root, activity);
             if (listener != null) listener.onThemeChanged();
         });
 
@@ -179,8 +184,86 @@ public class SettingsDialog {
             AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_GHIBLI);
             SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_GHIBLI);
             updateRadios.run();
+            applyDialogTheme(root, activity);
             if (listener != null) listener.onThemeChanged();
         });
+    }
+
+    private static void updateLanguageChips(View root, Activity activity) {
+        TextView btnLangId = root.findViewById(R.id.btn_lang_id);
+        TextView btnLangEn = root.findViewById(R.id.btn_lang_en);
+        TextView btnLangJa = root.findViewById(R.id.btn_lang_ja);
+        TextView btnLangEs = root.findViewById(R.id.btn_lang_es);
+        if (btnLangId == null || btnLangEn == null || btnLangJa == null || btnLangEs == null) return;
+
+        String active = LocaleHelper.getLanguage(activity);
+        boolean isId = LocaleHelper.LANG_ID.equalsIgnoreCase(active);
+        boolean isEn = LocaleHelper.LANG_EN.equalsIgnoreCase(active);
+        boolean isJa = LocaleHelper.LANG_JA.equalsIgnoreCase(active);
+        boolean isEs = LocaleHelper.LANG_ES.equalsIgnoreCase(active);
+
+        int selectedColor = Color.parseColor("#080C14");
+        int normalColor = ContextCompat.getColor(activity, R.color.text_frost_bright);
+
+        TextView[] chips = {btnLangId, btnLangEn, btnLangJa, btnLangEs};
+        boolean[] states = {isId, isEn, isJa, isEs};
+        for (int i = 0; i < chips.length; i++) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    chips[i], AnimeThemeManager.createChipDrawable(activity, states[i]));
+            chips[i].setTextColor(states[i] ? selectedColor : normalColor);
+        }
+    }
+
+    private static void applyDialogTheme(View root, Activity activity) {
+        int accent = AnimeThemeManager.getPrimaryAccentColor(activity);
+        int border = AnimeThemeManager.getBorderColor(activity);
+        android.content.res.ColorStateList accentTint = android.content.res.ColorStateList.valueOf(accent);
+        android.content.res.ColorStateList borderTint = android.content.res.ColorStateList.valueOf(border);
+
+        updateLanguageChips(root, activity);
+
+        SwitchMaterial switchSafeMode = root.findViewById(R.id.switch_safe_mode);
+        if (switchSafeMode != null) switchSafeMode.setThumbTintList(accentTint);
+
+        SwitchMaterial switchHaptic = root.findViewById(R.id.switch_haptic);
+        if (switchHaptic != null) switchHaptic.setThumbTintList(accentTint);
+
+        TextView tvToggleIcon = root.findViewById(R.id.tv_toggle_byok_icon);
+        if (tvToggleIcon != null) tvToggleIcon.setTextColor(accent);
+
+        EditText etModel = root.findViewById(R.id.et_settings_ai_model);
+        if (etModel != null) etModel.setTextColor(accent);
+
+        TextView btnResetPrompt = root.findViewById(R.id.btn_settings_reset_prompt);
+        if (btnResetPrompt != null) btnResetPrompt.setTextColor(accent);
+
+        Button btnSave = root.findViewById(R.id.btn_settings_save_ai);
+        if (btnSave != null) btnSave.setBackgroundTintList(accentTint);
+
+        Button btnClear = root.findViewById(R.id.btn_settings_clear_ai);
+        if (btnClear instanceof com.google.android.material.button.MaterialButton) {
+            ((com.google.android.material.button.MaterialButton) btnClear).setStrokeColor(borderTint);
+        }
+        Button btnCheckUpdate = root.findViewById(R.id.btn_settings_check_update);
+        if (btnCheckUpdate instanceof com.google.android.material.button.MaterialButton) {
+            ((com.google.android.material.button.MaterialButton) btnCheckUpdate).setStrokeColor(borderTint);
+        }
+        Button btnClearCache = root.findViewById(R.id.btn_settings_clear_cache);
+        if (btnClearCache instanceof com.google.android.material.button.MaterialButton) {
+            ((com.google.android.material.button.MaterialButton) btnClearCache).setStrokeColor(borderTint);
+        }
+
+        LinearLayout layoutChips = root.findViewById(R.id.layout_model_chips);
+        if (layoutChips != null) {
+            String currentModel = etModel != null ? etModel.getText().toString().trim() : "";
+            for (int i = 0; i < layoutChips.getChildCount(); i++) {
+                View child = layoutChips.getChildAt(i);
+                if (child instanceof TextView) {
+                    boolean sel = ((TextView) child).getText().toString().equalsIgnoreCase(currentModel);
+                    applyChipStyle((TextView) child, activity, sel);
+                }
+            }
+        }
     }
 
     private static void setupLanguageSection(View root, Activity activity, OnSettingsChangeListener listener, AlertDialog dialog) {
@@ -191,28 +274,7 @@ public class SettingsDialog {
 
         if (btnLangId == null || btnLangEn == null || btnLangJa == null || btnLangEs == null) return;
 
-        Runnable updateChips = () -> {
-            String active = LocaleHelper.getLanguage(activity);
-            boolean isId = LocaleHelper.LANG_ID.equalsIgnoreCase(active);
-            boolean isEn = LocaleHelper.LANG_EN.equalsIgnoreCase(active);
-            boolean isJa = LocaleHelper.LANG_JA.equalsIgnoreCase(active);
-            boolean isEs = LocaleHelper.LANG_ES.equalsIgnoreCase(active);
-
-            int selectedColor = Color.parseColor("#080C14");
-            int normalColor = ContextCompat.getColor(activity, R.color.text_frost_bright);
-
-            btnLangId.setBackgroundResource(isId ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
-            btnLangId.setTextColor(isId ? selectedColor : normalColor);
-
-            btnLangEn.setBackgroundResource(isEn ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
-            btnLangEn.setTextColor(isEn ? selectedColor : normalColor);
-
-            btnLangJa.setBackgroundResource(isJa ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
-            btnLangJa.setTextColor(isJa ? selectedColor : normalColor);
-
-            btnLangEs.setBackgroundResource(isEs ? R.drawable.bg_chip_selected : R.drawable.bg_chip_frost_inactive);
-            btnLangEs.setTextColor(isEs ? selectedColor : normalColor);
-        };
+        Runnable updateChips = () -> updateLanguageChips(root, activity);
         updateChips.run();
 
         View.OnClickListener langClickListener = v -> {
@@ -431,11 +493,11 @@ public class SettingsDialog {
     }
 
     private static void applyChipStyle(TextView chip, Context context, boolean isSelected) {
+        AnimeThemeManager.applyBackgroundPreservingPadding(
+                chip, AnimeThemeManager.createChipDrawable(context, isSelected));
         if (isSelected) {
-            chip.setBackgroundResource(R.drawable.bg_chip_frost_active);
             chip.setTextColor(Color.parseColor("#080C14"));
         } else {
-            chip.setBackgroundResource(R.drawable.bg_chip_frost_inactive);
             chip.setTextColor(ContextCompat.getColor(context, R.color.text_frost_bright));
         }
     }
