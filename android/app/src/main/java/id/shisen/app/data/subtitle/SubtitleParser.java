@@ -55,7 +55,7 @@ public class SubtitleParser {
             if (start < 0 || end <= start) continue;
 
             String rawDialogue = m.group(3);
-            if (rawDialogue != null && rawDialogue.matches("(?is).*\\{\\\\p[1-9]\\b.*")) {
+            if (rawDialogue != null && rawDialogue.matches("(?is).*\\{[^}]*\\\\p[1-9](?:\\d*|\\b|(?=[}\\\\])).*")) {
                 continue;
             }
             String text = cleanText(rawDialogue);
@@ -88,23 +88,28 @@ public class SubtitleParser {
             }
 
             if (line.contains("-->")) {
-                if (start >= 0 && end > start && buf.length() > 0) {
-                    String clean = cleanText(buf.toString());
-                    if (!clean.isEmpty()) {
-                        list.add(new SubtitleCue(start, end, clean));
+                String[] parts = line.split("-->");
+                if (parts.length == 2) {
+                    long s = parseTimestamp(parts[0].trim());
+                    String endPart = parts[1].trim();
+                    int spaceIdx = endPart.indexOf(' ');
+                    if (spaceIdx > 0) {
+                        endPart = endPart.substring(0, spaceIdx).trim();
+                    }
+                    long e = parseTimestamp(endPart);
+                    if (s >= 0 && e > s) {
+                        if (start >= 0 && end > start && buf.length() > 0) {
+                            String clean = cleanText(buf.toString());
+                            if (!clean.isEmpty()) {
+                                list.add(new SubtitleCue(start, end, clean));
+                            }
+                        }
+                        buf.setLength(0);
+                        start = s;
+                        end = e;
+                        continue;
                     }
                 }
-                buf.setLength(0);
-
-                String[] parts = line.split("-->");
-                start = parseTimestamp(parts[0].trim());
-                String endPart = parts[1].trim();
-                int spaceIdx = endPart.indexOf(' ');
-                if (spaceIdx > 0) {
-                    endPart = endPart.substring(0, spaceIdx).trim();
-                }
-                end = parseTimestamp(endPart);
-                continue;
             }
 
             if (start >= 0) {
@@ -134,9 +139,9 @@ public class SubtitleParser {
         t = t.replace("\\N", "\n").replace("\\n", "\n").replace("\\h", " ");
         // Bersihkan tag HTML
         t = HTML_TAG_RE.matcher(t).replaceAll("");
-        // Unescape HTML entities
+        // Unescape HTML entities sambil menjaga newline (\n) agar tidak dihapus Html.fromHtml di Android
         try {
-            t = Html.fromHtml(t, Html.FROM_HTML_MODE_LEGACY).toString();
+            t = Html.fromHtml(t.replace("\n", "<br>"), Html.FROM_HTML_MODE_LEGACY).toString();
         } catch (Throwable ignored) {
             t = t.replace("&nbsp;", " ")
                     .replace("&amp;", "&")

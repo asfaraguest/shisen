@@ -70,4 +70,25 @@ public class SubtitleMismatchPreventionTest {
         assertEquals(2, TitleMatcher.extractSeasonNumber("Mushoku Tensei II: Isekai Ittara Honki Dasu"));
         assertEquals(1, TitleMatcher.extractSeasonNumber("Sousou no Frieren"));
     }
+
+    @Test
+    public void testEstimateOptimalOffsetAcrossLeadingKaraoke() {
+        List<SubtitleCue> builtin = new ArrayList<>();
+        List<SubtitleCue> external = new ArrayList<>();
+        // 350 cue karaoke OP di awal track eksternal
+        for (int i = 0; i < 350; i++) {
+            long t = 1000L + i * 200L;
+            external.add(new SubtitleCue(t, t + 150L, "la" + i));
+        }
+        // Dialog utama di kedua track dengan jarak antar cue variatif dan offset +2000ms pada builtin
+        long extStart = 120_000L;
+        for (int i = 0; i < 40; i++) {
+            builtin.add(new SubtitleCue(extStart + 2000L, extStart + 4000L, "Dialog " + i));
+            external.add(new SubtitleCue(extStart, extStart + 2000L, "Dialog ID " + i));
+            extStart += 2300L + (i % 5) * 900L;
+        }
+
+        long offset = SubtitleMergeEngine.estimateOptimalOffset(builtin, external);
+        assertEquals(2000L, offset);
+    }
 }

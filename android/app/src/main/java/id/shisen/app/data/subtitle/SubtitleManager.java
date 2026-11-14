@@ -34,6 +34,7 @@ public class SubtitleManager {
     private String activeLabel = "Bahasa Indonesia";
 
     private int currentLoadId = 0;
+    private volatile long maxCueDurationMs = 15_000L;
 
     public SubtitleManager(Context context) {
         this.context = context != null ? context.getApplicationContext() : null;
@@ -98,6 +99,21 @@ public class SubtitleManager {
         activeCues = new ArrayList<>();
         sourceEnglishCues = new ArrayList<>();
         lastCueIndex = -1;
+        maxCueDurationMs = 15_000L;
+    }
+
+    private void setActiveCues(List<SubtitleCue> cues) {
+        List<SubtitleCue> target = cues != null ? cues : new ArrayList<>();
+        long maxDur = 15_000L;
+        for (SubtitleCue c : target) {
+            if (c != null && c.endMs > c.startMs) {
+                long dur = c.endMs - c.startMs;
+                if (dur > maxDur) maxDur = dur;
+            }
+        }
+        maxCueDurationMs = Math.min(120_000L, maxDur);
+        activeCues = target;
+        lastCueIndex = -1;
     }
 
     /**
@@ -136,8 +152,8 @@ public class SubtitleManager {
                     activeTexts.add(0, c.text); // Pertahankan urutan kronologis
                 }
             }
-            // Batasi pengecekan mundur jika startMs sudah lebih dari 15 detik yang lalu
-            if (effectivePos - c.startMs > 15_000) {
+            // Batasi pengecekan mundur sesuai durasi cue terpanjang pada track aktif
+            if (effectivePos - c.startMs > maxCueDurationMs) {
                 break;
             }
         }
@@ -165,7 +181,7 @@ public class SubtitleManager {
 
         // 1. Prioritas Utama: Subtitle Resmi Indonesia (Asli Bawaan Penuh)
         final SubtitleTrack fullId = SubtitleTrack.findFullIndonesianTrack(tracks);
-        if (fullId != null && !forceRefresh) {
+        if (fullId != null) {
             final int loadId = ++currentLoadId;
             synchronized (this) {
                 activeLanguage = "id";
@@ -182,8 +198,8 @@ public class SubtitleManager {
                         lexCues.add(new SubtitleCue(c.startMs, c.endMs, SmartLexicon.applyUniversalLexicon(c.text)));
                     }
                     synchronized (SubtitleManager.this) {
-                        activeCues = lexCues;
-                        lastCueIndex = -1;
+                        if (loadId != currentLoadId) return;
+                        setActiveCues(lexCues);
                         activeLabel = "Bahasa Indonesia [Official Bawaan]";
                         activeLanguage = "id";
                         activeEngine = "smart_merge";
@@ -207,7 +223,6 @@ public class SubtitleManager {
             if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan");
             return;
         }
-        final SubtitleTrack forcedId = SubtitleTrack.findForcedIndonesianTrack(tracks);
         final int loadId = ++currentLoadId;
         synchronized (this) {
             activeLanguage = "id";
@@ -219,7 +234,6 @@ public class SubtitleManager {
 
         new Thread(() -> {
             List<SubtitleCue> enCues = new ArrayList<>();
-            List<SubtitleCue> forcedCues = new ArrayList<>();
             try {
                 enCues = fetchCuesFromUrl(sourceEn.url, sourceEn.referer);
                 if (loadId != currentLoadId) return;
@@ -235,14 +249,7 @@ public class SubtitleManager {
                 // Jangan fatal jika download English source gagal! Lanjutkan pencarian fansub Indonesia!
             }
 
-            if (forcedId != null) {
-                try {
-                    forcedCues = fetchCuesFromUrl(forcedId.url, forcedId.referer);
-                } catch (Exception ignored) {}
-            }
-
             final List<SubtitleCue> finalEnCues = enCues;
-            final List<SubtitleCue> finalForcedCues = forcedCues;
 
             // Coba cari rilis subtitle Indonesia dari AnimeTosho (Tier 1)
             AnimeToshoClient.searchIndonesianAsync(title, episode, new AnimeToshoClient.SearchCallback() {
@@ -296,8 +303,8 @@ public class SubtitleManager {
                                 }
 
                                 synchronized (SubtitleManager.this) {
-                                    activeCues = cleanedCues;
-                                    lastCueIndex = -1;
+                                    if (loadId != currentLoadId) return;
+                                    setActiveCues(cleanedCues);
                                     activeLabel = "Bahasa Indonesia [Fansub & Merge]";
                                     activeLanguage = "id";
                                     activeEngine = "smart_merge";
@@ -381,8 +388,8 @@ public class SubtitleManager {
                             }
 
                             synchronized (SubtitleManager.this) {
-                                activeCues = cleanedCues;
-                                lastCueIndex = -1;
+                                if (loadId != currentLoadId) return;
+                                setActiveCues(cleanedCues);
                                 activeLabel = "Bahasa Indonesia [OpenSubtitles & Merge]";
                                 activeLanguage = "id";
                                 activeEngine = "smart_merge";
@@ -426,9 +433,9 @@ public class SubtitleManager {
             public void onPartialSuccess(List<SubtitleCue> partialCues) {
                 if (loadId != currentLoadId) return;
                 synchronized (SubtitleManager.this) {
+                    if (loadId != currentLoadId) return;
                     if ("id".equals(activeLanguage) && ("smart_merge".equals(activeEngine) || "ai".equals(activeEngine))) {
-                        activeCues = partialCues;
-                        lastCueIndex = -1;
+                        setActiveCues(partialCues);
                         activeLabel = "Bahasa Indonesia [Smart Lexicon]";
                         if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
                     }
@@ -439,8 +446,8 @@ public class SubtitleManager {
             public void onSuccess(List<SubtitleCue> translatedCues) {
                 if (loadId != currentLoadId) return;
                 synchronized (SubtitleManager.this) {
-                    activeCues = translatedCues;
-                    lastCueIndex = -1;
+                    if (loadId != currentLoadId) return;
+                    setActiveCues(translatedCues);
                     activeLabel = "Bahasa Indonesia [Smart Lexicon]";
                     activeLanguage = "id";
                     activeEngine = "smart_merge";
@@ -452,10 +459,12 @@ public class SubtitleManager {
             public void onError(String error) {
                 if (loadId != currentLoadId) return;
                 synchronized (SubtitleManager.this) {
+                    if (loadId != currentLoadId) return;
                     if (activeCues.isEmpty() && !enCues.isEmpty()) {
-                        activeCues = new ArrayList<>(enCues);
-                        lastCueIndex = -1;
+                        setActiveCues(new ArrayList<>(enCues));
                         activeLabel = "English (Cadangan)";
+                        activeLanguage = "en";
+                        activeEngine = "raw";
                         if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
                     } else if (listener != null) {
                         listener.onSubtitleError("Gagal menerjemahkan subtitle: " + error);
@@ -477,13 +486,21 @@ public class SubtitleManager {
         }
 
         if (tracks == null || tracks.isEmpty()) {
-            if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan untuk AI Fansub");
+            synchronized (this) {
+                ++currentLoadId;
+                clearCues();
+            }
+            if (listener != null) listener.onSubtitleError("Tidak ada subtitle bawaan untuk AI Fansub");
             return;
         }
 
         final SubtitleTrack sourceEn = SubtitleTrack.findEnglishTrack(tracks);
         if (sourceEn == null) {
-            if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan untuk AI Fansub");
+            synchronized (this) {
+                ++currentLoadId;
+                clearCues();
+            }
+            if (listener != null) listener.onSubtitleError("Tidak ada subtitle bawaan untuk AI Fansub");
             return;
         }
         final int loadId = ++currentLoadId;
@@ -515,7 +532,7 @@ public class SubtitleManager {
     public void loadMimicSubtitle(List<SubtitleCue> enCues, String sourceUrl, boolean forceRefresh, int loadId) {
         if (listener != null) listener.onSubtitleLoading("Menerjemahkan AI Mimic (GPT-4.1)...");
 
-        DeepTranslateClient.translateAsync(context, sourceUrl, enCues, forceRefresh, new DeepTranslateClient.Callback() {
+        DeepTranslateClient.translateAsync(context, sourceUrl, enCues, forceRefresh, () -> loadId != currentLoadId, new DeepTranslateClient.Callback() {
             @Override
             public void onProgress(int progress, int total) {
                 if (loadId != currentLoadId) return;
@@ -527,8 +544,8 @@ public class SubtitleManager {
             public void onSuccess(List<SubtitleCue> translatedCues) {
                 if (loadId != currentLoadId) return;
                 synchronized (SubtitleManager.this) {
-                    activeCues = translatedCues;
-                    lastCueIndex = -1;
+                    if (loadId != currentLoadId) return;
+                    setActiveCues(translatedCues);
                     activeLabel = "Bahasa Indonesia [AI Mimic · GPT-4.1]";
                     activeLanguage = "id";
                     activeEngine = "ai";
@@ -548,13 +565,21 @@ public class SubtitleManager {
 
     public void loadAiSubtitleFromTracks(List<SubtitleTrack> tracks, String title, int episode, boolean forceRefresh) {
         if (tracks == null || tracks.isEmpty()) {
-            if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan untuk AI Fansub");
+            synchronized (this) {
+                ++currentLoadId;
+                clearCues();
+            }
+            if (listener != null) listener.onSubtitleError("Tidak ada subtitle bawaan untuk AI Fansub");
             return;
         }
 
         final SubtitleTrack sourceEn = SubtitleTrack.findEnglishTrack(tracks);
         if (sourceEn == null) {
-            if (listener != null) listener.onSubtitleLoading("Tidak ada subtitle bawaan untuk AI Fansub");
+            synchronized (this) {
+                ++currentLoadId;
+                clearCues();
+            }
+            if (listener != null) listener.onSubtitleError("Tidak ada subtitle bawaan untuk AI Fansub");
             return;
         }
         final int loadId = ++currentLoadId;
@@ -600,7 +625,7 @@ public class SubtitleManager {
         String customPrompt = AiSubtitleService.getCustomPrompt(context);
 
         AiSubtitleService aiService = new AiSubtitleService();
-        aiService.translateCuesAsync(context, sourceUrl, enCues, customPrompt, model, apiKey, forceRefresh, new AiSubtitleService.TranslateCuesCallback() {
+        aiService.translateCuesAsync(context, sourceUrl, enCues, customPrompt, model, apiKey, forceRefresh, () -> loadId != currentLoadId, new AiSubtitleService.TranslateCuesCallback() {
             @Override
             public void onProgress(int progress, int total) {
                 if (loadId != currentLoadId) return;
@@ -612,8 +637,8 @@ public class SubtitleManager {
             public void onSuccess(List<SubtitleCue> translatedCues) {
                 if (loadId != currentLoadId) return;
                 synchronized (SubtitleManager.this) {
-                    activeCues = translatedCues;
-                    lastCueIndex = -1;
+                    if (loadId != currentLoadId) return;
+                    setActiveCues(translatedCues);
                     activeLabel = "Bahasa Indonesia [AI Fansub · " + model + "]";
                     activeLanguage = "id";
                     activeEngine = "ai";
@@ -656,10 +681,10 @@ public class SubtitleManager {
                 }
 
                 synchronized (SubtitleManager.this) {
-                    activeCues = cues;
-                    lastCueIndex = -1;
+                    if (loadId != currentLoadId) return;
+                    setActiveCues(cues);
                     activeLabel = label;
-                    activeLanguage = lang;
+                    activeLanguage = lang != null ? lang : "en";
                     activeEngine = "raw";
                     if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
                 }
@@ -686,8 +711,7 @@ public class SubtitleManager {
                 }
                 target = lexCues;
             }
-            activeCues = target;
-            lastCueIndex = -1;
+            setActiveCues(target);
             activeLabel = label;
             subEnabled = true;
             if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());

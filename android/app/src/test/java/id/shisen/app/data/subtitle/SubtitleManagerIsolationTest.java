@@ -127,4 +127,19 @@ public class SubtitleManagerIsolationTest {
         // Pada waktu 11000: keduanya sudah selesai
         assertEquals("", manager.getCurrentText(11000));
     }
+
+    @Test
+    public void testLongOverlappingCuePersistsPast15Seconds() {
+        List<SubtitleCue> cues = new ArrayList<>();
+        cues.add(new SubtitleCue(1000, 46000, "[Lirik Lagu Panjang]"));
+        cues.add(new SubtitleCue(5000, 7000, "Dialog A"));
+        cues.add(new SubtitleCue(18000, 20000, "Dialog B"));
+        cues.add(new SubtitleCue(32000, 34000, "Dialog C"));
+
+        manager.setCustomCues(cues, "Long Cue Test");
+
+        assertEquals("[Lirik Lagu Panjang]\nDialog B", manager.getCurrentText(19000));
+        assertEquals("[Lirik Lagu Panjang]", manager.getCurrentText(26000));
+        assertEquals("[Lirik Lagu Panjang]\nDialog C", manager.getCurrentText(33000));
+    }
 }

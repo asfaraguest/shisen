@@ -471,8 +471,12 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onSubtitleLoaded(String label, int count) {
                 runOnUiThread(() -> {
+                    if (subtitleManager == null || !subtitleManager.isSubEnabled()) return;
                     tvSubStatus.setText(getString(R.string.player_sub_status_lines, label, count));
-                    btnPortraitSub.setText(label.contains("Indo") ? "Sub: ID" : (label.contains("Eng") ? "Sub: EN" : "Sub: ON"));
+                    String activeLang = subtitleManager.getActiveLanguage();
+                    String shortLabel = "id".equalsIgnoreCase(activeLang) ? "Sub: ID"
+                            : ("en".equalsIgnoreCase(activeLang) ? "Sub: EN" : "Sub: ON");
+                    btnPortraitSub.setText(shortLabel);
                     btnPortraitSub.setAlpha(1.0f);
                     enforceExoSubButtonReady();
                 });
@@ -481,6 +485,7 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onSubtitleLoading(String message) {
                 runOnUiThread(() -> {
+                    if (subtitleManager == null || !subtitleManager.isSubEnabled()) return;
                     tvSubStatus.setText("Subtitle: " + message);
                     enforceExoSubButtonReady();
                 });
@@ -489,6 +494,7 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onSubtitleError(String error) {
                 runOnUiThread(() -> {
+                    if (subtitleManager == null || !subtitleManager.isSubEnabled()) return;
                     tvSubStatus.setText("Sub: " + error);
                     enforceExoSubButtonReady();
                 });
@@ -1741,7 +1747,7 @@ public class PlayerActivity extends AppCompatActivity {
                         subtitleHandler.removeCallbacks(pendingSubLoadRunnable);
                     }
                     pendingSubLoadRunnable = () -> {
-                        if (isActivityRunning) {
+                        if (isActivityRunning && subtitleManager != null && subtitleManager.isSubEnabled()) {
                             subtitleManager.loadFromTracks(source.subtitles, getSafeAnimeTitle(), ep.number, false);
                         }
                     };
@@ -2385,8 +2391,7 @@ public class PlayerActivity extends AppCompatActivity {
         // 6. Other tracks from stream
         if (currentStreamSource != null && currentStreamSource.subtitles != null) {
             for (SubtitleTrack st : currentStreamSource.subtitles) {
-                String l = st.lang.toLowerCase();
-                if (l.contains("en") || l.contains("id")) continue;
+                if (SubtitleTrack.isIndonesian(st) || SubtitleTrack.isAnyEnglish(st)) continue;
                 options.add(st.label);
                 actions.add(() -> {
                     subtitleManager.setSubEnabled(true);
@@ -2396,7 +2401,7 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
 
-        // 7. Refresh / Re-translate (Bypass Cache)
+        // 7. Refresh / Re-translate (Bypass Cache) — hanya untuk jalur terjemahan (AI atau GTX/Smart Merge non-Official)
         if (isSubOn && "id".equals(curLang)) {
             if ("ai".equals(curEngine)) {
                 options.add(getString(R.string.player_sub_option_refresh_ai));
@@ -2406,7 +2411,7 @@ public class PlayerActivity extends AppCompatActivity {
                         subtitleManager.loadAiOrMimicSubtitleFromTracks(currentStreamSource.subtitles, getSafeAnimeTitle(), getCurrentEpisodeNumberSafe(), true);
                     }
                 });
-            } else {
+            } else if ("smart_merge".equals(curEngine) && !subtitleManager.getActiveLabel().contains("Official")) {
                 options.add(getString(R.string.player_sub_option_refresh_gtx));
                 actions.add(() -> {
                     Toast.makeText(this, R.string.player_toast_retranslating, Toast.LENGTH_SHORT).show();

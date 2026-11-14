@@ -56,4 +56,22 @@ public class SubtitleParserTest {
         assertEquals(4000L, cues.get(0).endMs);
         assertEquals("Halo dari SRT", cues.get(0).text);
     }
+
+    @Test
+    public void testSkipsCompoundAssDrawingAndSurvivesVttArrowText() {
+        String ass = "[Events]\n"
+                + "Dialogue: 0,0:00:01.00,0:00:04.00,Sign,,0,0,0,,{\\an8\\p1}m 0 0 l 100 0 100 100\n"
+                + "Dialogue: 0,0:00:05.00,0:00:08.00,Default,,0,0,0,,Baris 1\\NBaris 2\n";
+        List<SubtitleCue> assCues = SubtitleParser.parse(ass);
+        assertEquals(1, assCues.size());
+        assertEquals("Baris 1\nBaris 2", assCues.get(0).text);
+
+        String vtt = "WEBVTT\n\n"
+                + "00:00:01.000 --> 00:00:04.000\n"
+                + "Arah --> B\n"
+                + "Baris dua\n";
+        List<SubtitleCue> vttCues = SubtitleParser.parse(vtt);
+        assertEquals(1, vttCues.size());
+        assertEquals("Arah --> B\nBaris dua", vttCues.get(0).text);
+    }
 }

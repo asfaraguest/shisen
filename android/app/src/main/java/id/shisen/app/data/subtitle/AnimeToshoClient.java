@@ -60,6 +60,7 @@ public class AnimeToshoClient {
                 } else {
                     queries.add(cleanTitle + " S01E" + String.format(Locale.US, "%02d", episode));
                 }
+                queries.add(cleanTitle + " " + String.format(Locale.US, "%02d", episode));
 
                 OkHttpClient client = HttpClientProvider.getClient().newBuilder()
                         .connectTimeout(2, java.util.concurrent.TimeUnit.SECONDS)

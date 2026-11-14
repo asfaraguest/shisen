@@ -64,64 +64,67 @@ public class DeepTranslateClient {
     }
 
     public static void translateAsync(Context context, String sourceUrl, List<SubtitleCue> cues, boolean forceRefresh, Callback callback) {
+        translateAsync(context, sourceUrl, cues, forceRefresh, null, callback);
+    }
+
+    public static void translateAsync(Context context, String sourceUrl, List<SubtitleCue> cues, boolean forceRefresh,
+                                      java.util.function.BooleanSupplier isCancelled, Callback callback) {
         if (cues == null || cues.isEmpty()) {
             if (callback != null) callback.onError("Daftar subtitle kosong");
             return;
         }
 
         EXECUTOR.execute(() -> {
+            if (isCancelled != null && isCancelled.getAsBoolean()) return;
+
             String cacheKey = generateCacheKey(sourceUrl, cues);
             File cacheFile = getCacheFile(context, cacheKey);
 
             if (!forceRefresh && cacheFile != null && cacheFile.exists() && cacheFile.length() > 0) {
                 List<SubtitleCue> cached = loadFromDiskCache(cacheFile);
-                if (cached != null && !cached.isEmpty()) {
+                if (cached != null && !cached.isEmpty() && !AiSubtitleService.containsDominantArabicScript(cached)) {
                     List<SubtitleCue> sanitized = finalizeCues(cached);
                     postSuccess(callback, sanitized);
                     return;
+                } else if (cached != null && !cached.isEmpty()) {
+                    cacheFile.delete();
                 }
             }
 
+            String errMsg = "DeepTranslate gagal menerjemahkan subtitle";
             try {
-                List<SubtitleCue> translated = translateBatchesSync(cues, callback);
+                List<SubtitleCue> translated = translateBatchesSync(cues, isCancelled, callback);
+                if (isCancelled != null && isCancelled.getAsBoolean()) return;
                 if (translated != null && !translated.isEmpty()) {
                     List<SubtitleCue> finalized = finalizeCues(translated);
-                    if (cacheFile != null) {
+                    if (cacheFile != null && !AiSubtitleService.containsDominantArabicScript(finalized)) {
                         saveToDiskCache(cacheFile, finalized);
                     }
                     postSuccess(callback, finalized);
                     return;
                 }
             } catch (Exception e) {
-                // Failover ke Google Translate GTX
+                if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                    errMsg = e.getMessage();
+                }
             }
 
-            // Fallback otomatis ke Google Translate GTX jika DeepTranslate gagal/limit
-            GtxTranslator.translateAsync(context, sourceUrl, cues, forceRefresh, new GtxTranslator.TranslateCallback() {
-                @Override
-                public void onProgress(int progress, int total) {
-                    if (callback != null) callback.onProgress(progress, total);
-                }
-
-                @Override
-                public void onSuccess(List<SubtitleCue> gtxCues) {
-                    List<SubtitleCue> finalized = finalizeCues(gtxCues);
-                    postSuccess(callback, finalized);
-                }
-
-                @Override
-                public void onError(String error) {
-                    if (callback != null) callback.onError(error);
-                }
-            });
+            if (isCancelled == null || !isCancelled.getAsBoolean()) {
+                if (callback != null) callback.onError(errMsg);
+            }
         });
     }
 
-    private static List<SubtitleCue> translateBatchesSync(List<SubtitleCue> cues, Callback callback) throws Exception {
+    private static List<SubtitleCue> translateBatchesSync(List<SubtitleCue> cues,
+                                                          java.util.function.BooleanSupplier isCancelled,
+                                                          Callback callback) throws Exception {
         int total = cues.size();
         List<SubtitleCue> result = new ArrayList<>(total);
 
         for (int i = 0; i < total; i += BATCH_SIZE) {
+            if (isCancelled != null && isCancelled.getAsBoolean()) {
+                return null;
+            }
             int end = Math.min(i + BATCH_SIZE, total);
             List<SubtitleCue> batch = cues.subList(i, end);
 
@@ -132,7 +135,7 @@ public class DeepTranslateClient {
             }
             result.addAll(translatedBatch);
 
-            if (callback != null) {
+            if (callback != null && (isCancelled == null || !isCancelled.getAsBoolean())) {
                 int progress = Math.min(end, total);
                 callback.onProgress(progress, total);
             }
@@ -284,10 +287,14 @@ public class DeepTranslateClient {
     }
 
     private static List<SubtitleCue> loadFromDiskCache(File file) {
-        try (FileInputStream fis = new FileInputStream(file)) {
-            byte[] data = new byte[(int) file.length()];
-            fis.read(data);
-            String content = new String(data, StandardCharsets.UTF_8);
+        try (FileInputStream fis = new FileInputStream(file);
+             java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream((int) Math.min(file.length(), 65536))) {
+            byte[] buf = new byte[8192];
+            int read;
+            while ((read = fis.read(buf)) != -1) {
+                bos.write(buf, 0, read);
+            }
+            String content = bos.toString("UTF-8");
             String[] lines = content.split("\n");
             List<SubtitleCue> cues = new ArrayList<>();
             for (String l : lines) {

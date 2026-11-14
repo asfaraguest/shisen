@@ -5,6 +5,11 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 ## [1.1.1-beta.3] - 2026-11-14
 
 ### Diperbaiki
+- **Perbaikan Sistem Subtitle End-to-End (`SubtitleParser.java`, `GtxTranslator.java`, `SubtitleMergeEngine.java`, `AnimeToshoClient.java`, `DeepTranslateClient.java`, `AiSubtitleService.java`, `SubtitleManager.java`, `PlayerActivity.java`)**:
+  - Mencegah tampilan teks English prematur saat batch GTX gagal dan mengosongkan fallback `English (Cadangan)` dengan status bahasa yang konsisten (`en/raw`), serta memperbaiki hilangnya baris baru (`\n`) akibat `Html.fromHtml()` di Android pada `SubtitleParser` dan `GtxTranslator`.
+  - Memperketat filter vector drawing ASS majemuk (`{\an8\p1}`), mengamankan parsing VTT/SRT yang mengandung teks `"-->"`, dan memperluas batas scan mundur `getCurrentText()` sesuai durasi cue agar lirik/sign panjang >15 detik tidak terpotong.
+  - Memperbaiki `estimateOptimalOffset()` dengan sampling merata di sepanjang episode agar tidak terjebak karaoke OP, serta menambahkan query fallback nomor episode non-`SxxExx` di `AnimeToshoClient`.
+  - Menghapus fallback GTX ganda di `DeepTranslateClient` dan dead network fetch `forcedId` di `SubtitleManager`, menambahkan sinyal pembatalan job `loadId` ke translator AI (`DeepTranslateClient`, `AiSubtitleService`), serta menyinkronkan status `Sub Off`, opsi Refresh, dan filter track bahasa lain di `PlayerActivity`.
 - **Perbaikan Navigasi D-Pad Android TV End-to-End (`MainActivity.java`, `DeviceNav.java`, `SettingsDialog.java`, `dialog_genre_selector.xml`, `DetailActivity.java`, `RelatedAnimeAdapter.java`, `PlayerActivity.java`)**:
   - Menetapkan fokus D-Pad awal ke konten grid/banner saat cold-start, fallback fokus pada `onResume`, menjaga fokus chip sub-filter dan pagination agar tetap fokusabel di TV, serta menunda highlight tab Genre hingga genre dipilih dengan fokus awal daftar genre.
   - Memperbaiki handler tombol Back di `DeviceNav` agar fokus kembali ke rail menu TV sebelum keluar aplikasi saat tidak ada view terfokus, serta mengarahkan fokus tombol BYOK AI `SettingsDialog` ke kolom input.

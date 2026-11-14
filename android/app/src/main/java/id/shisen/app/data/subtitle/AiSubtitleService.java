@@ -725,6 +725,18 @@ Output:
                                   String apiKey,
                                   boolean forceRefresh,
                                   TranslateCuesCallback callback) {
+        translateCuesAsync(context, sourceIdentifier, cues, customPrompt, model, apiKey, forceRefresh, null, callback);
+    }
+
+    public void translateCuesAsync(Context context,
+                                  String sourceIdentifier,
+                                  List<SubtitleCue> cues,
+                                  String customPrompt,
+                                  String model,
+                                  String apiKey,
+                                  boolean forceRefresh,
+                                  java.util.function.BooleanSupplier isCancelled,
+                                  TranslateCuesCallback callback) {
         if (cues == null || cues.isEmpty()) {
             if (callback != null) callback.onError("Tidak ada cue subtitle untuk diterjemahkan");
             return;
@@ -750,19 +762,26 @@ Output:
 
         new Thread(() -> {
             try {
+                if (isCancelled != null && isCancelled.getAsBoolean()) return;
+
                 // 1. Cek Disk Cache
-                File cacheDir = new File(context.getCacheDir(), "sub_cache");
-                if (!cacheDir.exists()) cacheDir.mkdirs();
+                File cacheFile = null;
+                if (context != null) {
+                    File cacheDir = new File(context.getCacheDir(), "sub_cache");
+                    if (!cacheDir.exists()) cacheDir.mkdirs();
 
-                String cacheKey = sha1(sourceIdentifier + "_" + effectiveModel + "_ai_id");
-                File cacheFile = new File(cacheDir, cacheKey + ".json");
+                    String cacheKey = sha1(sourceIdentifier + "_" + effectiveModel + "_ai_id");
+                    cacheFile = new File(cacheDir, cacheKey + ".json");
+                }
 
-                if (!forceRefresh && cacheFile.exists() && cacheFile.length() > 0) {
+                if (!forceRefresh && cacheFile != null && cacheFile.exists() && cacheFile.length() > 0) {
                     try {
                         String jsonStr = readFile(cacheFile);
                         List<SubtitleCue> cachedCues = deserializeCues(jsonStr);
                         if (!cachedCues.isEmpty() && !containsDominantArabicScript(cachedCues)) {
-                            if (callback != null) callback.onSuccess(cachedCues);
+                            if (callback != null && (isCancelled == null || !isCancelled.getAsBoolean())) {
+                                callback.onSuccess(cachedCues);
+                            }
                             return;
                         } else if (containsDominantArabicScript(cachedCues)) {
                             // Hapus cache korup berbahasa Arab dari versi sebelumnya
@@ -778,6 +797,7 @@ Output:
                 String endpointUrl = getEndpointUrl(provider, activeKey);
 
                 for (int lo = 0; lo < totalCues; lo += batchSize) {
+                    if (isCancelled != null && isCancelled.getAsBoolean()) return;
                     int hi = Math.min(lo + batchSize, totalCues);
                     List<SubtitleCue> batchCues = cues.subList(lo, hi);
 
@@ -846,13 +866,15 @@ Output:
                     }
                 }
 
+                if (isCancelled != null && isCancelled.getAsBoolean()) return;
+
                 if (translatedAll.isEmpty()) {
                     if (callback != null) callback.onError("Gagal menerjemahkan subtitle");
                     return;
                 }
 
                 // 3. Simpan ke Cache Disk HANYA jika bukan kontaminasi bahasa Arab saat target Bahasa Indonesia
-                if (!containsDominantArabicScript(translatedAll)) {
+                if (cacheFile != null && !containsDominantArabicScript(translatedAll)) {
                     try {
                         writeFile(cacheFile, serializeCues(translatedAll));
                     } catch (Exception ignored) {}

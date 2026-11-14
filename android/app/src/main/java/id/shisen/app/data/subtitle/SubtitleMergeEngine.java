@@ -31,11 +31,14 @@ public class SubtitleMergeEngine {
         Map<Long, Integer> buckets = new HashMap<>();
         int limitB = Math.min(builtinCues.size(), 300);
         int limitO = Math.min(externalCues.size(), 300);
+        // Sampling merata di seluruh durasi episode agar karaoke OP tidak mendominasi
+        double stepB = builtinCues.size() > 300 ? (double) builtinCues.size() / limitB : 1.0;
+        double stepO = externalCues.size() > 300 ? (double) externalCues.size() / limitO : 1.0;
 
         for (int i = 0; i < limitB; i++) {
-            long bs = builtinCues.get(i).startMs;
+            long bs = builtinCues.get((int) (i * stepB)).startMs;
             for (int j = 0; j < limitO; j++) {
-                long os = externalCues.get(j).startMs;
+                long os = externalCues.get((int) (j * stepO)).startMs;
                 long diff = bs - os;
                 if (Math.abs(diff) <= 45000) {
                     // Kuantisasi ke resolusi 100ms

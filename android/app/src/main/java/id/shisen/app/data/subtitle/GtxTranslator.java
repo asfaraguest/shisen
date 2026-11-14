@@ -54,12 +54,15 @@ public class GtxTranslator {
         new Thread(() -> {
             try {
                 // 1. Cek Cache Lokal di Disk (v2 dengan leksikon luwes)
-                String cacheKey = sha1(sourceIdentifier + "_gtx_id_v2");
-                File cacheDir = new File(context.getCacheDir(), "sub_cache");
-                if (!cacheDir.exists()) cacheDir.mkdirs();
-                File cacheFile = new File(cacheDir, cacheKey + ".json");
+                File cacheFile = null;
+                if (context != null) {
+                    String cacheKey = sha1(sourceIdentifier + "_gtx_id_v2");
+                    File cacheDir = new File(context.getCacheDir(), "sub_cache");
+                    if (!cacheDir.exists()) cacheDir.mkdirs();
+                    cacheFile = new File(cacheDir, cacheKey + ".json");
+                }
 
-                if (!forceRefresh && cacheFile.exists() && cacheFile.length() > 0) {
+                if (!forceRefresh && cacheFile != null && cacheFile.exists() && cacheFile.length() > 0) {
                     try {
                         String jsonStr = readFile(cacheFile);
                         List<SubtitleCue> cachedCues = deserializeCues(jsonStr);
@@ -90,23 +93,32 @@ public class GtxTranslator {
                         .build();
                 List<SubtitleCue> translated = new ArrayList<>(cues.size());
                 int totalCues = cues.size();
+                int translatedTotalCount = 0;
 
                 for (int startIdx = 0; startIdx < totalCues; startIdx += BATCH_SIZE) {
                     int endIdx = Math.min(startIdx + BATCH_SIZE, totalCues);
                     List<SubtitleCue> batch = cues.subList(startIdx, endIdx);
 
                     List<String> translatedBatchTexts = translateBatch(client, batch);
+                    int batchTranslatedCount = 0;
                     for (int j = 0; j < batch.size(); j++) {
                         SubtitleCue orig = batch.get(j);
                         String trText = (j < translatedBatchTexts.size() && !translatedBatchTexts.get(j).isEmpty())
                                 ? translatedBatchTexts.get(j)
                                 : orig.text;
+                        if (!trText.equalsIgnoreCase(orig.text)) {
+                            batchTranslatedCount++;
+                            translatedTotalCount++;
+                        }
                         translated.add(new SubtitleCue(orig.startMs, orig.endMs, trText));
                     }
 
                     if (callback != null) {
                         callback.onProgress(translated.size(), totalCues);
-                        callback.onPartialSuccess(new ArrayList<>(translated));
+                        // Cegah premature English display saat batch gagal / fallback ke English mentah
+                        if (batchTranslatedCount > 0 && (translatedTotalCount * 100 / Math.max(1, translated.size())) > 25) {
+                            callback.onPartialSuccess(new ArrayList<>(translated));
+                        }
                     }
                 }
 
@@ -114,22 +126,22 @@ public class GtxTranslator {
                 List<SubtitleCue> sanitizedCues = SmartLexicon.sanitizeCuesWithContext(translated, "gtx+", 3, 15.0);
 
                 // 2. Simpan Hasil ke Disk Cache — HANYA jika terjemahan berhasil
-    // Deteksi gagal: jika >80% cue sama persis dengan English input, berarti GTX gagal
-    int sameCount = 0;
-    for (int ci = 0; ci < sanitizedCues.size() && ci < cues.size(); ci++) {
-        if (sanitizedCues.get(ci).text.equals(cues.get(ci).text)) {
-            sameCount++;
-        }
-    }
-    boolean translationSuccessful = cues.isEmpty()
-            || (sameCount * 100 / cues.size()) <= 80;
+                // Deteksi gagal: jika >80% cue sama persis dengan English input, berarti GTX gagal
+                int sameCount = 0;
+                for (int ci = 0; ci < sanitizedCues.size() && ci < cues.size(); ci++) {
+                    if (sanitizedCues.get(ci).text.equalsIgnoreCase(cues.get(ci).text)) {
+                        sameCount++;
+                    }
+                }
+                boolean translationSuccessful = cues.isEmpty()
+                        || (sameCount * 100 / cues.size()) <= 80;
 
-    if (translationSuccessful && !AiSubtitleService.containsDominantArabicScript(sanitizedCues)) {
-        try {
-            String jsonOut = serializeCues(sanitizedCues);
-            writeFile(cacheFile, jsonOut);
-        } catch (Exception ignored) {}
-    }
+                if (cacheFile != null && translationSuccessful && !AiSubtitleService.containsDominantArabicScript(sanitizedCues)) {
+                    try {
+                        String jsonOut = serializeCues(sanitizedCues);
+                        writeFile(cacheFile, jsonOut);
+                    } catch (Exception ignored) {}
+                }
 
                 if (callback != null) {
                     if (translationSuccessful) {
@@ -198,9 +210,19 @@ public class GtxTranslator {
                         while (m.find()) {
                             try {
                                 int id = Integer.parseInt(m.group(1));
-                                String val = m.group(2).replace("<br>", "\n").replace("<br/>", "\n");
-                                val = Html.fromHtml(val, Html.FROM_HTML_MODE_LEGACY).toString().trim();
-                                map.put(id, val);
+                                String rawVal = m.group(2);
+                                String val;
+                                try {
+                                    val = Html.fromHtml(rawVal.replace("\n", "<br>"), Html.FROM_HTML_MODE_LEGACY).toString();
+                                } catch (Throwable ignored) {
+                                    val = rawVal.replaceAll("(?i)<br\\s*/?>", "\n")
+                                            .replace("&nbsp;", " ")
+                                            .replace("&amp;", "&")
+                                            .replace("&quot;", "\"")
+                                            .replace("&lt;", "<")
+                                            .replace("&gt;", ">");
+                                }
+                                map.put(id, val.trim());
                             } catch (Exception ignored) {}
                         }
 
