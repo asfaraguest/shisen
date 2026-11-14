@@ -2792,15 +2792,56 @@ public class PlayerActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private static final String[] TV_SUB_SIZE_KEYS = {"small", "medium", "large", "xlarge", "xxlarge", "jumbo", "max"};
+    private static final float[] TV_SUB_SIZE_SP = {18f, 22f, 26f, 30f, 34f, 38f, 42f};
+    private static final int[] TV_SUB_SIZE_RES = {
+            R.string.player_tv_sub_size_small, R.string.player_tv_sub_size_medium, R.string.player_tv_sub_size_large,
+            R.string.player_tv_sub_size_xlarge, R.string.player_tv_sub_size_xxlarge,
+            R.string.player_tv_sub_size_jumbo, R.string.player_tv_sub_size_max
+    };
+    private static final String[] MOBILE_SUB_SIZE_KEYS = {"small", "medium", "large", "xlarge"};
+    private static final float[] MOBILE_SUB_SIZE_SP = {14f, 17f, 21f, 25f};
+    private static final int[] MOBILE_SUB_SIZE_RES = {
+            R.string.player_sub_size_small, R.string.player_sub_size_medium,
+            R.string.player_sub_size_large, R.string.player_sub_size_xlarge
+    };
+
+    public static String getDefaultSubtitleSizeKey(boolean isTv) {
+        return isTv ? "large" : "medium";
+    }
+
+    private static int findSizeIndex(String[] keys, String target, int fallbackIdx) {
+        for (int i = 0; i < keys.length; i++) {
+            if (keys[i].equals(target)) return i;
+        }
+        return fallbackIdx;
+    }
+
+    public static float resolveSubtitleSizeSp(String size, boolean isTv) {
+        if (isTv) {
+            return TV_SUB_SIZE_SP[findSizeIndex(TV_SUB_SIZE_KEYS, size, 2)];
+        }
+        return MOBILE_SUB_SIZE_SP[findSizeIndex(MOBILE_SUB_SIZE_KEYS, size, 1)];
+    }
+
+    private String getSubtitleSizeLabel(String size, boolean isTv) {
+        if (isTv) {
+            return getString(TV_SUB_SIZE_RES[findSizeIndex(TV_SUB_SIZE_KEYS, size, 2)]);
+        }
+        return getString(MOBILE_SUB_SIZE_RES[findSizeIndex(MOBILE_SUB_SIZE_KEYS, size, 1)]);
+    }
+
     private void showSubtitleStyleDialog() {
         SharedPreferences sp = getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE);
+        boolean isTv = PlayerKeys.isTv();
+        String defaultSize = getDefaultSubtitleSizeKey(isTv);
         String curPos = sp.getString("sub_pos", "low");
         String curBg = sp.getString("sub_bg", "subtle");
-        String curSize = sp.getString("sub_size", "medium");
+        String curSize = sp.getString("sub_size", defaultSize);
 
         String posLabel = "low".equals(curPos) ? getString(R.string.player_sub_pos_low) : ("mid".equals(curPos) ? getString(R.string.player_sub_pos_mid) : getString(R.string.player_sub_pos_high));
         String bgLabel = "transparent".equals(curBg) ? getString(R.string.player_sub_bg_transparent) : ("subtle".equals(curBg) ? getString(R.string.player_sub_bg_subtle) : ("medium".equals(curBg) ? getString(R.string.player_sub_bg_medium) : getString(R.string.player_sub_bg_dark)));
-        String sizeLabel = "small".equals(curSize) ? getString(R.string.player_sub_size_small) : ("large".equals(curSize) ? getString(R.string.player_sub_size_large) : ("xlarge".equals(curSize) ? getString(R.string.player_sub_size_xlarge) : getString(R.string.player_sub_size_medium)));
+        String sizeLabel = getSubtitleSizeLabel(curSize, isTv);
 
         long curOff = subtitleManager.getSubtitleOffsetMs();
         String offLabel = curOff == 0L ? getString(R.string.player_sub_offset_synced) : String.format(Locale.US, "%+.2fs", curOff / 1000.0);
@@ -2826,7 +2867,7 @@ public class PlayerActivity extends AppCompatActivity {
                         showSubtitleOffsetPicker();
                     } else if (which == 4) {
                         subtitleManager.setSubtitleOffsetMs(0L);
-                        sp.edit().putString("sub_pos", "low").putString("sub_bg", "subtle").putString("sub_size", "medium").apply();
+                        sp.edit().putString("sub_pos", "low").putString("sub_bg", "subtle").putString("sub_size", defaultSize).apply();
                         applySubtitleStyle();
                         Toast.makeText(this, R.string.player_toast_sub_style_reset, Toast.LENGTH_SHORT).show();
                     }
@@ -2885,19 +2926,21 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void showSizePicker(SharedPreferences sp) {
-        String[] options = {
-                getString(R.string.player_sub_size_small),
-                getString(R.string.player_sub_size_medium),
-                getString(R.string.player_sub_size_large),
-                getString(R.string.player_sub_size_xlarge)
-        };
-        String cur = sp.getString("sub_size", "medium");
-        int checked = "xlarge".equals(cur) ? 3 : ("large".equals(cur) ? 2 : ("small".equals(cur) ? 0 : 1));
+        boolean isTv = PlayerKeys.isTv();
+        String[] keys = isTv ? TV_SUB_SIZE_KEYS : MOBILE_SUB_SIZE_KEYS;
+        int[] resIds = isTv ? TV_SUB_SIZE_RES : MOBILE_SUB_SIZE_RES;
+        String[] options = new String[resIds.length];
+        for (int i = 0; i < resIds.length; i++) {
+            options[i] = getString(resIds[i]);
+        }
+        String defaultSize = getDefaultSubtitleSizeKey(isTv);
+        String cur = sp.getString("sub_size", defaultSize);
+        int checked = findSizeIndex(keys, cur, isTv ? 2 : 1);
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.player_dialog_sub_size_title)
                 .setSingleChoiceItems(options, checked, (d, which) -> {
-                    String val = which == 3 ? "xlarge" : (which == 2 ? "large" : (which == 0 ? "small" : "medium"));
+                    String val = (which >= 0 && which < keys.length) ? keys[which] : defaultSize;
                     sp.edit().putString("sub_size", val).apply();
                     applySubtitleStyle();
                     d.dismiss();
@@ -3084,9 +3127,10 @@ public class PlayerActivity extends AppCompatActivity {
     private void applySubtitleStyle() {
         if (tvSubtitles == null) return;
         SharedPreferences sp = getSharedPreferences("menatap_player_prefs", Context.MODE_PRIVATE);
+        boolean isTv = PlayerKeys.isTv();
         String pos = sp.getString("sub_pos", "low");
         String bg = sp.getString("sub_bg", "subtle");
-        String size = sp.getString("sub_size", "medium");
+        String size = sp.getString("sub_size", getDefaultSubtitleSizeKey(isTv));
 
         // 1. Posisi
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) tvSubtitles.getLayoutParams();
@@ -3119,13 +3163,15 @@ public class PlayerActivity extends AppCompatActivity {
             tvSubtitles.setShadowLayer(4.0f, 1.5f, 1.5f, 0xFF000000);
         }
 
-        // 3. Ukuran Huruf & Lebar Maksimum (10-Foot UI di Android TV)
-        float spVal = PlayerKeys.isTv()
-                ? ("small".equals(size) ? 18f : ("large".equals(size) ? 26f : ("xlarge".equals(size) ? 30f : 22f)))
-                : ("small".equals(size) ? 14f : ("large".equals(size) ? 21f : ("xlarge".equals(size) ? 25f : 17f)));
-        tvSubtitles.setTextSize(TypedValue.COMPLEX_UNIT_SP, spVal);
-        if (PlayerKeys.isTv()) {
+        // 3. Ukuran Huruf, Spasi Baris & Lebar Maksimum (10-Foot UI di Android TV hingga 42sp)
+        tvSubtitles.setTextSize(TypedValue.COMPLEX_UNIT_SP, resolveSubtitleSizeSp(size, isTv));
+        if (isTv) {
             tvSubtitles.setMaxWidth((int) (getResources().getDisplayMetrics().widthPixels * 0.82f));
+            tvSubtitles.setLineSpacing(0f, 1.25f);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                tvSubtitles.setBreakStrategy(android.graphics.text.LineBreaker.BREAK_STRATEGY_BALANCED);
+                tvSubtitles.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);
+            }
         }
     }
 

@@ -422,6 +422,13 @@
     <string name="player_sub_size_medium">Medio (17sp) [Estándar]</string>
     <string name="player_sub_size_large">Grande (21sp)</string>
     <string name="player_sub_size_xlarge">Muy grande (25sp)</string>
+    <string name="player_tv_sub_size_small">Pequeño (18sp)</string>
+    <string name="player_tv_sub_size_medium">Medio (22sp)</string>
+    <string name="player_tv_sub_size_large">Grande (26sp) [Estándar TV]</string>
+    <string name="player_tv_sub_size_xlarge">Muy grande (30sp)</string>
+    <string name="player_tv_sub_size_xxlarge">Extra grande (34sp) [Larga distancia]</string>
+    <string name="player_tv_sub_size_jumbo">Jumbo (38sp) [Pantalla grande]</string>
+    <string name="player_tv_sub_size_max">Máximo (42sp)</string>
 
     <string name="player_sub_offset_earlier_2s">-2.0s (2 segundos antes)</string>
     <string name="player_sub_offset_earlier_1s">-1.0s (1 segundo antes)</string>

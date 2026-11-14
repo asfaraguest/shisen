@@ -422,6 +422,13 @@
     <string name="player_sub_size_medium">Sedang (17sp) [Standar HP]</string>
     <string name="player_sub_size_large">Besar (21sp)</string>
     <string name="player_sub_size_xlarge">Sangat Besar (25sp)</string>
+    <string name="player_tv_sub_size_small">Kecil (18sp)</string>
+    <string name="player_tv_sub_size_medium">Sedang (22sp)</string>
+    <string name="player_tv_sub_size_large">Besar (26sp) [Standar TV]</string>
+    <string name="player_tv_sub_size_xlarge">Sangat Besar (30sp)</string>
+    <string name="player_tv_sub_size_xxlarge">Ekstra Besar (34sp) [Jarak Jauh]</string>
+    <string name="player_tv_sub_size_jumbo">Jumbo (38sp) [Layar Besar]</string>
+    <string name="player_tv_sub_size_max">Maksimal (42sp)</string>
 
     <string name="player_sub_offset_earlier_2s">-2.0s (Lebih Cepat 2 Detik)</string>
     <string name="player_sub_offset_earlier_1s">-1.0s (Lebih Cepat 1 Detik)</string>

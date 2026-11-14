@@ -422,6 +422,13 @@
     <string name="player_sub_size_medium">標準 (17sp) [標準]</string>
     <string name="player_sub_size_large">大 (21sp)</string>
     <string name="player_sub_size_xlarge">特大 (25sp)</string>
+    <string name="player_tv_sub_size_small">小 (18sp)</string>
+    <string name="player_tv_sub_size_medium">標準 (22sp)</string>
+    <string name="player_tv_sub_size_large">大 (26sp) [TV標準]</string>
+    <string name="player_tv_sub_size_xlarge">特大 (30sp)</string>
+    <string name="player_tv_sub_size_xxlarge">超特大 (34sp) [遠距離]</string>
+    <string name="player_tv_sub_size_jumbo">ジャンボ (38sp) [大画面]</string>
+    <string name="player_tv_sub_size_max">最大 (42sp)</string>
 
     <string name="player_sub_offset_earlier_2s">-2.0s (2秒早く)</string>
     <string name="player_sub_offset_earlier_1s">-1.0s (1秒早く)</string>
