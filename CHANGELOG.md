@@ -2,6 +2,14 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.1-beta.3] - 2026-11-14
+
+### Diperbaiki
+- **Highlight Fokus D-Pad & Tombol Frosted Glass Detail (`DetailActivity.java`, `AnimeThemeManager.java`)**:
+  - Menambahkan state `state_focused` pada `createFrostedGlassButtonDrawable(...)` dan `createFrostedIconButtonDrawable(...)` melalui helper `buildGlassLayer(...)` dan `wrapFocusRipple(...)` agar tombol aksi memiliki sorotan fokus yang jelas di Android TV.
+  - Memperbarui warna ikon tombol kembali (`btnBack`) pada mode TV agar mengikuti aksen tema aktif serta menambahkan `StateListDrawable` fokus pada tab rentang episode.
+  - Mempertahankan listener *auto-scroll* `scrollEpisodeRanges` saat `TvFocusHelper.attachFocusScale(...)` dipasang pada tab rentang episode di Android TV.
+
 ## [1.1.1-beta.2] - 2026-11-14
 
 ### Ditingkatkan

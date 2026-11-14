@@ -276,6 +276,9 @@ public class DetailActivity extends AppCompatActivity {
         if (btnBack != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(
                     btnBack, AnimeThemeManager.createFrostedIconButtonDrawable(this));
+            if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+                btnBack.setImageTintList(android.content.res.ColorStateList.valueOf(accent));
+            }
         }
         if (btnPlayPrimary != null) {
             btnPlayPrimary.setBackgroundTintList(null);
@@ -703,15 +706,20 @@ public class DetailActivity extends AppCompatActivity {
                 selectEpisodeRange(rangeIdx);
             });
 
-            tab.setOnFocusChangeListener((v, hasFocus) -> {
+            View.OnFocusChangeListener scrollListener = (v, hasFocus) -> {
                 if (hasFocus && scrollEpisodeRanges != null) {
                     int scrollX = v.getLeft() - (scrollEpisodeRanges.getWidth() / 2) + (v.getWidth() / 2);
                     scrollEpisodeRanges.smoothScrollTo(Math.max(0, scrollX), 0);
                 }
-            });
+            };
 
             if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
                 id.shisen.app.util.TvFocusHelper.attachFocusScale(tab, 1.06f);
+                View.OnFocusChangeListener scaleListener = tab.getOnFocusChangeListener();
+                tab.setOnFocusChangeListener((v, hasFocus) -> {
+                    if (scaleListener != null) scaleListener.onFocusChange(v, hasFocus);
+                    scrollListener.onFocusChange(v, hasFocus);
+                });
                 tab.setOnKeyListener((v, keyCode, event) -> {
                     if (event.getAction() == android.view.KeyEvent.ACTION_DOWN) {
                         if (keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT && rangeIdx == 0) {
@@ -731,6 +739,8 @@ public class DetailActivity extends AppCompatActivity {
                     }
                     return false;
                 });
+            } else {
+                tab.setOnFocusChangeListener(scrollListener);
             }
 
             layoutEpisodeRanges.addView(tab);
@@ -743,20 +753,30 @@ public class DetailActivity extends AppCompatActivity {
         int accent = AnimeThemeManager.getPrimaryAccentColor(this);
         int surface = AnimeThemeManager.getSurfaceColor(this);
         int border = AnimeThemeManager.getBorderColor(this);
-        android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
-        gd.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
-        gd.setCornerRadius(8 * density);
+
+        android.graphics.drawable.GradientDrawable focused = new android.graphics.drawable.GradientDrawable();
+        focused.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        focused.setCornerRadius(8 * density);
+        focused.setColor(AnimeThemeManager.withAlpha(accent, 0x4D));
+        focused.setStroke(Math.max(3, (int) (2.2f * density)), isSelected ? Color.WHITE : accent);
+
+        android.graphics.drawable.GradientDrawable normal = new android.graphics.drawable.GradientDrawable();
+        normal.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        normal.setCornerRadius(8 * density);
         if (isSelected) {
-            gd.setColor(AnimeThemeManager.withAlpha(accent, 0x33));
-            gd.setStroke((int) (1.5f * density), accent);
-            AnimeThemeManager.applyBackgroundPreservingPadding(tab, gd);
+            normal.setColor(AnimeThemeManager.withAlpha(accent, 0x33));
+            normal.setStroke((int) (1.5f * density), accent);
             tab.setTextColor(accent);
         } else {
-            gd.setColor(AnimeThemeManager.withAlpha(surface, 0xB3));
-            gd.setStroke((int) (1f * density), border);
-            AnimeThemeManager.applyBackgroundPreservingPadding(tab, gd);
+            normal.setColor(AnimeThemeManager.withAlpha(surface, 0xB3));
+            normal.setStroke((int) (1f * density), border);
             tab.setTextColor(ContextCompat.getColor(this, R.color.text_frost_subtle));
         }
+
+        android.graphics.drawable.StateListDrawable sld = new android.graphics.drawable.StateListDrawable();
+        sld.addState(new int[]{android.R.attr.state_focused}, focused);
+        sld.addState(new int[]{}, normal);
+        AnimeThemeManager.applyBackgroundPreservingPadding(tab, sld);
     }
 
     private void selectEpisodeRange(int rangeIdx) {

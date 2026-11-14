@@ -303,28 +303,26 @@ public class AnimeThemeManager {
         int surface = getSurfaceColor(context);
         float radius = 24f * d;
 
-        GradientDrawable base = new GradientDrawable(
-                GradientDrawable.Orientation.TL_BR,
+        LayerDrawable normal = buildGlassLayer(
+                radius,
                 isPrimaryAccent
                         ? new int[]{withAlpha(accent, 0x52), withAlpha(accent, 0x26)}
                         : (isActiveState
                         ? new int[]{withAlpha(accent, 0x38), withAlpha(surface, 0x88)}
-                        : new int[]{withAlpha(surface, 0x8C), withAlpha(0xFF0A0D18, 0x73)})
+                        : new int[]{withAlpha(surface, 0x8C), withAlpha(0xFF0A0D18, 0x73)}),
+                Math.max(2, (int) (1.2f * d)),
+                isPrimaryAccent ? withAlpha(accent, 0xCC) : (isActiveState ? withAlpha(accent, 0xAA) : 0x4DFFFFFF)
         );
-        base.setCornerRadius(radius);
-
-        GradientDrawable sheen = new GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{0x28FFFFFF, 0x06FFFFFF}
+        LayerDrawable focused = buildGlassLayer(
+                radius,
+                isPrimaryAccent
+                        ? new int[]{withAlpha(accent, 0x80), withAlpha(accent, 0x4D)}
+                        : new int[]{withAlpha(accent, 0x4D), withAlpha(surface, 0xB3)},
+                Math.max(4, (int) (2.5f * d)),
+                isPrimaryAccent ? Color.WHITE : accent
         );
-        sheen.setCornerRadius(radius);
-        int strokeColor = isPrimaryAccent
-                ? withAlpha(accent, 0xCC)
-                : (isActiveState ? withAlpha(accent, 0xAA) : 0x4DFFFFFF);
-        sheen.setStroke(Math.max(2, (int) (1.2f * d)), strokeColor);
 
-        LayerDrawable glass = new LayerDrawable(new Drawable[]{base, sheen});
-        return wrapRipple(glass, withAlpha(accent, 0x40), radius);
+        return wrapFocusRipple(normal, focused, withAlpha(accent, 0x40), radius);
     }
 
     public static Drawable createFrostedIconButtonDrawable(Context context) {
@@ -333,20 +331,40 @@ public class AnimeThemeManager {
         int surface = getSurfaceColor(context);
         float radius = 12f * d;
 
-        GradientDrawable base = new GradientDrawable();
-        base.setShape(GradientDrawable.RECTANGLE);
+        LayerDrawable normal = buildGlassLayer(
+                radius,
+                new int[]{withAlpha(surface, 0x8C), withAlpha(surface, 0x8C)},
+                Math.max(1, (int) (1f * d)),
+                0x40FFFFFF
+        );
+        LayerDrawable focused = buildGlassLayer(
+                radius,
+                new int[]{withAlpha(accent, 0x40), withAlpha(accent, 0x40)},
+                Math.max(4, (int) (2.2f * d)),
+                accent
+        );
+
+        return wrapFocusRipple(normal, focused, withAlpha(accent, 0x40), radius);
+    }
+
+    private static LayerDrawable buildGlassLayer(float radius, int[] bgColors, int strokePx, int strokeColor) {
+        GradientDrawable base = new GradientDrawable(GradientDrawable.Orientation.TL_BR, bgColors);
         base.setCornerRadius(radius);
-        base.setColor(withAlpha(surface, 0x8C));
 
         GradientDrawable sheen = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{0x24FFFFFF, 0x05FFFFFF}
+                new int[]{0x28FFFFFF, 0x06FFFFFF}
         );
         sheen.setCornerRadius(radius);
-        sheen.setStroke(Math.max(1, (int) (1f * d)), 0x40FFFFFF);
+        sheen.setStroke(strokePx, strokeColor);
+        return new LayerDrawable(new Drawable[]{base, sheen});
+    }
 
-        LayerDrawable glass = new LayerDrawable(new Drawable[]{base, sheen});
-        return wrapRipple(glass, withAlpha(accent, 0x40), radius);
+    private static Drawable wrapFocusRipple(Drawable normal, Drawable focused, int rippleColor, float cornerRadiusPx) {
+        StateListDrawable states = new StateListDrawable();
+        states.addState(new int[]{android.R.attr.state_focused}, focused);
+        states.addState(new int[]{}, normal);
+        return wrapRipple(states, rippleColor, cornerRadiusPx);
     }
 
     private static Drawable wrapRipple(Drawable content, int rippleColor, float cornerRadiusPx) {
