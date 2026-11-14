@@ -5,6 +5,11 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 ## [1.1.1-beta.3] - 2026-11-14
 
 ### Diperbaiki
+- **Perbaikan Navigasi D-Pad Android TV End-to-End (`MainActivity.java`, `DeviceNav.java`, `SettingsDialog.java`, `dialog_genre_selector.xml`, `DetailActivity.java`, `RelatedAnimeAdapter.java`, `PlayerActivity.java`)**:
+  - Menetapkan fokus D-Pad awal ke konten grid/banner saat cold-start, fallback fokus pada `onResume`, menjaga fokus chip sub-filter dan pagination agar tetap fokusabel di TV, serta menunda highlight tab Genre hingga genre dipilih dengan fokus awal daftar genre.
+  - Memperbaiki handler tombol Back di `DeviceNav` agar fokus kembali ke rail menu TV sebelum keluar aplikasi saat tidak ada view terfokus, serta mengarahkan fokus tombol BYOK AI `SettingsDialog` ke kolom input.
+  - Menambahkan fallback fokus di `DetailActivity` (termasuk `rvRelatedSeasons`/`rvRelatedMovies` saat `episodeContainer` kosong) dan jalur `DPAD_LEFT` dari kartu terkait pertama ke tombol aksi detail.
+  - Migrasi `PlayerActivity` ke `OnBackPressedCallback`, sinkronisasi visibilitas kontrol TV dengan `layoutTopBar`, menjaga fokus saat `btnPlayerBack`/`btnSkipOpEd` disembunyikan, dan memunculkan kontrol TV saat episode terakhir selesai (`STATE_ENDED`).
 - **Highlight Fokus D-Pad & Tombol Frosted Glass Detail (`DetailActivity.java`, `AnimeThemeManager.java`)**:
   - Menambahkan state `state_focused` pada `createFrostedGlassButtonDrawable(...)` dan `createFrostedIconButtonDrawable(...)` melalui helper `buildGlassLayer(...)` dan `wrapFocusRipple(...)` agar tombol aksi memiliki sorotan fokus yang jelas di Android TV.
   - Memperbarui warna ikon tombol kembali (`btnBack`) pada mode TV agar mengikuti aksen tema aktif serta menambahkan `StateListDrawable` fokus pada tab rentang episode.

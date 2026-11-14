@@ -48,6 +48,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -350,6 +351,7 @@ public class PlayerActivity extends AppCompatActivity {
         setupPlayer();
         setupPortraitRecycler();
         setupGestureControls();
+        setupBackHandler();
         applySubtitleStyle();
         updateOrientationLayout(getResources().getConfiguration().orientation);
         playEpisodeWithServer(currentIndex, preferredServer, initialResumePos);
@@ -578,7 +580,7 @@ public class PlayerActivity extends AppCompatActivity {
                 hasAutoSkippedOutro = true;
                 player.seekTo((long) (currentSkipTimes.outro.endTime * 1000) + 200);
             }
-            btnSkipOpEd.setVisibility(View.GONE);
+            hideSkipButtonSafely();
         });
     }
 
@@ -777,7 +779,11 @@ public class PlayerActivity extends AppCompatActivity {
                             } catch (Throwable ignored) {}
                         });
                     }
-                    playNextEpisode();
+                    if (getNextEpisodeIndex() != -1) {
+                        playNextEpisode();
+                    } else if (PlayerKeys.isTv()) {
+                        showTvController(true);
+                    }
                 }
             }
 
@@ -1150,6 +1156,9 @@ public class PlayerActivity extends AppCompatActivity {
                     ctrl.setFocusable(true);
                     id.shisen.app.util.TvFocusHelper.attachFocusScale(ctrl, 1.12f);
                 }
+            }
+            if (btnPlayerBack != null && btnExoPlayPause != null && btnExoPlayPause.getId() != View.NO_ID) {
+                btnPlayerBack.setNextFocusDownId(btnExoPlayPause.getId());
             }
         });
     }
@@ -1944,7 +1953,7 @@ public class PlayerActivity extends AppCompatActivity {
                     player.seekTo((long) (currentSkipTimes.intro.endTime * 1000) + 200);
                     Toast.makeText(this, R.string.player_toast_auto_op, Toast.LENGTH_SHORT).show();
                 }
-                btnSkipOpEd.setVisibility(View.GONE);
+                hideSkipButtonSafely();
             } else {
                 btnSkipOpEd.setText(getString(R.string.player_skip_op));
                 btnSkipOpEd.setVisibility(View.VISIBLE);
@@ -1956,13 +1965,13 @@ public class PlayerActivity extends AppCompatActivity {
                     player.seekTo((long) (currentSkipTimes.outro.endTime * 1000) + 200);
                     Toast.makeText(this, R.string.player_toast_auto_ed, Toast.LENGTH_SHORT).show();
                 }
-                btnSkipOpEd.setVisibility(View.GONE);
+                hideSkipButtonSafely();
             } else {
                 btnSkipOpEd.setText(getString(R.string.player_skip_ed));
                 btnSkipOpEd.setVisibility(View.VISIBLE);
             }
         } else {
-            btnSkipOpEd.setVisibility(View.GONE);
+            hideSkipButtonSafely();
         }
     }
 
@@ -3135,26 +3144,33 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        if (isScreenLocked) {
-            showSafetyUnlockPill();
-            Toast.makeText(this, R.string.player_toast_lock_hint, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (PlayerKeys.handleBack(this)) {
-            return;
-        }
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            return;
-        }
-        super.onBackPressed();
+    private void setupBackHandler() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (isScreenLocked) {
+                    showSafetyUnlockPill();
+                    Toast.makeText(PlayerActivity.this, R.string.player_toast_lock_hint, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (PlayerKeys.handleBack(PlayerActivity.this)) {
+                    return;
+                }
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                    return;
+                }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
+            }
+        });
     }
 
     public boolean isControllerVisible() {
         if (playerView == null) return false;
-        return playerView.isControllerFullyVisible();
+        return playerView.isControllerFullyVisible()
+                || (layoutTopBar != null && layoutTopBar.getVisibility() == View.VISIBLE);
     }
 
     public void showTvController(boolean requestPrimaryFocus) {
@@ -3171,6 +3187,25 @@ public class PlayerActivity extends AppCompatActivity {
             playerView.hideController();
         }
         hideTopBar(false);
+        if (PlayerKeys.isTv() && playerView != null) {
+            View cur = getCurrentFocus();
+            if (cur == null || cur == btnPlayerBack || cur == btnSkipOpEd) {
+                playerView.requestFocus();
+            }
+        }
+    }
+
+    private void hideSkipButtonSafely() {
+        if (btnSkipOpEd == null) return;
+        boolean hadFocus = btnSkipOpEd.hasFocus();
+        btnSkipOpEd.setVisibility(View.GONE);
+        if (hadFocus && PlayerKeys.isTv()) {
+            if (isControllerVisible() && btnExoPlayPause != null) {
+                btnExoPlayPause.requestFocus();
+            } else if (playerView != null) {
+                playerView.requestFocus();
+            }
+        }
     }
 
     public boolean performSkipIfVisible() {
@@ -3453,6 +3488,12 @@ public class PlayerActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchKeyEvent(android.view.KeyEvent event) {
+        if (PlayerKeys.isTv() && event.getAction() == android.view.KeyEvent.ACTION_DOWN && isControllerVisible()) {
+            View cur = getCurrentFocus();
+            if (cur == btnPlayerBack || cur == btnSkipOpEd) {
+                if (playerView != null) playerView.showController();
+            }
+        }
         if (id.shisen.app.ui.player.PlayerKeys.handle(this, event)) {
             return true;
         }

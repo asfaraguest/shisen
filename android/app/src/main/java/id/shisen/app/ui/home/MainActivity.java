@@ -325,6 +325,9 @@ public class MainActivity extends AppCompatActivity {
             }
             currentPage = savedInstanceState.getInt("saved_page", 1);
         }
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            focusGridOnNextLoad = true;
+        }
         selectTab(targetTab);
 
         // Logger performa DEBUG-ONLY: reportFullyDrawn resmi + log cold start sekali
@@ -352,6 +355,13 @@ public class MainActivity extends AppCompatActivity {
         applyCurrentTheme();
         if (currentTab == MainTab.RIWAYAT || currentTab == MainTab.FAVORIT) {
             loadCurrentFeed();
+        }
+        if (id.shisen.app.ui.player.PlayerKeys.isTv() && getCurrentFocus() == null && rvGrid != null) {
+            rvGrid.post(() -> {
+                if (getCurrentFocus() == null && !focusFirstGridItem() && menuItemMusim != null) {
+                    menuItemMusim.requestFocus();
+                }
+            });
         }
     }
 
@@ -848,12 +858,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /* package */ void selectMenuItem(MainTab tab) {
-        if (deviceNav != null) {
-            deviceNav.onTabChanged(tab);
-        }
         if (tab == MainTab.GENRE) {
             showGenreSelectorDialog();
             return;
+        }
+        if (deviceNav != null) {
+            deviceNav.onTabChanged(tab);
         }
         if (tab == MainTab.KATALOG && currentTab == MainTab.KATALOG) {
             showCatalogFilterDialog();
@@ -950,6 +960,10 @@ public class MainActivity extends AppCompatActivity {
     // --- CONTEXTUAL SUB-FILTER BAR (Tatap Parity) ---
 
     private void updateSubFilterUI() {
+        updateSubFilterUI(null);
+    }
+
+    private void updateSubFilterUI(Object focusChipTag) {
         layoutSubChips.removeAllViews();
 
         if (currentTab == MainTab.AIRING) {
@@ -968,11 +982,12 @@ public class MainActivity extends AppCompatActivity {
                 boolean isSelected = l.equalsIgnoreCase(selectedAiringLane);
 
                 TextView chip = createSubFilterChip(laneLabels[i], isSelected);
+                chip.setTag(l);
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     selectedAiringLane = l;
                     currentPage = 1;
-                    updateSubFilterUI();
+                    updateSubFilterUI(l);
                     loadCurrentFeed();
                 });
                 layoutSubChips.addView(chip);
@@ -991,11 +1006,12 @@ public class MainActivity extends AppCompatActivity {
                 String label = dayNames[i] + (calDay == todayWib ? getString(R.string.day_today_suffix) : "");
 
                 TextView chip = createSubFilterChip(label, isSelected);
+                chip.setTag(calDay);
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     selectedDayOfWeek = calDay;
                     currentPage = 1;
-                    updateSubFilterUI();
+                    updateSubFilterUI(calDay);
                     loadCurrentFeed();
                 });
                 layoutSubChips.addView(chip);
@@ -1041,11 +1057,12 @@ public class MainActivity extends AppCompatActivity {
                 boolean isSelected = s.equalsIgnoreCase(filterCatalogSort);
 
                 TextView chip = createSubFilterChip(sortLabels[i], isSelected);
+                chip.setTag(s);
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     filterCatalogSort = s;
                     currentPage = 1;
-                    updateSubFilterUI();
+                    updateSubFilterUI(s);
                     loadCurrentFeed();
                 });
                 layoutSubChips.addView(chip);
@@ -1086,17 +1103,28 @@ public class MainActivity extends AppCompatActivity {
                 boolean isSelected = genre.equalsIgnoreCase(selectedGenre);
 
                 TextView chip = createSubFilterChip(genre, isSelected);
+                chip.setTag(genre);
                 chip.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     selectedGenre = genre;
                     currentPage = 1;
-                    updateSubFilterUI();
+                    updateSubFilterUI(genre);
                     loadCurrentFeed();
                 });
                 layoutSubChips.addView(chip);
             }
         } else {
             scrollSubFilters.setVisibility(View.GONE);
+        }
+
+        if (focusChipTag != null && id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            for (int i = 0; i < layoutSubChips.getChildCount(); i++) {
+                View child = layoutSubChips.getChildAt(i);
+                if (child != null && focusChipTag.equals(child.getTag())) {
+                    child.requestFocus();
+                    break;
+                }
+            }
         }
     }
 
@@ -1396,9 +1424,20 @@ public class MainActivity extends AppCompatActivity {
             if (btnClose != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnClose, 1.05f);
             if (btnDismiss != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnDismiss, 1.05f);
             if (btnReset != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnReset, 1.05f);
-            rvGenres.post(rvGenres::requestFocus);
+            rvGenres.post(() -> {
+                RecyclerView.ViewHolder firstVh = rvGenres.findViewHolderForAdapterPosition(0);
+                if (firstVh != null && firstVh.itemView.requestFocus()) {
+                    return;
+                }
+                rvGenres.requestFocus();
+            });
         }
 
+        dialog.setOnDismissListener(d -> {
+            if (deviceNav != null) {
+                deviceNav.onTabChanged(currentTab);
+            }
+        });
         dialog.show();
     }
 
@@ -1524,6 +1563,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setPaginationFolded(boolean folded) {
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            return;
+        }
         if (isPaginationFolded == folded || layoutPagination == null || layoutPagination.getVisibility() != View.VISIBLE) {
             return;
         }
@@ -1582,6 +1624,7 @@ public class MainActivity extends AppCompatActivity {
             btnPrevPage.setVisibility(View.VISIBLE);
             boolean canPrev = currentPage > 1;
             btnPrevPage.setEnabled(canPrev);
+            btnPrevPage.setFocusable(canPrev);
             btnPrevPage.setAlpha(canPrev ? 1.0f : 0.4f);
         }
         if (btnNextPage != null) {
@@ -1589,6 +1632,7 @@ public class MainActivity extends AppCompatActivity {
             btnNextPage.setVisibility(View.VISIBLE);
             boolean canNext = hasNextPage;
             btnNextPage.setEnabled(canNext);
+            btnNextPage.setFocusable(canNext);
             btnNextPage.setAlpha(canNext ? 1.0f : 0.4f);
         }
     }
@@ -1633,12 +1677,14 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
             }
+            applyPendingTvFocus(true);
         } else {
             gridAdapter.updateFeed(null, new ArrayList<>());
             layoutEmpty.setVisibility(View.VISIBLE);
             tvEmptyTitle.setText(R.string.empty_no_data_title);
             tvEmptyDesc.setText(R.string.empty_no_data_desc);
             if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+            applyPendingTvFocus(false);
         }
     }
 
@@ -1701,6 +1747,7 @@ public class MainActivity extends AppCompatActivity {
                                 rvGrid.scrollToPosition(0);
                             }
                             updatePaginationUI(result.size(), 35, hasNextPage);
+                            applyPendingTvFocus(true);
                         } else {
                             if (currentPage > 1) {
                                 currentPage--;
@@ -1710,6 +1757,7 @@ public class MainActivity extends AppCompatActivity {
                                 gridAdapter.updateFeed(null, new ArrayList<>());
                                 layoutEmpty.setVisibility(View.VISIBLE);
                                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+                                applyPendingTvFocus(false);
                             }
                         }
                     });
@@ -1721,6 +1769,7 @@ public class MainActivity extends AppCompatActivity {
                         setLoading(false);
                         if (!hasStaleData) {
                             Toast.makeText(MainActivity.this, getString(R.string.error_load_season, t.getMessage()), Toast.LENGTH_SHORT).show();
+                            applyPendingTvFocus(false);
                         }
                     });
                 }
@@ -2058,6 +2107,21 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
+    private void applyPendingTvFocus(boolean hasItems) {
+        if (!focusGridOnNextLoad) return;
+        focusGridOnNextLoad = false;
+        if (!id.shisen.app.ui.player.PlayerKeys.isTv()) return;
+        if (hasItems && rvGrid != null) {
+            rvGrid.postDelayed(() -> {
+                if (!focusFirstGridItem() && menuItemMusim != null) {
+                    menuItemMusim.requestFocus();
+                }
+            }, 150);
+        } else if (menuItemMusim != null) {
+            menuItemMusim.post(menuItemMusim::requestFocus);
+        }
+    }
+
     private void displayResults(List<Anime> rawList, String emptyTitle, String emptyDesc, int pageSize, boolean hasNextPage, boolean hasStaleData) {
         final List<Anime> list = AppSettings.filterSafe(this, rawList);
         mainHandler.post(() -> {
@@ -2073,6 +2137,7 @@ public class MainActivity extends AppCompatActivity {
                     tvEmptyTitle.setText(emptyTitle);
                     tvEmptyDesc.setText(emptyDesc);
                     if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+                    applyPendingTvFocus(false);
                 }
             } else {
                 layoutEmpty.setVisibility(View.GONE);
@@ -2087,10 +2152,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!hasStaleData) {
                     rvGrid.scrollToPosition(0);
                 }
-                if (focusGridOnNextLoad) {
-                    focusGridOnNextLoad = false;
-                    rvGrid.postDelayed(this::focusFirstGridItem, 150);
-                }
+                applyPendingTvFocus(true);
                 if (currentTab != MainTab.JADWAL) {
                     updatePaginationUI(list.size(), pageSize, hasNextPage);
                 } else {

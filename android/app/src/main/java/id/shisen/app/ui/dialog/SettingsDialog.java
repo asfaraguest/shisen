@@ -97,7 +97,10 @@ public class SettingsDialog {
                             tvToggleIcon.setText(isVisible ? "▼" : "▲");
                         }
                         if (!isVisible) {
-                            sectionAi.requestFocus();
+                            View firstAiInput = dialogView.findViewById(R.id.et_settings_ai_key);
+                            if (firstAiInput != null) {
+                                firstAiInput.post(firstAiInput::requestFocus);
+                            }
                         }
                     }
                 });

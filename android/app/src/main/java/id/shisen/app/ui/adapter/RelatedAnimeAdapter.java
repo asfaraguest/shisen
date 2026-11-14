@@ -96,6 +96,20 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
             intent.putExtra("anime", anime);
             context.startActivity(intent);
         });
+
+        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+            holder.itemView.setOnKeyListener((v, keyCode, event) -> {
+                if (event.getAction() == android.view.KeyEvent.ACTION_DOWN
+                        && keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT
+                        && holder.getBindingAdapterPosition() == 0
+                        && context instanceof android.app.Activity) {
+                    View target = ((android.app.Activity) context).findViewById(R.id.btn_toggle_bookmark);
+                    if (target == null) target = ((android.app.Activity) context).findViewById(R.id.btn_play_primary);
+                    return target != null && target.requestFocus();
+                }
+                return false;
+            });
+        }
     }
 
     @Override

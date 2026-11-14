@@ -288,13 +288,11 @@ public final class DeviceNav {
         }
 
         View currentFocus = host.getCurrentFocus();
-        if (currentFocus != null && layoutTvSideRail != null) {
-            // Jika fokus sedang di grid anime atau sub-filter, kembalikan fokus ke menu samping kiri (otomatis expand)
-            boolean isInRail = isViewDescendantOf(currentFocus, layoutTvSideRail);
+        if (layoutTvSideRail != null) {
+            boolean isInRail = currentFocus != null && isViewDescendantOf(currentFocus, layoutTvSideRail);
             if (!isInRail) {
                 View activeMenuItem = getActiveRailItem();
-                if (activeMenuItem != null) {
-                    activeMenuItem.requestFocus();
+                if (activeMenuItem != null && activeMenuItem.requestFocus()) {
                     return true;
                 }
             }

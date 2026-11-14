@@ -155,9 +155,20 @@ public class DetailActivity extends AppCompatActivity {
         applyDetailTheme();
         updateBookmarkUI();
         refreshWatchedStates();
-        if (btnPlayPrimary != null && btnPlayPrimary.isEnabled() && getCurrentFocus() == null) {
-            btnPlayPrimary.post(btnPlayPrimary::requestFocus);
-        }
+        restoreFallbackFocus();
+    }
+
+    private void restoreFallbackFocus() {
+        if (layoutDetailRoot == null) return;
+        layoutDetailRoot.post(() -> {
+            if (getCurrentFocus() == null) {
+                if (btnPlayPrimary != null && btnPlayPrimary.isEnabled()) {
+                    btnPlayPrimary.requestFocus();
+                } else if (btnBack != null) {
+                    btnBack.requestFocus();
+                }
+            }
+        });
     }
 
     private void initViews() {
@@ -245,6 +256,15 @@ public class DetailActivity extends AppCompatActivity {
                         View first = rvEpisodes.getChildAt(0);
                         if (first != null && first.requestFocus()) {
                             return true;
+                        }
+                    }
+                    RecyclerView[] fallbackRelated = {rvRelatedSeasons, rvRelatedMovies};
+                    for (RecyclerView rv : fallbackRelated) {
+                        if (rv != null && rv.getVisibility() == View.VISIBLE && rv.getChildCount() > 0) {
+                            View firstRel = rv.getChildAt(0);
+                            if (firstRel != null && firstRel.requestFocus()) {
+                                return true;
+                            }
                         }
                     }
                 }
@@ -642,9 +662,7 @@ public class DetailActivity extends AppCompatActivity {
             allEpisodeList.addAll(fullList);
         }
         refreshWatchedStates();
-        if (btnPlayPrimary != null && btnPlayPrimary.isEnabled() && getCurrentFocus() == null) {
-            btnPlayPrimary.post(btnPlayPrimary::requestFocus);
-        }
+        restoreFallbackFocus();
 
         if (allEpisodeList.size() <= 50) {
             if (scrollEpisodeRanges != null) scrollEpisodeRanges.setVisibility(View.GONE);

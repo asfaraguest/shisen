@@ -64,6 +64,7 @@
         android:layout_height="320dp"
         android:layout_marginTop="10dp"
         android:clipToPadding="false"
+        android:descendantFocusability="afterDescendants"
         android:scrollbars="vertical" />
 
     <!-- Action Bar (Reset filter & Tutup) -->
