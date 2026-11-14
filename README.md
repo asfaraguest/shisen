@@ -16,6 +16,9 @@
     <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.0/shisen-release-v1.1.0.apk"><img src="https://img.shields.io/badge/Download-Shisen%20Mobile%20(Stable)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download Shisen Mobile Stable APK"></a>
     <br>
     <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.0/shisen-tv-release-v1.1.0.apk"><img src="https://img.shields.io/badge/Download-Shisen%20TV%20(Stable)-00B4D8?style=for-the-badge&logo=androidtv&logoColor=white" alt="Download Shisen TV Stable APK"></a>
+    <br>
+    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.1-beta.3/shisen-release-v1.1.1-beta.3.apk"><img src="https://img.shields.io/badge/Download-Mobile%20v1.1.1--beta.3%20(Beta)-F59E0B?style=flat-square&logo=android&logoColor=white" alt="Download Shisen Mobile Beta APK"></a>
+    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.1-beta.3/shisen-tv-release-v1.1.1-beta.3.apk"><img src="https://img.shields.io/badge/Download-TV%20v1.1.1--beta.3%20(Beta)-818CF8?style=flat-square&logo=androidtv&logoColor=white" alt="Download Shisen TV Beta APK"></a>
   </p>
 
   <p>
@@ -31,6 +34,13 @@
 Shisen adalah aplikasi streaming anime native Android yang dirancang sederhana dan ringan. Dibangun dengan 100% Pure Native Java (tanpa Python runtime), menggunakan Media3 ExoPlayer, OkHttp, dan SQLite.
 
 App bersifat **guest-only**: tidak perlu login, tidak ada tracking, dan tidak menyimpan data pengguna di server.
+
+## Fitur Utama
+
+- **4 Tema Visual Dinamis:** *Twilight Shinkai*, *Sakura Blossom*, *Cyber Neo-Tokyo*, dan *Ghibli Forest Night* — tersinkron hingga Portrait Video Mode, overlay/kontrol pemutar video, dialog, dan fokus TV.
+- **Subtitle Smart Merge & Kustomisasi:** Menggabungkan subtitle Fansub ID (AnimeTosho/OpenSubtitles) dan terjemahan otomatis (GTX/AI), dilengkapi pengaturan posisi, latar, offset waktu, serta skala ukuran huruf adaptif (**14sp–25sp** di Mobile; **7 tingkat `18sp–42sp`** pada Shisen TV Beta).
+- **Navigasi Dual-Form (Mobile & Android TV):** Mode sentuh portrait/landscape dengan PiP & gesture OSD di ponsel, serta antarmuka *10-foot UI* berbasis D-Pad & Leanback Launcher khusus Android TV / Google TV.
+- **Auto-Skip Intro/Outro:** Deteksi segmen OP/ED otomatis via AniSkip v2.
 
 ---
 
@@ -63,8 +73,10 @@ Integrasi backend mengikuti paritas menu dari [Tatap](https://github.com/asfarag
 APK rilis resmi (signed, production keystore):
 
 - [GitHub Releases](https://github.com/asfaraguest/shisen/releases):
-  - **Mobile (Stable):** [`shisen-release-v1.1.0.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.0/shisen-release-v1.1.0.apk)
-  - **Android TV (Stable):** [`shisen-tv-release-v1.1.0.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.0/shisen-tv-release-v1.1.0.apk)
+  - **Mobile (Stable `v1.1.0`):** [`shisen-release-v1.1.0.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.0/shisen-release-v1.1.0.apk)
+  - **Android TV (Stable `v1.1.0`):** [`shisen-tv-release-v1.1.0.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.0/shisen-tv-release-v1.1.0.apk)
+  - **Mobile (Beta `v1.1.1-beta.3`):** [`shisen-release-v1.1.1-beta.3.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.1-beta.3/shisen-release-v1.1.1-beta.3.apk)
+  - **Android TV (Beta `v1.1.1-beta.3`):** [`shisen-tv-release-v1.1.1-beta.3.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.1-beta.3/shisen-tv-release-v1.1.1-beta.3.apk)
 
 > Asset rilis resmi: `shisen-release-*.apk` dan `shisen-tv-release-*.apk`.
 
