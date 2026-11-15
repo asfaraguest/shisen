@@ -281,18 +281,26 @@ public class AnimeThemeManager {
             android.graphics.Paint facetPaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
             facetPaint.setStyle(android.graphics.Paint.Style.FILL);
             facetPaint.setColor(getSaoHoneycombFacetColor(accentColor));
+            facetPaint.setMaskFilter(new android.graphics.BlurMaskFilter(
+                    Math.max(2f, 2.2f * d), android.graphics.BlurMaskFilter.Blur.NORMAL));
 
             android.graphics.Paint strokePaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
             strokePaint.setStyle(android.graphics.Paint.Style.STROKE);
-            strokePaint.setStrokeWidth(Math.max(1f, 0.9f * d));
-            strokePaint.setColor(getSaoHoneycombStrokeColor(accentColor));
+            strokePaint.setStrokeWidth(Math.max(1.5f, 1.35f * d));
+            strokePaint.setColor(withAlpha(getSaoHoneycombStrokeColor(accentColor), 0xB8));
+            strokePaint.setMaskFilter(new android.graphics.BlurMaskFilter(
+                    Math.max(1.8f, 1.8f * d), android.graphics.BlurMaskFilter.Blur.NORMAL));
 
-            // Sorot halus satu faset tengah untuk kedalaman pola sarang lebah
-            android.graphics.Path centerHex = buildHexPath(hw, halfH, hw, segY);
-            c.drawPath(centerHex, facetPaint);
+            // Sorot halus faset tengah + salinan horizontal periodik agar halo blur tanpa garis tile
+            float[] facetX = {hw - hexW, hw, hw + hexW};
+            for (float fx : facetX) {
+                c.drawPath(buildHexPath(fx, halfH, hw, segY), facetPaint);
+            }
 
             float[][] centers = {
                     {hw, halfH},
+                    {-hw, halfH}, {hexW + hw, halfH},
+                    {hw, -halfH}, {hw, tileH + halfH},
                     {0f, 0f}, {hexW, 0f},
                     {0f, tileH}, {hexW, tileH}
             };
@@ -304,6 +312,7 @@ public class AnimeThemeManager {
                     bmp, android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
             cachedDensity = d;
             cachedAccent = accentColor;
+            fillPaint.setFilterBitmap(true);
             fillPaint.setShader(cachedShader);
         }
 
@@ -576,12 +585,102 @@ public class AnimeThemeManager {
         return wrapRipple(gd, withAlpha(accent, 0x4D), 20f * d);
     }
 
+    public static int getSaoDetailHeroTintColor(int accentColor) {
+        return blendArgb(getSaoVoidColor(), accentColor, 0.14f);
+    }
+
+    public static int getSaoDetailMidTintColor(int accentColor) {
+        return blendArgb(getSaoVoidColor(), accentColor, 0.06f);
+    }
+
     public static Drawable createDetailHeroScrimDrawable(Context context) {
-        int voidColor = isMobileSaoEnabled() ? getSaoVoidColor() : getVoidColor(context);
+        if (isMobileSaoEnabled()) {
+            int heroTint = getSaoDetailHeroTintColor(getPrimaryAccentColor(context));
+            return new GradientDrawable(
+                    GradientDrawable.Orientation.TOP_BOTTOM,
+                    new int[]{0x00000000, withAlpha(heroTint, 0x55), withAlpha(heroTint, 0xCC), heroTint}
+            );
+        }
+        int voidColor = getVoidColor(context);
         return new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
                 new int[]{0x00000000, withAlpha(voidColor, 0x55), withAlpha(voidColor, 0xCC), voidColor}
         );
+    }
+
+    /**
+     * Gradasi vertikal panel Detail Portrait Mobile: menyambung solid di akhir wallpaper 440dp lalu
+     * memudar transparan penuh ke paling bawah agar latar honeycomb blur terlihat paling jelas.
+     */
+    public static Drawable createDetailScrollGradientDrawable(Context context) {
+        int accent = getPrimaryAccentColor(context);
+        return new DetailScrollGradientDrawable(
+                density(context),
+                getSaoDetailHeroTintColor(accent),
+                getSaoDetailMidTintColor(accent),
+                getSaoVoidColor());
+    }
+
+    public static Drawable createDetailLandscapeScrimDrawable(Context context) {
+        int accent = getPrimaryAccentColor(context);
+        return new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{
+                        withAlpha(getSaoDetailHeroTintColor(accent), 0xE6),
+                        withAlpha(getSaoDetailMidTintColor(accent), 0xB8),
+                        withAlpha(getSaoVoidColor(), 0x66)
+                }
+        );
+    }
+
+    private static final class DetailScrollGradientDrawable extends Drawable {
+        private final float d;
+        private final int heroTint;
+        private final int midTint;
+        private final int voidColor;
+        private final android.graphics.Paint paint = new android.graphics.Paint();
+
+        DetailScrollGradientDrawable(float density, int heroTint, int midTint, int voidColor) {
+            this.d = Math.max(1f, density);
+            this.heroTint = heroTint;
+            this.midTint = midTint;
+            this.voidColor = voidColor;
+        }
+
+        @Override
+        protected void onBoundsChange(android.graphics.Rect bounds) {
+            super.onBoundsChange(bounds);
+            float h = Math.max(1f, bounds.height());
+            float t0 = Math.min(0.75f, (440f * d) / h);
+            float tMid = t0 + (1f - t0) * 0.42f;
+            float tLow = t0 + (1f - t0) * 0.78f;
+            paint.setShader(new android.graphics.LinearGradient(
+                    0f, 0f, 0f, h,
+                    new int[]{heroTint, heroTint, withAlpha(midTint, 0xB8), withAlpha(voidColor, 0x33), withAlpha(voidColor, 0x00)},
+                    new float[]{0f, t0, tMid, tLow, 1f},
+                    android.graphics.Shader.TileMode.CLAMP));
+        }
+
+        @Override
+        public void draw(android.graphics.Canvas canvas) {
+            canvas.drawRect(getBounds(), paint);
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+            paint.setAlpha(alpha);
+        }
+
+        @Override
+        public void setColorFilter(android.graphics.ColorFilter colorFilter) {
+            paint.setColorFilter(colorFilter);
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public int getOpacity() {
+            return android.graphics.PixelFormat.TRANSLUCENT;
+        }
     }
 
     public static Drawable createFrostedGlassButtonDrawable(Context context, boolean isPrimaryAccent, boolean isActiveState) {

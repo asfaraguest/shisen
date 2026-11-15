@@ -298,6 +298,19 @@ public class DetailActivity extends AppCompatActivity {
         View scrim = findViewById(R.id.view_detail_gradient_scrim);
         if (scrim != null) {
             scrim.setBackground(AnimeThemeManager.createDetailHeroScrimDrawable(this));
+            if (sao) {
+                View scrollContent = findViewById(R.id.layout_detail_scroll_content);
+                if (scrollContent != null) {
+                    scrollContent.setBackground(AnimeThemeManager.createDetailScrollGradientDrawable(this));
+                }
+            }
+        } else if (sao) {
+            View backdropContainer = findViewById(R.id.fl_detail_backdrop_container);
+            if (backdropContainer instanceof android.view.ViewGroup
+                    && ((android.view.ViewGroup) backdropContainer).getChildCount() > 1) {
+                View landScrim = ((android.view.ViewGroup) backdropContainer).getChildAt(1);
+                landScrim.setBackground(AnimeThemeManager.createDetailLandscapeScrimDrawable(this));
+            }
         }
         if (btnBack != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(

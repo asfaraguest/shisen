@@ -115,4 +115,16 @@ public class AnimeThemeManagerTest {
         assertNotEquals(AnimeThemeManager.getSaoHoneycombFacetColor(shinkaiAccent),
                 AnimeThemeManager.getSaoHoneycombFacetColor(aincradAccent));
     }
+
+    @Test
+    public void testSaoDetailGradientTintColorsFollowActiveAccent() {
+        int sakuraAccent = AnimeThemeManager.getPrimaryAccentColorForTheme(AnimeThemeManager.THEME_SAKURA);
+        int ghibliAccent = AnimeThemeManager.getPrimaryAccentColorForTheme(AnimeThemeManager.THEME_GHIBLI);
+        assertEquals(AnimeThemeManager.blendArgb(AnimeThemeManager.getSaoVoidColor(), sakuraAccent, 0.14f),
+                AnimeThemeManager.getSaoDetailHeroTintColor(sakuraAccent));
+        assertEquals(AnimeThemeManager.blendArgb(AnimeThemeManager.getSaoVoidColor(), ghibliAccent, 0.06f),
+                AnimeThemeManager.getSaoDetailMidTintColor(ghibliAccent));
+        assertNotEquals(AnimeThemeManager.getSaoDetailHeroTintColor(sakuraAccent),
+                AnimeThemeManager.getSaoDetailHeroTintColor(ghibliAccent));
+    }
 }
