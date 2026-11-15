@@ -222,9 +222,17 @@ public class AnimeThemeManager {
         return context != null ? Math.max(1f, context.getResources().getDisplayMetrics().density) : 2f;
     }
 
-    /** Kanvas Gray Night Honeycomb bergaya SAO Mobile via BitmapShader tiling ringan. */
+    public static int getSaoHoneycombFacetColor(int accentColor) {
+        return blendArgb(0xFF13161C, accentColor, 0.06f);
+    }
+
+    public static int getSaoHoneycombStrokeColor(int accentColor) {
+        return blendArgb(0xFF1A1E26, accentColor, 0.20f);
+    }
+
+    /** Kanvas Gray Night Honeycomb bergaya SAO Mobile beraksen warna tema aktif via BitmapShader tiling. */
     public static Drawable createSaoCanvasDrawable(Context context) {
-        return new SaoHoneycombDrawable(density(context));
+        return new SaoHoneycombDrawable(density(context), getPrimaryAccentColor(context));
     }
 
     /** Gradien scrim bawah poster agar menyatu ke latar kartu #191C22 tanpa garis navy. */
@@ -238,16 +246,19 @@ public class AnimeThemeManager {
 
     private static final class SaoHoneycombDrawable extends Drawable {
         private static float cachedDensity = -1f;
+        private static int cachedAccent = 0;
         private static android.graphics.BitmapShader cachedShader;
         private final float d;
+        private final int accentColor;
         private final android.graphics.Paint fillPaint = new android.graphics.Paint();
 
-        SaoHoneycombDrawable(float density) {
+        SaoHoneycombDrawable(float density, int accentColor) {
             this.d = Math.max(1f, density);
+            this.accentColor = accentColor;
         }
 
         private void ensureShader() {
-            if (cachedShader != null && Math.abs(cachedDensity - d) < 0.01f) {
+            if (cachedShader != null && Math.abs(cachedDensity - d) < 0.01f && cachedAccent == accentColor) {
                 fillPaint.setShader(cachedShader);
                 return;
             }
@@ -269,12 +280,12 @@ public class AnimeThemeManager {
 
             android.graphics.Paint facetPaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
             facetPaint.setStyle(android.graphics.Paint.Style.FILL);
-            facetPaint.setColor(0xFF13161C);
+            facetPaint.setColor(getSaoHoneycombFacetColor(accentColor));
 
             android.graphics.Paint strokePaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
             strokePaint.setStyle(android.graphics.Paint.Style.STROKE);
             strokePaint.setStrokeWidth(Math.max(1f, 0.9f * d));
-            strokePaint.setColor(0xFF1A1E26);
+            strokePaint.setColor(getSaoHoneycombStrokeColor(accentColor));
 
             // Sorot halus satu faset tengah untuk kedalaman pola sarang lebah
             android.graphics.Path centerHex = buildHexPath(hw, halfH, hw, segY);
@@ -292,6 +303,7 @@ public class AnimeThemeManager {
             cachedShader = new android.graphics.BitmapShader(
                     bmp, android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
             cachedDensity = d;
+            cachedAccent = accentColor;
             fillPaint.setShader(cachedShader);
         }
 

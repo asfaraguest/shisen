@@ -101,4 +101,18 @@ public class AnimeThemeManagerTest {
     public void testMobileSaoScopeMatchesFlavor() {
         assertEquals(!id.shisen.app.ui.player.PlayerKeys.isTv(), AnimeThemeManager.isMobileSaoEnabled());
     }
+
+    @Test
+    public void testSaoHoneycombColorsFollowActiveAccent() {
+        int shinkaiAccent = AnimeThemeManager.getPrimaryAccentColorForTheme(AnimeThemeManager.THEME_SHINKAI);
+        int aincradAccent = AnimeThemeManager.getPrimaryAccentColorForTheme(AnimeThemeManager.THEME_AINCRAD);
+        assertEquals(AnimeThemeManager.blendArgb(0xFF13161C, shinkaiAccent, 0.06f),
+                AnimeThemeManager.getSaoHoneycombFacetColor(shinkaiAccent));
+        assertEquals(AnimeThemeManager.blendArgb(0xFF1A1E26, aincradAccent, 0.20f),
+                AnimeThemeManager.getSaoHoneycombStrokeColor(aincradAccent));
+        assertNotEquals(AnimeThemeManager.getSaoHoneycombStrokeColor(shinkaiAccent),
+                AnimeThemeManager.getSaoHoneycombStrokeColor(aincradAccent));
+        assertNotEquals(AnimeThemeManager.getSaoHoneycombFacetColor(shinkaiAccent),
+                AnimeThemeManager.getSaoHoneycombFacetColor(aincradAccent));
+    }
 }
