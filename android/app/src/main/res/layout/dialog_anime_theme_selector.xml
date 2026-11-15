@@ -67,13 +67,28 @@
             android:background="@drawable/bg_folded_menu_pill"
             android:padding="12dp"
             android:buttonTint="@color/accent_glacial"
-            android:text="🌌 Twilight Shinkai (Default)\nLangit malam berbintang Makoto Shinkai · Glacial Cyan"
+            android:text="Twilight Shinkai (Default)\nLangit malam berbintang · Glacial Cyan"
             android:textColor="@color/text_frost_bright"
             android:textSize="12.5sp"
             android:fontFamily="sans-serif-medium"
             android:lineSpacingExtra="2dp" />
 
-        <!-- 2. Sakura Blossom -->
+        <!-- 2. Aincrad System (SAO S1) -->
+        <RadioButton
+            android:id="@+id/rb_theme_aincrad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_folded_menu_pill"
+            android:padding="12dp"
+            android:buttonTint="#F59E0B"
+            android:text="Aincrad System (SAO S1)\nDark Steel Matte · Golden Amber"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="12.5sp"
+            android:fontFamily="sans-serif-medium"
+            android:lineSpacingExtra="2dp" />
+
+        <!-- 3. Sakura Blossom -->
         <RadioButton
             android:id="@+id/rb_theme_sakura"
             android:layout_width="match_parent"
@@ -82,13 +97,13 @@
             android:background="@drawable/bg_folded_menu_pill"
             android:padding="12dp"
             android:buttonTint="@color/anime_sakura_pink"
-            android:text="🌸 Sakura Blossom\nMusim semi anime Jepang · Midnight Plum &amp; Sakura Pink"
+            android:text="Sakura Blossom\nMusim semi anime Jepang · Sakura Pink"
             android:textColor="@color/text_frost_bright"
             android:textSize="12.5sp"
             android:fontFamily="sans-serif-medium"
             android:lineSpacingExtra="2dp" />
 
-        <!-- 3. Cyber Neo-Tokyo -->
+        <!-- 4. Cyber Neo-Tokyo -->
         <RadioButton
             android:id="@+id/rb_theme_cyber"
             android:layout_width="match_parent"
@@ -97,13 +112,13 @@
             android:background="@drawable/bg_folded_menu_pill"
             android:padding="12dp"
             android:buttonTint="@color/anime_cyan_neon"
-            android:text="⚡ Cyber Neo-Tokyo\nSci-Fi / Mecha anime vibes · Obsidian &amp; Electric Neon"
+            android:text="Cyber Neo-Tokyo\nSci-Fi / Mecha · Electric Cyan"
             android:textColor="@color/text_frost_bright"
             android:textSize="12.5sp"
             android:fontFamily="sans-serif-medium"
             android:lineSpacingExtra="2dp" />
 
-        <!-- 4. Ghibli Forest Night -->
+        <!-- 5. Ghibli Forest Night -->
         <RadioButton
             android:id="@+id/rb_theme_ghibli"
             android:layout_width="match_parent"
@@ -112,7 +127,7 @@
             android:background="@drawable/bg_folded_menu_pill"
             android:padding="12dp"
             android:buttonTint="@color/anime_mint_miku"
-            android:text="🍃 Ghibli Forest Night\nSuasana malam alam mistis · Deep Teal &amp; Miku Emerald"
+            android:text="Ghibli Forest Night\nSuasana alam malam · Emerald Mint"
             android:textColor="@color/text_frost_bright"
             android:textSize="12.5sp"
             android:fontFamily="sans-serif-medium"

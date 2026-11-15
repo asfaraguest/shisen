@@ -33,9 +33,15 @@ public class AnimeThemeManager {
     private static final String KEY_CURRENT_THEME = "current_anime_theme";
 
     public static final String THEME_SHINKAI = "shinkai";
+    public static final String THEME_AINCRAD = "aincrad";
     public static final String THEME_SAKURA = "sakura";
     public static final String THEME_CYBER = "cyber";
     public static final String THEME_GHIBLI = "ghibli";
+
+    /** Aktifkan estetika SAO S1 (Aincrad Night-Clean) khusus Shisen Mobile; TV tetap original 10-foot UI. */
+    public static boolean isMobileSaoEnabled() {
+        return !id.shisen.app.ui.player.PlayerKeys.isTv();
+    }
 
     public static String getTheme(Context context) {
         if (context == null) return THEME_SHINKAI;
@@ -75,6 +81,8 @@ public class AnimeThemeManager {
     public static int getPrimaryAccentColorForTheme(String theme) {
         if (theme == null) theme = THEME_SHINKAI;
         switch (theme) {
+            case THEME_AINCRAD:
+                return 0xFFF59E0B;
             case THEME_SAKURA:
                 return 0xFFFB7185;
             case THEME_CYBER:
@@ -94,6 +102,8 @@ public class AnimeThemeManager {
     public static int getSecondaryAccentColorForTheme(String theme) {
         if (theme == null) theme = THEME_SHINKAI;
         switch (theme) {
+            case THEME_AINCRAD:
+                return 0xFFFBBF24;
             case THEME_SAKURA:
                 return 0xFFFDA4AF;
             case THEME_CYBER:
@@ -111,8 +121,11 @@ public class AnimeThemeManager {
     }
 
     public static int getSurfaceColorForTheme(String theme) {
+        if (isMobileSaoEnabled()) return getSaoSurfaceColor();
         if (theme == null) theme = THEME_SHINKAI;
         switch (theme) {
+            case THEME_AINCRAD:
+                return 0xFF191C22;
             case THEME_SAKURA:
                 return 0xFF1C1226;
             case THEME_CYBER:
@@ -130,8 +143,11 @@ public class AnimeThemeManager {
     }
 
     public static int getBorderColorForTheme(String theme) {
+        if (isMobileSaoEnabled()) return getSaoHairlineColor();
         if (theme == null) theme = THEME_SHINKAI;
         switch (theme) {
+            case THEME_AINCRAD:
+                return 0xFF2E3440;
             case THEME_SAKURA:
                 return 0xFF381D47;
             case THEME_CYBER:
@@ -149,12 +165,16 @@ public class AnimeThemeManager {
     }
 
     public static int getElevatedColor(Context context) {
-        return ColorUtils.blendARGB(getSurfaceColor(context), getBorderColor(context), 0.45f);
+        if (isMobileSaoEnabled()) return getSaoElevatedColor();
+        return blendArgb(getSurfaceColor(context), getBorderColor(context), 0.45f);
     }
 
     public static int getVoidColorForTheme(String theme) {
+        if (isMobileSaoEnabled()) return getSaoVoidColor();
         if (theme == null) theme = THEME_SHINKAI;
         switch (theme) {
+            case THEME_AINCRAD:
+                return 0xFF111317;
             case THEME_SAKURA:
                 return 0xFF0F0815;
             case THEME_CYBER:
@@ -167,16 +187,58 @@ public class AnimeThemeManager {
         }
     }
 
+    public static int getSaoVoidColor() {
+        return 0xFF111317;
+    }
+
+    public static int getSaoSurfaceColor() {
+        return 0xFF191C22;
+    }
+
+    public static int getSaoElevatedColor() {
+        return 0xFF21252D;
+    }
+
+    public static int getSaoHairlineColor() {
+        return 0xFF2E3440;
+    }
+
     public static int withAlpha(int color, int alpha) {
         int clamped = Math.max(0, Math.min(255, alpha));
         return (color & 0x00FFFFFF) | ((clamped & 0xFF) << 24);
+    }
+
+    public static int blendArgb(int color1, int color2, float ratio) {
+        float c = Math.max(0f, Math.min(1f, ratio));
+        float inv = 1f - c;
+        int a = Math.round(((color1 >>> 24) & 0xFF) * inv + ((color2 >>> 24) & 0xFF) * c);
+        int r = Math.round(((color1 >>> 16) & 0xFF) * inv + ((color2 >>> 16) & 0xFF) * c);
+        int g = Math.round(((color1 >>> 8) & 0xFF) * inv + ((color2 >>> 8) & 0xFF) * c);
+        int b = Math.round((color1 & 0xFF) * inv + (color2 & 0xFF) * c);
+        return ((a & 0xFF) << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
     }
 
     private static float density(Context context) {
         return context != null ? Math.max(1f, context.getResources().getDisplayMetrics().density) : 2f;
     }
 
+    /** Kanvas Dark Steel Matte netral untuk SAO Mobile tanpa warna neon berat. */
+    public static Drawable createSaoCanvasDrawable(Context context) {
+        int accent = getPrimaryAccentColor(context);
+        return new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{blendArgb(getSaoVoidColor(), accent, 0.03f), getSaoVoidColor(), getSaoVoidColor()}
+        );
+    }
+
+    /** Header atas menyatu mulus ke kanvas body tanpa borderline pemotong. */
     public static Drawable createAuroraHeaderDrawable(Context context) {
+        if (isMobileSaoEnabled()) {
+            return new GradientDrawable(
+                    GradientDrawable.Orientation.TOP_BOTTOM,
+                    new int[]{getSaoVoidColor(), withAlpha(getSaoVoidColor(), 0xE6), 0x00111317}
+            );
+        }
         int accent = getPrimaryAccentColor(context);
         int secondary = getSecondaryAccentColor(context);
         return new GradientDrawable(
@@ -187,6 +249,9 @@ public class AnimeThemeManager {
 
     public static Drawable createSearchCapsuleDrawable(Context context) {
         float d = density(context);
+        if (isMobileSaoEnabled()) {
+            return createPillDrawable(context, getSaoSurfaceColor(), withAlpha(getSaoHairlineColor(), 0xAA), 1f, 3f);
+        }
         GradientDrawable gd = new GradientDrawable();
         gd.setShape(GradientDrawable.RECTANGLE);
         gd.setCornerRadius(18f * d);
@@ -195,9 +260,76 @@ public class AnimeThemeManager {
         return gd;
     }
 
+    public static Drawable createSaoRecessedInputDrawable(Context context) {
+        float d = density(context);
+        float r = 3f * d;
+        int accent = getPrimaryAccentColor(context);
+        int hairline = getSaoHairlineColor();
+        int voidSteel = getSaoVoidColor();
+
+        StateListDrawable sld = new StateListDrawable();
+        GradientDrawable focused = new GradientDrawable();
+        focused.setCornerRadius(r);
+        focused.setColor(voidSteel);
+        focused.setStroke(Math.max(2, Math.round(1.4f * d)), accent);
+        sld.addState(new int[]{android.R.attr.state_focused}, focused);
+
+        GradientDrawable normal = new GradientDrawable();
+        normal.setCornerRadius(r);
+        normal.setColor(voidSteel);
+        normal.setStroke(Math.max(1, Math.round(1f * d)), hairline);
+        sld.addState(new int[]{}, normal);
+        return sld;
+    }
+
+    public static Drawable createSaoCircleBadgeDrawable(Context context, int fillColor, int ringColor, float strokeDp) {
+        float d = density(context);
+        GradientDrawable gd = new GradientDrawable();
+        gd.setShape(GradientDrawable.OVAL);
+        gd.setColor(fillColor);
+        if (strokeDp > 0f && ringColor != Color.TRANSPARENT) {
+            gd.setStroke(Math.max(1, Math.round(strokeDp * d)), ringColor);
+        }
+        return gd;
+    }
+
+    public static Drawable createSaoEpisodeTileDrawable(Context context, boolean isCurrent, boolean isWatched) {
+        float d = density(context);
+        float r = 3f * d;
+        int accent = getPrimaryAccentColor(context);
+        int surface = getSaoSurfaceColor();
+        int hairline = getSaoHairlineColor();
+        int hpGreen = 0xFF22C55E;
+
+        int fill = isCurrent ? blendArgb(surface, accent, 0.16f) : surface;
+        int stroke = isCurrent ? accent : withAlpha(hairline, 0xAA);
+
+        GradientDrawable base = new GradientDrawable();
+        base.setCornerRadius(r);
+        base.setColor(fill);
+        base.setStroke(Math.max(1, Math.round((isCurrent ? 1.2f : 0.9f) * d)), stroke);
+
+        if (isWatched && !isCurrent) {
+            base.setStroke(Math.max(1, Math.round(1f * d)), withAlpha(hpGreen, 0x80));
+        }
+        return wrapRipple(base, withAlpha(accent, 0x30), r);
+    }
+
     public static Drawable createChipDrawable(Context context, boolean isSelected) {
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
+        if (isMobileSaoEnabled()) {
+            float r = 3f * d;
+            GradientDrawable normal = new GradientDrawable();
+            normal.setCornerRadius(r);
+            if (isSelected) {
+                normal.setColor(accent);
+            } else {
+                normal.setColor(getSaoElevatedColor());
+                normal.setStroke(Math.max(1, Math.round(1f * d)), getSaoHairlineColor());
+            }
+            return wrapRipple(normal, withAlpha(accent, 0x33), r);
+        }
         int surface = getSurfaceColor(context);
         int border = getBorderColor(context);
 
@@ -229,6 +361,22 @@ public class AnimeThemeManager {
     public static Drawable createMenuPillDrawable(Context context, boolean isActive) {
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
+        if (isMobileSaoEnabled()) {
+            float r = 3f * d;
+            int surface = getSaoSurfaceColor();
+            int elevated = getSaoElevatedColor();
+            int hairline = getSaoHairlineColor();
+            GradientDrawable gd = new GradientDrawable();
+            gd.setCornerRadius(r);
+            if (isActive) {
+                gd.setColor(blendArgb(elevated, accent, 0.14f));
+                gd.setStroke(Math.max(1, Math.round(1.2f * d)), accent);
+            } else {
+                gd.setColor(surface);
+                gd.setStroke(Math.max(1, Math.round(0.9f * d)), withAlpha(hairline, 0xB8));
+            }
+            return wrapRipple(gd, withAlpha(accent, 0x33), r);
+        }
         int surface = getSurfaceColor(context);
         int border = getBorderColor(context);
 
@@ -248,6 +396,17 @@ public class AnimeThemeManager {
     public static Drawable createFabTriggerDrawable(Context context) {
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
+        if (isMobileSaoEnabled()) {
+            GradientDrawable ring = new GradientDrawable();
+            ring.setShape(GradientDrawable.OVAL);
+            ring.setColor(getSaoSurfaceColor());
+            ring.setStroke(Math.max(2, Math.round(1.5f * d)), accent);
+
+            GradientDrawable mask = new GradientDrawable();
+            mask.setShape(GradientDrawable.OVAL);
+            mask.setColor(Color.WHITE);
+            return new RippleDrawable(ColorStateList.valueOf(withAlpha(accent, 0x40)), ring, mask);
+        }
         int surface = getSurfaceColor(context);
 
         GradientDrawable gd = new GradientDrawable();
@@ -263,6 +422,9 @@ public class AnimeThemeManager {
 
     public static Drawable createPaginationBarDrawable(Context context) {
         float d = density(context);
+        if (isMobileSaoEnabled()) {
+            return createPillDrawable(context, getSaoSurfaceColor(), getSaoHairlineColor(), 1f, 4f);
+        }
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
 
@@ -276,6 +438,9 @@ public class AnimeThemeManager {
 
     public static Drawable createPageIndicatorDrawable(Context context) {
         float d = density(context);
+        if (isMobileSaoEnabled()) {
+            return createPillDrawable(context, getSaoVoidColor(), withAlpha(getSaoHairlineColor(), 0x80), 1f, 3f);
+        }
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
 
@@ -290,6 +455,10 @@ public class AnimeThemeManager {
     public static Drawable createPageButtonDrawable(Context context) {
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
+        if (isMobileSaoEnabled()) {
+            Drawable btn = createPillDrawable(context, getSaoElevatedColor(), getSaoHairlineColor(), 1f, 3f);
+            return wrapRipple(btn, withAlpha(accent, 0x38), 3f * d);
+        }
 
         GradientDrawable gd = new GradientDrawable();
         gd.setShape(GradientDrawable.RECTANGLE);
@@ -300,16 +469,31 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createDetailHeroScrimDrawable(Context context) {
-        int voidColor = getVoidColor(context);
+        int voidColor = isMobileSaoEnabled() ? getSaoVoidColor() : getVoidColor(context);
         return new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{0x00000000, withAlpha(voidColor, 0x66), withAlpha(voidColor, 0xCC), voidColor}
+                new int[]{0x00000000, withAlpha(voidColor, 0x55), withAlpha(voidColor, 0xCC), voidColor}
         );
     }
 
     public static Drawable createFrostedGlassButtonDrawable(Context context, boolean isPrimaryAccent, boolean isActiveState) {
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
+        if (isMobileSaoEnabled()) {
+            float r = 3f * d;
+            GradientDrawable gd = new GradientDrawable();
+            gd.setCornerRadius(r);
+            if (isPrimaryAccent) {
+                gd.setColor(accent);
+            } else if (isActiveState) {
+                gd.setColor(blendArgb(getSaoSurfaceColor(), accent, 0.14f));
+                gd.setStroke(Math.max(1, Math.round(1.2f * d)), accent);
+            } else {
+                gd.setColor(getSaoElevatedColor());
+                gd.setStroke(Math.max(1, Math.round(1f * d)), getSaoHairlineColor());
+            }
+            return wrapRipple(gd, withAlpha(accent, 0x38), r);
+        }
         int surface = getSurfaceColor(context);
         float radius = 24f * d;
 
@@ -335,9 +519,23 @@ public class AnimeThemeManager {
         return wrapFocusRipple(normal, focused, withAlpha(accent, 0x40), radius);
     }
 
+    public static Drawable createFrostedGlassButtonDrawable(Context context, boolean isPrimaryAccent) {
+        return createFrostedGlassButtonDrawable(context, isPrimaryAccent, isPrimaryAccent);
+    }
+
     public static Drawable createFrostedIconButtonDrawable(Context context) {
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
+        if (isMobileSaoEnabled()) {
+            GradientDrawable ring = new GradientDrawable();
+            ring.setShape(GradientDrawable.OVAL);
+            ring.setColor(withAlpha(getSaoSurfaceColor(), 0xD9));
+            ring.setStroke(Math.max(1, Math.round(1.2f * d)), getSaoHairlineColor());
+            GradientDrawable mask = new GradientDrawable();
+            mask.setShape(GradientDrawable.OVAL);
+            mask.setColor(Color.WHITE);
+            return new RippleDrawable(ColorStateList.valueOf(withAlpha(accent, 0x38)), ring, mask);
+        }
         int surface = getSurfaceColor(context);
         float radius = 12f * d;
 
@@ -390,9 +588,14 @@ public class AnimeThemeManager {
     }
 
     public static int getSystemBarColorForTheme(Context context, String theme) {
+        if (isMobileSaoEnabled()) {
+            return getSaoVoidColor();
+        }
         if (context == null) return Color.parseColor("#0A0D18");
         if (theme == null) theme = THEME_SHINKAI;
         switch (theme) {
+            case THEME_AINCRAD:
+                return 0xFF111317;
             case THEME_SAKURA:
                 return ContextCompat.getColor(context, R.color.anime_void_sakura);
             case THEME_CYBER:
@@ -414,16 +617,20 @@ public class AnimeThemeManager {
         View view = LayoutInflater.from(activity).inflate(R.layout.dialog_anime_theme_selector, null);
         dialog.setContentView(view);
         SystemUiHelper.setupCustomDialogBounds(dialog, activity);
+        applyCustomDialogTheme(view, activity);
 
         RadioGroup rgThemes = view.findViewById(R.id.rg_anime_themes);
         RadioButton rbShinkai = view.findViewById(R.id.rb_theme_shinkai);
+        RadioButton rbAincrad = view.findViewById(R.id.rb_theme_aincrad);
         RadioButton rbSakura = view.findViewById(R.id.rb_theme_sakura);
         RadioButton rbCyber = view.findViewById(R.id.rb_theme_cyber);
         RadioButton rbGhibli = view.findViewById(R.id.rb_theme_ghibli);
         View btnClose = view.findViewById(R.id.btn_close_theme_dialog);
 
         String current = getTheme(activity);
-        if (THEME_SAKURA.equals(current)) {
+        if (THEME_AINCRAD.equals(current) && rbAincrad != null) {
+            rbAincrad.setChecked(true);
+        } else if (THEME_SAKURA.equals(current)) {
             rbSakura.setChecked(true);
         } else if (THEME_CYBER.equals(current)) {
             rbCyber.setChecked(true);
@@ -435,7 +642,9 @@ public class AnimeThemeManager {
 
         rgThemes.setOnCheckedChangeListener((group, checkedId) -> {
             String selected = THEME_SHINKAI;
-            if (checkedId == R.id.rb_theme_sakura) {
+            if (checkedId == R.id.rb_theme_aincrad) {
+                selected = THEME_AINCRAD;
+            } else if (checkedId == R.id.rb_theme_sakura) {
                 selected = THEME_SAKURA;
             } else if (checkedId == R.id.rb_theme_cyber) {
                 selected = THEME_CYBER;
@@ -445,6 +654,7 @@ public class AnimeThemeManager {
 
             setTheme(activity, selected);
             SystemUiHelper.applySystemBarsTheme(activity, selected);
+            applyCustomDialogTheme(view, activity);
             HapticHelper.performClick(group);
 
             if (onThemeChanged != null) {
@@ -484,10 +694,16 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createDialogFrostDrawable(Context context) {
+        if (isMobileSaoEnabled()) {
+            return createPillDrawable(context, getSaoSurfaceColor(), withAlpha(getSaoHairlineColor(), 0xB3), 1f, 4f);
+        }
         return createPillDrawable(context, getSurfaceColor(context), getBorderColor(context), 1f, 16f);
     }
 
     public static Drawable createBadgeFrostDrawable(Context context) {
+        if (isMobileSaoEnabled()) {
+            return createPillDrawable(context, withAlpha(getSaoVoidColor(), 0xCC), withAlpha(getSaoHairlineColor(), 0x99), 1f, 3f);
+        }
         return createPillDrawable(context, withAlpha(getVoidColor(context), 0xCC), getBorderColor(context), 1f, 6f);
     }
 
@@ -621,53 +837,75 @@ public class AnimeThemeManager {
     }
 
     private static boolean isAnyThemeAccent(int c) {
-        return c == 0xFF38BDF8 || c == 0xFFFB7185 || c == 0xFF00F0FF || c == 0xFF10B981;
+        return c == 0xFF38BDF8 || c == 0xFFF59E0B || c == 0xFFFB7185 || c == 0xFF00F0FF || c == 0xFF10B981;
     }
 
     private static boolean isAnyThemeSurface(int c) {
-        return c == 0xFF10162A || c == 0xFF1C1226 || c == 0xFF0E1424 || c == 0xFF0E211E;
+        return c == 0xFF10162A || c == 0xFF191C22 || c == 0xFF1C1226 || c == 0xFF0E1424 || c == 0xFF0E211E;
     }
 
     private static boolean isAnyThemeBorder(int c) {
-        return c == 0xFF233252 || c == 0xFF381D47 || c == 0xFF1E2C4A || c == 0xFF1B3D37 || c == 0xFF243859;
+        return c == 0xFF233252 || c == 0xFF2E3440 || c == 0xFF381D47 || c == 0xFF1E2C4A || c == 0xFF1B3D37 || c == 0xFF243859;
     }
 
     private static boolean isAnyThemeElevated(int c) {
-        return c == 0xFF161F38 || c == 0xFF16233B
-                || c == ColorUtils.blendARGB(0xFF10162A, 0xFF233252, 0.45f)
-                || c == ColorUtils.blendARGB(0xFF1C1226, 0xFF381D47, 0.45f)
-                || c == ColorUtils.blendARGB(0xFF0E1424, 0xFF1E2C4A, 0.45f)
-                || c == ColorUtils.blendARGB(0xFF0E211E, 0xFF1B3D37, 0.45f);
+        return c == 0xFF161F38 || c == 0xFF16233B || c == 0xFF21252D
+                || c == blendArgb(0xFF10162A, 0xFF233252, 0.45f)
+                || c == blendArgb(0xFF1C1226, 0xFF381D47, 0.45f)
+                || c == blendArgb(0xFF0E1424, 0xFF1E2C4A, 0.45f)
+                || c == blendArgb(0xFF0E211E, 0xFF1B3D37, 0.45f);
     }
 
     private static void remapDialogChildren(View view, Context context, int accent, int surface, int border, int elevated, int voidColor) {
         if (view == null) return;
         int id = view.getId();
         // Jangan ubah swatch pratinjau kartu tema di dialog pengaturan/pemilih tema
-        if (id == R.id.rb_theme_shinkai || id == R.id.rb_theme_sakura
-                || id == R.id.rb_theme_cyber || id == R.id.rb_theme_ghibli) {
+        if (id == R.id.rb_theme_shinkai || id == R.id.rb_theme_aincrad
+                || id == R.id.rb_theme_sakura || id == R.id.rb_theme_cyber
+                || id == R.id.rb_theme_ghibli || id == R.id.swatch_theme_shinkai
+                || id == R.id.swatch_theme_aincrad || id == R.id.swatch_theme_sakura
+                || id == R.id.swatch_theme_cyber || id == R.id.swatch_theme_ghibli) {
             return;
         }
+
+        boolean sao = isMobileSaoEnabled();
 
         if (view instanceof com.google.android.material.button.MaterialButton) {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) view;
             ColorStateList bgTint = mb.getBackgroundTintList();
-            if (bgTint != null) {
-                int c = bgTint.getDefaultColor();
-                if (isAnyThemeAccent(c)) mb.setBackgroundTintList(ColorStateList.valueOf(accent));
-                else if (isAnyThemeElevated(c)) mb.setBackgroundTintList(ColorStateList.valueOf(elevated));
-                else if (isAnyThemeSurface(c)) mb.setBackgroundTintList(ColorStateList.valueOf(surface));
-            }
-            ColorStateList sc = mb.getStrokeColor();
-            if (sc != null) {
-                int s = sc.getDefaultColor();
-                if (isAnyThemeBorder(s)) mb.setStrokeColor(ColorStateList.valueOf(border));
-                else if (isAnyThemeAccent(s)) mb.setStrokeColor(ColorStateList.valueOf(accent));
+            int prevStroke = mb.getStrokeWidth();
+            boolean hasButtonSurface = bgTint != null || prevStroke > 0 || mb.getText().length() > 0;
+            if (sao) {
+                mb.setBackgroundTintList(null);
+                mb.setStrokeWidth(0);
+                mb.setStateListAnimator(null);
+                if (hasButtonSurface) {
+                    boolean isPrimaryAccent = bgTint != null && isAnyThemeAccent(bgTint.getDefaultColor());
+                    applyBackgroundPreservingPadding(mb, createFrostedGlassButtonDrawable(context, isPrimaryAccent));
+                    if (isPrimaryAccent) {
+                        mb.setTextColor(0xFF080C14);
+                    }
+                }
+            } else {
+                if (bgTint != null) {
+                    int c = bgTint.getDefaultColor();
+                    if (isAnyThemeAccent(c)) mb.setBackgroundTintList(ColorStateList.valueOf(accent));
+                    else if (isAnyThemeElevated(c)) mb.setBackgroundTintList(ColorStateList.valueOf(elevated));
+                    else if (isAnyThemeSurface(c)) mb.setBackgroundTintList(ColorStateList.valueOf(surface));
+                }
+                ColorStateList sc = mb.getStrokeColor();
+                if (sc != null) {
+                    int s = sc.getDefaultColor();
+                    if (isAnyThemeBorder(s)) mb.setStrokeColor(ColorStateList.valueOf(border));
+                    else if (isAnyThemeAccent(s)) mb.setStrokeColor(ColorStateList.valueOf(accent));
+                }
             }
             ColorStateList iconTint = mb.getIconTint();
             if (iconTint != null && isAnyThemeAccent(iconTint.getDefaultColor())) {
                 mb.setIconTint(ColorStateList.valueOf(accent));
             }
+        } else if (sao && view instanceof android.widget.EditText) {
+            applyBackgroundPreservingPadding(view, createSaoRecessedInputDrawable(context));
         }
 
         if (view instanceof androidx.appcompat.widget.SwitchCompat) {
@@ -699,7 +937,7 @@ public class AnimeThemeManager {
         } else if (view.getBackground() instanceof android.graphics.drawable.ColorDrawable) {
             int bgColor = ((android.graphics.drawable.ColorDrawable) view.getBackground()).getColor();
             if (isAnyThemeBorder(bgColor)) {
-                view.setBackgroundColor(border);
+                view.setBackgroundColor(sao ? withAlpha(getSaoHairlineColor(), 0x3D) : border);
             } else if (isAnyThemeElevated(bgColor)) {
                 view.setBackgroundColor(elevated);
             } else if (isAnyThemeSurface(bgColor)) {

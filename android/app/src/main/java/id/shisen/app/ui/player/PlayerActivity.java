@@ -447,10 +447,21 @@ public class PlayerActivity extends AppCompatActivity {
         ColorStateList borderTint = ColorStateList.valueOf(border);
         ColorStateList elevatedTint = ColorStateList.valueOf(elevated);
 
+        boolean sao = AnimeThemeManager.isMobileSaoEnabled();
         if (layoutPortraitBottom != null) {
             layoutPortraitBottom.setBackgroundColor(voidColor);
             if (layoutPortraitBottom.getChildCount() > 0) {
-                layoutPortraitBottom.getChildAt(0).setBackgroundColor(surface);
+                View header = layoutPortraitBottom.getChildAt(0);
+                if (sao) {
+                    // Transisi gradasi mulus antara header player portrait dan grid episode
+                    AnimeThemeManager.applyBackgroundPreservingPadding(
+                            header,
+                            new android.graphics.drawable.GradientDrawable(
+                                    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                                    new int[]{surface, voidColor}));
+                } else {
+                    header.setBackgroundColor(surface);
+                }
             }
         }
         if (tvPortraitCurrentEp != null) tvPortraitCurrentEp.setTextColor(accent);
@@ -464,8 +475,16 @@ public class PlayerActivity extends AppCompatActivity {
         for (Button pill : portraitPills) {
             if (pill instanceof com.google.android.material.button.MaterialButton) {
                 com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) pill;
-                mb.setBackgroundTintList(elevatedTint);
-                mb.setStrokeColor(borderTint);
+                if (sao) {
+                    mb.setBackgroundTintList(null);
+                    mb.setStrokeWidth(0);
+                    mb.setStateListAnimator(null);
+                    AnimeThemeManager.applyBackgroundPreservingPadding(
+                            mb, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false));
+                } else {
+                    mb.setBackgroundTintList(elevatedTint);
+                    mb.setStrokeColor(borderTint);
+                }
             }
         }
         if (btnPortraitPip instanceof com.google.android.material.button.MaterialButton) {
@@ -473,25 +492,44 @@ public class PlayerActivity extends AppCompatActivity {
         }
         if (btnPortraitSort instanceof com.google.android.material.button.MaterialButton) {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnPortraitSort;
-            mb.setBackgroundTintList(ColorStateList.valueOf(surface));
-            mb.setStrokeColor(borderTint);
+            if (sao) {
+                mb.setBackgroundTintList(null);
+                mb.setStrokeWidth(0);
+                mb.setStateListAnimator(null);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        mb, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false));
+            } else {
+                mb.setBackgroundTintList(ColorStateList.valueOf(surface));
+                mb.setStrokeColor(borderTint);
+            }
         }
         if (btnPortraitFullscreen instanceof com.google.android.material.button.MaterialButton) {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnPortraitFullscreen;
-            mb.setBackgroundTintList(ColorStateList.valueOf(ColorUtils.blendARGB(voidColor, accent, 0.14f)));
-            mb.setStrokeColor(accentTint);
+            if (sao) {
+                mb.setBackgroundTintList(null);
+                mb.setStrokeWidth(0);
+                mb.setStateListAnimator(null);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        mb, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false, true));
+            } else {
+                mb.setBackgroundTintList(ColorStateList.valueOf(ColorUtils.blendARGB(voidColor, accent, 0.14f)));
+                mb.setStrokeColor(accentTint);
+            }
             mb.setTextColor(accent);
         }
 
+        float hudRadius = sao ? 3f : 20f;
+        int hudStroke = sao ? AnimeThemeManager.withAlpha(border, 0x99) : AnimeThemeManager.withAlpha(accent, 0x4D);
+        int hudFill = AnimeThemeManager.withAlpha(sao ? surface : voidColor, sao ? 0xE6 : 0xCC);
         if (hudHoldSpeed != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(hudHoldSpeed,
-                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x4D), 1f, 20f));
+                    AnimeThemeManager.createPillDrawable(this, hudFill, hudStroke, 1f, hudRadius));
         }
         if (tvHoldSpeedIcon != null) tvHoldSpeedIcon.setTextColor(accent);
 
         if (hudOsd != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(hudOsd,
-                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x4D), 1f, 20f));
+                    AnimeThemeManager.createPillDrawable(this, hudFill, hudStroke, 1f, hudRadius));
         }
         if (tvOsdIcon != null) tvOsdIcon.setTextColor(accent);
         if (pbOsdBar != null) {
@@ -501,7 +539,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (layoutSafetyUnlock != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(layoutSafetyUnlock,
-                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x4D), 1f, 20f));
+                    AnimeThemeManager.createPillDrawable(this, hudFill, hudStroke, 1f, hudRadius));
             if (layoutSafetyUnlock instanceof ViewGroup && ((ViewGroup) layoutSafetyUnlock).getChildCount() > 0) {
                 View first = ((ViewGroup) layoutSafetyUnlock).getChildAt(0);
                 if (first instanceof ImageView) ((ImageView) first).setImageTintList(accentTint);
@@ -510,7 +548,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (layoutBuffering != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(layoutBuffering,
-                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x33), 1f, 16f));
+                    AnimeThemeManager.createPillDrawable(
+                            this, hudFill, AnimeThemeManager.withAlpha(sao ? border : accent, sao ? 0x99 : 0x33),
+                            1f, sao ? 3f : 16f));
         }
         if (pbBuffering != null) pbBuffering.setIndeterminateTintList(accentTint);
         if (tvBufferingText != null) tvBufferingText.setTextColor(accent);
@@ -520,8 +560,16 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (btnSkipOpEd instanceof com.google.android.material.button.MaterialButton) {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnSkipOpEd;
-            mb.setBackgroundTintList(ColorStateList.valueOf(AnimeThemeManager.withAlpha(voidColor, 0xD9)));
-            mb.setStrokeColor(accentTint);
+            if (sao) {
+                mb.setBackgroundTintList(null);
+                mb.setStrokeWidth(0);
+                mb.setStateListAnimator(null);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        mb, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false, true));
+            } else {
+                mb.setBackgroundTintList(ColorStateList.valueOf(AnimeThemeManager.withAlpha(voidColor, 0xD9)));
+                mb.setStrokeColor(accentTint);
+            }
             mb.setIconTint(accentTint);
             mb.setTextColor(accent);
         }

@@ -153,6 +153,8 @@
     <string name="settings_theme_cyber_desc">漆黒の虚無 · エレクトリックシアン · サイバーパープル</string>
     <string name="settings_theme_ghibli_title">ジブリの森 (もののけ姫)</string>
     <string name="settings_theme_ghibli_desc">深緑のティール · エメラルドミント · スターゴールド</string>
+    <string name="settings_theme_aincrad_title">アインクラッド (SAO S1)</string>
+    <string name="settings_theme_aincrad_desc">ダークスチール · ゴールデンアンバー · カーディナルUI</string>
 
     <!-- Settings Dialog: AI字幕設定 -->
     <string name="settings_ai_key_label">APIキー / エンドポイントURL</string>

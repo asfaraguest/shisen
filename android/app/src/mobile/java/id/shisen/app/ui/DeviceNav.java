@@ -123,6 +123,9 @@ public final class DeviceNav {
     public void applyTheme() {
         if (host == null) return;
         int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
+        if (scrimFoldedMenu != null && id.shisen.app.util.AnimeThemeManager.isMobileSaoEnabled()) {
+            scrimFoldedMenu.setBackgroundColor(0xC40E1014);
+        }
         if (fabMenuTrigger != null) {
             id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
                     fabMenuTrigger,
@@ -135,18 +138,40 @@ public final class DeviceNav {
             id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
                     host.menuItemSettings,
                     id.shisen.app.util.AnimeThemeManager.createMenuPillDrawable(host, false));
-            tintMenuIcon(host.menuItemSettings, accent);
+            tintMenuIcon(host.menuItemSettings, accent, false);
         }
         updateFoldedMenuHighlight(host.getCurrentTab());
     }
 
-    private void tintMenuIcon(View item, int color) {
-        if (!(item instanceof ViewGroup)) return;
+    private void tintMenuIcon(View item, int color, boolean isActive) {
+        if (!(item instanceof ViewGroup) || host == null) return;
         ViewGroup vg = (ViewGroup) item;
+        boolean sao = id.shisen.app.util.AnimeThemeManager.isMobileSaoEnabled();
         for (int i = 0; i < vg.getChildCount(); i++) {
             View child = vg.getChildAt(i);
             if (child instanceof ImageView) {
-                ((ImageView) child).setImageTintList(android.content.res.ColorStateList.valueOf(color));
+                ImageView iv = (ImageView) child;
+                iv.setImageTintList(android.content.res.ColorStateList.valueOf(color));
+                if (sao) {
+                    float d = host.getResources().getDisplayMetrics().density;
+                    int badgeSize = Math.round(24f * d);
+                    ViewGroup.LayoutParams lp = iv.getLayoutParams();
+                    if (lp != null && lp.width != badgeSize) {
+                        lp.width = badgeSize;
+                        lp.height = badgeSize;
+                        iv.setLayoutParams(lp);
+                    }
+                    int pad = Math.round(4f * d);
+                    iv.setPadding(pad, pad, pad, pad);
+                    int fill = isActive
+                            ? id.shisen.app.util.AnimeThemeManager.withAlpha(color, 0x24)
+                            : id.shisen.app.util.AnimeThemeManager.getSaoElevatedColor();
+                    int stroke = isActive
+                            ? color
+                            : id.shisen.app.util.AnimeThemeManager.getSaoHairlineColor();
+                    iv.setBackground(id.shisen.app.util.AnimeThemeManager.createSaoCircleBadgeDrawable(
+                            host, fill, stroke, 1f));
+                }
                 break;
             }
         }
@@ -176,7 +201,7 @@ public final class DeviceNav {
             id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
                     items[i],
                     id.shisen.app.util.AnimeThemeManager.createMenuPillDrawable(host, isActive));
-            tintMenuIcon(items[i], activeColor);
+            tintMenuIcon(items[i], activeColor, isActive);
             titles[i].setTextColor(isActive ? activeColor : inactiveColor);
             titles[i].setTypeface(null, isActive ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
         }

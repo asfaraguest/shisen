@@ -371,16 +371,28 @@ public class MainActivity extends AppCompatActivity {
         boolean isTv = id.shisen.app.ui.player.PlayerKeys.isTv();
 
         if (layoutMainRoot != null) {
-            layoutMainRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+            if (!isTv && AnimeThemeManager.isMobileSaoEnabled()) {
+                layoutMainRoot.setBackground(AnimeThemeManager.createSaoCanvasDrawable(this));
+            } else {
+                layoutMainRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+            }
         }
         SystemUiHelper.applySystemBarsTheme(this);
 
+        if (tvAppLogo != null && !isTv) {
+            tvAppLogo.setTextColor(0xFFF3F4F6);
+        }
         if (tvAppLogoKanji != null) {
             tvAppLogoKanji.setTextColor(accent);
         }
         if (tvCurrentMenuBadge != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(
-                    tvCurrentMenuBadge, AnimeThemeManager.createSearchCapsuleDrawable(this));
+                    tvCurrentMenuBadge,
+                    !isTv ? AnimeThemeManager.createBadgeFrostDrawable(this)
+                          : AnimeThemeManager.createSearchCapsuleDrawable(this));
+            if (!isTv) {
+                tvCurrentMenuBadge.setTextColor(accent);
+            }
         }
         if (pbLoading != null) {
             pbLoading.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(accent));
@@ -414,12 +426,27 @@ public class MainActivity extends AppCompatActivity {
                         AnimeThemeManager.createSearchCapsuleDrawable(this));
             } else if (!isTv) {
                 AnimeThemeManager.applyBackgroundPreservingPadding(
-                        layoutTopSearchFluid, AnimeThemeManager.createSearchCapsuleDrawable(this));
+                        layoutTopSearchFluid, AnimeThemeManager.createSaoRecessedInputDrawable(this));
             }
         }
         if (!isTv && layoutAuroraTop != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(
                     layoutAuroraTop, AnimeThemeManager.createAuroraHeaderDrawable(this));
+        }
+        if (!isTv && layoutContextualBar != null) {
+            // Transisi halus tanpa borderline antara header bar, contextual bar, dan body feed
+            android.graphics.drawable.GradientDrawable ctxBg = new android.graphics.drawable.GradientDrawable(
+                    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                    new int[]{
+                            AnimeThemeManager.withAlpha(AnimeThemeManager.getSaoVoidColor(), 0xB3),
+                            0x00111317
+                    });
+            AnimeThemeManager.applyBackgroundPreservingPadding(layoutContextualBar, ctxBg);
+        }
+        if (!isTv && btnClearHistoryAll != null) {
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    btnClearHistoryAll, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false));
+            btnClearHistoryAll.setTextColor(accent);
         }
         if (tvPageIndicator != null) {
             tvPageIndicator.setTextColor(accent);

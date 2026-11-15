@@ -153,6 +153,8 @@
     <string name="settings_theme_cyber_desc">Obsidian Void · Electric Cyan · Cyber Purple</string>
     <string name="settings_theme_ghibli_title">Ghibli Forest (Princess Mononoke)</string>
     <string name="settings_theme_ghibli_desc">Deep Forest Teal · Emerald Mint · Star Gold</string>
+    <string name="settings_theme_aincrad_title">Aincrad System (SAO S1)</string>
+    <string name="settings_theme_aincrad_desc">Dark Steel Matte · Golden Amber · Cardinal Clean</string>
 
     <!-- Settings Dialog: AI Subtitle Section -->
     <string name="settings_ai_key_label">API Key / Endpoint URL</string>

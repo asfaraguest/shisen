@@ -153,6 +153,8 @@
     <string name="settings_theme_cyber_desc">Vacio Oscuro · Cian Eléctrico · Cíber Morado</string>
     <string name="settings_theme_ghibli_title">Bosque Ghibli (Mononoke Hime)</string>
     <string name="settings_theme_ghibli_desc">Verde Oscuro · Menta Esmeralda · Oro Estrella</string>
+    <string name="settings_theme_aincrad_title">Sistema Aincrad (SAO T1)</string>
+    <string name="settings_theme_aincrad_desc">Acero Oscuro · Ámbar Dorado · Interfaz Cardinal</string>
 
     <!-- Settings Dialog: AI Subtitle Settings -->
     <string name="settings_ai_key_label">API Key / Endpoint URL</string>

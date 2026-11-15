@@ -106,11 +106,11 @@
                 android:clickable="true"
                 android:focusable="true">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🌌"
-                    android:textSize="18sp" />
+                <View
+                    android:id="@+id/swatch_theme_shinkai"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:background="@color/accent_glacial" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -143,6 +143,56 @@
                     android:buttonTint="@color/accent_glacial" />
             </LinearLayout>
 
+            <!-- Theme Aincrad (SAO Amber) -->
+            <LinearLayout
+                android:id="@+id/card_theme_aincrad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_chip_frost_inactive"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <View
+                    android:id="@+id/swatch_theme_aincrad"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:background="#F59E0B" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_theme_aincrad_title"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_theme_aincrad_desc"
+                        android:textColor="@color/text_frost_subtle"
+                        android:textSize="10.5sp" />
+                </LinearLayout>
+
+                <RadioButton
+                    android:id="@+id/rb_theme_aincrad"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:buttonTint="#F59E0B" />
+            </LinearLayout>
+
             <!-- Theme Sakura -->
             <LinearLayout
                 android:id="@+id/card_theme_sakura"
@@ -156,11 +206,11 @@
                 android:clickable="true"
                 android:focusable="true">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🌸"
-                    android:textSize="18sp" />
+                <View
+                    android:id="@+id/swatch_theme_sakura"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:background="@color/anime_sakura_pink" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -206,11 +256,11 @@
                 android:clickable="true"
                 android:focusable="true">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="⚡"
-                    android:textSize="18sp" />
+                <View
+                    android:id="@+id/swatch_theme_cyber"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:background="@color/anime_cyan_neon" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -255,11 +305,11 @@
                 android:clickable="true"
                 android:focusable="true">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🍃"
-                    android:textSize="18sp" />
+                <View
+                    android:id="@+id/swatch_theme_ghibli"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:background="@color/anime_mint_miku" />
 
                 <LinearLayout
                     android:layout_width="0dp"

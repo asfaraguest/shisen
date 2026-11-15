@@ -136,60 +136,50 @@ public class SettingsDialog {
     }
 
     private static void setupThemeSection(View root, Activity activity, OnSettingsChangeListener listener) {
-        View cardShinkai = root.findViewById(R.id.card_theme_shinkai);
-        View cardSakura = root.findViewById(R.id.card_theme_sakura);
-        View cardCyber = root.findViewById(R.id.card_theme_cyber);
-        View cardGhibli = root.findViewById(R.id.card_theme_ghibli);
-
-        RadioButton rbShinkai = root.findViewById(R.id.rb_theme_shinkai);
-        RadioButton rbSakura = root.findViewById(R.id.rb_theme_sakura);
-        RadioButton rbCyber = root.findViewById(R.id.rb_theme_cyber);
-        RadioButton rbGhibli = root.findViewById(R.id.rb_theme_ghibli);
+        int[] cardIds = {
+                R.id.card_theme_shinkai,
+                R.id.card_theme_aincrad,
+                R.id.card_theme_sakura,
+                R.id.card_theme_cyber,
+                R.id.card_theme_ghibli
+        };
+        int[] radioIds = {
+                R.id.rb_theme_shinkai,
+                R.id.rb_theme_aincrad,
+                R.id.rb_theme_sakura,
+                R.id.rb_theme_cyber,
+                R.id.rb_theme_ghibli
+        };
+        String[] themeKeys = {
+                AnimeThemeManager.THEME_SHINKAI,
+                AnimeThemeManager.THEME_AINCRAD,
+                AnimeThemeManager.THEME_SAKURA,
+                AnimeThemeManager.THEME_CYBER,
+                AnimeThemeManager.THEME_GHIBLI
+        };
 
         Runnable updateRadios = () -> {
             String current = AnimeThemeManager.getTheme(activity);
-            rbShinkai.setChecked(AnimeThemeManager.THEME_SHINKAI.equals(current));
-            rbSakura.setChecked(AnimeThemeManager.THEME_SAKURA.equals(current));
-            rbCyber.setChecked(AnimeThemeManager.THEME_CYBER.equals(current));
-            rbGhibli.setChecked(AnimeThemeManager.THEME_GHIBLI.equals(current));
+            for (int i = 0; i < radioIds.length; i++) {
+                RadioButton rb = root.findViewById(radioIds[i]);
+                if (rb != null) rb.setChecked(themeKeys[i].equals(current));
+            }
         };
         updateRadios.run();
 
-        cardShinkai.setOnClickListener(v -> {
-            HapticHelper.performSelection(v);
-            AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_SHINKAI);
-            SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_SHINKAI);
-            updateRadios.run();
-            applyDialogTheme(root, activity);
-            if (listener != null) listener.onThemeChanged();
-        });
-
-        cardSakura.setOnClickListener(v -> {
-            HapticHelper.performSelection(v);
-            AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_SAKURA);
-            SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_SAKURA);
-            updateRadios.run();
-            applyDialogTheme(root, activity);
-            if (listener != null) listener.onThemeChanged();
-        });
-
-        cardCyber.setOnClickListener(v -> {
-            HapticHelper.performSelection(v);
-            AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_CYBER);
-            SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_CYBER);
-            updateRadios.run();
-            applyDialogTheme(root, activity);
-            if (listener != null) listener.onThemeChanged();
-        });
-
-        cardGhibli.setOnClickListener(v -> {
-            HapticHelper.performSelection(v);
-            AnimeThemeManager.setTheme(activity, AnimeThemeManager.THEME_GHIBLI);
-            SystemUiHelper.applySystemBarsTheme(activity, AnimeThemeManager.THEME_GHIBLI);
-            updateRadios.run();
-            applyDialogTheme(root, activity);
-            if (listener != null) listener.onThemeChanged();
-        });
+        for (int i = 0; i < cardIds.length; i++) {
+            View card = root.findViewById(cardIds[i]);
+            if (card == null) continue;
+            final String targetTheme = themeKeys[i];
+            card.setOnClickListener(v -> {
+                HapticHelper.performSelection(v);
+                AnimeThemeManager.setTheme(activity, targetTheme);
+                SystemUiHelper.applySystemBarsTheme(activity, targetTheme);
+                updateRadios.run();
+                applyDialogTheme(root, activity);
+                if (listener != null) listener.onThemeChanged();
+            });
+        }
     }
 
     private static void updateLanguageChips(View root, Activity activity) {
@@ -225,21 +215,52 @@ public class SettingsDialog {
         android.content.res.ColorStateList borderTint = android.content.res.ColorStateList.valueOf(border);
 
         // Perbarui latar card pilihan tema sesuai tema aktif
+        boolean sao = AnimeThemeManager.isMobileSaoEnabled();
         String current = AnimeThemeManager.getTheme(activity);
-        int[] cardIds = {R.id.card_theme_shinkai, R.id.card_theme_sakura, R.id.card_theme_cyber, R.id.card_theme_ghibli};
-        String[] themeKeys = {AnimeThemeManager.THEME_SHINKAI, AnimeThemeManager.THEME_SAKURA, AnimeThemeManager.THEME_CYBER, AnimeThemeManager.THEME_GHIBLI};
+        int[] cardIds = {
+                R.id.card_theme_shinkai,
+                R.id.card_theme_aincrad,
+                R.id.card_theme_sakura,
+                R.id.card_theme_cyber,
+                R.id.card_theme_ghibli
+        };
+        int[] swatchIds = {
+                R.id.swatch_theme_shinkai,
+                R.id.swatch_theme_aincrad,
+                R.id.swatch_theme_sakura,
+                R.id.swatch_theme_cyber,
+                R.id.swatch_theme_ghibli
+        };
+        int[] swatchColors = {0xFF38BDF8, 0xFFF59E0B, 0xFFFB7185, 0xFF00F0FF, 0xFF10B981};
+        String[] themeKeys = {
+                AnimeThemeManager.THEME_SHINKAI,
+                AnimeThemeManager.THEME_AINCRAD,
+                AnimeThemeManager.THEME_SAKURA,
+                AnimeThemeManager.THEME_CYBER,
+                AnimeThemeManager.THEME_GHIBLI
+        };
+        float cardRadius = sao ? 3f : 12f;
         for (int i = 0; i < cardIds.length; i++) {
             View card = root.findViewById(cardIds[i]);
             if (card != null) {
                 boolean active = themeKeys[i].equals(current);
+                int fill = sao
+                        ? (active ? AnimeThemeManager.getSaoElevatedColor() : AnimeThemeManager.getSaoSurfaceColor())
+                        : AnimeThemeManager.getSurfaceColor(activity);
+                int stroke = active ? accent : (sao ? AnimeThemeManager.withAlpha(border, 0x80) : border);
                 AnimeThemeManager.applyBackgroundPreservingPadding(
                         card,
                         AnimeThemeManager.createPillDrawable(
                                 activity,
-                                AnimeThemeManager.getSurfaceColor(activity),
-                                active ? accent : border,
+                                fill,
+                                stroke,
                                 active ? 1.5f : 1f,
-                                12f));
+                                cardRadius));
+            }
+            View swatch = root.findViewById(swatchIds[i]);
+            if (swatch != null) {
+                swatch.setBackground(AnimeThemeManager.createSaoCircleBadgeDrawable(
+                        activity, swatchColors[i], AnimeThemeManager.withAlpha(swatchColors[i], 0xCC), 1f));
             }
         }
 
@@ -260,20 +281,22 @@ public class SettingsDialog {
         TextView btnResetPrompt = root.findViewById(R.id.btn_settings_reset_prompt);
         if (btnResetPrompt != null) btnResetPrompt.setTextColor(accent);
 
-        Button btnSave = root.findViewById(R.id.btn_settings_save_ai);
-        if (btnSave != null) btnSave.setBackgroundTintList(accentTint);
+        if (!sao) {
+            Button btnSave = root.findViewById(R.id.btn_settings_save_ai);
+            if (btnSave != null) btnSave.setBackgroundTintList(accentTint);
 
-        Button btnClear = root.findViewById(R.id.btn_settings_clear_ai);
-        if (btnClear instanceof com.google.android.material.button.MaterialButton) {
-            ((com.google.android.material.button.MaterialButton) btnClear).setStrokeColor(borderTint);
-        }
-        Button btnCheckUpdate = root.findViewById(R.id.btn_settings_check_update);
-        if (btnCheckUpdate instanceof com.google.android.material.button.MaterialButton) {
-            ((com.google.android.material.button.MaterialButton) btnCheckUpdate).setStrokeColor(borderTint);
-        }
-        Button btnClearCache = root.findViewById(R.id.btn_settings_clear_cache);
-        if (btnClearCache instanceof com.google.android.material.button.MaterialButton) {
-            ((com.google.android.material.button.MaterialButton) btnClearCache).setStrokeColor(borderTint);
+            Button btnClear = root.findViewById(R.id.btn_settings_clear_ai);
+            if (btnClear instanceof com.google.android.material.button.MaterialButton) {
+                ((com.google.android.material.button.MaterialButton) btnClear).setStrokeColor(borderTint);
+            }
+            Button btnCheckUpdate = root.findViewById(R.id.btn_settings_check_update);
+            if (btnCheckUpdate instanceof com.google.android.material.button.MaterialButton) {
+                ((com.google.android.material.button.MaterialButton) btnCheckUpdate).setStrokeColor(borderTint);
+            }
+            Button btnClearCache = root.findViewById(R.id.btn_settings_clear_cache);
+            if (btnClearCache instanceof com.google.android.material.button.MaterialButton) {
+                ((com.google.android.material.button.MaterialButton) btnClearCache).setStrokeColor(borderTint);
+            }
         }
 
         LinearLayout layoutChips = root.findViewById(R.id.layout_model_chips);

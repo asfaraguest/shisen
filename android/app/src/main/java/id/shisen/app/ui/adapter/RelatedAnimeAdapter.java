@@ -57,11 +57,18 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
         int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
         int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
         int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
+        boolean sao = id.shisen.app.util.AnimeThemeManager.isMobileSaoEnabled();
+        float d = context.getResources().getDisplayMetrics().density;
         if (holder.itemView instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card =
                     (com.google.android.material.card.MaterialCardView) holder.itemView;
             card.setCardBackgroundColor(surface);
-            if (!card.isFocused()) {
+            if (sao) {
+                card.setRadius(4f * d);
+                card.setCardElevation(0f);
+                card.setStrokeWidth(Math.max(1, Math.round(d)));
+                card.setStrokeColor(id.shisen.app.util.AnimeThemeManager.withAlpha(border, 0x80));
+            } else if (!card.isFocused()) {
                 card.setStrokeColor(border);
             }
         }
