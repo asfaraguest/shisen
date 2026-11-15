@@ -93,41 +93,65 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.EpisodeV
         int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
         int activeSurface = androidx.core.graphics.ColorUtils.blendARGB(surface, accent, 0.20f);
 
-        if (isCurrent) {
-            // Active playing state
-            holder.card.setStrokeColor(accent);
-            holder.card.setStrokeWidth((int) (1.5f * context.getResources().getDisplayMetrics().density));
-            holder.card.setCardBackgroundColor(activeSurface);
-            holder.tvTitle.setTextColor(accent);
-
-            holder.tvStatusBadge.setVisibility(View.VISIBLE);
-            holder.tvStatusBadge.setText(R.string.episode_now_playing);
-            holder.tvStatusBadge.setTextColor(accent);
-        } else if (ep.isWatched) {
-            // Watched state
-            holder.card.setStrokeColor(border);
-            holder.card.setStrokeWidth((int) (1f * context.getResources().getDisplayMetrics().density));
-            holder.card.setCardBackgroundColor(surface);
-            holder.tvTitle.setTextColor(ContextCompat.getColor(context, R.color.text_frost_subtle));
-
-            holder.tvStatusBadge.setVisibility(View.VISIBLE);
-            holder.tvStatusBadge.setText(R.string.episode_watched);
-            holder.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.accent_mint));
+        if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled() && holder.layoutBody != null) {
+            holder.card.setCardBackgroundColor(android.graphics.Color.TRANSPARENT);
+            holder.card.setStrokeWidth(0);
+            holder.card.setCardElevation(0f);
+            holder.layoutBody.setDuplicateParentStateEnabled(true);
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    holder.layoutBody,
+                    id.shisen.app.util.AnimeThemeManager.create25DEpisodeTileDrawable(context, isCurrent, ep.isWatched));
+            if (isCurrent) {
+                holder.tvTitle.setTextColor(accent);
+                holder.tvStatusBadge.setVisibility(View.VISIBLE);
+                holder.tvStatusBadge.setText(R.string.episode_now_playing);
+                holder.tvStatusBadge.setTextColor(accent);
+            } else if (ep.isWatched) {
+                holder.tvTitle.setTextColor(ContextCompat.getColor(context, R.color.text_frost_subtle));
+                holder.tvStatusBadge.setVisibility(View.VISIBLE);
+                holder.tvStatusBadge.setText(R.string.episode_watched);
+                holder.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.accent_mint));
+            } else {
+                holder.tvTitle.setTextColor(ContextCompat.getColor(context, R.color.text_frost_bright));
+                holder.tvStatusBadge.setVisibility(View.GONE);
+            }
         } else {
-            // Default unplayed state
-            holder.card.setStrokeColor(border);
-            holder.card.setStrokeWidth((int) (1f * context.getResources().getDisplayMetrics().density));
-            holder.card.setCardBackgroundColor(surface);
-            holder.tvTitle.setTextColor(ContextCompat.getColor(context, R.color.text_frost_bright));
+            if (isCurrent) {
+                // Active playing state
+                holder.card.setStrokeColor(accent);
+                holder.card.setStrokeWidth((int) (1.5f * context.getResources().getDisplayMetrics().density));
+                holder.card.setCardBackgroundColor(activeSurface);
+                holder.tvTitle.setTextColor(accent);
 
-            holder.tvStatusBadge.setVisibility(View.GONE);
-        }
+                holder.tvStatusBadge.setVisibility(View.VISIBLE);
+                holder.tvStatusBadge.setText(R.string.episode_now_playing);
+                holder.tvStatusBadge.setTextColor(accent);
+            } else if (ep.isWatched) {
+                // Watched state
+                holder.card.setStrokeColor(border);
+                holder.card.setStrokeWidth((int) (1f * context.getResources().getDisplayMetrics().density));
+                holder.card.setCardBackgroundColor(surface);
+                holder.tvTitle.setTextColor(ContextCompat.getColor(context, R.color.text_frost_subtle));
 
-        if (holder.card.hasFocus()) {
-            float density = context.getResources().getDisplayMetrics().density;
-            holder.card.setStrokeColor(accent);
-            holder.card.setStrokeWidth(Math.max(5, (int) (3.0f * density)));
-            holder.card.setCardBackgroundColor(activeSurface);
+                holder.tvStatusBadge.setVisibility(View.VISIBLE);
+                holder.tvStatusBadge.setText(R.string.episode_watched);
+                holder.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.accent_mint));
+            } else {
+                // Default unplayed state
+                holder.card.setStrokeColor(border);
+                holder.card.setStrokeWidth((int) (1f * context.getResources().getDisplayMetrics().density));
+                holder.card.setCardBackgroundColor(surface);
+                holder.tvTitle.setTextColor(ContextCompat.getColor(context, R.color.text_frost_bright));
+
+                holder.tvStatusBadge.setVisibility(View.GONE);
+            }
+
+            if (holder.card.hasFocus()) {
+                float density = context.getResources().getDisplayMetrics().density;
+                holder.card.setStrokeColor(accent);
+                holder.card.setStrokeWidth(Math.max(5, (int) (3.0f * density)));
+                holder.card.setCardBackgroundColor(activeSurface);
+            }
         }
 
         attachSpringTouchFeedback(holder.card);

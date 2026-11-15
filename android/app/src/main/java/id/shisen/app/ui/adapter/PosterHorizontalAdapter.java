@@ -54,8 +54,12 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
         int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
         if (holder.cardPoster instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card = (com.google.android.material.card.MaterialCardView) holder.cardPoster;
-            card.setCardBackgroundColor(surface);
-            card.setStrokeColor(border);
+            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
+                id.shisen.app.util.AnimeThemeManager.styleMobile25DCard(card, context, false);
+            } else {
+                card.setCardBackgroundColor(surface);
+                card.setStrokeColor(border);
+            }
         }
 
         AnimeAdapter.bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
@@ -66,6 +70,10 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
         if (anime.score > 0) {
             holder.tvBadgeScore.setVisibility(View.VISIBLE);
             holder.tvBadgeScore.setText(String.format(Locale.US, "%.1f", anime.score));
+            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
+                id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                        holder.tvBadgeScore, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
+            }
         } else {
             holder.tvBadgeScore.setVisibility(View.GONE);
         }

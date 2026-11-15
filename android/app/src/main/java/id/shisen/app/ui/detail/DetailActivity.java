@@ -283,7 +283,11 @@ public class DetailActivity extends AppCompatActivity {
 
     private void applyDetailTheme() {
         if (layoutDetailRoot != null) {
-            layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+            if (AnimeThemeManager.isMobile25DEnabled()) {
+                layoutDetailRoot.setBackground(AnimeThemeManager.create25DCanvasBackgroundDrawable(this));
+            } else {
+                layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+            }
         }
         int accent = AnimeThemeManager.getPrimaryAccentColor(this);
         int surface = AnimeThemeManager.getSurfaceColor(this);
@@ -294,6 +298,7 @@ public class DetailActivity extends AppCompatActivity {
             scrim.setBackground(AnimeThemeManager.createDetailHeroScrimDrawable(this));
         }
         if (btnBack != null) {
+            btnBack.setStateListAnimator(null);
             AnimeThemeManager.applyBackgroundPreservingPadding(
                     btnBack, AnimeThemeManager.createFrostedIconButtonDrawable(this));
             if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
@@ -302,15 +307,17 @@ public class DetailActivity extends AppCompatActivity {
         }
         if (btnPlayPrimary != null) {
             btnPlayPrimary.setBackgroundTintList(null);
+            btnPlayPrimary.setStateListAnimator(null);
             AnimeThemeManager.applyBackgroundPreservingPadding(
                     btnPlayPrimary, AnimeThemeManager.createFrostedGlassButtonDrawable(this, true, true));
-            btnPlayPrimary.setTextColor(Color.WHITE);
+            btnPlayPrimary.setTextColor(AnimeThemeManager.isMobile25DEnabled() ? 0xFF080C14 : Color.WHITE);
         }
         if (btnBookmark != null) {
             if (anime != null) {
                 updateBookmarkUI();
             } else {
                 btnBookmark.setBackgroundTintList(null);
+                btnBookmark.setStateListAnimator(null);
                 AnimeThemeManager.applyBackgroundPreservingPadding(
                         btnBookmark, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false, false));
                 btnBookmark.setTextColor(ContextCompat.getColor(this, R.color.text_frost_bright));
@@ -319,13 +326,33 @@ public class DetailActivity extends AppCompatActivity {
 
         com.google.android.material.card.MaterialCardView cardPoster = findViewById(R.id.card_detail_poster);
         if (cardPoster != null) {
-            cardPoster.setCardBackgroundColor(surface);
-            cardPoster.setStrokeColor(AnimeThemeManager.withAlpha(accent, 0x99));
+            if (AnimeThemeManager.isMobile25DEnabled()) {
+                AnimeThemeManager.styleMobile25DCard(cardPoster, this, true);
+            } else {
+                cardPoster.setCardBackgroundColor(surface);
+                cardPoster.setStrokeColor(AnimeThemeManager.withAlpha(accent, 0x99));
+            }
         }
         com.google.android.material.card.MaterialCardView cardSynopsis = findViewById(R.id.card_detail_synopsis);
         if (cardSynopsis != null) {
-            cardSynopsis.setCardBackgroundColor(surface);
-            cardSynopsis.setStrokeColor(border);
+            if (AnimeThemeManager.isMobile25DEnabled() && cardSynopsis.getChildCount() > 0) {
+                cardSynopsis.setCardBackgroundColor(Color.TRANSPARENT);
+                cardSynopsis.setStrokeWidth(0);
+                cardSynopsis.setCardElevation(0f);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        cardSynopsis.getChildAt(0),
+                        AnimeThemeManager.create25DPanelDrawable(
+                                this,
+                                surface,
+                                AnimeThemeManager.darkenColor(border, 0.38f),
+                                AnimeThemeManager.blendArgb(border, accent, 0.30f),
+                                1.3f,
+                                12f,
+                                3.5f));
+            } else {
+                cardSynopsis.setCardBackgroundColor(surface);
+                cardSynopsis.setStrokeColor(border);
+            }
         }
 
         if (tvMeta != null) tvMeta.setTextColor(accent);
@@ -536,6 +563,7 @@ public class DetailActivity extends AppCompatActivity {
         if (btnBookmark == null || anime == null) return;
         boolean bookmarked = MenatapDatabase.getInstance(this).isBookmarked(anime.slug);
         btnBookmark.setBackgroundTintList(null);
+        btnBookmark.setStateListAnimator(null);
         AnimeThemeManager.applyBackgroundPreservingPadding(
                 btnBookmark, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false, bookmarked));
         if (bookmarked) {

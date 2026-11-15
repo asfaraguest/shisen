@@ -226,20 +226,38 @@ public class SettingsDialog {
 
         // Perbarui latar card pilihan tema sesuai tema aktif
         String current = AnimeThemeManager.getTheme(activity);
+        int surface = AnimeThemeManager.getSurfaceColor(activity);
         int[] cardIds = {R.id.card_theme_shinkai, R.id.card_theme_sakura, R.id.card_theme_cyber, R.id.card_theme_ghibli};
         String[] themeKeys = {AnimeThemeManager.THEME_SHINKAI, AnimeThemeManager.THEME_SAKURA, AnimeThemeManager.THEME_CYBER, AnimeThemeManager.THEME_GHIBLI};
         for (int i = 0; i < cardIds.length; i++) {
             View card = root.findViewById(cardIds[i]);
             if (card != null) {
                 boolean active = themeKeys[i].equals(current);
-                AnimeThemeManager.applyBackgroundPreservingPadding(
-                        card,
-                        AnimeThemeManager.createPillDrawable(
-                                activity,
-                                AnimeThemeManager.getSurfaceColor(activity),
-                                active ? accent : border,
-                                active ? 1.5f : 1f,
-                                12f));
+                if (AnimeThemeManager.isMobile25DEnabled()) {
+                    int cardAccent = AnimeThemeManager.getPrimaryAccentColorForTheme(themeKeys[i]);
+                    int fill = active
+                            ? AnimeThemeManager.blendArgb(surface, cardAccent, 0.20f)
+                            : AnimeThemeManager.getSurfaceColorForTheme(themeKeys[i]);
+                    AnimeThemeManager.applyBackgroundPreservingPadding(
+                            card,
+                            AnimeThemeManager.create25DPanelDrawable(
+                                    activity,
+                                    fill,
+                                    AnimeThemeManager.darkenColor(cardAccent, active ? 0.35f : 0.55f),
+                                    active ? cardAccent : AnimeThemeManager.blendArgb(border, cardAccent, 0.32f),
+                                    active ? 1.8f : 1.2f,
+                                    12f,
+                                    active ? 2.2f : 3.5f));
+                } else {
+                    AnimeThemeManager.applyBackgroundPreservingPadding(
+                            card,
+                            AnimeThemeManager.createPillDrawable(
+                                    activity,
+                                    surface,
+                                    active ? accent : border,
+                                    active ? 1.5f : 1f,
+                                    12f));
+                }
             }
         }
 
@@ -251,6 +269,43 @@ public class SettingsDialog {
         SwitchMaterial switchHaptic = root.findViewById(R.id.switch_haptic);
         if (switchHaptic != null) switchHaptic.setThumbTintList(accentTint);
 
+        TextView tvVersion = root.findViewById(R.id.tv_settings_app_version);
+        if (AnimeThemeManager.isMobile25DEnabled()) {
+            android.graphics.drawable.Drawable row25D = AnimeThemeManager.create25DPanelDrawable(
+                    activity,
+                    surface,
+                    AnimeThemeManager.darkenColor(border, 0.38f),
+                    AnimeThemeManager.blendArgb(border, accent, 0.25f),
+                    1.2f,
+                    12f,
+                    3.0f);
+            if (switchSafeMode != null && switchSafeMode.getParent() instanceof View) {
+                AnimeThemeManager.applyBackgroundPreservingPadding((View) switchSafeMode.getParent(), row25D);
+            }
+            if (switchHaptic != null && switchHaptic.getParent() instanceof View) {
+                android.graphics.drawable.Drawable rowHaptic = AnimeThemeManager.create25DPanelDrawable(
+                        activity,
+                        surface,
+                        AnimeThemeManager.darkenColor(border, 0.38f),
+                        AnimeThemeManager.blendArgb(border, accent, 0.25f),
+                        1.2f,
+                        12f,
+                        3.0f);
+                AnimeThemeManager.applyBackgroundPreservingPadding((View) switchHaptic.getParent(), rowHaptic);
+            }
+            if (tvVersion != null && tvVersion.getParent() instanceof View) {
+                android.graphics.drawable.Drawable sysBox = AnimeThemeManager.create25DPanelDrawable(
+                        activity,
+                        surface,
+                        AnimeThemeManager.darkenColor(border, 0.38f),
+                        AnimeThemeManager.blendArgb(border, accent, 0.25f),
+                        1.2f,
+                        12f,
+                        3.2f);
+                AnimeThemeManager.applyBackgroundPreservingPadding((View) tvVersion.getParent(), sysBox);
+            }
+        }
+
         TextView tvToggleIcon = root.findViewById(R.id.tv_toggle_byok_icon);
         if (tvToggleIcon != null) tvToggleIcon.setTextColor(accent);
 
@@ -260,20 +315,22 @@ public class SettingsDialog {
         TextView btnResetPrompt = root.findViewById(R.id.btn_settings_reset_prompt);
         if (btnResetPrompt != null) btnResetPrompt.setTextColor(accent);
 
-        Button btnSave = root.findViewById(R.id.btn_settings_save_ai);
-        if (btnSave != null) btnSave.setBackgroundTintList(accentTint);
+        if (!AnimeThemeManager.isMobile25DEnabled()) {
+            Button btnSave = root.findViewById(R.id.btn_settings_save_ai);
+            if (btnSave != null) btnSave.setBackgroundTintList(accentTint);
 
-        Button btnClear = root.findViewById(R.id.btn_settings_clear_ai);
-        if (btnClear instanceof com.google.android.material.button.MaterialButton) {
-            ((com.google.android.material.button.MaterialButton) btnClear).setStrokeColor(borderTint);
-        }
-        Button btnCheckUpdate = root.findViewById(R.id.btn_settings_check_update);
-        if (btnCheckUpdate instanceof com.google.android.material.button.MaterialButton) {
-            ((com.google.android.material.button.MaterialButton) btnCheckUpdate).setStrokeColor(borderTint);
-        }
-        Button btnClearCache = root.findViewById(R.id.btn_settings_clear_cache);
-        if (btnClearCache instanceof com.google.android.material.button.MaterialButton) {
-            ((com.google.android.material.button.MaterialButton) btnClearCache).setStrokeColor(borderTint);
+            Button btnClear = root.findViewById(R.id.btn_settings_clear_ai);
+            if (btnClear instanceof com.google.android.material.button.MaterialButton) {
+                ((com.google.android.material.button.MaterialButton) btnClear).setStrokeColor(borderTint);
+            }
+            Button btnCheckUpdate = root.findViewById(R.id.btn_settings_check_update);
+            if (btnCheckUpdate instanceof com.google.android.material.button.MaterialButton) {
+                ((com.google.android.material.button.MaterialButton) btnCheckUpdate).setStrokeColor(borderTint);
+            }
+            Button btnClearCache = root.findViewById(R.id.btn_settings_clear_cache);
+            if (btnClearCache instanceof com.google.android.material.button.MaterialButton) {
+                ((com.google.android.material.button.MaterialButton) btnClearCache).setStrokeColor(borderTint);
+            }
         }
 
         LinearLayout layoutChips = root.findViewById(R.id.layout_model_chips);

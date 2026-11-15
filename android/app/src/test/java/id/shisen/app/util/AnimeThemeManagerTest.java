@@ -73,4 +73,23 @@ public class AnimeThemeManagerTest {
         assertEquals(0x00FB7185, AnimeThemeManager.withAlpha(0xFFFB7185, -20));
         assertEquals(0xFFFB7185, AnimeThemeManager.withAlpha(0xFFFB7185, 400));
     }
+
+    @Test
+    public void testMobile25DIsolationAndPureColorMath() {
+        boolean isTv = id.shisen.app.ui.player.PlayerKeys.isTv();
+        assertEquals(!isTv, AnimeThemeManager.isMobile25DEnabled());
+
+        // Blend endpoints & midpoints tanpa bergantung pada mock android.graphics.Color
+        assertEquals(0xFF38BDF8, AnimeThemeManager.blendArgb(0xFF38BDF8, 0xFFFB7185, 0f));
+        assertEquals(0xFFFB7185, AnimeThemeManager.blendArgb(0xFF38BDF8, 0xFFFB7185, 1f));
+        assertEquals(0xFF000000, AnimeThemeManager.darkenColor(0xFF38BDF8, 1f));
+        assertEquals(0xFFFFFFFF, AnimeThemeManager.lightenColor(0xFF38BDF8, 1f));
+
+        // Darker bottom lip untuk 2.5D harus selalu lebih gelap dibanding aksen dasar
+        int accent = AnimeThemeManager.getPrimaryAccentColorForTheme(AnimeThemeManager.THEME_SHINKAI);
+        int lip = AnimeThemeManager.darkenColor(accent, 0.48f);
+        assertTrue((lip & 0x00FF0000) < (accent & 0x00FF0000));
+        assertTrue((lip & 0x0000FF00) < (accent & 0x0000FF00));
+        assertTrue((lip & 0x000000FF) < (accent & 0x000000FF));
+    }
 }
