@@ -123,6 +123,10 @@ public final class DeviceNav {
     public void applyTheme() {
         if (host == null) return;
         int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
+        int voidColor = id.shisen.app.util.AnimeThemeManager.getVoidColor(host);
+        if (scrimFoldedMenu != null) {
+            scrimFoldedMenu.setBackgroundColor(id.shisen.app.util.AnimeThemeManager.withAlpha(voidColor, 0x66));
+        }
         if (fabMenuTrigger != null) {
             id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
                     fabMenuTrigger,

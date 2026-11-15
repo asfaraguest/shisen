@@ -73,4 +73,25 @@ public class AnimeThemeManagerTest {
         assertEquals(0x00FB7185, AnimeThemeManager.withAlpha(0xFFFB7185, -20));
         assertEquals(0xFFFB7185, AnimeThemeManager.withAlpha(0xFFFB7185, 400));
     }
+
+    @Test
+    public void testMobileFrostedGlassIsolation() {
+        boolean isTv = id.shisen.app.ui.player.PlayerKeys.isTv();
+        assertEquals(!isTv, AnimeThemeManager.isMobileGlassEnabled());
+
+        int cardBg = AnimeThemeManager.getCardGlassBackgroundColor(null);
+        int cardStroke = AnimeThemeManager.getCardGlassStrokeColor(null);
+        int elevatedBg = AnimeThemeManager.getElevatedGlassBackgroundColor(null);
+        if (isTv) {
+            // TV tetap solid opak untuk layar 10-foot
+            assertEquals(0xFF, (cardBg >>> 24) & 0xFF);
+            assertEquals(AnimeThemeManager.getBorderColor(null), cardStroke);
+            assertEquals(0xFF, (elevatedBg >>> 24) & 0xFF);
+        } else {
+            // Mobile memakai alpha translusen ringan + icy specular rim
+            assertEquals(0x99, (cardBg >>> 24) & 0xFF);
+            assertEquals(0x42, (cardStroke >>> 24) & 0xFF);
+            assertEquals(0xA8, (elevatedBg >>> 24) & 0xFF);
+        }
+    }
 }

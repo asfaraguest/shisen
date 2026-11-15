@@ -283,7 +283,11 @@ public class DetailActivity extends AppCompatActivity {
 
     private void applyDetailTheme() {
         if (layoutDetailRoot != null) {
-            layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+            if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+                layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+            } else {
+                layoutDetailRoot.setBackground(AnimeThemeManager.createCanvasBackgroundDrawable(this));
+            }
         }
         int accent = AnimeThemeManager.getPrimaryAccentColor(this);
         int surface = AnimeThemeManager.getSurfaceColor(this);
@@ -324,8 +328,11 @@ public class DetailActivity extends AppCompatActivity {
         }
         com.google.android.material.card.MaterialCardView cardSynopsis = findViewById(R.id.card_detail_synopsis);
         if (cardSynopsis != null) {
-            cardSynopsis.setCardBackgroundColor(surface);
-            cardSynopsis.setStrokeColor(border);
+            cardSynopsis.setCardBackgroundColor(AnimeThemeManager.getCardGlassBackgroundColor(this));
+            cardSynopsis.setStrokeColor(AnimeThemeManager.getCardGlassStrokeColor(this));
+            if (AnimeThemeManager.isMobileGlassEnabled()) {
+                cardSynopsis.setCardElevation(0f);
+            }
         }
 
         if (tvMeta != null) tvMeta.setTextColor(accent);

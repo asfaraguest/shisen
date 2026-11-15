@@ -371,7 +371,14 @@ public class MainActivity extends AppCompatActivity {
         boolean isTv = id.shisen.app.ui.player.PlayerKeys.isTv();
 
         if (layoutMainRoot != null) {
-            layoutMainRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+            if (isTv) {
+                layoutMainRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+            } else {
+                layoutMainRoot.setBackground(AnimeThemeManager.createCanvasBackgroundDrawable(this));
+            }
+        }
+        if (!isTv && layoutContextualBar != null) {
+            layoutContextualBar.setBackgroundColor(AnimeThemeManager.withAlpha(surface, 0x8C));
         }
         SystemUiHelper.applySystemBarsTheme(this);
 

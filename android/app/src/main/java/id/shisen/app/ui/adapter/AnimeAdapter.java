@@ -200,13 +200,16 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (anime == null) return;
 
         int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
-        int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
-        int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
+        int surface = id.shisen.app.util.AnimeThemeManager.getCardGlassBackgroundColor(context);
+        int border = id.shisen.app.util.AnimeThemeManager.getCardGlassStrokeColor(context);
         if (holder.cardHero instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card =
                     (com.google.android.material.card.MaterialCardView) holder.cardHero;
             card.setCardBackgroundColor(surface);
             card.setStrokeColor(border);
+            if (id.shisen.app.util.AnimeThemeManager.isMobileGlassEnabled()) {
+                card.setCardElevation(0f);
+            }
         }
         if (holder.tvHeroTopRank != null) {
             holder.tvHeroTopRank.setTextColor(accent);
@@ -218,8 +221,14 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             holder.btnHeroPlay.setBackgroundTintList(android.content.res.ColorStateList.valueOf(accent));
         }
         if (holder.btnHeroInfo instanceof com.google.android.material.button.MaterialButton) {
-            ((com.google.android.material.button.MaterialButton) holder.btnHeroInfo)
-                    .setStrokeColor(android.content.res.ColorStateList.valueOf(border));
+            com.google.android.material.button.MaterialButton infoBtn =
+                    (com.google.android.material.button.MaterialButton) holder.btnHeroInfo;
+            infoBtn.setStrokeColor(android.content.res.ColorStateList.valueOf(border));
+            if (id.shisen.app.util.AnimeThemeManager.isMobileGlassEnabled()) {
+                infoBtn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                        id.shisen.app.util.AnimeThemeManager.withAlpha(
+                                id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context), 0x9E)));
+            }
         }
 
         bindTitles(holder.tvHeroTitle, holder.tvHeroAltTitle, anime, "Anime Unggulan");
@@ -294,9 +303,12 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (holder.cardAnime instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card =
                     (com.google.android.material.card.MaterialCardView) holder.cardAnime;
-            card.setCardBackgroundColor(id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context));
+            card.setCardBackgroundColor(id.shisen.app.util.AnimeThemeManager.getCardGlassBackgroundColor(context));
             if (!card.isFocused()) {
-                card.setStrokeColor(id.shisen.app.util.AnimeThemeManager.getBorderColor(context));
+                card.setStrokeColor(id.shisen.app.util.AnimeThemeManager.getCardGlassStrokeColor(context));
+            }
+            if (id.shisen.app.util.AnimeThemeManager.isMobileGlassEnabled()) {
+                card.setCardElevation(0f);
             }
         }
         bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");

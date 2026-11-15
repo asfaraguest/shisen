@@ -363,7 +363,11 @@ public class PlayerActivity extends AppCompatActivity {
     private void initViews() {
         View layoutPlayerRoot = findViewById(R.id.layout_player_root);
         if (layoutPlayerRoot != null) {
-            layoutPlayerRoot.setBackgroundResource(id.shisen.app.util.AnimeThemeManager.getCanvasBackgroundResId(this));
+            if (PlayerKeys.isTv()) {
+                layoutPlayerRoot.setBackgroundResource(id.shisen.app.util.AnimeThemeManager.getCanvasBackgroundResId(this));
+            } else {
+                layoutPlayerRoot.setBackground(id.shisen.app.util.AnimeThemeManager.createCanvasBackgroundDrawable(this));
+            }
         }
         flPlayerWrapper = findViewById(R.id.fl_player_wrapper);
         playerView = findViewById(R.id.player_view);
@@ -443,14 +447,24 @@ public class PlayerActivity extends AppCompatActivity {
         int border = AnimeThemeManager.getBorderColor(this);
         int elevated = AnimeThemeManager.getElevatedColor(this);
         int voidColor = AnimeThemeManager.getVoidColor(this);
+        boolean mobileGlass = AnimeThemeManager.isMobileGlassEnabled();
         ColorStateList accentTint = ColorStateList.valueOf(accent);
         ColorStateList borderTint = ColorStateList.valueOf(border);
         ColorStateList elevatedTint = ColorStateList.valueOf(elevated);
 
         if (layoutPortraitBottom != null) {
-            layoutPortraitBottom.setBackgroundColor(voidColor);
-            if (layoutPortraitBottom.getChildCount() > 0) {
-                layoutPortraitBottom.getChildAt(0).setBackgroundColor(surface);
+            if (mobileGlass) {
+                layoutPortraitBottom.setBackground(AnimeThemeManager.createCanvasBackgroundDrawable(this));
+                if (layoutPortraitBottom.getChildCount() > 0) {
+                    AnimeThemeManager.applyBackgroundPreservingPadding(
+                            layoutPortraitBottom.getChildAt(0),
+                            AnimeThemeManager.createGlassPanelDrawable(this, surface, 0xA6, 0x36, 0f, true, false));
+                }
+            } else {
+                layoutPortraitBottom.setBackgroundColor(voidColor);
+                if (layoutPortraitBottom.getChildCount() > 0) {
+                    layoutPortraitBottom.getChildAt(0).setBackgroundColor(surface);
+                }
             }
         }
         if (tvPortraitCurrentEp != null) tvPortraitCurrentEp.setTextColor(accent);
@@ -464,8 +478,15 @@ public class PlayerActivity extends AppCompatActivity {
         for (Button pill : portraitPills) {
             if (pill instanceof com.google.android.material.button.MaterialButton) {
                 com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) pill;
-                mb.setBackgroundTintList(elevatedTint);
-                mb.setStrokeColor(borderTint);
+                if (mobileGlass) {
+                    mb.setBackgroundTintList(null);
+                    mb.setStrokeWidth(0);
+                    AnimeThemeManager.applyBackgroundPreservingPadding(
+                            mb, AnimeThemeManager.createGlassPanelDrawable(this, elevated, 0x9E, 0x42, 17f, true, true));
+                } else {
+                    mb.setBackgroundTintList(elevatedTint);
+                    mb.setStrokeColor(borderTint);
+                }
             }
         }
         if (btnPortraitPip instanceof com.google.android.material.button.MaterialButton) {
@@ -473,44 +494,66 @@ public class PlayerActivity extends AppCompatActivity {
         }
         if (btnPortraitSort instanceof com.google.android.material.button.MaterialButton) {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnPortraitSort;
-            mb.setBackgroundTintList(ColorStateList.valueOf(surface));
-            mb.setStrokeColor(borderTint);
+            if (mobileGlass) {
+                mb.setBackgroundTintList(null);
+                mb.setStrokeWidth(0);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        mb, AnimeThemeManager.createGlassPanelDrawable(this, surface, 0x99, 0x3E, 14f, true, true));
+            } else {
+                mb.setBackgroundTintList(ColorStateList.valueOf(surface));
+                mb.setStrokeColor(borderTint);
+            }
         }
         if (btnPortraitFullscreen instanceof com.google.android.material.button.MaterialButton) {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnPortraitFullscreen;
-            mb.setBackgroundTintList(ColorStateList.valueOf(ColorUtils.blendARGB(voidColor, accent, 0.14f)));
-            mb.setStrokeColor(accentTint);
+            if (mobileGlass) {
+                mb.setBackgroundTintList(null);
+                mb.setStrokeWidth(0);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        mb, AnimeThemeManager.createGlassPanelDrawable(
+                                this,
+                                ColorUtils.blendARGB(surface, accent, 0.28f),
+                                0xB8,
+                                AnimeThemeManager.withAlpha(accent, 0xB8),
+                                1f,
+                                17f,
+                                true,
+                                true));
+            } else {
+                mb.setBackgroundTintList(ColorStateList.valueOf(ColorUtils.blendARGB(voidColor, accent, 0.14f)));
+                mb.setStrokeColor(accentTint);
+            }
             mb.setTextColor(accent);
         }
 
-        if (hudHoldSpeed != null) {
-            AnimeThemeManager.applyBackgroundPreservingPadding(hudHoldSpeed,
-                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x4D), 1f, 20f));
+        View[] hudPills = {hudHoldSpeed, hudOsd, layoutSafetyUnlock};
+        for (View hud : hudPills) {
+            if (hud != null) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        hud,
+                        mobileGlass
+                                ? AnimeThemeManager.createGlassPanelDrawable(this, voidColor, 0xAD, AnimeThemeManager.getIcyRimColor(accent, 0x52), 1f, 20f, true, false)
+                                : AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x4D), 1f, 20f));
+            }
         }
         if (tvHoldSpeedIcon != null) tvHoldSpeedIcon.setTextColor(accent);
-
-        if (hudOsd != null) {
-            AnimeThemeManager.applyBackgroundPreservingPadding(hudOsd,
-                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x4D), 1f, 20f));
-        }
         if (tvOsdIcon != null) tvOsdIcon.setTextColor(accent);
         if (pbOsdBar != null) {
             pbOsdBar.setProgressTintList(accentTint);
             pbOsdBar.setProgressBackgroundTintList(borderTint);
         }
 
-        if (layoutSafetyUnlock != null) {
-            AnimeThemeManager.applyBackgroundPreservingPadding(layoutSafetyUnlock,
-                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x4D), 1f, 20f));
-            if (layoutSafetyUnlock instanceof ViewGroup && ((ViewGroup) layoutSafetyUnlock).getChildCount() > 0) {
-                View first = ((ViewGroup) layoutSafetyUnlock).getChildAt(0);
-                if (first instanceof ImageView) ((ImageView) first).setImageTintList(accentTint);
-            }
+        if (layoutSafetyUnlock instanceof ViewGroup && ((ViewGroup) layoutSafetyUnlock).getChildCount() > 0) {
+            View first = ((ViewGroup) layoutSafetyUnlock).getChildAt(0);
+            if (first instanceof ImageView) ((ImageView) first).setImageTintList(accentTint);
         }
 
         if (layoutBuffering != null) {
-            AnimeThemeManager.applyBackgroundPreservingPadding(layoutBuffering,
-                    AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x33), 1f, 16f));
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    layoutBuffering,
+                    mobileGlass
+                            ? AnimeThemeManager.createGlassPanelDrawable(this, voidColor, 0xAD, AnimeThemeManager.getIcyRimColor(accent, 0x45), 1f, 16f, true, false)
+                            : AnimeThemeManager.createPillDrawable(this, AnimeThemeManager.withAlpha(voidColor, 0xCC), AnimeThemeManager.withAlpha(accent, 0x33), 1f, 16f));
         }
         if (pbBuffering != null) pbBuffering.setIndeterminateTintList(accentTint);
         if (tvBufferingText != null) tvBufferingText.setTextColor(accent);
@@ -520,8 +563,17 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (btnSkipOpEd instanceof com.google.android.material.button.MaterialButton) {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnSkipOpEd;
-            mb.setBackgroundTintList(ColorStateList.valueOf(AnimeThemeManager.withAlpha(voidColor, 0xD9)));
-            mb.setStrokeColor(accentTint);
+            if (mobileGlass) {
+                mb.setBackgroundTintList(null);
+                mb.setStrokeWidth(0);
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        mb,
+                        AnimeThemeManager.createGlassPanelDrawable(
+                                this, voidColor, 0xB8, AnimeThemeManager.withAlpha(accent, 0xB8), 1.2f, 20f, true, true));
+            } else {
+                mb.setBackgroundTintList(ColorStateList.valueOf(AnimeThemeManager.withAlpha(voidColor, 0xD9)));
+                mb.setStrokeColor(accentTint);
+            }
             mb.setIconTint(accentTint);
             mb.setTextColor(accent);
         }
