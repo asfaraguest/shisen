@@ -51,17 +51,14 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
     public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
         Anime anime = items.get(position);
         int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
-        int surface = id.shisen.app.util.AnimeThemeManager.getCardGlassBackgroundColor(context);
-        int border = id.shisen.app.util.AnimeThemeManager.getCardGlassStrokeColor(context);
-        int elevated = id.shisen.app.util.AnimeThemeManager.getElevatedGlassBackgroundColor(context);
+        int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
+        int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
+        int elevated = id.shisen.app.util.AnimeThemeManager.getElevatedColor(context);
 
         if (holder.cardHistory instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card = (com.google.android.material.card.MaterialCardView) holder.cardHistory;
             card.setCardBackgroundColor(surface);
             card.setStrokeColor(border);
-            if (id.shisen.app.util.AnimeThemeManager.isMobileGlassEnabled()) {
-                card.setCardElevation(0f);
-            }
         }
         if (holder.tvEp != null) {
             holder.tvEp.setTextColor(accent);

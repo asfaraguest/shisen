@@ -50,15 +50,12 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
     @Override
     public void onBindViewHolder(@NonNull PosterViewHolder holder, int position) {
         Anime anime = items.get(position);
-        int surface = id.shisen.app.util.AnimeThemeManager.getCardGlassBackgroundColor(context);
-        int border = id.shisen.app.util.AnimeThemeManager.getCardGlassStrokeColor(context);
+        int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
+        int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
         if (holder.cardPoster instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card = (com.google.android.material.card.MaterialCardView) holder.cardPoster;
             card.setCardBackgroundColor(surface);
             card.setStrokeColor(border);
-            if (id.shisen.app.util.AnimeThemeManager.isMobileGlassEnabled()) {
-                card.setCardElevation(0f);
-            }
         }
 
         AnimeAdapter.bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");

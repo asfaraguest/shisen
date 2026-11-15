@@ -49,39 +49,8 @@ public class AnimeThemeManager {
         sp.edit().putString(KEY_CURRENT_THEME, themeKey).apply();
     }
 
-    public static boolean isMobileGlassEnabled() {
-        return !id.shisen.app.ui.player.PlayerKeys.isTv();
-    }
-
     public static int getCanvasBackgroundResId(Context context) {
         return getCanvasBackgroundResIdForTheme(getTheme(context));
-    }
-
-    /** Kanvas akar bertema; varian Mobile menambahkan pendaran ambient ringan untuk efek kaca beku. */
-    public static Drawable createCanvasBackgroundDrawable(Context context) {
-        if (context == null) return null;
-        Drawable base = ContextCompat.getDrawable(context, getCanvasBackgroundResId(context));
-        if (!isMobileGlassEnabled() || base == null) {
-            return base;
-        }
-        int accent = getPrimaryAccentColor(context);
-        int secondary = getSecondaryAccentColor(context);
-        android.util.DisplayMetrics dm = context.getResources().getDisplayMetrics();
-        float glowRadius = Math.max(420f, Math.max(dm.widthPixels, dm.heightPixels) * 0.72f);
-
-        GradientDrawable topGlow = new GradientDrawable();
-        topGlow.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        topGlow.setGradientRadius(glowRadius);
-        topGlow.setGradientCenter(0.14f, 0.08f);
-        topGlow.setColors(new int[]{withAlpha(accent, 0x26), 0x00000000});
-
-        GradientDrawable bottomGlow = new GradientDrawable();
-        bottomGlow.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        bottomGlow.setGradientRadius(glowRadius * 0.9f);
-        bottomGlow.setGradientCenter(0.86f, 0.88f);
-        bottomGlow.setColors(new int[]{withAlpha(secondary, 0x1E), 0x00000000});
-
-        return new LayerDrawable(new Drawable[]{base, topGlow, bottomGlow});
     }
 
     public static int getCanvasBackgroundResIdForTheme(String theme) {
@@ -180,7 +149,7 @@ public class AnimeThemeManager {
     }
 
     public static int getElevatedColor(Context context) {
-        return blendArgb(getSurfaceColor(context), getBorderColor(context), 0.45f);
+        return ColorUtils.blendARGB(getSurfaceColor(context), getBorderColor(context), 0.45f);
     }
 
     public static int getVoidColorForTheme(String theme) {
@@ -203,88 +172,6 @@ public class AnimeThemeManager {
         return (color & 0x00FFFFFF) | ((clamped & 0xFF) << 24);
     }
 
-    private static int blendArgb(int color1, int color2, float ratio) {
-        float inverse = 1.0f - ratio;
-        int a = Math.round(((color1 >>> 24) & 0xFF) * inverse + ((color2 >>> 24) & 0xFF) * ratio);
-        int r = Math.round(((color1 >>> 16) & 0xFF) * inverse + ((color2 >>> 16) & 0xFF) * ratio);
-        int g = Math.round(((color1 >>> 8) & 0xFF) * inverse + ((color2 >>> 8) & 0xFF) * ratio);
-        int b = Math.round((color1 & 0xFF) * inverse + (color2 & 0xFF) * ratio);
-        return ((a & 0xFF) << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
-    }
-
-    public static int getIcyRimColor(int accent, int alpha) {
-        return withAlpha(blendArgb(0xFFFFFFFF, accent, 0.25f), alpha);
-    }
-
-    public static int getCardGlassBackgroundColor(Context context) {
-        int surface = getSurfaceColor(context);
-        return isMobileGlassEnabled() ? withAlpha(surface, 0x99) : surface;
-    }
-
-    public static int getCardGlassStrokeColor(Context context) {
-        if (!isMobileGlassEnabled()) {
-            return getBorderColor(context);
-        }
-        return getIcyRimColor(getPrimaryAccentColor(context), 0x42);
-    }
-
-    public static int getElevatedGlassBackgroundColor(Context context) {
-        int elevated = getElevatedColor(context);
-        return isMobileGlassEnabled() ? withAlpha(elevated, 0xA8) : elevated;
-    }
-
-    /** Panel kaca ringan berbasis LayerDrawable (isian translusen + top sheen + icy rim) tanpa blur GPU. */
-    public static Drawable createGlassPanelDrawable(Context context,
-                                                    int baseColor,
-                                                    int fillAlpha,
-                                                    int borderAlpha,
-                                                    float radiusDp,
-                                                    boolean withSheen,
-                                                    boolean withRipple) {
-        return createGlassPanelDrawable(
-                context,
-                baseColor,
-                fillAlpha,
-                getIcyRimColor(getPrimaryAccentColor(context), borderAlpha),
-                1f,
-                radiusDp,
-                withSheen,
-                withRipple
-        );
-    }
-
-    public static Drawable createGlassPanelDrawable(Context context,
-                                                    int baseColor,
-                                                    int fillAlpha,
-                                                    int strokeColor,
-                                                    float strokeDp,
-                                                    float radiusDp,
-                                                    boolean withSheen,
-                                                    boolean withRipple) {
-        float d = density(context);
-        int accent = getPrimaryAccentColor(context);
-        float radiusPx = radiusDp * d;
-        int topTint = withAlpha(ColorUtils.blendARGB(baseColor, Color.WHITE, 0.07f), fillAlpha);
-        int bottomTint = withAlpha(baseColor, fillAlpha);
-
-        GradientDrawable base = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{topTint, bottomTint});
-        base.setCornerRadius(radiusPx);
-        if (strokeDp > 0f && strokeColor != Color.TRANSPARENT) {
-            base.setStroke(Math.max(1, (int) (strokeDp * d)), strokeColor);
-        }
-
-        Drawable panel = base;
-        if (withSheen) {
-            GradientDrawable sheen = new GradientDrawable(
-                    GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{0x22FFFFFF, 0x06FFFFFF, 0x00FFFFFF}
-            );
-            sheen.setCornerRadius(radiusPx);
-            panel = new LayerDrawable(new Drawable[]{base, sheen});
-        }
-        return withRipple ? wrapRipple(panel, withAlpha(accent, 0x38), radiusPx) : panel;
-    }
-
     private static float density(Context context) {
         return context != null ? Math.max(1f, context.getResources().getDisplayMetrics().density) : 2f;
     }
@@ -292,24 +179,6 @@ public class AnimeThemeManager {
     public static Drawable createAuroraHeaderDrawable(Context context) {
         int accent = getPrimaryAccentColor(context);
         int secondary = getSecondaryAccentColor(context);
-        if (isMobileGlassEnabled()) {
-            float d = density(context);
-            int surface = getSurfaceColor(context);
-            int voidColor = getVoidColor(context);
-            android.graphics.drawable.ColorDrawable bottomLine =
-                    new android.graphics.drawable.ColorDrawable(getIcyRimColor(accent, 0x33));
-            GradientDrawable glassWash = new GradientDrawable(
-                    GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{
-                            withAlpha(ColorUtils.blendARGB(surface, accent, 0.14f), 0xB8),
-                            withAlpha(surface, 0xA6),
-                            withAlpha(ColorUtils.blendARGB(voidColor, secondary, 0.08f), 0x8F)
-                    }
-            );
-            LayerDrawable ld = new LayerDrawable(new Drawable[]{bottomLine, glassWash});
-            ld.setLayerInset(1, 0, 0, 0, Math.max(1, (int) d));
-            return ld;
-        }
         return new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
                 new int[]{withAlpha(accent, 0x2A), withAlpha(secondary, 0x12), 0x00000000}
@@ -317,9 +186,6 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createSearchCapsuleDrawable(Context context) {
-        if (isMobileGlassEnabled()) {
-            return createGlassPanelDrawable(context, getSurfaceColor(context), 0x9E, 0x46, 18f, true, false);
-        }
         float d = density(context);
         GradientDrawable gd = new GradientDrawable();
         gd.setShape(GradientDrawable.RECTANGLE);
@@ -334,22 +200,6 @@ public class AnimeThemeManager {
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
         int border = getBorderColor(context);
-
-        if (isMobileGlassEnabled()) {
-            if (isSelected) {
-                return createGlassPanelDrawable(
-                        context,
-                        accent,
-                        0xEB,
-                        withAlpha(Color.WHITE, 0x6E),
-                        1f,
-                        16f,
-                        true,
-                        false
-                );
-            }
-            return createGlassPanelDrawable(context, surface, 0x8F, 0x3C, 16f, true, false);
-        }
 
         StateListDrawable sld = new StateListDrawable();
         GradientDrawable focused = new GradientDrawable();
@@ -382,22 +232,6 @@ public class AnimeThemeManager {
         int surface = getSurfaceColor(context);
         int border = getBorderColor(context);
 
-        if (isMobileGlassEnabled()) {
-            if (isActive) {
-                return createGlassPanelDrawable(
-                        context,
-                        ColorUtils.blendARGB(surface, accent, 0.24f),
-                        0xD6,
-                        withAlpha(accent, 0xD9),
-                        1.5f,
-                        22f,
-                        true,
-                        true
-                );
-            }
-            return createGlassPanelDrawable(context, surface, 0xC4, 0x42, 22f, true, true);
-        }
-
         GradientDrawable gd = new GradientDrawable();
         gd.setShape(GradientDrawable.RECTANGLE);
         gd.setCornerRadius(22f * d);
@@ -416,30 +250,6 @@ public class AnimeThemeManager {
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
 
-        if (isMobileGlassEnabled()) {
-            GradientDrawable base = new GradientDrawable(
-                    GradientDrawable.Orientation.TL_BR,
-                    new int[]{
-                            withAlpha(ColorUtils.blendARGB(surface, Color.WHITE, 0.08f), 0xCE),
-                            withAlpha(surface, 0xC2)
-                    }
-            );
-            base.setShape(GradientDrawable.OVAL);
-            base.setStroke(Math.max(2, (int) (1.4f * d)), withAlpha(ColorUtils.blendARGB(accent, Color.WHITE, 0.35f), 0xB3));
-
-            GradientDrawable sheen = new GradientDrawable(
-                    GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{0x28FFFFFF, 0x05FFFFFF}
-            );
-            sheen.setShape(GradientDrawable.OVAL);
-            LayerDrawable glass = new LayerDrawable(new Drawable[]{base, sheen});
-
-            GradientDrawable mask = new GradientDrawable();
-            mask.setShape(GradientDrawable.OVAL);
-            mask.setColor(Color.WHITE);
-            return new RippleDrawable(ColorStateList.valueOf(withAlpha(accent, 0x4D)), glass, mask);
-        }
-
         GradientDrawable gd = new GradientDrawable();
         gd.setShape(GradientDrawable.OVAL);
         gd.setColor(withAlpha(surface, 0xE6));
@@ -452,19 +262,6 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createPaginationBarDrawable(Context context) {
-        if (isMobileGlassEnabled()) {
-            int accent = getPrimaryAccentColor(context);
-            return createGlassPanelDrawable(
-                    context,
-                    getSurfaceColor(context),
-                    0xBF,
-                    withAlpha(ColorUtils.blendARGB(Color.WHITE, accent, 0.42f), 0x6B),
-                    1.2f,
-                    24f,
-                    true,
-                    false
-            );
-        }
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
@@ -478,19 +275,6 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createPageIndicatorDrawable(Context context) {
-        if (isMobileGlassEnabled()) {
-            int accent = getPrimaryAccentColor(context);
-            return createGlassPanelDrawable(
-                    context,
-                    ColorUtils.blendARGB(getSurfaceColor(context), accent, 0.14f),
-                    0xA6,
-                    withAlpha(ColorUtils.blendARGB(accent, Color.WHITE, 0.30f), 0x73),
-                    1f,
-                    18f,
-                    true,
-                    false
-            );
-        }
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
@@ -504,19 +288,6 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createPageButtonDrawable(Context context) {
-        if (isMobileGlassEnabled()) {
-            int accent = getPrimaryAccentColor(context);
-            return createGlassPanelDrawable(
-                    context,
-                    ColorUtils.blendARGB(getSurfaceColor(context), accent, 0.22f),
-                    0x80,
-                    getIcyRimColor(accent, 0x4D),
-                    1f,
-                    20f,
-                    true,
-                    true
-            );
-        }
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
 
@@ -713,25 +484,10 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createDialogFrostDrawable(Context context) {
-        if (isMobileGlassEnabled()) {
-            return createGlassPanelDrawable(
-                    context,
-                    getSurfaceColor(context),
-                    0xD8,
-                    getIcyRimColor(getPrimaryAccentColor(context), 0x52),
-                    1.2f,
-                    18f,
-                    true,
-                    false
-            );
-        }
         return createPillDrawable(context, getSurfaceColor(context), getBorderColor(context), 1f, 16f);
     }
 
     public static Drawable createBadgeFrostDrawable(Context context) {
-        if (isMobileGlassEnabled()) {
-            return createGlassPanelDrawable(context, getVoidColor(context), 0xA6, 0x40, 6f, false, false);
-        }
         return createPillDrawable(context, withAlpha(getVoidColor(context), 0xCC), getBorderColor(context), 1f, 6f);
     }
 
@@ -801,9 +557,8 @@ public class AnimeThemeManager {
         GradientDrawable normal = new GradientDrawable();
         normal.setShape(GradientDrawable.OVAL);
         if (isCenterPlay) {
-            normal.setColor(withAlpha(voidColor, isMobileGlassEnabled() ? 0x9E : 0xB3));
-            normal.setStroke(Math.max(1, (int) d),
-                    isMobileGlassEnabled() ? getIcyRimColor(accent, 0x55) : withAlpha(accent, 0x40));
+            normal.setColor(withAlpha(voidColor, 0xB3));
+            normal.setStroke(Math.max(1, (int) d), withAlpha(accent, 0x40));
         } else {
             normal.setColor(Color.TRANSPARENT);
         }
@@ -944,29 +699,12 @@ public class AnimeThemeManager {
         } else if (view.getBackground() instanceof android.graphics.drawable.ColorDrawable) {
             int bgColor = ((android.graphics.drawable.ColorDrawable) view.getBackground()).getColor();
             if (isAnyThemeBorder(bgColor)) {
-                view.setBackgroundColor(isMobileGlassEnabled() ? getIcyRimColor(accent, 0x33) : border);
+                view.setBackgroundColor(border);
             } else if (isAnyThemeElevated(bgColor)) {
-                view.setBackgroundColor(isMobileGlassEnabled() ? withAlpha(elevated, 0x8C) : elevated);
+                view.setBackgroundColor(elevated);
             } else if (isAnyThemeSurface(bgColor)) {
-                view.setBackgroundColor(isMobileGlassEnabled() ? withAlpha(surface, 0x8C) : surface);
+                view.setBackgroundColor(surface);
             }
-        }
-        if (view instanceof android.widget.EditText && isMobileGlassEnabled()) {
-            float d = density(context);
-            StateListDrawable sld = new StateListDrawable();
-            GradientDrawable focused = new GradientDrawable();
-            focused.setCornerRadius(10f * d);
-            focused.setColor(withAlpha(voidColor, 0xA6));
-            focused.setStroke(Math.max(2, (int) (1.5f * d)), accent);
-
-            GradientDrawable normal = new GradientDrawable();
-            normal.setCornerRadius(10f * d);
-            normal.setColor(withAlpha(voidColor, 0x8F));
-            normal.setStroke(Math.max(1, (int) d), getIcyRimColor(accent, 0x3B));
-
-            sld.addState(new int[]{android.R.attr.state_focused}, focused);
-            sld.addState(new int[]{}, normal);
-            applyBackgroundPreservingPadding(view, sld);
         }
 
         if (view instanceof ViewGroup) {

@@ -232,30 +232,14 @@ public class SettingsDialog {
             View card = root.findViewById(cardIds[i]);
             if (card != null) {
                 boolean active = themeKeys[i].equals(current);
-                if (AnimeThemeManager.isMobileGlassEnabled()) {
-                    AnimeThemeManager.applyBackgroundPreservingPadding(
-                            card,
-                            AnimeThemeManager.createGlassPanelDrawable(
-                                    activity,
-                                    active ? androidx.core.graphics.ColorUtils.blendARGB(
-                                            AnimeThemeManager.getSurfaceColor(activity), accent, 0.22f)
-                                            : AnimeThemeManager.getSurfaceColor(activity),
-                                    active ? 0xC4 : 0x99,
-                                    active ? accent : AnimeThemeManager.getCardGlassStrokeColor(activity),
-                                    active ? 1.5f : 1f,
-                                    12f,
-                                    true,
-                                    false));
-                } else {
-                    AnimeThemeManager.applyBackgroundPreservingPadding(
-                            card,
-                            AnimeThemeManager.createPillDrawable(
-                                    activity,
-                                    AnimeThemeManager.getSurfaceColor(activity),
-                                    active ? accent : border,
-                                    active ? 1.5f : 1f,
-                                    12f));
-                }
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        card,
+                        AnimeThemeManager.createPillDrawable(
+                                activity,
+                                AnimeThemeManager.getSurfaceColor(activity),
+                                active ? accent : border,
+                                active ? 1.5f : 1f,
+                                12f));
             }
         }
 

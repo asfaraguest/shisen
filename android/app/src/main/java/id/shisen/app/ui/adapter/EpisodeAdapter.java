@@ -89,15 +89,9 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.EpisodeV
 
         holder.tvTitle.setText(String.valueOf(ep.number));
         int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
-        boolean mobileGlass = id.shisen.app.util.AnimeThemeManager.isMobileGlassEnabled();
-        int border = id.shisen.app.util.AnimeThemeManager.getCardGlassStrokeColor(context);
-        int surface = id.shisen.app.util.AnimeThemeManager.getCardGlassBackgroundColor(context);
-        int baseActive = androidx.core.graphics.ColorUtils.blendARGB(
-                id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context), accent, mobileGlass ? 0.24f : 0.20f);
-        int activeSurface = mobileGlass ? id.shisen.app.util.AnimeThemeManager.withAlpha(baseActive, 0xB8) : baseActive;
-        if (mobileGlass) {
-            holder.card.setCardElevation(0f);
-        }
+        int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
+        int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
+        int activeSurface = androidx.core.graphics.ColorUtils.blendARGB(surface, accent, 0.20f);
 
         if (isCurrent) {
             // Active playing state

@@ -89,9 +89,6 @@ public class SystemUiHelper {
             // Gunakan latar bertema aktif agar semua AlertDialog/dialog daftar selaras tema
             window.setBackgroundDrawable(AnimeThemeManager.createDialogFrostDrawable(context));
         }
-        if (AnimeThemeManager.isMobileGlassEnabled()) {
-            window.setDimAmount(0.45f);
-        }
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         Runnable applyBounds = () -> {
