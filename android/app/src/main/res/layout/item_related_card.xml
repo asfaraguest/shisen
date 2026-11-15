@@ -28,6 +28,7 @@
 
         <!-- Gradient Scrim for Bottom Text Legibility -->
         <View
+            android:id="@+id/view_poster_scrim"
             android:layout_width="match_parent"
             android:layout_height="90dp"
             android:layout_gravity="bottom"

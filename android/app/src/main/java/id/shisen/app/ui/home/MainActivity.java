@@ -420,13 +420,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if (layoutTopSearchFluid != null) {
-            if (isTv && layoutTopSearchFluid instanceof ViewGroup && ((ViewGroup) layoutTopSearchFluid).getChildCount() > 1) {
+            if (isTv) {
                 AnimeThemeManager.applyBackgroundPreservingPadding(
-                        ((ViewGroup) layoutTopSearchFluid).getChildAt(1),
-                        AnimeThemeManager.createSearchCapsuleDrawable(this));
-            } else if (!isTv) {
-                AnimeThemeManager.applyBackgroundPreservingPadding(
-                        layoutTopSearchFluid, AnimeThemeManager.createSaoRecessedInputDrawable(this));
+                        layoutTopSearchFluid, AnimeThemeManager.createSearchCapsuleDrawable(this));
+            } else {
+                layoutTopSearchFluid.setBackground(null);
+                if (layoutTopSearchFluid instanceof ViewGroup && ((ViewGroup) layoutTopSearchFluid).getChildCount() > 1) {
+                    View searchInputBox = ((ViewGroup) layoutTopSearchFluid).getChildAt(1);
+                    if (searchInputBox != null) {
+                        AnimeThemeManager.applyBackgroundPreservingPadding(
+                                searchInputBox, AnimeThemeManager.createSaoRecessedInputDrawable(this));
+                    }
+                }
             }
         }
         if (!isTv && layoutAuroraTop != null) {
@@ -1279,9 +1284,9 @@ public class MainActivity extends AppCompatActivity {
                     id.shisen.app.util.TvFocusHelper.attachFocusScale(chip, 1.05f);
                     boolean selected = values[i].equals(current);
                     AnimeThemeManager.applyBackgroundPreservingPadding(chip, AnimeThemeManager.createChipDrawable(MainActivity.this, selected));
-                    chip.setTextColor(selected ? 0xFF090D16 : 0xFF94A3B8);
+                    chip.setTextColor(selected ? 0xFF080C14 : 0xFF94A3B8);
                     if (chip.getCompoundDrawables()[0] != null) {
-                        chip.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(selected ? 0xFF090D16 : 0xFF94A3B8));
+                        chip.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(selected ? 0xFF080C14 : 0xFF94A3B8));
                     }
                     chip.setOnClickListener(v -> {
                         HapticHelper.performClick(v);
@@ -1290,9 +1295,9 @@ public class MainActivity extends AppCompatActivity {
                             if (c != null) {
                                 boolean nowSel = (j == idx);
                                 AnimeThemeManager.applyBackgroundPreservingPadding(c, AnimeThemeManager.createChipDrawable(MainActivity.this, nowSel));
-                                c.setTextColor(nowSel ? 0xFF090D16 : 0xFF94A3B8);
+                                c.setTextColor(nowSel ? 0xFF080C14 : 0xFF94A3B8);
                                 if (c.getCompoundDrawables()[0] != null) {
-                                    c.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(nowSel ? 0xFF090D16 : 0xFF94A3B8));
+                                    c.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(nowSel ? 0xFF080C14 : 0xFF94A3B8));
                                 }
                             }
                         }
@@ -1559,6 +1564,10 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             GenreItem item = filteredList.get(position);
             holder.tvName.setText(item.title);
+            if (AnimeThemeManager.isMobileSaoEnabled()) {
+                holder.tvName.setBackgroundColor(Color.TRANSPARENT);
+                holder.tvName.setTextColor(0xFFF1F5F9);
+            }
             AnimeThemeManager.applyBackgroundPreservingPadding(
                     holder.itemView,
                     AnimeThemeManager.createChipDrawable(holder.itemView.getContext(), false));
@@ -1604,7 +1613,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (isSelected) {
             chip.setBackground(AnimeThemeManager.createChipDrawable(this, true));
-            chip.setTextColor(Color.parseColor("#090D16"));
+            chip.setTextColor(0xFF080C14);
             chip.setTypeface(null, android.graphics.Typeface.BOLD);
         } else {
             chip.setBackground(AnimeThemeManager.createChipDrawable(this, false));

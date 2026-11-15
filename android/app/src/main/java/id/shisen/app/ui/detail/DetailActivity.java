@@ -313,6 +313,7 @@ public class DetailActivity extends AppCompatActivity {
                 if (btnPlayPrimary instanceof com.google.android.material.button.MaterialButton) {
                     com.google.android.material.button.MaterialButton playMb =
                             (com.google.android.material.button.MaterialButton) btnPlayPrimary;
+                    playMb.setCornerRadius(0);
                     playMb.setStrokeWidth(0);
                     playMb.setIconTint(android.content.res.ColorStateList.valueOf(0xFF080C14));
                 }
@@ -329,7 +330,10 @@ public class DetailActivity extends AppCompatActivity {
                 if (sao) {
                     btnBookmark.setStateListAnimator(null);
                     if (btnBookmark instanceof com.google.android.material.button.MaterialButton) {
-                        ((com.google.android.material.button.MaterialButton) btnBookmark).setStrokeWidth(0);
+                        com.google.android.material.button.MaterialButton bmMb =
+                                (com.google.android.material.button.MaterialButton) btnBookmark;
+                        bmMb.setCornerRadius(0);
+                        bmMb.setStrokeWidth(0);
                     }
                 }
                 AnimeThemeManager.applyBackgroundPreservingPadding(
@@ -343,7 +347,7 @@ public class DetailActivity extends AppCompatActivity {
             cardPoster.setCardBackgroundColor(surface);
             cardPoster.setStrokeColor(AnimeThemeManager.withAlpha(accent, sao ? 0x80 : 0x99));
             if (sao) {
-                cardPoster.setRadius(4f * d);
+                cardPoster.setRadius(0f);
                 cardPoster.setCardElevation(0f);
                 cardPoster.setStrokeWidth(Math.max(1, Math.round(d)));
             }
@@ -353,7 +357,7 @@ public class DetailActivity extends AppCompatActivity {
             cardSynopsis.setCardBackgroundColor(surface);
             cardSynopsis.setStrokeColor(sao ? AnimeThemeManager.withAlpha(border, 0x66) : border);
             if (sao) {
-                cardSynopsis.setRadius(4f * d);
+                cardSynopsis.setRadius(0f);
                 cardSynopsis.setCardElevation(0f);
                 cardSynopsis.setStrokeWidth(Math.max(1, Math.round(d)));
             }
@@ -570,7 +574,10 @@ public class DetailActivity extends AppCompatActivity {
         if (AnimeThemeManager.isMobileSaoEnabled()) {
             btnBookmark.setStateListAnimator(null);
             if (btnBookmark instanceof com.google.android.material.button.MaterialButton) {
-                ((com.google.android.material.button.MaterialButton) btnBookmark).setStrokeWidth(0);
+                com.google.android.material.button.MaterialButton bmMb =
+                        (com.google.android.material.button.MaterialButton) btnBookmark;
+                bmMb.setCornerRadius(0);
+                bmMb.setStrokeWidth(0);
             }
         }
         AnimeThemeManager.applyBackgroundPreservingPadding(
@@ -809,15 +816,16 @@ public class DetailActivity extends AppCompatActivity {
         int surface = AnimeThemeManager.getSurfaceColor(this);
         int border = AnimeThemeManager.getBorderColor(this);
 
+        float tabRadius = AnimeThemeManager.isMobileSaoEnabled() ? 0f : 8 * density;
         android.graphics.drawable.GradientDrawable focused = new android.graphics.drawable.GradientDrawable();
         focused.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
-        focused.setCornerRadius(8 * density);
+        focused.setCornerRadius(tabRadius);
         focused.setColor(AnimeThemeManager.withAlpha(accent, 0x4D));
         focused.setStroke(Math.max(3, (int) (2.2f * density)), isSelected ? Color.WHITE : accent);
 
         android.graphics.drawable.GradientDrawable normal = new android.graphics.drawable.GradientDrawable();
         normal.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
-        normal.setCornerRadius(8 * density);
+        normal.setCornerRadius(tabRadius);
         if (isSelected) {
             normal.setColor(AnimeThemeManager.withAlpha(accent, 0x33));
             normal.setStroke((int) (1.5f * density), accent);

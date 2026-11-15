@@ -25,7 +25,7 @@
 
     <style name="Theme.Menatap.Dialog.Alert" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
         <item name="android:windowBackground">@drawable/bg_dialog_frost</item>
-        <item name="android:background">@color/frost_surface</item>
+        <item name="colorSurface">@color/frost_surface</item>
         <item name="android:textColorPrimary">@color/text_frost_bright</item>
         <item name="android:textColorSecondary">@color/text_frost_subtle</item>
         <item name="android:textColorAlertDialogListItem">@color/text_frost_bright</item>

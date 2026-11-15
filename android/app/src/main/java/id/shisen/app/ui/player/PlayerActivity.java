@@ -448,17 +448,25 @@ public class PlayerActivity extends AppCompatActivity {
         ColorStateList elevatedTint = ColorStateList.valueOf(elevated);
 
         boolean sao = AnimeThemeManager.isMobileSaoEnabled();
+        View playerRoot = findViewById(R.id.layout_player_root);
+        if (sao && playerRoot != null) {
+            playerRoot.setBackground(AnimeThemeManager.createSaoCanvasDrawable(this));
+        }
         if (layoutPortraitBottom != null) {
-            layoutPortraitBottom.setBackgroundColor(voidColor);
+            if (sao) {
+                layoutPortraitBottom.setBackground(AnimeThemeManager.createSaoCanvasDrawable(this));
+            } else {
+                layoutPortraitBottom.setBackgroundColor(voidColor);
+            }
             if (layoutPortraitBottom.getChildCount() > 0) {
                 View header = layoutPortraitBottom.getChildAt(0);
                 if (sao) {
-                    // Transisi gradasi mulus antara header player portrait dan grid episode
+                    // Transisi gradasi mulus antara header player portrait dan kanvas honeycomb
                     AnimeThemeManager.applyBackgroundPreservingPadding(
                             header,
                             new android.graphics.drawable.GradientDrawable(
                                     android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                                    new int[]{surface, voidColor}));
+                                    new int[]{surface, 0x00111317}));
                 } else {
                     header.setBackgroundColor(surface);
                 }
@@ -477,6 +485,7 @@ public class PlayerActivity extends AppCompatActivity {
                 com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) pill;
                 if (sao) {
                     mb.setBackgroundTintList(null);
+                    mb.setCornerRadius(0);
                     mb.setStrokeWidth(0);
                     mb.setStateListAnimator(null);
                     AnimeThemeManager.applyBackgroundPreservingPadding(
@@ -494,6 +503,7 @@ public class PlayerActivity extends AppCompatActivity {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnPortraitSort;
             if (sao) {
                 mb.setBackgroundTintList(null);
+                mb.setCornerRadius(0);
                 mb.setStrokeWidth(0);
                 mb.setStateListAnimator(null);
                 AnimeThemeManager.applyBackgroundPreservingPadding(
@@ -507,6 +517,7 @@ public class PlayerActivity extends AppCompatActivity {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnPortraitFullscreen;
             if (sao) {
                 mb.setBackgroundTintList(null);
+                mb.setCornerRadius(0);
                 mb.setStrokeWidth(0);
                 mb.setStateListAnimator(null);
                 AnimeThemeManager.applyBackgroundPreservingPadding(
@@ -518,7 +529,7 @@ public class PlayerActivity extends AppCompatActivity {
             mb.setTextColor(accent);
         }
 
-        float hudRadius = sao ? 3f : 20f;
+        float hudRadius = sao ? 0f : 20f;
         int hudStroke = sao ? AnimeThemeManager.withAlpha(border, 0x99) : AnimeThemeManager.withAlpha(accent, 0x4D);
         int hudFill = AnimeThemeManager.withAlpha(sao ? surface : voidColor, sao ? 0xE6 : 0xCC);
         if (hudHoldSpeed != null) {
@@ -550,7 +561,7 @@ public class PlayerActivity extends AppCompatActivity {
             AnimeThemeManager.applyBackgroundPreservingPadding(layoutBuffering,
                     AnimeThemeManager.createPillDrawable(
                             this, hudFill, AnimeThemeManager.withAlpha(sao ? border : accent, sao ? 0x99 : 0x33),
-                            1f, sao ? 3f : 16f));
+                            1f, sao ? 0f : 16f));
         }
         if (pbBuffering != null) pbBuffering.setIndeterminateTintList(accentTint);
         if (tvBufferingText != null) tvBufferingText.setTextColor(accent);
@@ -562,6 +573,7 @@ public class PlayerActivity extends AppCompatActivity {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) btnSkipOpEd;
             if (sao) {
                 mb.setBackgroundTintList(null);
+                mb.setCornerRadius(0);
                 mb.setStrokeWidth(0);
                 mb.setStateListAnimator(null);
                 AnimeThemeManager.applyBackgroundPreservingPadding(

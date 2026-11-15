@@ -38,6 +38,7 @@
 
             <!-- Center Play Ripple Icon -->
             <ImageView
+                android:id="@+id/iv_history_play"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center"

@@ -143,15 +143,16 @@ public final class DeviceNav {
         updateFoldedMenuHighlight(host.getCurrentTab());
     }
 
-    private void tintMenuIcon(View item, int color, boolean isActive) {
+    private void tintMenuIcon(View item, int accentColor, boolean isActive) {
         if (!(item instanceof ViewGroup) || host == null) return;
         ViewGroup vg = (ViewGroup) item;
         boolean sao = id.shisen.app.util.AnimeThemeManager.isMobileSaoEnabled();
+        int iconTint = (sao && !isActive) ? 0xFFCBD5E1 : accentColor;
         for (int i = 0; i < vg.getChildCount(); i++) {
             View child = vg.getChildAt(i);
             if (child instanceof ImageView) {
                 ImageView iv = (ImageView) child;
-                iv.setImageTintList(android.content.res.ColorStateList.valueOf(color));
+                iv.setImageTintList(android.content.res.ColorStateList.valueOf(iconTint));
                 if (sao) {
                     float d = host.getResources().getDisplayMetrics().density;
                     int badgeSize = Math.round(24f * d);
@@ -164,12 +165,12 @@ public final class DeviceNav {
                     int pad = Math.round(4f * d);
                     iv.setPadding(pad, pad, pad, pad);
                     int fill = isActive
-                            ? id.shisen.app.util.AnimeThemeManager.withAlpha(color, 0x24)
+                            ? id.shisen.app.util.AnimeThemeManager.withAlpha(accentColor, 0x24)
                             : id.shisen.app.util.AnimeThemeManager.getSaoElevatedColor();
                     int stroke = isActive
-                            ? color
+                            ? accentColor
                             : id.shisen.app.util.AnimeThemeManager.getSaoHairlineColor();
-                    iv.setBackground(id.shisen.app.util.AnimeThemeManager.createSaoCircleBadgeDrawable(
+                    iv.setBackground(id.shisen.app.util.AnimeThemeManager.createSaoSquareBadgeDrawable(
                             host, fill, stroke, 1f));
                 }
                 break;

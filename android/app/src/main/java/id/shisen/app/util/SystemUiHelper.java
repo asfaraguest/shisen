@@ -146,19 +146,23 @@ public class SystemUiHelper {
 
         int accent = AnimeThemeManager.getPrimaryAccentColor(dialog.getContext());
         boolean isTv = id.shisen.app.ui.player.PlayerKeys.isTv();
+        boolean sao = AnimeThemeManager.isMobileSaoEnabled();
         if (pos != null) {
             pos.setTextColor(accent);
             pos.setFocusable(true);
+            if (sao) pos.setAllCaps(false);
             if (isTv) TvFocusHelper.attachFocusScale(pos, 1.05f);
         }
         if (neg != null) {
             neg.setTextColor(0xFFF1F5F9);
             neg.setFocusable(true);
+            if (sao) neg.setAllCaps(false);
             if (isTv) TvFocusHelper.attachFocusScale(neg, 1.05f);
         }
         if (neu != null) {
             neu.setTextColor(0xFF94A3B8);
             neu.setFocusable(true);
+            if (sao) neu.setAllCaps(false);
             if (isTv) TvFocusHelper.attachFocusScale(neu, 1.05f);
         }
 

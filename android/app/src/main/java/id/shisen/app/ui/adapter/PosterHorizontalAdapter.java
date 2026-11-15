@@ -59,10 +59,13 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
             card.setCardBackgroundColor(surface);
             card.setStrokeColor(sao ? id.shisen.app.util.AnimeThemeManager.withAlpha(border, 0x80) : border);
             if (sao) {
-                card.setRadius(4f * d);
+                card.setRadius(0f);
                 card.setCardElevation(0f);
                 card.setStrokeWidth(Math.max(1, Math.round(d)));
             }
+        }
+        if (sao && holder.viewPosterScrim != null) {
+            holder.viewPosterScrim.setBackground(id.shisen.app.util.AnimeThemeManager.createSaoPosterScrimDrawable());
         }
 
         AnimeAdapter.bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
@@ -130,6 +133,7 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
 
     static class PosterViewHolder extends RecyclerView.ViewHolder {
         View cardPoster;
+        View viewPosterScrim;
         ImageView ivPoster;
         TextView tvBadgeScore;
         TextView tvBadgeEp;
@@ -140,6 +144,7 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
         public PosterViewHolder(@NonNull View itemView) {
             super(itemView);
             cardPoster = itemView.findViewById(R.id.card_poster);
+            viewPosterScrim = itemView.findViewById(R.id.view_poster_scrim);
             ivPoster = itemView.findViewById(R.id.iv_poster);
             tvBadgeScore = itemView.findViewById(R.id.tv_badge_score);
             tvBadgeEp = itemView.findViewById(R.id.tv_badge_ep);

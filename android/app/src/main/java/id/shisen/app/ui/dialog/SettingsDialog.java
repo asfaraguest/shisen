@@ -239,7 +239,7 @@ public class SettingsDialog {
                 AnimeThemeManager.THEME_CYBER,
                 AnimeThemeManager.THEME_GHIBLI
         };
-        float cardRadius = sao ? 3f : 12f;
+        float cardRadius = sao ? 0f : 12f;
         for (int i = 0; i < cardIds.length; i++) {
             View card = root.findViewById(cardIds[i]);
             if (card != null) {
@@ -259,8 +259,29 @@ public class SettingsDialog {
             }
             View swatch = root.findViewById(swatchIds[i]);
             if (swatch != null) {
-                swatch.setBackground(AnimeThemeManager.createSaoCircleBadgeDrawable(
+                swatch.setBackground(AnimeThemeManager.createSaoSquareBadgeDrawable(
                         activity, swatchColors[i], AnimeThemeManager.withAlpha(swatchColors[i], 0xCC), 1f));
+            }
+        }
+
+        if (sao) {
+            int boxStroke = AnimeThemeManager.withAlpha(border, 0x80);
+            int[] settingsBoxes = {
+                    R.id.card_settings_safemode,
+                    R.id.card_settings_haptic,
+                    R.id.card_settings_system,
+                    R.id.btn_toggle_byok_ai
+            };
+            for (int boxId : settingsBoxes) {
+                View box = root.findViewById(boxId);
+                if (box != null) {
+                    int fill = boxId == R.id.btn_toggle_byok_ai
+                            ? AnimeThemeManager.getSaoSurfaceColor()
+                            : AnimeThemeManager.getSaoElevatedColor();
+                    AnimeThemeManager.applyBackgroundPreservingPadding(
+                            box,
+                            AnimeThemeManager.createPillDrawable(activity, fill, boxStroke, 1f, 0f));
+                }
             }
         }
 

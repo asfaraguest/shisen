@@ -217,10 +217,17 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             card.setCardBackgroundColor(surface);
             card.setStrokeColor(sao ? id.shisen.app.util.AnimeThemeManager.withAlpha(border, 0x80) : border);
             if (sao) {
-                card.setRadius(4f * d);
+                card.setRadius(0f);
                 card.setCardElevation(0f);
                 card.setStrokeWidth(Math.max(1, Math.round(d)));
             }
+        }
+        if (sao && holder.viewHeroScrim != null) {
+            holder.viewHeroScrim.setBackground(id.shisen.app.util.AnimeThemeManager.createSaoPosterScrimDrawable());
+        }
+        if (sao && holder.layoutHeroTopChip != null) {
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    holder.layoutHeroTopChip, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
         }
         if (holder.tvHeroTopRank != null) {
             holder.tvHeroTopRank.setTextColor(accent);
@@ -235,6 +242,7 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 if (holder.btnHeroPlay instanceof com.google.android.material.button.MaterialButton) {
                     com.google.android.material.button.MaterialButton playMb =
                             (com.google.android.material.button.MaterialButton) holder.btnHeroPlay;
+                    playMb.setCornerRadius(0);
                     playMb.setStrokeWidth(0);
                     playMb.setIconTint(android.content.res.ColorStateList.valueOf(0xFF080C14));
                 }
@@ -251,6 +259,7 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                     (com.google.android.material.button.MaterialButton) holder.btnHeroInfo;
             if (sao) {
                 infoBtn.setBackgroundTintList(null);
+                infoBtn.setCornerRadius(0);
                 infoBtn.setStrokeWidth(0);
                 infoBtn.setStateListAnimator(null);
                 id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
@@ -277,10 +286,18 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
 
         holder.tvHeroFormat.setText(anime.format != null ? anime.format : "TV");
+        if (sao) {
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    holder.tvHeroFormat, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
+        }
 
         if (anime.score > 0) {
             holder.tvHeroScore.setVisibility(View.VISIBLE);
             holder.tvHeroScore.setText(String.format(Locale.US, "%.1f", anime.score));
+            if (sao) {
+                id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                        holder.tvHeroScore, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
+            }
         } else {
             holder.tvHeroScore.setVisibility(View.GONE);
         }
@@ -338,13 +355,16 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             card.setCardBackgroundColor(id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context));
             int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
             if (sao) {
-                card.setRadius(4f * d);
+                card.setRadius(0f);
                 card.setCardElevation(0f);
                 card.setStrokeWidth(Math.max(1, Math.round(d)));
                 card.setStrokeColor(id.shisen.app.util.AnimeThemeManager.withAlpha(border, 0x80));
             } else if (!card.isFocused()) {
                 card.setStrokeColor(border);
             }
+        }
+        if (sao && holder.viewPosterScrim != null) {
+            holder.viewPosterScrim.setBackground(id.shisen.app.util.AnimeThemeManager.createSaoPosterScrimDrawable());
         }
         bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
 
@@ -401,7 +421,7 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                     id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
                             holder.tvBadgeEp,
                             id.shisen.app.util.AnimeThemeManager.createPillDrawable(
-                                    context, 0xD9064E3B, 0xFF10B981, 1f, 3f));
+                                    context, 0xD9064E3B, 0xFF10B981, 1f, 0f));
                 } else {
                     holder.tvBadgeEp.setBackgroundResource(R.drawable.bg_badge_mint);
                 }
@@ -431,7 +451,7 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     public static class HeroViewHolder extends RecyclerView.ViewHolder {
-        View cardHero;
+        View cardHero, viewHeroScrim, layoutHeroTopChip;
         ImageView ivHeroBackdrop;
         TextView tvHeroTopRank, tvHeroTrendingTag, tvHeroGenres, tvHeroTitle, tvHeroAltTitle, tvHeroFormat, tvHeroScore, tvHeroEps;
         Button btnHeroPlay, btnHeroInfo;
@@ -439,6 +459,8 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         public HeroViewHolder(@NonNull View itemView) {
             super(itemView);
             cardHero = itemView.findViewById(R.id.card_hero);
+            viewHeroScrim = itemView.findViewById(R.id.view_hero_scrim);
+            layoutHeroTopChip = itemView.findViewById(R.id.layout_hero_top_chip);
             ivHeroBackdrop = itemView.findViewById(R.id.iv_hero_backdrop);
             tvHeroTopRank = itemView.findViewById(R.id.tv_hero_top_rank);
             tvHeroTrendingTag = itemView.findViewById(R.id.tv_hero_trending_tag);
@@ -477,13 +499,14 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     public static class AnimeViewHolder extends RecyclerView.ViewHolder {
-        View cardAnime;
+        View cardAnime, viewPosterScrim;
         ImageView ivPoster;
         TextView tvTitle, tvAltTitle, tvMeta, tvBadgeEp, tvBadgeScore, tvBadgeType;
 
         public AnimeViewHolder(@NonNull View itemView) {
             super(itemView);
             cardAnime = itemView.findViewById(R.id.card_anime);
+            viewPosterScrim = itemView.findViewById(R.id.view_poster_scrim);
             ivPoster = itemView.findViewById(R.id.iv_poster);
             tvTitle = itemView.findViewById(R.id.tv_title);
             tvAltTitle = itemView.findViewById(R.id.tv_alt_title);

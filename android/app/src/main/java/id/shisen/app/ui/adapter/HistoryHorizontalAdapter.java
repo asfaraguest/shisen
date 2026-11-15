@@ -62,10 +62,14 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
             card.setCardBackgroundColor(surface);
             card.setStrokeColor(sao ? id.shisen.app.util.AnimeThemeManager.withAlpha(border, 0x80) : border);
             if (sao) {
-                card.setRadius(4f * d);
+                card.setRadius(0f);
                 card.setCardElevation(0f);
                 card.setStrokeWidth(Math.max(1, Math.round(d)));
             }
+        }
+        if (sao && holder.ivHistoryPlay != null) {
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    holder.ivHistoryPlay, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
         }
         if (holder.tvEp != null) {
             holder.tvEp.setTextColor(accent);
@@ -129,6 +133,7 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
     static class HistoryViewHolder extends RecyclerView.ViewHolder {
         View cardHistory;
         ImageView ivThumb;
+        ImageView ivHistoryPlay;
         TextView tvEp;
         TextView tvTitle;
         TextView tvAltTitle;
@@ -138,6 +143,7 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
             super(itemView);
             cardHistory = itemView.findViewById(R.id.card_history);
             ivThumb = itemView.findViewById(R.id.iv_history_thumb);
+            ivHistoryPlay = itemView.findViewById(R.id.iv_history_play);
             tvEp = itemView.findViewById(R.id.tv_history_ep);
             tvTitle = itemView.findViewById(R.id.tv_history_title);
             tvAltTitle = itemView.findViewById(R.id.tv_history_alt_title);

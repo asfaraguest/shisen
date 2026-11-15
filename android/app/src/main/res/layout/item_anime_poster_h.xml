@@ -33,6 +33,7 @@
 
             <!-- Bottom Vignette -->
             <View
+                android:id="@+id/view_poster_scrim"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:layout_gravity="bottom"

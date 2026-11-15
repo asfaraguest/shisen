@@ -30,6 +30,7 @@
 
         <!-- Cinematic Multi-Stop Gradient Scrim (Fade to Deep Nordic Obsidian) -->
         <View
+            android:id="@+id/view_hero_scrim"
             android:layout_width="match_parent"
             android:layout_height="140dp"
             android:layout_gravity="bottom"
@@ -37,6 +38,7 @@
 
         <!-- Top Ranking Chip (#1 TREN HARI INI) -->
         <LinearLayout
+            android:id="@+id/layout_hero_top_chip"
             android:layout_width="wrap_content"
             android:layout_height="24dp"
             android:layout_gravity="top|start"

@@ -44,7 +44,7 @@
             android:id="@+id/btn_close_catalog_dialog"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?attr/selectableItemBackground"
             android:focusable="true"
             android:clickable="true"
             android:drawableStart="@drawable/ic_close"

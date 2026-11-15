@@ -64,13 +64,16 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
                     (com.google.android.material.card.MaterialCardView) holder.itemView;
             card.setCardBackgroundColor(surface);
             if (sao) {
-                card.setRadius(4f * d);
+                card.setRadius(0f);
                 card.setCardElevation(0f);
                 card.setStrokeWidth(Math.max(1, Math.round(d)));
                 card.setStrokeColor(id.shisen.app.util.AnimeThemeManager.withAlpha(border, 0x80));
             } else if (!card.isFocused()) {
                 card.setStrokeColor(border);
             }
+        }
+        if (sao && holder.viewPosterScrim != null) {
+            holder.viewPosterScrim.setBackground(id.shisen.app.util.AnimeThemeManager.createSaoPosterScrimDrawable());
         }
 
         AnimeAdapter.bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
@@ -86,6 +89,10 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
         if (anime.relationLabel != null && !anime.relationLabel.isEmpty() && !"null".equalsIgnoreCase(anime.relationLabel)) {
             holder.tvBadge.setText(getLocalizedRelationLabel(anime.relationLabel));
             holder.tvBadge.setTextColor(accent);
+            if (sao) {
+                id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                        holder.tvBadge, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
+            }
             holder.tvBadge.setVisibility(View.VISIBLE);
         } else {
             holder.tvBadge.setVisibility(View.GONE);
@@ -163,6 +170,7 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
     }
 
     static class RelatedViewHolder extends RecyclerView.ViewHolder {
+        final View viewPosterScrim;
         final ImageView ivPoster;
         final TextView tvBadge;
         final TextView tvTitle;
@@ -171,6 +179,7 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
 
         RelatedViewHolder(@NonNull View itemView) {
             super(itemView);
+            viewPosterScrim = itemView.findViewById(R.id.view_poster_scrim);
             ivPoster = itemView.findViewById(R.id.iv_related_poster);
             tvBadge = itemView.findViewById(R.id.tv_related_badge);
             tvTitle = itemView.findViewById(R.id.tv_related_title);

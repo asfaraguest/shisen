@@ -8,7 +8,6 @@
     android:gravity="center"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?attr/selectableItemBackground"
     android:paddingHorizontal="10dp"
     android:paddingVertical="9dp">
 
@@ -16,6 +15,7 @@
         android:id="@+id/tv_genre_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
         android:text="Action"
         android:textColor="@color/text_secondary"
         android:textSize="@dimen/text_body_large"

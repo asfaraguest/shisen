@@ -34,6 +34,7 @@
 
             <!-- Cold Frost Vignette Gradient Scrim -->
             <View
+                android:id="@+id/view_poster_scrim"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_gravity="bottom"

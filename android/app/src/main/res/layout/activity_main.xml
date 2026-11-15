@@ -122,13 +122,14 @@
                     android:id="@+id/btn_collapse_search"
                     android:layout_width="38dp"
                     android:layout_height="38dp"
-                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:background="?android:attr/selectableItemBackground"
                     android:src="@drawable/ic_arrow_back"
                     app:tint="@color/accent_glacial"
                     android:padding="8dp"
                     android:contentDescription="Tutup Pencarian" />
 
                 <LinearLayout
+                    android:id="@+id/layout_search_input_box"
                     android:layout_width="0dp"
                     android:layout_height="38dp"
                     android:layout_weight="1"

@@ -452,6 +452,7 @@
 
         <!-- Safe Mode Switch -->
         <LinearLayout
+            android:id="@+id/card_settings_safemode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -493,6 +494,7 @@
 
         <!-- Haptic Switch -->
         <LinearLayout
+            android:id="@+id/card_settings_haptic"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -779,6 +781,7 @@
             android:letterSpacing="0.06" />
 
         <LinearLayout
+            android:id="@+id/card_settings_system"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"

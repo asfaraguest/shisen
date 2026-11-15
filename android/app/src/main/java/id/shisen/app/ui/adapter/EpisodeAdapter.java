@@ -98,7 +98,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.EpisodeV
             holder.card.setCardBackgroundColor(android.graphics.Color.TRANSPARENT);
             holder.card.setStrokeWidth(0);
             holder.card.setCardElevation(0f);
-            holder.card.setRadius(3f * context.getResources().getDisplayMetrics().density);
+            holder.card.setRadius(0f);
             if (holder.layoutBody != null) {
                 holder.layoutBody.setDuplicateParentStateEnabled(true);
                 id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(

@@ -96,4 +96,9 @@ public class AnimeThemeManagerTest {
         assertEquals(0x00FB7185, AnimeThemeManager.withAlpha(0xFFFB7185, -20));
         assertEquals(0xFFFB7185, AnimeThemeManager.withAlpha(0xFFFB7185, 400));
     }
+
+    @Test
+    public void testMobileSaoScopeMatchesFlavor() {
+        assertEquals(!id.shisen.app.ui.player.PlayerKeys.isTv(), AnimeThemeManager.isMobileSaoEnabled());
+    }
 }
