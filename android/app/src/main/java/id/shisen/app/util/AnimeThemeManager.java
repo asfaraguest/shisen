@@ -280,14 +280,15 @@ public class AnimeThemeManager {
 
             android.graphics.Paint facetPaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
             facetPaint.setStyle(android.graphics.Paint.Style.FILL);
-            facetPaint.setColor(getSaoHoneycombFacetColor(accentColor));
+            facetPaint.setColor(withAlpha(getSaoHoneycombFacetColor(accentColor), 0x59));
             facetPaint.setMaskFilter(new android.graphics.BlurMaskFilter(
                     Math.max(2f, 2.2f * d), android.graphics.BlurMaskFilter.Blur.NORMAL));
 
             android.graphics.Paint strokePaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
             strokePaint.setStyle(android.graphics.Paint.Style.STROKE);
-            strokePaint.setStrokeWidth(Math.max(1.5f, 1.35f * d));
-            strokePaint.setColor(withAlpha(getSaoHoneycombStrokeColor(accentColor), 0xB8));
+            strokePaint.setStrokeWidth(Math.max(1.2f, 1.15f * d));
+            // Opacity rendah (~32%) agar pola beraksen tema tetap terasa tanpa mencuri fokus dari katalog
+            strokePaint.setColor(withAlpha(getSaoHoneycombStrokeColor(accentColor), 0x52));
             strokePaint.setMaskFilter(new android.graphics.BlurMaskFilter(
                     Math.max(1.8f, 1.8f * d), android.graphics.BlurMaskFilter.Blur.NORMAL));
 
