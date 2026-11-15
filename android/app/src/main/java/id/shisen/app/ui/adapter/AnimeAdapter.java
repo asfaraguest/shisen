@@ -205,50 +205,21 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (holder.cardHero instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card =
                     (com.google.android.material.card.MaterialCardView) holder.cardHero;
-            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
-                id.shisen.app.util.AnimeThemeManager.styleMobile25DCard(card, context, true);
-            } else {
-                card.setCardBackgroundColor(surface);
-                card.setStrokeColor(border);
-            }
+            card.setCardBackgroundColor(surface);
+            card.setStrokeColor(border);
         }
         if (holder.tvHeroTopRank != null) {
             holder.tvHeroTopRank.setTextColor(accent);
-            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()
-                    && holder.tvHeroTopRank.getParent() instanceof View) {
-                id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
-                        (View) holder.tvHeroTopRank.getParent(),
-                        id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
-            }
         }
         if (holder.tvHeroGenres != null) {
             holder.tvHeroGenres.setTextColor(accent);
         }
         if (holder.btnHeroPlay != null) {
-            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
-                holder.btnHeroPlay.setBackgroundTintList(null);
-                holder.btnHeroPlay.setStateListAnimator(null);
-                id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
-                        holder.btnHeroPlay,
-                        id.shisen.app.util.AnimeThemeManager.create25DButtonDrawable(context, true, false, 18f, 3.5f));
-                holder.btnHeroPlay.setTextColor(0xFF080C14);
-            } else {
-                holder.btnHeroPlay.setBackgroundTintList(android.content.res.ColorStateList.valueOf(accent));
-            }
+            holder.btnHeroPlay.setBackgroundTintList(android.content.res.ColorStateList.valueOf(accent));
         }
         if (holder.btnHeroInfo instanceof com.google.android.material.button.MaterialButton) {
-            com.google.android.material.button.MaterialButton mbInfo =
-                    (com.google.android.material.button.MaterialButton) holder.btnHeroInfo;
-            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
-                mbInfo.setBackgroundTintList(null);
-                mbInfo.setStrokeWidth(0);
-                mbInfo.setStateListAnimator(null);
-                id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
-                        mbInfo,
-                        id.shisen.app.util.AnimeThemeManager.create25DButtonDrawable(context, false, false, 18f, 3.5f));
-            } else {
-                mbInfo.setStrokeColor(android.content.res.ColorStateList.valueOf(border));
-            }
+            ((com.google.android.material.button.MaterialButton) holder.btnHeroInfo)
+                    .setStrokeColor(android.content.res.ColorStateList.valueOf(border));
         }
 
         bindTitles(holder.tvHeroTitle, holder.tvHeroAltTitle, anime, "Anime Unggulan");
@@ -323,21 +294,9 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (holder.cardAnime instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card =
                     (com.google.android.material.card.MaterialCardView) holder.cardAnime;
-            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
-                id.shisen.app.util.AnimeThemeManager.styleMobile25DCard(card, context, false);
-                if (card.getChildCount() > 0 && card.getChildAt(0) instanceof ViewGroup) {
-                    ViewGroup inner = (ViewGroup) card.getChildAt(0);
-                    if (inner.getChildCount() > 1) {
-                        id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
-                                inner.getChildAt(1),
-                                id.shisen.app.util.AnimeThemeManager.create25DCardBodyDrawable(context));
-                    }
-                }
-            } else {
-                card.setCardBackgroundColor(id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context));
-                if (!card.isFocused()) {
-                    card.setStrokeColor(id.shisen.app.util.AnimeThemeManager.getBorderColor(context));
-                }
+            card.setCardBackgroundColor(id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context));
+            if (!card.isFocused()) {
+                card.setStrokeColor(id.shisen.app.util.AnimeThemeManager.getBorderColor(context));
             }
         }
         bindTitles(holder.tvTitle, holder.tvAltTitle, anime, "Anime");
@@ -376,10 +335,6 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (anime.score > 0) {
             holder.tvBadgeScore.setVisibility(View.VISIBLE);
             holder.tvBadgeScore.setText(String.format(Locale.US, "%.1f", anime.score));
-            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
-                id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
-                        holder.tvBadgeScore, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
-            }
         } else {
             holder.tvBadgeScore.setVisibility(View.GONE);
         }

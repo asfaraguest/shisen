@@ -371,22 +371,7 @@ public class MainActivity extends AppCompatActivity {
         boolean isTv = id.shisen.app.ui.player.PlayerKeys.isTv();
 
         if (layoutMainRoot != null) {
-            if (isTv) {
-                layoutMainRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
-            } else {
-                layoutMainRoot.setBackground(AnimeThemeManager.create25DCanvasBackgroundDrawable(this));
-            }
-        }
-        if (!isTv && layoutContextualBar != null) {
-            layoutContextualBar.setBackground(AnimeThemeManager.create25DPanelDrawable(
-                    this,
-                    surface,
-                    AnimeThemeManager.darkenColor(AnimeThemeManager.getBorderColor(this), 0.35f),
-                    AnimeThemeManager.getBorderColor(this),
-                    1f,
-                    0f,
-                    2f
-            ));
+            layoutMainRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
         }
         SystemUiHelper.applySystemBarsTheme(this);
 
@@ -395,8 +380,7 @@ public class MainActivity extends AppCompatActivity {
         }
         if (tvCurrentMenuBadge != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(
-                    tvCurrentMenuBadge, AnimeThemeManager.createBadgeFrostDrawable(this));
-            tvCurrentMenuBadge.setTextColor(accent);
+                    tvCurrentMenuBadge, AnimeThemeManager.createSearchCapsuleDrawable(this));
         }
         if (pbLoading != null) {
             pbLoading.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(accent));
@@ -424,12 +408,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if (layoutTopSearchFluid != null) {
-            if (layoutTopSearchFluid instanceof ViewGroup && ((ViewGroup) layoutTopSearchFluid).getChildCount() > 1) {
-                View searchBox = ((ViewGroup) layoutTopSearchFluid).getChildAt(1);
+            if (isTv && layoutTopSearchFluid instanceof ViewGroup && ((ViewGroup) layoutTopSearchFluid).getChildCount() > 1) {
                 AnimeThemeManager.applyBackgroundPreservingPadding(
-                        searchBox,
-                        isTv ? AnimeThemeManager.createSearchCapsuleDrawable(this)
-                             : AnimeThemeManager.create25DRecessedInputDrawable(this, 18f));
+                        ((ViewGroup) layoutTopSearchFluid).getChildAt(1),
+                        AnimeThemeManager.createSearchCapsuleDrawable(this));
+            } else if (!isTv) {
+                AnimeThemeManager.applyBackgroundPreservingPadding(
+                        layoutTopSearchFluid, AnimeThemeManager.createSearchCapsuleDrawable(this));
             }
         }
         if (!isTv && layoutAuroraTop != null) {

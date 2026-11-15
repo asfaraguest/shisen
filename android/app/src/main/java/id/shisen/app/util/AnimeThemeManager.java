@@ -149,7 +149,7 @@ public class AnimeThemeManager {
     }
 
     public static int getElevatedColor(Context context) {
-        return blendArgb(getSurfaceColor(context), getBorderColor(context), 0.45f);
+        return ColorUtils.blendARGB(getSurfaceColor(context), getBorderColor(context), 0.45f);
     }
 
     public static int getVoidColorForTheme(String theme) {
@@ -172,332 +172,20 @@ public class AnimeThemeManager {
         return (color & 0x00FFFFFF) | ((clamped & 0xFF) << 24);
     }
 
-    /** Blending ARGB murni Java agar aman dipanggil di JVM unit test tanpa mock Color. */
-    public static int blendArgb(int color1, int color2, float ratio) {
-        float clamped = Math.max(0f, Math.min(1f, ratio));
-        float inv = 1f - clamped;
-        int a = Math.round(((color1 >>> 24) & 0xFF) * inv + ((color2 >>> 24) & 0xFF) * clamped);
-        int r = Math.round(((color1 >>> 16) & 0xFF) * inv + ((color2 >>> 16) & 0xFF) * clamped);
-        int g = Math.round(((color1 >>> 8) & 0xFF) * inv + ((color2 >>> 8) & 0xFF) * clamped);
-        int b = Math.round((color1 & 0xFF) * inv + (color2 & 0xFF) * clamped);
-        return ((a & 0xFF) << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
-    }
-
-    public static int darkenColor(int color, float amount) {
-        return blendArgb(color, 0xFF000000, amount);
-    }
-
-    public static int lightenColor(int color, float amount) {
-        return blendArgb(color, 0xFFFFFFFF, amount);
-    }
-
-    /** Gaya 2.5D Anime aktif khusus Shisen Mobile; TV tetap memakai UI solid 10-foot original. */
-    public static boolean isMobile25DEnabled() {
-        return !id.shisen.app.ui.player.PlayerKeys.isTv();
-    }
-
     private static float density(Context context) {
         return context != null ? Math.max(1f, context.getResources().getDisplayMetrics().density) : 2f;
-    }
-
-    /** Latar kanvas cel-gradient berlapis khusus Mobile agar panel 2.5D menonjol tajam. */
-    public static Drawable create25DCanvasBackgroundDrawable(Context context) {
-        int voidColor = getVoidColor(context);
-        int surface = getSurfaceColor(context);
-        int accent = getPrimaryAccentColor(context);
-        int secondary = getSecondaryAccentColor(context);
-
-        GradientDrawable base = new GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{blendArgb(voidColor, surface, 0.55f), voidColor, darkenColor(voidColor, 0.28f)}
-        );
-        GradientDrawable celSweep = new GradientDrawable(
-                GradientDrawable.Orientation.TL_BR,
-                new int[]{withAlpha(accent, 0x26), 0x00000000, withAlpha(secondary, 0x1A)}
-        );
-        return new LayerDrawable(new Drawable[]{base, celSweep});
-    }
-
-    /** Membangun satu state layer 2.5D (lip bawah tebal + muka cel-gradient + kilau tepi atas). */
-    private static LayerDrawable build25DLayer(float d, float radiusDp, int topFill, int bottomFill,
-                                               int lipColor, int strokeColor, float strokeDp,
-                                               float depthDp, float topShiftDp, float bottomShiftDp) {
-        float r = radiusDp * d;
-        int strokePx = Math.max(1, Math.round(strokeDp * d));
-        int topInset = Math.max(0, Math.round(topShiftDp * d));
-        int bottomInset = Math.max(0, Math.round(bottomShiftDp * d));
-
-        GradientDrawable lip = new GradientDrawable();
-        lip.setShape(GradientDrawable.RECTANGLE);
-        lip.setCornerRadius(r);
-        lip.setColor(lipColor);
-
-        GradientDrawable face = new GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{topFill, bottomFill}
-        );
-        face.setCornerRadius(r);
-        face.setStroke(strokePx, strokeColor);
-
-        GradientDrawable sheen = new GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{0x38FFFFFF, 0x00FFFFFF}
-        );
-        sheen.setCornerRadius(Math.max(1f, r - strokePx));
-
-        LayerDrawable ld = new LayerDrawable(new Drawable[]{lip, face, sheen});
-        ld.setLayerInset(0, 0, Math.max(1, Math.round(depthDp * 0.35f * d)), 0, 0);
-        ld.setLayerInset(1, 0, topInset, 0, bottomInset);
-        ld.setLayerInset(2, strokePx, topInset + strokePx, strokePx, bottomInset + Math.max(strokePx, Math.round(6f * d)));
-        return ld;
-    }
-
-    /** Panel 2.5D timbul dengan bibir bawah tebal & outline crisp (fallback flat di TV). */
-    public static Drawable create25DPanelDrawable(Context context, int fillColor, int lipColor,
-                                                  int strokeColor, float strokeDp, float radiusDp, float depthDp) {
-        if (!isMobile25DEnabled()) {
-            return createPillDrawable(context, fillColor, strokeColor, strokeDp, radiusDp);
-        }
-        float d = density(context);
-        return build25DLayer(d, radiusDp, lightenColor(fillColor, 0.09f), fillColor,
-                lipColor, strokeColor, strokeDp, depthDp, 0f, depthDp);
-    }
-
-    /** Tombol/keycap 2.5D dengan efek tekan fisik (muka turun menimpa bibir bawah saat disentuh). */
-    public static Drawable create25DButtonDrawable(Context context, boolean isPrimaryAccent,
-                                                   boolean isActiveState, float radiusDp, float depthDp) {
-        float d = density(context);
-        int accent = getPrimaryAccentColor(context);
-        int secondary = getSecondaryAccentColor(context);
-        int surface = getSurfaceColor(context);
-        int border = getBorderColor(context);
-        int elevated = getElevatedColor(context);
-
-        int topFill;
-        int bottomFill;
-        int lipColor;
-        int strokeColor;
-
-        if (isPrimaryAccent) {
-            topFill = lightenColor(accent, 0.16f);
-            bottomFill = blendArgb(accent, secondary, 0.22f);
-            lipColor = darkenColor(accent, 0.48f);
-            strokeColor = lightenColor(accent, 0.32f);
-        } else if (isActiveState) {
-            topFill = blendArgb(elevated, accent, 0.34f);
-            bottomFill = blendArgb(surface, accent, 0.20f);
-            lipColor = darkenColor(accent, 0.44f);
-            strokeColor = accent;
-        } else {
-            topFill = lightenColor(elevated, 0.08f);
-            bottomFill = surface;
-            lipColor = darkenColor(border, 0.42f);
-            strokeColor = blendArgb(border, accent, 0.28f);
-        }
-
-        StateListDrawable states = new StateListDrawable();
-        float sinkTop = Math.max(1f, depthDp - 1f);
-
-        LayerDrawable pressed = build25DLayer(
-                d, radiusDp,
-                isPrimaryAccent ? accent : blendArgb(topFill, accent, 0.18f),
-                bottomFill,
-                lipColor,
-                isPrimaryAccent ? Color.WHITE : accent,
-                1.6f, depthDp, sinkTop, 1f
-        );
-        LayerDrawable focused = build25DLayer(
-                d, radiusDp, topFill, bottomFill, lipColor,
-                isPrimaryAccent ? Color.WHITE : accent,
-                2.0f, depthDp, 0f, depthDp
-        );
-        LayerDrawable normal = build25DLayer(
-                d, radiusDp, topFill, bottomFill, lipColor, strokeColor,
-                1.4f, depthDp, 0f, depthDp
-        );
-
-        states.addState(new int[]{android.R.attr.state_pressed}, pressed);
-        states.addState(new int[]{android.R.attr.state_focused}, focused);
-        states.addState(new int[]{}, normal);
-        return wrapRipple(states, withAlpha(accent, 0x38), radiusDp * d);
-    }
-
-    /** Slot input cekung 2.5D (dinding dalam gelap + sorot aksen saat fokus). */
-    public static Drawable create25DRecessedInputDrawable(Context context, float radiusDp) {
-        float d = density(context);
-        float r = radiusDp * d;
-        int accent = getPrimaryAccentColor(context);
-        int surface = getSurfaceColor(context);
-        int border = getBorderColor(context);
-        int voidColor = getVoidColor(context);
-        int strokeNormal = Math.max(1, Math.round(1.2f * d));
-        int strokeFocus = Math.max(2, Math.round(1.8f * d));
-
-        StateListDrawable sld = new StateListDrawable();
-        for (int s = 0; s < 2; s++) {
-            boolean isFocus = (s == 0);
-            GradientDrawable rim = new GradientDrawable();
-            rim.setShape(GradientDrawable.RECTANGLE);
-            rim.setCornerRadius(r);
-            rim.setColor(darkenColor(voidColor, 0.45f));
-            rim.setStroke(isFocus ? strokeFocus : strokeNormal, isFocus ? accent : blendArgb(border, accent, 0.22f));
-
-            GradientDrawable cavity = new GradientDrawable(
-                    GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{darkenColor(voidColor, 0.15f), blendArgb(voidColor, surface, 0.65f)}
-            );
-            cavity.setCornerRadius(Math.max(1f, r - 1.5f * d));
-
-            LayerDrawable ld = new LayerDrawable(new Drawable[]{rim, cavity});
-            int pad = Math.round(1.5f * d);
-            ld.setLayerInset(1, pad, Math.round(3.2f * d), pad, pad);
-            if (isFocus) {
-                sld.addState(new int[]{android.R.attr.state_focused}, ld);
-            } else {
-                sld.addState(new int[]{}, ld);
-            }
-        }
-        return sld;
-    }
-
-    /** Badge/tag anime 2.5D dengan outline tegas dan lip 1.5dp. */
-    public static Drawable create25DBadgeDrawable(Context context, int badgeAccent) {
-        int voidColor = getVoidColor(context);
-        int accent = badgeAccent != 0 ? badgeAccent : getPrimaryAccentColor(context);
-        int border = getBorderColor(context);
-        return create25DPanelDrawable(
-                context,
-                blendArgb(voidColor, getSurfaceColor(context), 0.72f),
-                darkenColor(badgeAccent != 0 ? badgeAccent : border, 0.48f),
-                badgeAccent != 0 ? lightenColor(badgeAccent, 0.2f) : blendArgb(border, accent, 0.45f),
-                1.1f,
-                6f,
-                1.8f
-        );
-    }
-
-    /** Latar bodi bawah kartu katalog 2.5D (pembatas tipis + gradien cel + bibir bawah 3.5dp). */
-    public static Drawable create25DCardBodyDrawable(Context context) {
-        float d = density(context);
-        int surface = getSurfaceColor(context);
-        int border = getBorderColor(context);
-        int accent = getPrimaryAccentColor(context);
-
-        GradientDrawable bottomLip = new GradientDrawable();
-        bottomLip.setColor(darkenColor(border, 0.35f));
-
-        GradientDrawable bodyFace = new GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{lightenColor(surface, 0.05f), surface}
-        );
-
-        GradientDrawable topLine = new GradientDrawable();
-        topLine.setColor(withAlpha(blendArgb(border, accent, 0.35f), 0xB3));
-
-        int lipPx = Math.max(3, Math.round(3.5f * d));
-        int linePx = Math.max(1, Math.round(1f * d));
-        LayerDrawable ld = new LayerDrawable(new Drawable[]{bottomLip, topLine, bodyFace});
-        ld.setLayerInset(1, 0, 0, 0, lipPx);
-        ld.setLayerInset(2, 0, linePx, 0, lipPx);
-        return ld;
-    }
-
-    /** Keycap episode 2.5D dengan status aktif, watched, dan efek tekan fisik. */
-    public static Drawable create25DEpisodeTileDrawable(Context context, boolean isCurrent, boolean isWatched) {
-        float d = density(context);
-        int accent = getPrimaryAccentColor(context);
-        int surface = getSurfaceColor(context);
-        int border = getBorderColor(context);
-        int mint = ContextCompat.getColor(context, R.color.accent_mint);
-
-        int fill = isCurrent
-                ? blendArgb(surface, accent, 0.28f)
-                : (isWatched ? blendArgb(surface, mint, 0.14f) : lightenColor(surface, 0.04f));
-        int lip = isCurrent
-                ? darkenColor(accent, 0.42f)
-                : (isWatched ? darkenColor(mint, 0.55f) : darkenColor(border, 0.38f));
-        int stroke = isCurrent
-                ? accent
-                : (isWatched ? withAlpha(mint, 0x88) : blendArgb(border, accent, 0.25f));
-
-        float depth = isCurrent ? 2.0f : 3.2f;
-        float topRest = isCurrent ? 1.2f : 0f;
-        float bottomRest = isCurrent ? 2.0f : 3.2f;
-
-        StateListDrawable states = new StateListDrawable();
-        states.addState(
-                new int[]{android.R.attr.state_pressed},
-                build25DLayer(d, 10f, blendArgb(fill, accent, 0.2f), fill, lip, accent, 1.6f, depth, 2.2f, 1.0f)
-        );
-        states.addState(
-                new int[]{android.R.attr.state_focused},
-                build25DLayer(d, 10f, lightenColor(fill, 0.1f), fill, lip, accent, 2.2f, depth, topRest, bottomRest)
-        );
-        states.addState(
-                new int[]{},
-                build25DLayer(d, 10f, lightenColor(fill, 0.07f), fill, lip, stroke, isCurrent ? 1.6f : 1.2f, depth, topRest, bottomRest)
-        );
-        return wrapRipple(states, withAlpha(accent, 0x33), 10f * d);
-    }
-
-    /** Menerapkan outline crisp & shadow tint bertema pada MaterialCardView katalog Mobile. */
-    public static void styleMobile25DCard(com.google.android.material.card.MaterialCardView card, Context context, boolean highlightAccent) {
-        if (card == null || context == null) return;
-        int accent = getPrimaryAccentColor(context);
-        int surface = getSurfaceColor(context);
-        int border = getBorderColor(context);
-        float d = density(context);
-
-        card.setCardBackgroundColor(surface);
-        if (!card.isFocused()) {
-            card.setStrokeColor(highlightAccent ? blendArgb(accent, border, 0.25f) : blendArgb(border, accent, 0.34f));
-            card.setStrokeWidth(Math.max(2, Math.round((highlightAccent ? 1.8f : 1.4f) * d)));
-        }
-        if (isMobile25DEnabled()) {
-            card.setCardElevation((highlightAccent ? 7f : 4.5f) * d);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                int shadow = darkenColor(highlightAccent ? accent : getVoidColor(context), 0.35f);
-                card.setOutlineAmbientShadowColor(shadow);
-                card.setOutlineSpotShadowColor(shadow);
-            }
-        }
     }
 
     public static Drawable createAuroraHeaderDrawable(Context context) {
         int accent = getPrimaryAccentColor(context);
         int secondary = getSecondaryAccentColor(context);
-        if (!isMobile25DEnabled()) {
-            return new GradientDrawable(
-                    GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{withAlpha(accent, 0x2A), withAlpha(secondary, 0x12), 0x00000000}
-            );
-        }
-        float d = density(context);
-        int surface = getSurfaceColor(context);
-        int border = getBorderColor(context);
-        GradientDrawable lip = new GradientDrawable();
-        lip.setColor(blendArgb(border, accent, 0.42f));
-        GradientDrawable face = new GradientDrawable(
+        return new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{blendArgb(surface, accent, 0.20f), blendArgb(surface, secondary, 0.10f)}
+                new int[]{withAlpha(accent, 0x2A), withAlpha(secondary, 0x12), 0x00000000}
         );
-        LayerDrawable ld = new LayerDrawable(new Drawable[]{lip, face});
-        ld.setLayerInset(1, 0, 0, 0, Math.max(2, Math.round(2.5f * d)));
-        return ld;
     }
 
     public static Drawable createSearchCapsuleDrawable(Context context) {
-        if (isMobile25DEnabled()) {
-            return create25DPanelDrawable(
-                    context,
-                    getElevatedColor(context),
-                    darkenColor(getBorderColor(context), 0.35f),
-                    blendArgb(getBorderColor(context), getPrimaryAccentColor(context), 0.32f),
-                    1.2f,
-                    18f,
-                    2.5f
-            );
-        }
         float d = density(context);
         GradientDrawable gd = new GradientDrawable();
         gd.setShape(GradientDrawable.RECTANGLE);
@@ -508,9 +196,6 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createChipDrawable(Context context, boolean isSelected) {
-        if (isMobile25DEnabled()) {
-            return create25DButtonDrawable(context, isSelected, false, 16f, isSelected ? 2.2f : 2.8f);
-        }
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
@@ -542,9 +227,6 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createMenuPillDrawable(Context context, boolean isActive) {
-        if (isMobile25DEnabled()) {
-            return create25DButtonDrawable(context, false, isActive, 18f, 3.2f);
-        }
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
@@ -567,9 +249,6 @@ public class AnimeThemeManager {
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
-        if (isMobile25DEnabled()) {
-            return create25DButtonDrawable(context, false, true, 16f, 3.5f);
-        }
 
         GradientDrawable gd = new GradientDrawable();
         gd.setShape(GradientDrawable.OVAL);
@@ -583,20 +262,10 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createPaginationBarDrawable(Context context) {
+        float d = density(context);
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
-        if (isMobile25DEnabled()) {
-            return create25DPanelDrawable(
-                    context,
-                    blendArgb(surface, getElevatedColor(context), 0.5f),
-                    darkenColor(accent, 0.48f),
-                    blendArgb(getBorderColor(context), accent, 0.45f),
-                    1.5f,
-                    22f,
-                    3.5f
-            );
-        }
-        float d = density(context);
+
         GradientDrawable gd = new GradientDrawable();
         gd.setShape(GradientDrawable.RECTANGLE);
         gd.setCornerRadius(24f * d);
@@ -606,9 +275,6 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createPageIndicatorDrawable(Context context) {
-        if (isMobile25DEnabled()) {
-            return create25DRecessedInputDrawable(context, 16f);
-        }
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
@@ -622,9 +288,6 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createPageButtonDrawable(Context context) {
-        if (isMobile25DEnabled()) {
-            return create25DButtonDrawable(context, false, true, 16f, 2.5f);
-        }
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
 
@@ -645,9 +308,6 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createFrostedGlassButtonDrawable(Context context, boolean isPrimaryAccent, boolean isActiveState) {
-        if (isMobile25DEnabled()) {
-            return create25DButtonDrawable(context, isPrimaryAccent, isActiveState, 18f, 4.0f);
-        }
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
@@ -676,9 +336,6 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createFrostedIconButtonDrawable(Context context) {
-        if (isMobile25DEnabled()) {
-            return create25DButtonDrawable(context, false, false, 12f, 3.0f);
-        }
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
         int surface = getSurfaceColor(context);
@@ -776,33 +433,6 @@ public class AnimeThemeManager {
             rbShinkai.setChecked(true);
         }
 
-        Runnable styleSelector = () -> {
-            applyCustomDialogTheme(view, activity);
-            if (!isMobile25DEnabled()) return;
-            String sel = getTheme(activity);
-            RadioButton[] rbs = {rbShinkai, rbSakura, rbCyber, rbGhibli};
-            String[] keys = {THEME_SHINKAI, THEME_SAKURA, THEME_CYBER, THEME_GHIBLI};
-            for (int i = 0; i < rbs.length; i++) {
-                if (rbs[i] == null) continue;
-                boolean act = keys[i].equals(sel);
-                int cAccent = getPrimaryAccentColorForTheme(keys[i]);
-                int cSurface = getSurfaceColorForTheme(keys[i]);
-                applyBackgroundPreservingPadding(
-                        rbs[i],
-                        create25DPanelDrawable(
-                                activity,
-                                act ? blendArgb(cSurface, cAccent, 0.22f) : cSurface,
-                                darkenColor(cAccent, act ? 0.35f : 0.55f),
-                                act ? cAccent : blendArgb(getBorderColorForTheme(keys[i]), cAccent, 0.3f),
-                                act ? 1.8f : 1.2f,
-                                12f,
-                                act ? 2.2f : 3.5f
-                        )
-                );
-            }
-        };
-        styleSelector.run();
-
         rgThemes.setOnCheckedChangeListener((group, checkedId) -> {
             String selected = THEME_SHINKAI;
             if (checkedId == R.id.rb_theme_sakura) {
@@ -816,7 +446,6 @@ public class AnimeThemeManager {
             setTheme(activity, selected);
             SystemUiHelper.applySystemBarsTheme(activity, selected);
             HapticHelper.performClick(group);
-            styleSelector.run();
 
             if (onThemeChanged != null) {
                 onThemeChanged.run();
@@ -855,28 +484,10 @@ public class AnimeThemeManager {
     }
 
     public static Drawable createDialogFrostDrawable(Context context) {
-        if (isMobile25DEnabled()) {
-            int voidColor = getVoidColor(context);
-            int surface = getSurfaceColor(context);
-            int border = getBorderColor(context);
-            int accent = getPrimaryAccentColor(context);
-            return create25DPanelDrawable(
-                    context,
-                    surface,
-                    darkenColor(voidColor, 0.35f),
-                    blendArgb(border, accent, 0.42f),
-                    1.6f,
-                    16f,
-                    5.0f
-            );
-        }
         return createPillDrawable(context, getSurfaceColor(context), getBorderColor(context), 1f, 16f);
     }
 
     public static Drawable createBadgeFrostDrawable(Context context) {
-        if (isMobile25DEnabled()) {
-            return create25DBadgeDrawable(context, 0);
-        }
         return createPillDrawable(context, withAlpha(getVoidColor(context), 0xCC), getBorderColor(context), 1f, 6f);
     }
 
@@ -930,14 +541,11 @@ public class AnimeThemeManager {
         int surface = getSurfaceColor(context);
         int voidColor = getVoidColor(context);
         float d = density(context);
-        if (isMobile25DEnabled() && isCenterPlay) {
-            return create25DButtonDrawable(context, false, true, 28f, 3.0f);
-        }
         StateListDrawable sld = new StateListDrawable();
 
         GradientDrawable focused = new GradientDrawable();
         focused.setShape(GradientDrawable.OVAL);
-        focused.setColor(blendArgb(surface, accent, 0.12f));
+        focused.setColor(ColorUtils.blendARGB(surface, accent, 0.12f));
         focused.setStroke(Math.max(2, (int) (2f * d)), accent);
         sld.addState(new int[]{android.R.attr.state_focused}, focused);
 
@@ -1026,10 +634,10 @@ public class AnimeThemeManager {
 
     private static boolean isAnyThemeElevated(int c) {
         return c == 0xFF161F38 || c == 0xFF16233B
-                || c == blendArgb(0xFF10162A, 0xFF233252, 0.45f)
-                || c == blendArgb(0xFF1C1226, 0xFF381D47, 0.45f)
-                || c == blendArgb(0xFF0E1424, 0xFF1E2C4A, 0.45f)
-                || c == blendArgb(0xFF0E211E, 0xFF1B3D37, 0.45f);
+                || c == ColorUtils.blendARGB(0xFF10162A, 0xFF233252, 0.45f)
+                || c == ColorUtils.blendARGB(0xFF1C1226, 0xFF381D47, 0.45f)
+                || c == ColorUtils.blendARGB(0xFF0E1424, 0xFF1E2C4A, 0.45f)
+                || c == ColorUtils.blendARGB(0xFF0E211E, 0xFF1B3D37, 0.45f);
     }
 
     private static void remapDialogChildren(View view, Context context, int accent, int surface, int border, int elevated, int voidColor) {
@@ -1044,36 +652,22 @@ public class AnimeThemeManager {
         if (view instanceof com.google.android.material.button.MaterialButton) {
             com.google.android.material.button.MaterialButton mb = (com.google.android.material.button.MaterialButton) view;
             ColorStateList bgTint = mb.getBackgroundTintList();
-            boolean isPrimary = bgTint != null && isAnyThemeAccent(bgTint.getDefaultColor());
-            boolean hasButtonSurface = bgTint != null || mb.getStrokeWidth() > 0 || mb.getText().length() > 0;
-            if (isMobile25DEnabled() && hasButtonSurface) {
-                mb.setBackgroundTintList(null);
-                mb.setStrokeWidth(0);
-                mb.setStateListAnimator(null);
-                applyBackgroundPreservingPadding(mb, create25DButtonDrawable(context, isPrimary, false, 10f, 3.5f));
-                if (isPrimary) {
-                    mb.setTextColor(0xFF080C14);
-                }
-            } else {
-                if (bgTint != null) {
-                    int c = bgTint.getDefaultColor();
-                    if (isAnyThemeAccent(c)) mb.setBackgroundTintList(ColorStateList.valueOf(accent));
-                    else if (isAnyThemeElevated(c)) mb.setBackgroundTintList(ColorStateList.valueOf(elevated));
-                    else if (isAnyThemeSurface(c)) mb.setBackgroundTintList(ColorStateList.valueOf(surface));
-                }
-                ColorStateList sc = mb.getStrokeColor();
-                if (sc != null) {
-                    int s = sc.getDefaultColor();
-                    if (isAnyThemeBorder(s)) mb.setStrokeColor(ColorStateList.valueOf(border));
-                    else if (isAnyThemeAccent(s)) mb.setStrokeColor(ColorStateList.valueOf(accent));
-                }
+            if (bgTint != null) {
+                int c = bgTint.getDefaultColor();
+                if (isAnyThemeAccent(c)) mb.setBackgroundTintList(ColorStateList.valueOf(accent));
+                else if (isAnyThemeElevated(c)) mb.setBackgroundTintList(ColorStateList.valueOf(elevated));
+                else if (isAnyThemeSurface(c)) mb.setBackgroundTintList(ColorStateList.valueOf(surface));
+            }
+            ColorStateList sc = mb.getStrokeColor();
+            if (sc != null) {
+                int s = sc.getDefaultColor();
+                if (isAnyThemeBorder(s)) mb.setStrokeColor(ColorStateList.valueOf(border));
+                else if (isAnyThemeAccent(s)) mb.setStrokeColor(ColorStateList.valueOf(accent));
             }
             ColorStateList iconTint = mb.getIconTint();
             if (iconTint != null && isAnyThemeAccent(iconTint.getDefaultColor())) {
                 mb.setIconTint(ColorStateList.valueOf(accent));
             }
-        } else if (isMobile25DEnabled() && view instanceof android.widget.EditText) {
-            applyBackgroundPreservingPadding(view, create25DRecessedInputDrawable(context, 10f));
         }
 
         if (view instanceof androidx.appcompat.widget.SwitchCompat) {

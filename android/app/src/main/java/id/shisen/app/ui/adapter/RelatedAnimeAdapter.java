@@ -60,13 +60,9 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
         if (holder.itemView instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card =
                     (com.google.android.material.card.MaterialCardView) holder.itemView;
-            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
-                id.shisen.app.util.AnimeThemeManager.styleMobile25DCard(card, context, false);
-            } else {
-                card.setCardBackgroundColor(surface);
-                if (!card.isFocused()) {
-                    card.setStrokeColor(border);
-                }
+            card.setCardBackgroundColor(surface);
+            if (!card.isFocused()) {
+                card.setStrokeColor(border);
             }
         }
 
@@ -83,10 +79,6 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
         if (anime.relationLabel != null && !anime.relationLabel.isEmpty() && !"null".equalsIgnoreCase(anime.relationLabel)) {
             holder.tvBadge.setText(getLocalizedRelationLabel(anime.relationLabel));
             holder.tvBadge.setTextColor(accent);
-            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
-                id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
-                        holder.tvBadge, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
-            }
             holder.tvBadge.setVisibility(View.VISIBLE);
         } else {
             holder.tvBadge.setVisibility(View.GONE);

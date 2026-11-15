@@ -57,19 +57,11 @@ public class HistoryHorizontalAdapter extends RecyclerView.Adapter<HistoryHorizo
 
         if (holder.cardHistory instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card = (com.google.android.material.card.MaterialCardView) holder.cardHistory;
-            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
-                id.shisen.app.util.AnimeThemeManager.styleMobile25DCard(card, context, false);
-            } else {
-                card.setCardBackgroundColor(surface);
-                card.setStrokeColor(border);
-            }
+            card.setCardBackgroundColor(surface);
+            card.setStrokeColor(border);
         }
         if (holder.tvEp != null) {
             holder.tvEp.setTextColor(accent);
-            if (id.shisen.app.util.AnimeThemeManager.isMobile25DEnabled()) {
-                id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
-                        holder.tvEp, id.shisen.app.util.AnimeThemeManager.createBadgeFrostDrawable(context));
-            }
         }
         if (holder.pbProgress != null) {
             holder.pbProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(accent));
