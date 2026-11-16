@@ -2,6 +2,20 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.1-beta.6] - 2026-11-17
+
+### Ditingkatkan
+- **Header Utama SAO Aincrad HUD (`MainActivity.java`, `AnimeThemeManager.java`, `activity_main.xml`)**:
+  - Desain ulang header utama Shisen Mobile dengan frame taktis bergaya Sword Art Online: *top hairline* + aksen blok kiri di bawah status bar, siku **L-bracket** kiri & kanan, **SAO slanted HP/Sync gauge strip** berujung miring 45° dengan sekat segmen dan *telemetry diamond pip*, serta emblem pedang silang (`ic_sword_cross`).
+  - Badge kategori aktif, tombol cari, dan terminal input pencarian memakai geometri *chamfered* 45° yang dinamis mengikuti seluruh preset tema aktif (`Shinkai`, `Aincrad`, `Sakura`, `Cyber`, `Ghibli`) serta selaras dengan `topInset` status bar/notch.
+- **Estetika SAO S1 Aincrad Night-Clean (Mobile)**:
+  - Geometri `0dp` tegas, latar *gray night honeycomb* beraksen tema aktif, garis aksen vertikal + corner bracket `L` pada *hero banner* dan kartu anime (`applySaoCardAccentFrame`), serta gradasi vertikal halus pada halaman Detail Anime.
+  - Varian Android TV (`shisen-tv`) tetap terisolasi dengan layout 10-foot UI & fokus D-Pad original.
+
+### Diperbaiki
+- **Tombol Play/Pause ExoPlayer (`AnimeThemeManager.java`)**:
+  - Menghilangkan border kotak persegi pada tombol play/pause center ExoPlayer di varian Mobile SAO agar tampilan kontrol pemutar video lebih bersih, tanpa mengubah fokus D-Pad pada `shisen-tv`.
+
 ## [1.1.1-beta.3] - 2026-11-14
 
 ### Diperbaiki
