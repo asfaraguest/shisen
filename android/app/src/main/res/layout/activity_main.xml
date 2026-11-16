@@ -19,25 +19,40 @@
             android:layout_height="54dp"
             android:background="@drawable/bg_aurora_header">
 
-            <!-- Normal State: Branding Logo + Menu Badge + Search Trigger Capsule -->
+            <!-- Normal State: SAO HUD Emblem + Branding Logo + Menu Badge + Search Trigger -->
             <LinearLayout
                 android:id="@+id/layout_top_normal"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingHorizontal="14dp">
+                android:paddingHorizontal="12dp"
+                android:paddingBottom="4dp">
 
-                <!-- Logo SHISEN (Glacial Sky Blue) -->
+                <!-- SAO Crossed-Swords Emblem Socket -->
+                <ImageView
+                    android:id="@+id/iv_header_emblem"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="7dp"
+                    android:padding="4dp"
+                    android:src="@drawable/ic_sword_cross"
+                    app:tint="@color/accent_glacial"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/app_name" />
+
+                <!-- Logo SHISEN -->
                 <TextView
                     android:id="@+id/tv_app_logo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="SHISEN"
                     android:textColor="@color/accent_glacial"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:fontFamily="sans-serif-black"
-                    android:letterSpacing="0.08" />
+                    android:letterSpacing="0.10"
+                    android:singleLine="true" />
 
                 <!-- Anime Kanji Brand Touch (Shisen / 視線) -->
                 <TextView
@@ -47,8 +62,9 @@
                     android:layout_marginStart="4dp"
                     android:text="@string/app_logo_kanji"
                     android:textColor="@color/anime_iris_violet"
-                    android:textSize="12sp"
-                    android:fontFamily="sans-serif-bold" />
+                    android:textSize="11.5sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:singleLine="true" />
 
                 <!-- Active Menu Category Badge -->
                 <TextView
@@ -56,13 +72,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
+                    android:layout_marginEnd="6dp"
+                    android:maxWidth="108dp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
                     android:text="@string/badge_this_season"
                     android:textColor="@color/text_frost_bright"
                     android:background="@drawable/bg_badge_frost"
                     android:textSize="9.5sp"
                     android:fontFamily="sans-serif-bold"
                     android:letterSpacing="0.06"
-                    android:paddingHorizontal="8dp"
+                    android:paddingStart="9dp"
+                    android:paddingEnd="10dp"
                     android:paddingVertical="3dp" />
 
                 <View
@@ -73,9 +94,9 @@
                 <!-- Header Loading Spinner -->
                 <ProgressBar
                     android:id="@+id/pb_header_loading"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginEnd="8dp"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="6dp"
                     android:indeterminateTint="@color/accent_glacial"
                     android:visibility="gone" />
 
@@ -83,16 +104,16 @@
                 <LinearLayout
                     android:id="@+id/btn_search_trigger"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="34dp"
                     android:background="@drawable/bg_search_capsule"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="10dp"
                     android:clickable="true"
                     android:focusable="true">
 
                     <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
                         android:src="@drawable/ic_search"
                         app:tint="@color/accent_glacial"
                         android:contentDescription="検索" />
@@ -103,8 +124,9 @@
                         android:layout_marginStart="6dp"
                         android:text="@string/search_capsule"
                         android:textColor="@color/text_frost_subtle"
-                        android:textSize="12sp"
-                        android:fontFamily="sans-serif" />
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif"
+                        android:singleLine="true" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -116,22 +138,23 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:paddingHorizontal="10dp"
+                android:paddingBottom="4dp"
                 android:visibility="gone">
 
                 <ImageButton
                     android:id="@+id/btn_collapse_search"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:background="?android:attr/selectableItemBackground"
                     android:src="@drawable/ic_arrow_back"
                     app:tint="@color/accent_glacial"
-                    android:padding="8dp"
+                    android:padding="7dp"
                     android:contentDescription="Tutup Pencarian" />
 
                 <LinearLayout
                     android:id="@+id/layout_search_input_box"
                     android:layout_width="0dp"
-                    android:layout_height="38dp"
+                    android:layout_height="36dp"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
                     android:background="@drawable/bg_search_capsule"

@@ -88,11 +88,13 @@ public class MainActivity extends AppCompatActivity {
     // Top Aurora Bar & Dynamic Fluid Search Views
     private FrameLayout layoutAuroraTop;
     private LinearLayout layoutTopNormal;
+    private ImageView ivHeaderEmblem;
     private TextView tvAppLogo;
     private TextView tvAppLogoKanji;
     public TextView tvCurrentMenuBadge;
     private ProgressBar pbLoading;
     private LinearLayout btnSearchTrigger;
+    private int currentHeaderTopInset = 0;
 
     private LinearLayout layoutTopSearchFluid;
     private ImageButton btnCollapseSearch;
@@ -379,6 +381,19 @@ public class MainActivity extends AppCompatActivity {
         }
         SystemUiHelper.applySystemBarsTheme(this);
 
+        if (ivHeaderEmblem != null && !isTv) {
+            ivHeaderEmblem.setImageTintList(android.content.res.ColorStateList.valueOf(accent));
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    ivHeaderEmblem,
+                    AnimeThemeManager.createSaoChamferedDrawable(
+                            this,
+                            AnimeThemeManager.getSaoSurfaceColor(),
+                            AnimeThemeManager.withAlpha(accent, 0x99),
+                            Color.TRANSPARENT,
+                            4f,
+                            1f,
+                            true));
+        }
         if (tvAppLogo != null && !isTv) {
             tvAppLogo.setTextColor(0xFFF3F4F6);
         }
@@ -388,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
         if (tvCurrentMenuBadge != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(
                     tvCurrentMenuBadge,
-                    !isTv ? AnimeThemeManager.createBadgeFrostDrawable(this)
+                    !isTv ? AnimeThemeManager.createSaoHeaderBadgeDrawable(this)
                           : AnimeThemeManager.createSearchCapsuleDrawable(this));
             if (!isTv) {
                 tvCurrentMenuBadge.setTextColor(accent);
@@ -406,7 +421,7 @@ public class MainActivity extends AppCompatActivity {
             }
             if (!isTv) {
                 AnimeThemeManager.applyBackgroundPreservingPadding(
-                        btnSearchTrigger, AnimeThemeManager.createSearchCapsuleDrawable(this));
+                        btnSearchTrigger, AnimeThemeManager.createSaoHeaderSearchDrawable(this, false));
             } else {
                 AnimeThemeManager.applyBackgroundPreservingPadding(
                         btnSearchTrigger, AnimeThemeManager.createTvFocusDrawable(this, false));
@@ -429,14 +444,14 @@ public class MainActivity extends AppCompatActivity {
                     View searchInputBox = ((ViewGroup) layoutTopSearchFluid).getChildAt(1);
                     if (searchInputBox != null) {
                         AnimeThemeManager.applyBackgroundPreservingPadding(
-                                searchInputBox, AnimeThemeManager.createSaoRecessedInputDrawable(this));
+                                searchInputBox, AnimeThemeManager.createSaoHeaderSearchDrawable(this, true));
                     }
                 }
             }
         }
         if (!isTv && layoutAuroraTop != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(
-                    layoutAuroraTop, AnimeThemeManager.createAuroraHeaderDrawable(this));
+                    layoutAuroraTop, AnimeThemeManager.createAuroraHeaderDrawable(this, currentHeaderTopInset));
         }
         if (!isTv && layoutContextualBar != null) {
             // Transisi halus tanpa borderline antara header bar, contextual bar, dan body feed
@@ -507,6 +522,7 @@ public class MainActivity extends AppCompatActivity {
         layoutMainRoot = findViewById(R.id.layout_main_root);
         layoutAuroraTop = findViewById(R.id.layout_aurora_top);
         layoutTopNormal = findViewById(R.id.layout_top_normal);
+        ivHeaderEmblem = findViewById(R.id.iv_header_emblem);
         tvAppLogo = findViewById(R.id.tv_app_logo);
         tvAppLogoKanji = findViewById(R.id.tv_app_logo_kanji);
         String kanji = getString(R.string.app_logo_kanji);
@@ -579,6 +595,7 @@ public class MainActivity extends AppCompatActivity {
             float density = getResources().getDisplayMetrics().density;
 
             if (layoutAuroraTop != null) {
+                currentHeaderTopInset = topInset;
                 int baseHeight = (int) (54 * density);
                 ViewGroup.LayoutParams lp = layoutAuroraTop.getLayoutParams();
                 if (lp != null) {
@@ -586,6 +603,10 @@ public class MainActivity extends AppCompatActivity {
                     layoutAuroraTop.setLayoutParams(lp);
                 }
                 layoutAuroraTop.setPadding(leftInset, topInset, rightInset, 0);
+                if (!id.shisen.app.ui.player.PlayerKeys.isTv()) {
+                    AnimeThemeManager.applyBackgroundPreservingPadding(
+                            layoutAuroraTop, AnimeThemeManager.createAuroraHeaderDrawable(this, currentHeaderTopInset));
+                }
             }
 
             if (deviceNav != null) {
@@ -727,11 +748,15 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        View.OnClickListener checkUpdateClick = v -> {
+            HapticHelper.performClick(v);
+            AppUpdateManager.getInstance().checkUpdate(this, true);
+        };
         if (tvAppLogo != null) {
-            tvAppLogo.setOnClickListener(v -> {
-                HapticHelper.performClick(v);
-                AppUpdateManager.getInstance().checkUpdate(this, true);
-            });
+            tvAppLogo.setOnClickListener(checkUpdateClick);
+        }
+        if (ivHeaderEmblem != null) {
+            ivHeaderEmblem.setOnClickListener(checkUpdateClick);
         }
 
         // 2. Dynamic Fluid Searchbar Transitions

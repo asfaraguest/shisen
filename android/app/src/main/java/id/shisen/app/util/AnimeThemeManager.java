@@ -351,20 +351,299 @@ public class AnimeThemeManager {
         }
     }
 
-    /** Header atas menyatu mulus ke kanvas body tanpa borderline pemotong. */
+    /** Header atas HUD ala Sword Art Online (Mobile) atau aurora gradient (TV). */
     public static Drawable createAuroraHeaderDrawable(Context context) {
-        if (isMobileSaoEnabled()) {
-            return new GradientDrawable(
-                    GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{getSaoVoidColor(), withAlpha(getSaoVoidColor(), 0xCC), 0x00111317}
-            );
-        }
+        return createAuroraHeaderDrawable(context, 0);
+    }
+
+    public static Drawable createAuroraHeaderDrawable(Context context, int topInsetPx) {
         int accent = getPrimaryAccentColor(context);
         int secondary = getSecondaryAccentColor(context);
+        if (isMobileSaoEnabled()) {
+            return new SaoHeaderHudDrawable(density(context), accent, secondary, Math.max(0, topInsetPx));
+        }
         return new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
                 new int[]{withAlpha(accent, 0x2A), withAlpha(secondary, 0x12), 0x00000000}
         );
+    }
+
+    /** Hitung posisi vertikal awal zona HUD SAO di bawah status bar/notch agar tidak bertabrakan. */
+    public static int computeSaoHudTop(int topInsetPx, int totalHeightPx, float density) {
+        float d = Math.max(1f, density);
+        int minHudHeight = Math.round(40f * d);
+        int maxTop = Math.max(0, totalHeightPx - minHudHeight);
+        return Math.max(0, Math.min(topInsetPx, maxTop));
+    }
+
+    /** Warna ujung gradasi gauge SAO agar harmonis dengan tema aktif. */
+    public static int getSaoHeaderGaugeEndColor(int accentColor, int secondaryColor) {
+        return blendArgb(accentColor, secondaryColor, 0.45f);
+    }
+
+    /** Badge kategori aktif pada header SAO (rail vertikal kiri + sudut kanan-atas chamfered 45°). */
+    public static Drawable createSaoHeaderBadgeDrawable(Context context) {
+        if (!isMobileSaoEnabled()) {
+            return createSearchCapsuleDrawable(context);
+        }
+        int accent = getPrimaryAccentColor(context);
+        return createSaoChamferedDrawable(
+                context,
+                withAlpha(getSaoVoidColor(), 0xD9),
+                withAlpha(getSaoHairlineColor(), 0xCC),
+                accent,
+                5f,
+                1f,
+                false
+        );
+    }
+
+    /** Kapsul trigger & terminal pencarian pada header SAO (sudut chamfered 45°). */
+    public static Drawable createSaoHeaderSearchDrawable(Context context, boolean isInputTerminal) {
+        if (!isMobileSaoEnabled()) {
+            return createSearchCapsuleDrawable(context);
+        }
+        int accent = getPrimaryAccentColor(context);
+        int fill = isInputTerminal ? getSaoVoidColor() : getSaoSurfaceColor();
+        int stroke = isInputTerminal ? withAlpha(accent, 0xCC) : withAlpha(getSaoHairlineColor(), 0xCC);
+        return createSaoChamferedDrawable(context, fill, stroke, Color.TRANSPARENT, 6f, 1f, !isInputTerminal);
+    }
+
+    /** Bentuk poligon chamfered 45° khas UI Aincrad SAO untuk header emblem, badge, dan trigger search. */
+    public static Drawable createSaoChamferedDrawable(
+            Context context,
+            int fillColor,
+            int strokeColor,
+            int leftAccentColor,
+            float bevelDp,
+            float strokeDp,
+            boolean withRipple) {
+        float d = density(context);
+        SaoChamferedDrawable base = new SaoChamferedDrawable(
+                d, fillColor, strokeColor, leftAccentColor, bevelDp, strokeDp);
+        if (!withRipple) return base;
+        int accent = getPrimaryAccentColor(context);
+        return new RippleDrawable(ColorStateList.valueOf(withAlpha(accent, 0x33)), base, null);
+    }
+
+    private static final class SaoChamferedDrawable extends Drawable {
+        private final float d;
+        private final int fillColor;
+        private final int strokeColor;
+        private final int leftAccentColor;
+        private final float bevelPx;
+        private final float strokePx;
+        private final android.graphics.Paint fillPaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+        private final android.graphics.Paint strokePaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+        private final android.graphics.Path path = new android.graphics.Path();
+
+        SaoChamferedDrawable(float density, int fillColor, int strokeColor, int leftAccentColor, float bevelDp, float strokeDp) {
+            this.d = Math.max(1f, density);
+            this.fillColor = fillColor;
+            this.strokeColor = strokeColor;
+            this.leftAccentColor = leftAccentColor;
+            this.bevelPx = Math.max(0f, bevelDp) * this.d;
+            this.strokePx = Math.max(0.8f, strokeDp * this.d);
+
+            fillPaint.setStyle(android.graphics.Paint.Style.FILL);
+            fillPaint.setColor(fillColor);
+
+            strokePaint.setStyle(android.graphics.Paint.Style.STROKE);
+            strokePaint.setStrokeWidth(strokePx);
+            strokePaint.setColor(strokeColor);
+        }
+
+        @Override
+        protected void onBoundsChange(android.graphics.Rect b) {
+            super.onBoundsChange(b);
+            path.reset();
+            if (b.isEmpty()) return;
+            float half = strokePx * 0.5f;
+            float l = b.left + half;
+            float t = b.top + half;
+            float r = b.right - half;
+            float bot = b.bottom - half;
+            float c = Math.min(bevelPx, Math.min((r - l) * 0.4f, (bot - t) * 0.45f));
+
+            if (leftAccentColor != Color.TRANSPARENT) {
+                // Sisi kiri lurus untuk rail aksen vertikal, chamfer di sudut kanan atas & bawah
+                path.moveTo(l, t);
+                path.lineTo(r - c, t);
+                path.lineTo(r, t + c);
+                path.lineTo(r, bot);
+                path.lineTo(l, bot);
+                path.close();
+            } else {
+                // Chamfer diagonal kiri-atas & kanan-bawah
+                path.moveTo(l + c, t);
+                path.lineTo(r, t);
+                path.lineTo(r, bot - c);
+                path.lineTo(r - c, bot);
+                path.lineTo(l, bot);
+                path.lineTo(l, t + c);
+                path.close();
+            }
+        }
+
+        @Override
+        public void draw(android.graphics.Canvas canvas) {
+            android.graphics.Rect b = getBounds();
+            if (b.isEmpty()) return;
+            if (fillColor != Color.TRANSPARENT) {
+                canvas.drawPath(path, fillPaint);
+            }
+            if (strokeColor != Color.TRANSPARENT) {
+                canvas.drawPath(path, strokePaint);
+            }
+            if (leftAccentColor != Color.TRANSPARENT) {
+                fillPaint.setColor(leftAccentColor);
+                float railW = Math.max(2f, 2.2f * d);
+                canvas.drawRect(b.left, b.top, b.left + railW, b.bottom, fillPaint);
+                fillPaint.setColor(fillColor);
+            }
+        }
+
+        @Override public void setAlpha(int alpha) { fillPaint.setAlpha(alpha); strokePaint.setAlpha(alpha); }
+        @Override public void setColorFilter(android.graphics.ColorFilter cf) { fillPaint.setColorFilter(cf); strokePaint.setColorFilter(cf); }
+        @Override @SuppressWarnings("deprecation") public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
+    }
+
+    /** Kanvas HUD header Sword Art Online: L-bracket, top hairline, dan slanted HP/Sync gauge strip. */
+    private static final class SaoHeaderHudDrawable extends Drawable {
+        private final float d;
+        private final int accentColor;
+        private final int secondaryColor;
+        private final int topInsetPx;
+        private final android.graphics.Paint paint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+        private final android.graphics.Path trackPath = new android.graphics.Path();
+        private final android.graphics.Path fillPath = new android.graphics.Path();
+        private android.graphics.Shader bgShader;
+        private android.graphics.Shader gaugeShader;
+
+        SaoHeaderHudDrawable(float density, int accentColor, int secondaryColor, int topInsetPx) {
+            this.d = Math.max(1f, density);
+            this.accentColor = accentColor;
+            this.secondaryColor = secondaryColor;
+            this.topInsetPx = Math.max(0, topInsetPx);
+        }
+
+        @Override
+        protected void onBoundsChange(android.graphics.Rect b) {
+            super.onBoundsChange(b);
+            if (b.isEmpty()) return;
+            int voidColor = getSaoVoidColor();
+            int hudTop = computeSaoHudTop(topInsetPx, b.height(), d);
+            float tHud = Math.min(0.85f, (float) hudTop / Math.max(1f, b.height()));
+
+            bgShader = new android.graphics.LinearGradient(
+                    0f, b.top, 0f, b.bottom,
+                    new int[]{voidColor, withAlpha(voidColor, 0xEB), withAlpha(0xFF151922, 0xCC), withAlpha(voidColor, 0x00)},
+                    new float[]{0f, tHud, Math.min(0.95f, tHud + (1f - tHud) * 0.72f), 1f},
+                    android.graphics.Shader.TileMode.CLAMP);
+
+            float padH = 10f * d;
+            float gaugeH = 3.2f * d;
+            float gaugeBottom = b.bottom - 1.5f * d;
+            float gaugeTop = gaugeBottom - gaugeH;
+            float gaugeLeft = b.left + padH;
+            float gaugeTrackW = Math.min((b.width() - padH * 2f) * 0.44f, 180f * d);
+            float slant = gaugeH * 1.15f;
+
+            trackPath.reset();
+            trackPath.moveTo(gaugeLeft, gaugeTop);
+            trackPath.lineTo(gaugeLeft + gaugeTrackW, gaugeTop);
+            trackPath.lineTo(gaugeLeft + gaugeTrackW - slant, gaugeBottom);
+            trackPath.lineTo(gaugeLeft, gaugeBottom);
+            trackPath.close();
+
+            float gaugeFillW = gaugeTrackW * 0.72f;
+            fillPath.reset();
+            fillPath.moveTo(gaugeLeft, gaugeTop);
+            fillPath.lineTo(gaugeLeft + gaugeFillW, gaugeTop);
+            fillPath.lineTo(gaugeLeft + gaugeFillW - slant, gaugeBottom);
+            fillPath.lineTo(gaugeLeft, gaugeBottom);
+            fillPath.close();
+
+            gaugeShader = new android.graphics.LinearGradient(
+                    gaugeLeft, gaugeTop, gaugeLeft + gaugeFillW, gaugeTop,
+                    accentColor, getSaoHeaderGaugeEndColor(accentColor, secondaryColor),
+                    android.graphics.Shader.TileMode.CLAMP);
+        }
+
+        @Override
+        public void draw(android.graphics.Canvas canvas) {
+            android.graphics.Rect b = getBounds();
+            if (b.isEmpty()) return;
+
+            paint.setShader(bgShader);
+            paint.setStyle(android.graphics.Paint.Style.FILL);
+            canvas.drawRect(b, paint);
+            paint.setShader(null);
+
+            int hudTop = computeSaoHudTop(topInsetPx, b.height(), d);
+            float padH = 10f * d;
+            float topRuleY = hudTop + 1f * d;
+            float hairlineThick = Math.max(1f, 0.9f * d);
+
+            // Garis pembatas tipis di bawah status bar + aksen blok kiri
+            paint.setColor(withAlpha(getSaoHairlineColor(), 0x73));
+            canvas.drawRect(b.left + padH, topRuleY, b.right - padH, topRuleY + hairlineThick, paint);
+            paint.setColor(withAlpha(accentColor, 0xCC));
+            canvas.drawRect(b.left + padH, topRuleY, b.left + padH + 28f * d, topRuleY + Math.max(1.5f, 1.4f * d), paint);
+
+            // Siku L-bracket kiri-atas & kanan-atas zona HUD
+            float arm = 7f * d;
+            float bw = Math.max(1.4f, 1.3f * d);
+            float bracketTop = hudTop + 3f * d;
+            float lX = b.left + 6f * d;
+            float rX = b.right - 6f * d;
+            paint.setColor(withAlpha(accentColor, 0xD9));
+            canvas.drawRect(lX, bracketTop, lX + arm, bracketTop + bw, paint);
+            canvas.drawRect(lX, bracketTop, lX + bw, bracketTop + arm, paint);
+
+            paint.setColor(withAlpha(accentColor, 0x99));
+            canvas.drawRect(rX - arm, bracketTop, rX, bracketTop + bw, paint);
+            canvas.drawRect(rX - bw, bracketTop, rX, bracketTop + arm, paint);
+
+            // SAO Slanted HP/Sync Gauge Track + Active Gradient Fill
+            paint.setColor(withAlpha(getSaoHairlineColor(), 0x99));
+            canvas.drawPath(trackPath, paint);
+
+            paint.setShader(gaugeShader);
+            canvas.drawPath(fillPath, paint);
+            paint.setShader(null);
+
+            // Sekat segmen HP gauge ala SAO
+            float gaugeH = 3.2f * d;
+            float gaugeBottom = b.bottom - 1.5f * d;
+            float gaugeTop = gaugeBottom - gaugeH;
+            float gaugeLeft = b.left + padH;
+            float gaugeTrackW = Math.min((b.width() - padH * 2f) * 0.44f, 180f * d);
+            paint.setColor(getSaoVoidColor());
+            float notchW = Math.max(1.2f, 1.2f * d);
+            canvas.drawRect(gaugeLeft + gaugeTrackW * 0.24f, gaugeTop, gaugeLeft + gaugeTrackW * 0.24f + notchW, gaugeBottom, paint);
+            canvas.drawRect(gaugeLeft + gaugeTrackW * 0.48f, gaugeTop, gaugeLeft + gaugeTrackW * 0.48f + notchW, gaugeBottom, paint);
+
+            // Garis telemetri kanan + diamond pip
+            float ruleStart = gaugeLeft + gaugeTrackW + 6f * d;
+            float ruleEnd = b.right - padH - 6f * d;
+            float ruleY = gaugeBottom - gaugeH * 0.5f;
+            if (ruleEnd > ruleStart) {
+                paint.setColor(withAlpha(getSaoHairlineColor(), 0xB3));
+                canvas.drawRect(ruleStart, ruleY, ruleEnd, ruleY + hairlineThick, paint);
+            }
+            float pipR = 2.2f * d;
+            float pipCx = b.right - padH - 1.5f * d;
+            paint.setColor(accentColor);
+            canvas.save();
+            canvas.rotate(45f, pipCx, ruleY + hairlineThick * 0.5f);
+            canvas.drawRect(pipCx - pipR, ruleY - pipR, pipCx + pipR, ruleY + pipR, paint);
+            canvas.restore();
+        }
+
+        @Override public void setAlpha(int alpha) { paint.setAlpha(alpha); }
+        @Override public void setColorFilter(android.graphics.ColorFilter cf) { paint.setColorFilter(cf); }
+        @Override @SuppressWarnings("deprecation") public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
     }
 
     public static Drawable createSearchCapsuleDrawable(Context context) {
@@ -1057,7 +1336,8 @@ public class AnimeThemeManager {
         int voidColor = getVoidColor(context);
         float d = density(context);
         boolean sao = isMobileSaoEnabled();
-        int shape = sao ? GradientDrawable.RECTANGLE : GradientDrawable.OVAL;
+        // Hilangkan border kotak di tombol play/pause center ExoPlayer agar tampil bersih di Mobile
+        int shape = (sao && !isCenterPlay) ? GradientDrawable.RECTANGLE : GradientDrawable.OVAL;
         StateListDrawable sld = new StateListDrawable();
 
         GradientDrawable focused = new GradientDrawable();
@@ -1073,9 +1353,9 @@ public class AnimeThemeManager {
 
         GradientDrawable normal = new GradientDrawable();
         normal.setShape(shape);
-        if (isCenterPlay) {
-            normal.setColor(withAlpha(sao ? getSaoSurfaceColor() : voidColor, sao ? 0xCC : 0xB3));
-            normal.setStroke(Math.max(1, (int) d), sao ? accent : withAlpha(accent, 0x40));
+        if (isCenterPlay && !sao) {
+            normal.setColor(withAlpha(voidColor, 0xB3));
+            normal.setStroke(Math.max(1, (int) d), withAlpha(accent, 0x40));
         } else {
             normal.setColor(Color.TRANSPARENT);
         }

@@ -127,4 +127,18 @@ public class AnimeThemeManagerTest {
         assertNotEquals(AnimeThemeManager.getSaoDetailHeroTintColor(sakuraAccent),
                 AnimeThemeManager.getSaoDetailHeroTintColor(ghibliAccent));
     }
+
+    @Test
+    public void testSaoHeaderHudGeometryAndGaugeColors() {
+        assertEquals(0, AnimeThemeManager.computeSaoHudTop(-10, 160, 2f));
+        assertEquals(48, AnimeThemeManager.computeSaoHudTop(48, 160, 2f));
+        // Clamp saat tinggi total hampir habis oleh topInset agar zona HUD minimal 40dp tetap tersisa
+        assertEquals(20, AnimeThemeManager.computeSaoHudTop(90, 100, 2f));
+        assertEquals(0, AnimeThemeManager.computeSaoHudTop(50, 60, 2f));
+
+        int accent = AnimeThemeManager.getPrimaryAccentColorForTheme(AnimeThemeManager.THEME_SHINKAI);
+        int secondary = AnimeThemeManager.getSecondaryAccentColorForTheme(AnimeThemeManager.THEME_SHINKAI);
+        assertEquals(AnimeThemeManager.blendArgb(accent, secondary, 0.45f),
+                AnimeThemeManager.getSaoHeaderGaugeEndColor(accent, secondary));
+    }
 }

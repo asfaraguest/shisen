@@ -2,4 +2,6 @@
 <resources>
     <!-- ID opsional scrim portrait; tidak dipakai pada varian TV lanskap -->
     <item name="view_detail_gradient_scrim" type="id" />
+    <!-- ID opsional emblem header mobile; tidak dipakai pada varian TV -->
+    <item name="iv_header_emblem" type="id" />
 </resources>
