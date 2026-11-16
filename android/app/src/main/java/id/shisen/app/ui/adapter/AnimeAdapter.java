@@ -214,11 +214,12 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (holder.cardHero instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card =
                     (com.google.android.material.card.MaterialCardView) holder.cardHero;
+            card.setCardBackgroundColor(surface);
+            card.setStrokeColor(sao ? id.shisen.app.util.AnimeThemeManager.withAlpha(border, 0x80) : border);
             if (sao) {
-                id.shisen.app.util.AnimeThemeManager.applySao25dCardStyle(card, context, surface, border, accent, 7f);
-            } else {
-                card.setCardBackgroundColor(surface);
-                card.setStrokeColor(border);
+                card.setRadius(0f);
+                card.setCardElevation(0f);
+                card.setStrokeWidth(Math.max(1, Math.round(d)));
             }
         }
         if (sao && holder.viewHeroScrim != null) {
@@ -351,16 +352,15 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (holder.cardAnime instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card =
                     (com.google.android.material.card.MaterialCardView) holder.cardAnime;
-            int surface = id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context);
+            card.setCardBackgroundColor(id.shisen.app.util.AnimeThemeManager.getSurfaceColor(context));
             int border = id.shisen.app.util.AnimeThemeManager.getBorderColor(context);
             if (sao) {
-                int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context);
-                id.shisen.app.util.AnimeThemeManager.applySao25dCardStyle(card, context, surface, border, accent, 5f);
-            } else {
-                card.setCardBackgroundColor(surface);
-                if (!card.isFocused()) {
-                    card.setStrokeColor(border);
-                }
+                card.setRadius(0f);
+                card.setCardElevation(0f);
+                card.setStrokeWidth(Math.max(1, Math.round(d)));
+                card.setStrokeColor(id.shisen.app.util.AnimeThemeManager.withAlpha(border, 0x80));
+            } else if (!card.isFocused()) {
+                card.setStrokeColor(border);
             }
         }
         if (sao && holder.viewPosterScrim != null) {

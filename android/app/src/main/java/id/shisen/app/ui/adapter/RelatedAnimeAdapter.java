@@ -62,13 +62,14 @@ public class RelatedAnimeAdapter extends RecyclerView.Adapter<RelatedAnimeAdapte
         if (holder.itemView instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card =
                     (com.google.android.material.card.MaterialCardView) holder.itemView;
+            card.setCardBackgroundColor(surface);
             if (sao) {
-                id.shisen.app.util.AnimeThemeManager.applySao25dCardStyle(card, context, surface, border, accent, 5f);
-            } else {
-                card.setCardBackgroundColor(surface);
-                if (!card.isFocused()) {
-                    card.setStrokeColor(border);
-                }
+                card.setRadius(0f);
+                card.setCardElevation(0f);
+                card.setStrokeWidth(Math.max(1, Math.round(d)));
+                card.setStrokeColor(id.shisen.app.util.AnimeThemeManager.withAlpha(border, 0x80));
+            } else if (!card.isFocused()) {
+                card.setStrokeColor(border);
             }
         }
         if (sao && holder.viewPosterScrim != null) {
