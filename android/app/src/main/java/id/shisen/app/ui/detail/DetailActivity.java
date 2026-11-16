@@ -315,6 +315,9 @@ public class DetailActivity extends AppCompatActivity {
         if (btnBack != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(
                     btnBack, AnimeThemeManager.createFrostedIconButtonDrawable(this));
+            if (sao) {
+                btnBack.setElevation(3f * d);
+            }
             if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
                 btnBack.setImageTintList(android.content.res.ColorStateList.valueOf(accent));
             }
@@ -323,6 +326,7 @@ public class DetailActivity extends AppCompatActivity {
             btnPlayPrimary.setBackgroundTintList(null);
             if (sao) {
                 btnPlayPrimary.setStateListAnimator(null);
+                btnPlayPrimary.setElevation(4f * d);
                 if (btnPlayPrimary instanceof com.google.android.material.button.MaterialButton) {
                     com.google.android.material.button.MaterialButton playMb =
                             (com.google.android.material.button.MaterialButton) btnPlayPrimary;
@@ -336,6 +340,9 @@ public class DetailActivity extends AppCompatActivity {
             btnPlayPrimary.setTextColor(sao ? 0xFF080C14 : Color.WHITE);
         }
         if (btnBookmark != null) {
+            if (sao) {
+                btnBookmark.setElevation(3f * d);
+            }
             if (anime != null) {
                 updateBookmarkUI();
             } else {
@@ -357,22 +364,20 @@ public class DetailActivity extends AppCompatActivity {
 
         com.google.android.material.card.MaterialCardView cardPoster = findViewById(R.id.card_detail_poster);
         if (cardPoster != null) {
-            cardPoster.setCardBackgroundColor(surface);
-            cardPoster.setStrokeColor(AnimeThemeManager.withAlpha(accent, sao ? 0x80 : 0x99));
             if (sao) {
-                cardPoster.setRadius(0f);
-                cardPoster.setCardElevation(0f);
-                cardPoster.setStrokeWidth(Math.max(1, Math.round(d)));
+                AnimeThemeManager.applySao25dCardStyle(cardPoster, this, surface, border, accent, 8f);
+            } else {
+                cardPoster.setCardBackgroundColor(surface);
+                cardPoster.setStrokeColor(AnimeThemeManager.withAlpha(accent, 0x99));
             }
         }
         com.google.android.material.card.MaterialCardView cardSynopsis = findViewById(R.id.card_detail_synopsis);
         if (cardSynopsis != null) {
-            cardSynopsis.setCardBackgroundColor(surface);
-            cardSynopsis.setStrokeColor(sao ? AnimeThemeManager.withAlpha(border, 0x66) : border);
             if (sao) {
-                cardSynopsis.setRadius(0f);
-                cardSynopsis.setCardElevation(0f);
-                cardSynopsis.setStrokeWidth(Math.max(1, Math.round(d)));
+                AnimeThemeManager.applySao25dCardStyle(cardSynopsis, this, surface, border, accent, 3.5f);
+            } else {
+                cardSynopsis.setCardBackgroundColor(surface);
+                cardSynopsis.setStrokeColor(border);
             }
         }
 
@@ -829,7 +834,22 @@ public class DetailActivity extends AppCompatActivity {
         int surface = AnimeThemeManager.getSurfaceColor(this);
         int border = AnimeThemeManager.getBorderColor(this);
 
-        float tabRadius = AnimeThemeManager.isMobileSaoEnabled() ? 0f : 8 * density;
+        if (AnimeThemeManager.isMobileSaoEnabled()) {
+            int fill = isSelected ? AnimeThemeManager.blendArgb(surface, accent, 0.18f) : AnimeThemeManager.getSaoElevatedColor();
+            int stroke = isSelected ? accent : border;
+            int catchlight = isSelected ? AnimeThemeManager.withAlpha(accent, 0x45) : 0x24FFFFFF;
+            int ledge = isSelected ? AnimeThemeManager.blendArgb(0xFF07090C, accent, 0.12f) : 0xFF080A0E;
+            tab.setTextColor(isSelected ? accent : ContextCompat.getColor(this, R.color.text_frost_subtle));
+            tab.setElevation(2.5f * density);
+            AnimeThemeManager.applyBackgroundPreservingPadding(
+                    tab,
+                    AnimeThemeManager.createSao25dSlabDrawable(
+                            this, fill, stroke, isSelected ? 1.4f : 1f, catchlight, ledge, 1.5f, 2f,
+                            AnimeThemeManager.withAlpha(accent, 0x33)));
+            return;
+        }
+
+        float tabRadius = 8 * density;
         android.graphics.drawable.GradientDrawable focused = new android.graphics.drawable.GradientDrawable();
         focused.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
         focused.setCornerRadius(tabRadius);

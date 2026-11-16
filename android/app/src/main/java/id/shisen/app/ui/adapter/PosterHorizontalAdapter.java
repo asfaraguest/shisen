@@ -56,12 +56,12 @@ public class PosterHorizontalAdapter extends RecyclerView.Adapter<PosterHorizont
         float d = context.getResources().getDisplayMetrics().density;
         if (holder.cardPoster instanceof com.google.android.material.card.MaterialCardView) {
             com.google.android.material.card.MaterialCardView card = (com.google.android.material.card.MaterialCardView) holder.cardPoster;
-            card.setCardBackgroundColor(surface);
-            card.setStrokeColor(sao ? id.shisen.app.util.AnimeThemeManager.withAlpha(border, 0x80) : border);
             if (sao) {
-                card.setRadius(0f);
-                card.setCardElevation(0f);
-                card.setStrokeWidth(Math.max(1, Math.round(d)));
+                id.shisen.app.util.AnimeThemeManager.applySao25dCardStyle(
+                        card, context, surface, border, id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(context), 5f);
+            } else {
+                card.setCardBackgroundColor(surface);
+                card.setStrokeColor(border);
             }
         }
         if (sao && holder.viewPosterScrim != null) {

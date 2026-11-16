@@ -427,17 +427,152 @@ public class AnimeThemeManager {
         int hpGreen = 0xFF22C55E;
 
         int fill = isCurrent ? blendArgb(surface, accent, 0.16f) : surface;
-        int stroke = isCurrent ? accent : withAlpha(hairline, 0xAA);
+        int stroke = isCurrent ? accent : (isWatched ? withAlpha(hpGreen, 0x80) : withAlpha(hairline, 0xAA));
+        int catchlight = isCurrent ? withAlpha(accent, 0x45) : (isWatched ? withAlpha(hpGreen, 0x33) : 0x24FFFFFF);
+        int ledge = isCurrent ? blendArgb(0xFF07090C, accent, 0.12f) : 0xFF080A0E;
+        return createSao25dSlabDrawable(
+                context,
+                fill,
+                stroke,
+                isCurrent ? 1.2f : 0.9f,
+                catchlight,
+                ledge,
+                1.5f,
+                2.5f,
+                withAlpha(accent, 0x30));
+    }
 
-        GradientDrawable base = new GradientDrawable();
-        base.setCornerRadius(r);
-        base.setColor(fill);
-        base.setStroke(Math.max(1, Math.round((isCurrent ? 1.2f : 0.9f) * d)), stroke);
-
-        if (isWatched && !isCurrent) {
-            base.setStroke(Math.max(1, Math.round(1f * d)), withAlpha(hpGreen, 0x80));
+    /** Membungkus foreground kartu (ripple) dengan bevel 2.5D atas-kiri terang & bawah-kanan gelap tanpa mengubah padding. */
+    private static final class Sao25dBevelForegroundDrawable extends LayerDrawable {
+        Sao25dBevelForegroundDrawable(Drawable[] layers) {
+            super(layers);
         }
-        return wrapRipple(base, withAlpha(accent, 0x30), r);
+
+        @Override
+        public boolean getPadding(android.graphics.Rect padding) {
+            if (padding != null) padding.set(0, 0, 0, 0);
+            return false;
+        }
+    }
+
+    /** Menerapkan elevasi 2.5D + bezel foreground pada MaterialCardView dengan mempertahankan sudut tajam 0dp. */
+    public static void applySao25dCardStyle(
+            com.google.android.material.card.MaterialCardView card,
+            Context context,
+            int surface,
+            int border,
+            int accent,
+            float elevationDp) {
+        if (card == null) return;
+        float d = density(context);
+        card.setRadius(0f);
+        card.setCardBackgroundColor(surface);
+        card.setStrokeWidth(Math.max(1, Math.round(d)));
+        card.setStrokeColor(withAlpha(border, 0xA6));
+        card.setCardElevation(elevationDp * d);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            card.setOutlineAmbientShadowColor(0xFF000000);
+            card.setOutlineSpotShadowColor(withAlpha(accent, 0x55));
+        }
+
+        Drawable existing = card.getForeground();
+        if (existing instanceof Sao25dBevelForegroundDrawable) return;
+
+        Drawable bevel = new Drawable() {
+            private final android.graphics.Paint p = new android.graphics.Paint();
+
+            @Override
+            public void draw(android.graphics.Canvas canvas) {
+                android.graphics.Rect b = getBounds();
+                if (b.isEmpty()) return;
+                float topW = Math.max(1f, d);
+                float rightW = Math.max(1.5f, 1.8f * d);
+                float botW = Math.max(2f, 2.5f * d);
+
+                // Catchlight atas & kiri
+                p.setColor(0x24FFFFFF);
+                canvas.drawRect(b.left, b.top, b.right, b.top + topW, p);
+                canvas.drawRect(b.left, b.top + topW, b.left + topW, b.bottom, p);
+
+                // Bevel bayangan kanan & bawah untuk kesan lempeng 2.5D
+                p.setColor(0x4D000000);
+                canvas.drawRect(b.right - rightW, b.top, b.right, b.bottom, p);
+                p.setColor(0x78000000);
+                canvas.drawRect(b.left, b.bottom - botW, b.right, b.bottom, p);
+            }
+
+            @Override public void setAlpha(int alpha) { p.setAlpha(alpha); }
+            @Override public void setColorFilter(android.graphics.ColorFilter cf) { p.setColorFilter(cf); }
+            @Override @SuppressWarnings("deprecation") public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
+        };
+
+        Drawable[] layers = existing != null ? new Drawable[]{bevel, existing} : new Drawable[]{bevel};
+        card.setForeground(new Sao25dBevelForegroundDrawable(layers));
+    }
+
+    /** Membuat pelat 2.5D sudut 0dp dengan ekstrusi bawah-kanan, catchlight atas-kiri, dan animasi tekan state_pressed. */
+    public static Drawable createSao25dSlabDrawable(
+            Context context,
+            int faceFill,
+            int strokeColor,
+            float strokeDp,
+            int topCatchlight,
+            int ledgeColor,
+            float ledgeRightDp,
+            float ledgeBottomDp,
+            int rippleColor) {
+        float d = density(context);
+        int rPx = Math.max(1, Math.round(ledgeRightDp * d));
+        int bPx = Math.max(2, Math.round(ledgeBottomDp * d));
+        int cPx = Math.max(1, Math.round(d));
+
+        Drawable normal = build25dLayer(d, faceFill, strokeColor, strokeDp, topCatchlight, ledgeColor,
+                0, 0, rPx, bPx, cPx);
+        int pLeft = Math.max(1, Math.round(rPx * 0.65f));
+        int pTop = Math.max(1, Math.round(bPx * 0.6f));
+        Drawable pressed = build25dLayer(d, faceFill, strokeColor, strokeDp, topCatchlight, ledgeColor,
+                pLeft, pTop, Math.max(0, rPx - pLeft), Math.max(0, bPx - pTop), cPx);
+
+        StateListDrawable sld = new StateListDrawable();
+        sld.addState(new int[]{android.R.attr.state_pressed}, pressed);
+        sld.addState(new int[]{}, normal);
+        return wrapRipple(sld, rippleColor, 0f);
+    }
+
+    private static Drawable build25dLayer(
+            float d,
+            int faceFill,
+            int strokeColor,
+            float strokeDp,
+            int topCatchlight,
+            int ledgeColor,
+            int insetLeft,
+            int insetTop,
+            int insetRight,
+            int insetBottom,
+            int catchPx) {
+        GradientDrawable baseLedge = new GradientDrawable();
+        baseLedge.setShape(GradientDrawable.RECTANGLE);
+        baseLedge.setCornerRadius(0f);
+        baseLedge.setColor(ledgeColor);
+
+        GradientDrawable face = new GradientDrawable();
+        face.setShape(GradientDrawable.RECTANGLE);
+        face.setCornerRadius(0f);
+        face.setColor(faceFill);
+        if (strokeDp > 0f && strokeColor != Color.TRANSPARENT) {
+            face.setStroke(Math.max(1, Math.round(strokeDp * d)), strokeColor);
+        }
+
+        GradientDrawable catchlight = new GradientDrawable();
+        catchlight.setShape(GradientDrawable.RECTANGLE);
+        catchlight.setCornerRadius(0f);
+        catchlight.setColor(topCatchlight);
+
+        LayerDrawable ld = new LayerDrawable(new Drawable[]{baseLedge, catchlight, face});
+        ld.setLayerInset(1, insetLeft, insetTop, insetRight, insetBottom);
+        ld.setLayerInset(2, insetLeft, insetTop + catchPx, insetRight, insetBottom);
+        return ld;
     }
 
     public static Drawable createChipDrawable(Context context, boolean isSelected) {
@@ -688,19 +823,40 @@ public class AnimeThemeManager {
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
         if (isMobileSaoEnabled()) {
-            float r = 0f;
-            GradientDrawable gd = new GradientDrawable();
-            gd.setCornerRadius(r);
             if (isPrimaryAccent) {
-                gd.setColor(accent);
+                return createSao25dSlabDrawable(
+                        context,
+                        accent,
+                        blendArgb(accent, 0xFFFFFFFF, 0.22f),
+                        1f,
+                        0x4DFFFFFF,
+                        blendArgb(0xFF07090C, accent, 0.28f),
+                        1.8f,
+                        2.8f,
+                        withAlpha(0xFFFFFFFF, 0x38));
             } else if (isActiveState) {
-                gd.setColor(blendArgb(getSaoSurfaceColor(), accent, 0.14f));
-                gd.setStroke(Math.max(1, Math.round(1.2f * d)), accent);
+                return createSao25dSlabDrawable(
+                        context,
+                        blendArgb(getSaoSurfaceColor(), accent, 0.14f),
+                        accent,
+                        1.2f,
+                        withAlpha(accent, 0x45),
+                        blendArgb(0xFF07090C, accent, 0.12f),
+                        1.5f,
+                        2.5f,
+                        withAlpha(accent, 0x38));
             } else {
-                gd.setColor(getSaoElevatedColor());
-                gd.setStroke(Math.max(1, Math.round(1f * d)), getSaoHairlineColor());
+                return createSao25dSlabDrawable(
+                        context,
+                        getSaoElevatedColor(),
+                        getSaoHairlineColor(),
+                        1f,
+                        0x26FFFFFF,
+                        0xFF080A0E,
+                        1.5f,
+                        2.5f,
+                        withAlpha(accent, 0x38));
             }
-            return wrapRipple(gd, withAlpha(accent, 0x38), r);
         }
         int surface = getSurfaceColor(context);
         float radius = 24f * d;
@@ -735,9 +891,16 @@ public class AnimeThemeManager {
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
         if (isMobileSaoEnabled()) {
-            Drawable rect = createPillDrawable(
-                    context, withAlpha(getSaoSurfaceColor(), 0xD9), getSaoHairlineColor(), 1.2f, 0f);
-            return wrapRipple(rect, withAlpha(accent, 0x38), 0f);
+            return createSao25dSlabDrawable(
+                    context,
+                    withAlpha(getSaoSurfaceColor(), 0xE6),
+                    getSaoHairlineColor(),
+                    1.2f,
+                    0x26FFFFFF,
+                    0xFF080A0E,
+                    1.5f,
+                    2.5f,
+                    withAlpha(accent, 0x38));
         }
         int surface = getSurfaceColor(context);
         float radius = 12f * d;
@@ -905,7 +1068,17 @@ public class AnimeThemeManager {
 
     public static Drawable createBadgeFrostDrawable(Context context) {
         if (isMobileSaoEnabled()) {
-            return createPillDrawable(context, withAlpha(getSaoVoidColor(), 0xCC), withAlpha(getSaoHairlineColor(), 0x99), 1f, 0f);
+            return build25dLayer(
+                    density(context),
+                    withAlpha(getSaoVoidColor(), 0xD9),
+                    withAlpha(getSaoHairlineColor(), 0xA6),
+                    1f,
+                    0x24FFFFFF,
+                    0xB306080B,
+                    0, 0,
+                    Math.max(1, Math.round(density(context))),
+                    Math.max(1, Math.round(1.5f * density(context))),
+                    Math.max(1, Math.round(density(context))));
         }
         return createPillDrawable(context, withAlpha(getVoidColor(context), 0xCC), getBorderColor(context), 1f, 6f);
     }

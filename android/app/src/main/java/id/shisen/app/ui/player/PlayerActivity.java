@@ -474,9 +474,11 @@ public class PlayerActivity extends AppCompatActivity {
         }
         if (tvPortraitCurrentEp != null) tvPortraitCurrentEp.setTextColor(accent);
         if (tvPortraitEpCount != null) tvPortraitEpCount.setTextColor(accent);
+        float d = getResources().getDisplayMetrics().density;
         if (btnPortraitBack != null) {
             AnimeThemeManager.applyBackgroundPreservingPadding(
                     btnPortraitBack, AnimeThemeManager.createFrostedIconButtonDrawable(this));
+            if (sao) btnPortraitBack.setElevation(2.5f * d);
         }
 
         Button[] portraitPills = {btnPortraitSub, btnPortraitQuality, btnPortraitSpeed, btnPortraitPip};
@@ -488,6 +490,7 @@ public class PlayerActivity extends AppCompatActivity {
                     mb.setCornerRadius(0);
                     mb.setStrokeWidth(0);
                     mb.setStateListAnimator(null);
+                    mb.setElevation(2.5f * d);
                     AnimeThemeManager.applyBackgroundPreservingPadding(
                             mb, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false));
                 } else {
@@ -506,6 +509,7 @@ public class PlayerActivity extends AppCompatActivity {
                 mb.setCornerRadius(0);
                 mb.setStrokeWidth(0);
                 mb.setStateListAnimator(null);
+                mb.setElevation(2.5f * d);
                 AnimeThemeManager.applyBackgroundPreservingPadding(
                         mb, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false));
             } else {
@@ -520,6 +524,7 @@ public class PlayerActivity extends AppCompatActivity {
                 mb.setCornerRadius(0);
                 mb.setStrokeWidth(0);
                 mb.setStateListAnimator(null);
+                mb.setElevation(3f * d);
                 AnimeThemeManager.applyBackgroundPreservingPadding(
                         mb, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false, true));
             } else {
@@ -533,14 +538,20 @@ public class PlayerActivity extends AppCompatActivity {
         int hudStroke = sao ? AnimeThemeManager.withAlpha(border, 0x99) : AnimeThemeManager.withAlpha(accent, 0x4D);
         int hudFill = AnimeThemeManager.withAlpha(sao ? surface : voidColor, sao ? 0xE6 : 0xCC);
         if (hudHoldSpeed != null) {
+            if (sao) hudHoldSpeed.setElevation(4f * d);
             AnimeThemeManager.applyBackgroundPreservingPadding(hudHoldSpeed,
-                    AnimeThemeManager.createPillDrawable(this, hudFill, hudStroke, 1f, hudRadius));
+                    sao
+                            ? AnimeThemeManager.createSao25dSlabDrawable(this, hudFill, hudStroke, 1f, 0x24FFFFFF, 0xFF080A0E, 1.5f, 2f, 0)
+                            : AnimeThemeManager.createPillDrawable(this, hudFill, hudStroke, 1f, hudRadius));
         }
         if (tvHoldSpeedIcon != null) tvHoldSpeedIcon.setTextColor(accent);
 
         if (hudOsd != null) {
+            if (sao) hudOsd.setElevation(4f * d);
             AnimeThemeManager.applyBackgroundPreservingPadding(hudOsd,
-                    AnimeThemeManager.createPillDrawable(this, hudFill, hudStroke, 1f, hudRadius));
+                    sao
+                            ? AnimeThemeManager.createSao25dSlabDrawable(this, hudFill, hudStroke, 1f, 0x24FFFFFF, 0xFF080A0E, 1.5f, 2f, 0)
+                            : AnimeThemeManager.createPillDrawable(this, hudFill, hudStroke, 1f, hudRadius));
         }
         if (tvOsdIcon != null) tvOsdIcon.setTextColor(accent);
         if (pbOsdBar != null) {
@@ -549,8 +560,11 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         if (layoutSafetyUnlock != null) {
+            if (sao) layoutSafetyUnlock.setElevation(4f * d);
             AnimeThemeManager.applyBackgroundPreservingPadding(layoutSafetyUnlock,
-                    AnimeThemeManager.createPillDrawable(this, hudFill, hudStroke, 1f, hudRadius));
+                    sao
+                            ? AnimeThemeManager.createSao25dSlabDrawable(this, hudFill, hudStroke, 1f, 0x24FFFFFF, 0xFF080A0E, 1.5f, 2f, AnimeThemeManager.withAlpha(accent, 0x30))
+                            : AnimeThemeManager.createPillDrawable(this, hudFill, hudStroke, 1f, hudRadius));
             if (layoutSafetyUnlock instanceof ViewGroup && ((ViewGroup) layoutSafetyUnlock).getChildCount() > 0) {
                 View first = ((ViewGroup) layoutSafetyUnlock).getChildAt(0);
                 if (first instanceof ImageView) ((ImageView) first).setImageTintList(accentTint);
@@ -558,10 +572,12 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         if (layoutBuffering != null) {
+            if (sao) layoutBuffering.setElevation(4f * d);
             AnimeThemeManager.applyBackgroundPreservingPadding(layoutBuffering,
-                    AnimeThemeManager.createPillDrawable(
-                            this, hudFill, AnimeThemeManager.withAlpha(sao ? border : accent, sao ? 0x99 : 0x33),
-                            1f, sao ? 0f : 16f));
+                    sao
+                            ? AnimeThemeManager.createSao25dSlabDrawable(this, hudFill, hudStroke, 1f, 0x24FFFFFF, 0xFF080A0E, 1.5f, 2f, 0)
+                            : AnimeThemeManager.createPillDrawable(
+                                    this, hudFill, AnimeThemeManager.withAlpha(accent, 0x33), 1f, 16f));
         }
         if (pbBuffering != null) pbBuffering.setIndeterminateTintList(accentTint);
         if (tvBufferingText != null) tvBufferingText.setTextColor(accent);
@@ -576,6 +592,7 @@ public class PlayerActivity extends AppCompatActivity {
                 mb.setCornerRadius(0);
                 mb.setStrokeWidth(0);
                 mb.setStateListAnimator(null);
+                mb.setElevation(4f * d);
                 AnimeThemeManager.applyBackgroundPreservingPadding(
                         mb, AnimeThemeManager.createFrostedGlassButtonDrawable(this, false, true));
             } else {
