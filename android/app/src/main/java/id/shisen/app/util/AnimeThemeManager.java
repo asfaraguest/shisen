@@ -440,6 +440,95 @@ public class AnimeThemeManager {
         return wrapRipple(base, withAlpha(accent, 0x30), r);
     }
 
+    /** Menerapkan aksen garis vertikal kiri & siku L-bracket ala System Menu SAO pada MaterialCardView (0dp). */
+    public static void applySaoCardAccentFrame(
+            com.google.android.material.card.MaterialCardView card,
+            Context context,
+            int surface,
+            int border,
+            int accent,
+            boolean isHero) {
+        if (card == null) return;
+        float d = density(context);
+        card.setRadius(0f);
+        card.setCardElevation(0f);
+        card.setCardBackgroundColor(surface);
+        card.setStrokeWidth(Math.max(1, Math.round(d)));
+        card.setStrokeColor(isHero ? withAlpha(accent, 0x59) : withAlpha(border, 0xB8));
+
+        Drawable existing = card.getForeground();
+        if (existing instanceof SaoAccentFrameForegroundDrawable) {
+            ((SaoAccentFrameForegroundDrawable) existing).setAccentColor(accent);
+            card.invalidate();
+            return;
+        }
+        SaoAccentLinesDrawable accentLines = new SaoAccentLinesDrawable(d, accent, isHero);
+        Drawable[] layers = existing != null ? new Drawable[]{accentLines, existing} : new Drawable[]{accentLines};
+        card.setForeground(new SaoAccentFrameForegroundDrawable(layers, accentLines));
+    }
+
+    private static final class SaoAccentFrameForegroundDrawable extends LayerDrawable {
+        private final SaoAccentLinesDrawable linesDrawable;
+
+        SaoAccentFrameForegroundDrawable(Drawable[] layers, SaoAccentLinesDrawable linesDrawable) {
+            super(layers);
+            this.linesDrawable = linesDrawable;
+        }
+
+        void setAccentColor(int accent) {
+            linesDrawable.setAccentColor(accent);
+        }
+
+        @Override
+        public boolean getPadding(android.graphics.Rect padding) {
+            if (padding != null) padding.set(0, 0, 0, 0);
+            return false;
+        }
+    }
+
+    private static final class SaoAccentLinesDrawable extends Drawable {
+        private final float d;
+        private final boolean isHero;
+        private int accent;
+        private final android.graphics.Paint paint = new android.graphics.Paint();
+
+        SaoAccentLinesDrawable(float density, int accent, boolean isHero) {
+            this.d = Math.max(1f, density);
+            this.accent = accent;
+            this.isHero = isHero;
+        }
+
+        void setAccentColor(int accent) {
+            this.accent = accent;
+        }
+
+        @Override
+        public void draw(android.graphics.Canvas canvas) {
+            android.graphics.Rect b = getBounds();
+            if (b.isEmpty()) return;
+
+            float railW = Math.max(2f, (isHero ? 2.5f : 2f) * d);
+            float armLen = (isHero ? 12f : 7f) * d;
+            float bracketW = Math.max(1.5f, (isHero ? 1.8f : 1.4f) * d);
+
+            // Garis aksen vertikal kiri khas System Menu SAO
+            paint.setColor(withAlpha(accent, isHero ? 0xF2 : 0xD9));
+            canvas.drawRect(b.left, b.top, b.left + railW, b.bottom, paint);
+
+            // Siku corner bracket L kiri-atas & kanan-bawah
+            paint.setColor(withAlpha(accent, isHero ? 0xFF : 0xE6));
+            canvas.drawRect(b.left, b.top, b.left + armLen, b.top + bracketW, paint);
+            canvas.drawRect(b.left, b.top, b.left + bracketW, b.top + armLen, paint);
+
+            canvas.drawRect(b.right - armLen, b.bottom - bracketW, b.right, b.bottom, paint);
+            canvas.drawRect(b.right - bracketW, b.bottom - armLen, b.right, b.bottom, paint);
+        }
+
+        @Override public void setAlpha(int alpha) { paint.setAlpha(alpha); }
+        @Override public void setColorFilter(android.graphics.ColorFilter cf) { paint.setColorFilter(cf); }
+        @Override @SuppressWarnings("deprecation") public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
+    }
+
     public static Drawable createChipDrawable(Context context, boolean isSelected) {
         float d = density(context);
         int accent = getPrimaryAccentColor(context);
