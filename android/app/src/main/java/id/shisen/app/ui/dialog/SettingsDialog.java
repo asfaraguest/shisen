@@ -3,6 +3,8 @@ package id.shisen.app.ui.dialog;
 import android.app.Activity;
 import androidx.appcompat.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -592,9 +594,24 @@ public class SettingsDialog {
             });
         }
 
+        Button btnTrakteer = root.findViewById(R.id.btn_settings_trakteer);
+        if (btnTrakteer != null) {
+            btnTrakteer.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://trakteer.id/bagus_azizul"));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    activity.startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(activity, "Gagal membuka browser", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
         if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
             if (btnCheckUpdate != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnCheckUpdate, 1.04f);
             if (btnClearCache != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnClearCache, 1.04f);
+            if (btnTrakteer != null) id.shisen.app.util.TvFocusHelper.attachFocusScale(btnTrakteer, 1.04f);
         }
     }
 }

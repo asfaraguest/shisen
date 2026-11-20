@@ -2,6 +2,19 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.1] - 2026-11-20
+
+### Ditingkatkan
+- **Glass Premium Shisen-TV UI (`dimens.xml`, `activity_main.xml`, `activity_detail.xml`, drawables)**:
+  - Perombakan antarmuka visual edisi Android TV dengan estetika Frosted Glassmorphism berbasis hardware-accelerated vectors & gradient shapes tanpa runtime blur yang membebani GPU TV.
+  - Floating Glass Side Rail dengan glass capsules, active tab accent illumination, dan transisi halus.
+  - Top Shelf Glass Bar dengan badge frosted glass, tombol paginasi kaca taktil, dan container pencarian yang terintegrasi.
+  - Two-Panel Cinematic Detail Screen dengan floating glass poster, luminous glass seam divider, dan kartu sinopsis transparan.
+- **Luminous D-Pad Focus Engine (`TvFocusHelper.java`, `DeviceNav.java`)**:
+  - Elevasi 3D dinamis 18dp, luminous accent border 3dp, dan skala zoom 1.06x dengan DecelerateInterpolator untuk navigasi remote D-Pad yang responsif dan bebas hambatan.
+- **Dukungan Trakteer di Pengaturan (`SettingsDialog.java`, `dialog_settings.xml`)**:
+  - Menambahkan tombol donasi "☕ Dukung Pengembang di Trakteer" di dalam dialog Pengaturan untuk varian Mobile dan Android TV (terintegrasi dengan fokus remote TV).
+
 ## [1.1.1-beta.6] - 2026-11-17
 
 ### Ditingkatkan
