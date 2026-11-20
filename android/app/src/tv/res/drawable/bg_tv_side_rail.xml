@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Frosted Glass Gradient Body -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#E60A0D18" />
+            <gradient
+                android:type="linear"
+                android:angle="270"
+                android:startColor="#E60F172B"
+                android:centerColor="#EA0A0E1A"
+                android:endColor="#F0060810" />
         </shape>
     </item>
-    <!-- 1dp Right Border Line -->
+    <!-- 1dp Luminous Frosted Glass Right Border -->
     <item
         android:left="-2dp"
         android:top="-2dp"
@@ -13,7 +19,7 @@
         <shape android:shape="rectangle">
             <stroke
                 android:width="1dp"
-                android:color="#233252" />
+                android:color="#283D64" />
         </shape>
     </item>
 </layer-list>

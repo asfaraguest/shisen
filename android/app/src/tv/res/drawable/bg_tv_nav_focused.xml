@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Focused & Selected -->
+    <!-- Focused & Selected: Peak luminous state on active page -->
     <item android:state_focused="true" android:state_selected="true">
         <shape android:shape="rectangle">
-            <solid android:color="#4D38BDF8" />
+            <solid android:color="#5938BDF8" />
             <stroke android:width="2.5dp" android:color="#FFFFFF" />
             <corners android:radius="12dp" />
         </shape>
     </item>
 
-    <!-- Focused only -->
+    <!-- Focused only: Radiant glass halo for remote navigation -->
     <item android:state_focused="true">
         <shape android:shape="rectangle">
-            <solid android:color="#3338BDF8" />
+            <solid android:color="#3D38BDF8" />
             <stroke android:width="2.5dp" android:color="#38BDF8" />
             <corners android:radius="12dp" />
         </shape>
     </item>
 
-    <!-- Selected only (Active page) -->
+    <!-- Selected only: Ambient glass pill for current tab -->
     <item android:state_selected="true">
         <shape android:shape="rectangle">
             <solid android:color="#2438BDF8" />
-            <stroke android:width="1.5dp" android:color="#38BDF8" />
+            <stroke android:width="1.2dp" android:color="#38BDF8" />
             <corners android:radius="12dp" />
         </shape>
     </item>
 
-    <!-- Pressed -->
+    <!-- Pressed: Tactile tap feedback -->
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
-            <solid android:color="#4038BDF8" />
+            <solid android:color="#4838BDF8" />
+            <stroke android:width="1.5dp" android:color="#38BDF8" />
             <corners android:radius="12dp" />
         </shape>
     </item>

@@ -357,14 +357,14 @@
             </LinearLayout>
         </ScrollView>
 
-        <!-- Subtle Divider before Settings -->
+        <!-- Subtle Frosted Divider before Settings -->
         <View
             android:id="@+id/rail_divider_settings"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginVertical="6dp"
-            android:layout_marginHorizontal="4dp"
-            android:background="#233252"
+            android:layout_marginHorizontal="6dp"
+            android:background="#1C2942"
             android:focusable="false" />
 
         <!-- 8. Pengaturan Terpadu (Settings) -->
@@ -432,12 +432,12 @@
                     android:layout_height="wrap_content"
                     android:text="@string/badge_this_season"
                     android:textColor="@color/text_frost_bright"
-                    android:background="@drawable/bg_badge_frost"
-                    android:textSize="11sp"
+                    android:background="@drawable/bg_tv_glass_badge"
+                    android:textSize="11.5sp"
                     android:fontFamily="sans-serif-bold"
-                    android:letterSpacing="0.06"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp" />
+                    android:letterSpacing="0.08"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="5dp" />
 
                 <!-- Loading Spinner -->
                 <ProgressBar
@@ -516,9 +516,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginHorizontal="6dp"
-                        android:background="@drawable/bg_badge_frost"
+                        android:background="@drawable/bg_tv_glass_badge"
                         android:gravity="center"
-                        android:paddingHorizontal="12dp"
+                        android:paddingHorizontal="14dp"
                         android:text=""
                         android:textColor="@color/accent_glacial"
                         android:textSize="11.5sp"

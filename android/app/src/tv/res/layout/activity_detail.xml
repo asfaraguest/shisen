@@ -94,8 +94,8 @@
                         android:id="@+id/card_detail_poster"
                         android:layout_width="120dp"
                         android:layout_height="174dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="8dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="12dp"
                         app:cardBackgroundColor="@color/frost_surface"
                         app:strokeColor="@color/frost_border"
                         app:strokeWidth="1.5dp"
@@ -223,7 +223,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
                     app:cardBackgroundColor="@color/frost_surface"
                     app:strokeColor="@color/frost_border"
@@ -278,11 +278,11 @@
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
-        <!-- Divider Line between Info and Episodes -->
+        <!-- Luminous Frosted Glass Seam between Info and Episodes -->
         <View
-            android:layout_width="1dp"
+            android:layout_width="1.5dp"
             android:layout_height="match_parent"
-            android:background="#1A2D48"
+            android:background="@drawable/bg_tv_glass_divider"
             android:focusable="false" />
 
         <!-- ================= PANEL KANAN: EPISODES & RELATED CONTENT (FLEX) ================= -->

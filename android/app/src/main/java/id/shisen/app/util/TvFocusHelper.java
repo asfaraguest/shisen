@@ -63,7 +63,7 @@ public final class TvFocusHelper {
 
         card.setOnFocusChangeListener((v, hasFocus) -> {
             float targetScale = hasFocus ? focusedScale : 1.0f;
-            float targetZ = hasFocus ? 16f : 0f;
+            float targetZ = hasFocus ? 18f : 0f;
 
             card.animate()
                     .scaleX(targetScale)
@@ -77,7 +77,7 @@ public final class TvFocusHelper {
             int focusedStrokeColor = AnimeThemeManager.getPrimaryAccentColor(card.getContext());
             int surfaceColor = AnimeThemeManager.getSurfaceColor(card.getContext());
             ColorStateList focusedBgColor = ColorStateList.valueOf(
-                    AnimeThemeManager.withAlpha(focusedStrokeColor, 0x22) == 0 ? surfaceColor :
+                    AnimeThemeManager.withAlpha(focusedStrokeColor, 0x26) == 0 ? surfaceColor :
                             blendOverlay(surfaceColor, focusedStrokeColor)
             );
 

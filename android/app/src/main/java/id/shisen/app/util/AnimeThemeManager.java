@@ -1369,27 +1369,48 @@ public class AnimeThemeManager {
         float r = (isNavRail ? 12f : 10f) * d;
         StateListDrawable sld = new StateListDrawable();
 
+        // 1. Pressed State
         GradientDrawable pressed = new GradientDrawable();
-        pressed.setColor(withAlpha(accent, 0x40));
+        pressed.setColor(withAlpha(accent, 0x4D));
+        pressed.setStroke(Math.max(1, (int) (1.5f * d)), accent);
         pressed.setCornerRadius(r);
         sld.addState(new int[]{android.R.attr.state_pressed}, pressed);
 
+        // 2. Focused & Selected (Peak Luminous Glass State for Rail)
+        if (isNavRail) {
+            GradientDrawable focusedSelected = new GradientDrawable();
+            focusedSelected.setColor(withAlpha(accent, 0x55));
+            focusedSelected.setStroke(Math.max(2, (int) (2.5f * d)), Color.WHITE);
+            focusedSelected.setCornerRadius(r);
+            sld.addState(new int[]{android.R.attr.state_focused, android.R.attr.state_selected}, focusedSelected);
+        }
+
+        // 3. Focused Only (Radiant Halo)
         GradientDrawable focused = new GradientDrawable();
-        focused.setColor(withAlpha(accent, 0x33));
-        focused.setStroke(Math.max(2, (int) ((isNavRail ? 2.5f : 2f) * d)), accent);
+        focused.setColor(withAlpha(accent, 0x38));
+        focused.setStroke(Math.max(2, (int) ((isNavRail ? 2.5f : 2.2f) * d)), accent);
         focused.setCornerRadius(r);
         sld.addState(new int[]{android.R.attr.state_focused}, focused);
 
+        // 4. Selected Only (Active Tab in Rail)
         if (isNavRail) {
             GradientDrawable selected = new GradientDrawable();
             selected.setColor(withAlpha(accent, 0x24));
-            selected.setStroke(Math.max(1, (int) (1.5f * d)), accent);
+            selected.setStroke(Math.max(1, (int) (1.2f * d)), accent);
             selected.setCornerRadius(r);
             sld.addState(new int[]{android.R.attr.state_selected}, selected);
         }
 
+        // 5. Idle / Normal State
         GradientDrawable normal = new GradientDrawable();
-        normal.setColor(Color.TRANSPARENT);
+        if (isNavRail) {
+            normal.setColor(Color.TRANSPARENT);
+        } else {
+            // Frosted translucent glass pill for TV buttons
+            normal.setColor(0x1F152238);
+            normal.setStroke(Math.max(1, (int) (1f * d)), 0x283E63);
+        }
+        normal.setCornerRadius(r);
         sld.addState(new int[]{}, normal);
         return sld;
     }

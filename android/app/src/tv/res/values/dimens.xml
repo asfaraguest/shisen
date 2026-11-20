@@ -12,6 +12,14 @@
     <dimen name="hero_corner_radius">14dp</dimen>
     <dimen name="hero_banner_height">200dp</dimen>
 
+    <!-- TV Glassmorphism Tokens -->
+    <dimen name="tv_glass_corner_radius">14dp</dimen>
+    <dimen name="tv_glass_button_corner_radius">10dp</dimen>
+    <dimen name="tv_glass_pill_corner_radius">16dp</dimen>
+    <dimen name="tv_glass_badge_padding_h">10dp</dimen>
+    <dimen name="tv_glass_badge_padding_v">4dp</dimen>
+    <dimen name="tv_card_focus_elevation">16dp</dimen>
+
     <!-- TV Card spacing tokens -->
     <dimen name="card_badge_margin">6dp</dimen>
     <dimen name="card_badge_padding_h">8dp</dimen>

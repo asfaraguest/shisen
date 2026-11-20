@@ -265,7 +265,8 @@ public final class DeviceNav {
         };
 
         int activeColor = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
-        int inactiveColor = ContextCompat.getColor(host, R.color.text_frost_bright);
+        int inactiveTextColor = ContextCompat.getColor(host, R.color.text_frost_bright);
+        int inactiveIconColor = ContextCompat.getColor(host, R.color.text_frost_subtle);
 
         for (int i = 0; i < items.length; i++) {
             if (items[i] == null || titles[i] == null) continue;
@@ -274,8 +275,8 @@ public final class DeviceNav {
                     items[i],
                     id.shisen.app.util.AnimeThemeManager.createTvFocusDrawable(host, true));
             items[i].setSelected(isActive);
-            tintRailIcon(items[i], activeColor);
-            titles[i].setTextColor(isActive ? activeColor : inactiveColor);
+            tintRailIcon(items[i], isActive ? activeColor : inactiveIconColor);
+            titles[i].setTextColor(isActive ? activeColor : inactiveTextColor);
             titles[i].setTypeface(null, isActive ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
         }
     }
@@ -306,7 +307,7 @@ public final class DeviceNav {
         return false;
     }
 
-    private View getActiveRailItem() {
+    public View getActiveRailItem() {
         if (host == null) return null;
         MainActivity.MainTab tab = host.getCurrentTab();
         if (tab == null) return host.menuItemMusim;
