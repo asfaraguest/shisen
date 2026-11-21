@@ -66,6 +66,9 @@ public class SettingsViewController {
     private LinearLayout layoutAiChips;
     private EditText etAiKey;
     private EditText etAiModel;
+    private View btnTogglePromptBox;
+    private TextView tvTogglePromptIcon;
+    private View containerPromptFoldable;
     private EditText etAiPrompt;
     private TextView btnResetPrompt;
     private TextView btnAiClear;
@@ -110,6 +113,9 @@ public class SettingsViewController {
         layoutAiChips = root.findViewById(R.id.layout_settings_ai_chips);
         etAiKey = root.findViewById(R.id.et_settings_ai_key);
         etAiModel = root.findViewById(R.id.et_settings_ai_model);
+        btnTogglePromptBox = root.findViewById(R.id.btn_toggle_prompt_box);
+        tvTogglePromptIcon = root.findViewById(R.id.tv_toggle_prompt_icon);
+        containerPromptFoldable = root.findViewById(R.id.container_prompt_foldable);
         etAiPrompt = root.findViewById(R.id.et_settings_ai_prompt);
         btnResetPrompt = root.findViewById(R.id.btn_settings_ai_reset_prompt);
         btnAiClear = root.findViewById(R.id.btn_settings_ai_clear);
@@ -465,6 +471,13 @@ public class SettingsViewController {
             }
         });
 
+        if (btnTogglePromptBox != null) {
+            btnTogglePromptBox.setOnClickListener(v -> {
+                HapticHelper.performClick(v);
+                togglePromptBox();
+            });
+        }
+
         if (btnResetPrompt != null) {
             btnResetPrompt.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
@@ -496,6 +509,23 @@ public class SettingsViewController {
 
                 Toast.makeText(host, host.getString(R.string.settings_toast_ai_cleared), Toast.LENGTH_SHORT).show();
             });
+        }
+    }
+
+    private void togglePromptBox() {
+        if (containerPromptFoldable == null) return;
+        boolean expand = containerPromptFoldable.getVisibility() != View.VISIBLE;
+        if (expand) {
+            containerPromptFoldable.setVisibility(View.VISIBLE);
+            containerPromptFoldable.setAlpha(0f);
+            containerPromptFoldable.animate().alpha(1f).setDuration(200).start();
+            if (tvTogglePromptIcon != null) tvTogglePromptIcon.setText("▲");
+            if (etAiPrompt != null) etAiPrompt.requestFocus();
+        } else {
+            containerPromptFoldable.animate().alpha(0f).setDuration(150).withEndAction(() -> {
+                containerPromptFoldable.setVisibility(View.GONE);
+            }).start();
+            if (tvTogglePromptIcon != null) tvTogglePromptIcon.setText("▼");
         }
     }
 
@@ -572,13 +602,15 @@ public class SettingsViewController {
         if (!PlayerKeys.isTv()) return;
 
         View[] focusables = {
+                btnTrakteer,
                 cardSettingTheme,
                 btnLangId, btnLangEn, btnLangJa, btnLangEs,
                 cardSettingDefaultSub,
                 switchSafeMode,
-                etAiKey, etAiModel, etAiPrompt,
-                btnResetPrompt, btnAiClear, btnAiSave,
-                btnTrakteer, btnCheckUpdate, btnClearCache
+                etAiKey, etAiModel,
+                btnTogglePromptBox, etAiPrompt, btnResetPrompt,
+                btnAiClear, btnAiSave,
+                btnCheckUpdate, btnClearCache
         };
 
         for (View item : focusables) {
@@ -600,13 +632,14 @@ public class SettingsViewController {
 
         // Pasang listener kembali ke rail hanya pada view yang berada di sisi paling kiri
         View[] leftEdgeItems = {
+                btnTrakteer,
                 cardSettingTheme,
                 btnLangId,
                 cardSettingDefaultSub,
                 switchSafeMode,
-                etAiKey, etAiModel, etAiPrompt,
-                btnResetPrompt,
-                btnTrakteer, btnCheckUpdate, btnClearCache
+                etAiKey, etAiModel,
+                btnTogglePromptBox, etAiPrompt, btnResetPrompt,
+                btnCheckUpdate, btnClearCache
         };
 
         for (View item : leftEdgeItems) {
@@ -687,12 +720,15 @@ public class SettingsViewController {
         if (switchSafeMode != null) switchSafeMode.setThumbTintList(accentTint);
         if (switchHaptic != null) switchHaptic.setThumbTintList(accentTint);
         if (etAiModel != null) etAiModel.setTextColor(accent);
+        if (tvTogglePromptIcon != null) tvTogglePromptIcon.setTextColor(accent);
         if (btnResetPrompt != null) btnResetPrompt.setTextColor(accent);
         if (btnAiSave != null) btnAiSave.setTextColor(Color.parseColor("#080C14"));
     }
 
     public void focusFirstItem() {
-        if (cardSettingTheme != null) {
+        if (btnTrakteer != null) {
+            btnTrakteer.requestFocus();
+        } else if (cardSettingTheme != null) {
             cardSettingTheme.requestFocus();
         }
     }

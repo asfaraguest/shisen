@@ -17,6 +17,61 @@
         android:paddingHorizontal="16dp"
         android:paddingTop="12dp">
 
+        <!-- ================= TOP HERO: DUKUNGAN TRAKTEER ================= -->
+        <LinearLayout
+            android:id="@+id/btn_settings_trakteer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/bg_chip_frost_inactive"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="12dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☕"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_support_trakteer"
+                    android:textColor="#FF6B6B"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/settings_support_trakteer_desc"
+                    android:textColor="@color/text_frost_subtle"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="›"
+                android:textColor="#FF6B6B"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-bold" />
+        </LinearLayout>
+
         <!-- ================= SECTION 1: TEMA TAMPILAN ================= -->
         <LinearLayout
             android:id="@+id/container_section_theme"
@@ -449,43 +504,67 @@
                 android:paddingHorizontal="12dp"
                 android:singleLine="true" />
 
-            <!-- Prompt Input -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="@string/settings_ai_prompt_label"
-                android:textColor="@color/text_frost_subtle"
-                android:textSize="11sp"
-                android:fontFamily="sans-serif-bold" />
-
-            <EditText
-                android:id="@+id/et_settings_ai_prompt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="68dp"
-                android:layout_marginTop="4dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="@string/settings_ai_prompt_hint"
-                android:textColorHint="@color/text_frost_dim"
-                android:textColor="@color/text_frost_bright"
-                android:textSize="11.5sp"
-                android:padding="10dp"
-                android:gravity="top|start"
-                android:inputType="textMultiLine" />
-
-            <!-- AI Action Buttons -->
+            <!-- Prompt Foldable Header -->
             <LinearLayout
+                android:id="@+id/btn_toggle_prompt_box"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="12dp"
+                android:paddingVertical="6dp"
                 android:orientation="horizontal"
-                android:gravity="end">
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settings_ai_prompt_label"
+                    android:textColor="@color/text_frost_subtle"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-bold" />
+
+                <TextView
+                    android:id="@+id/tv_toggle_prompt_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="▼"
+                    android:textColor="@color/accent_glacial"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-bold" />
+            </LinearLayout>
+
+            <!-- Foldable Prompt Container (collapsed by default) -->
+            <LinearLayout
+                android:id="@+id/container_prompt_foldable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <EditText
+                    android:id="@+id/et_settings_ai_prompt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="68dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/bg_input_field"
+                    android:hint="@string/settings_ai_prompt_hint"
+                    android:textColorHint="@color/text_frost_dim"
+                    android:textColor="@color/text_frost_bright"
+                    android:textSize="11.5sp"
+                    android:padding="10dp"
+                    android:gravity="top|start"
+                    android:inputType="textMultiLine" />
 
                 <TextView
                     android:id="@+id/btn_settings_ai_reset_prompt"
                     android:layout_width="wrap_content"
-                    android:layout_height="34dp"
+                    android:layout_height="32dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_gravity="end"
                     android:background="?attr/selectableItemBackground"
                     android:gravity="center"
                     android:paddingHorizontal="10dp"
@@ -495,11 +574,15 @@
                     android:fontFamily="sans-serif-medium"
                     android:clickable="true"
                     android:focusable="true" />
+            </LinearLayout>
 
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
-                    android:layout_weight="1" />
+            <!-- AI Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="end">
 
                 <TextView
                     android:id="@+id/btn_settings_ai_clear"
@@ -554,27 +637,12 @@
                 android:fontFamily="sans-serif-bold"
                 android:letterSpacing="0.06" />
 
-            <!-- Trakteer Supporter Button -->
-            <TextView
-                android:id="@+id/btn_settings_trakteer"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_chip_frost_inactive"
-                android:gravity="center"
-                android:text="@string/settings_support_trakteer"
-                android:textColor="#FF6B6B"
-                android:textSize="12sp"
-                android:fontFamily="sans-serif-bold"
-                android:clickable="true"
-                android:focusable="true" />
-
             <!-- Cek Pembaruan -->
             <TextView
                 android:id="@+id/btn_settings_check_update"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:background="@drawable/bg_chip_frost_inactive"
                 android:gravity="center"
                 android:text="@string/settings_check_update"
