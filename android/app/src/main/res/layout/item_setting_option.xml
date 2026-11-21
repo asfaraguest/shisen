@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_option_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_chip_frost_inactive"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="12dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <View
+        android:id="@+id/view_option_swatch"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:background="@color/accent_glacial" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_option_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_frost_bright"
+            android:textSize="13sp"
+            android:fontFamily="sans-serif-bold" />
+
+        <TextView
+            android:id="@+id/tv_option_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/text_frost_subtle"
+            android:textSize="11sp"
+            android:fontFamily="sans-serif" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_option_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="✓"
+        android:textColor="@color/accent_glacial"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif-bold"
+        android:visibility="gone" />
+</LinearLayout>

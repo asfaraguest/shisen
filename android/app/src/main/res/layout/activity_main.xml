@@ -303,6 +303,15 @@
                 </LinearLayout>
             </FrameLayout>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!-- DEDICATED SETTINGS VIEW CONTAINER -->
+        <include
+            android:id="@+id/scroll_settings_view"
+            layout="@layout/layout_settings_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- FULLSCREEN BACKDROP SCRIM FOR FOLDED FLOATING MENU -->

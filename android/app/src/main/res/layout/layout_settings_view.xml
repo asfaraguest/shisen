@@ -1,0 +1,628 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scroll_settings_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbars="none"
+    android:overScrollMode="never"
+    android:clipToPadding="false"
+    android:paddingBottom="96dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp">
+
+        <!-- ================= SECTION 1: TEMA TAMPILAN ================= -->
+        <LinearLayout
+            android:id="@+id/container_section_theme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/settings_section_theme"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.06" />
+
+            <!-- Theme Option Row (Option Selector, Not Radio Buttons) -->
+            <LinearLayout
+                android:id="@+id/card_setting_theme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_chip_frost_inactive"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="14dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <View
+                    android:id="@+id/swatch_current_theme"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:background="@color/accent_glacial" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_setting_theme_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_theme_option_title"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="13.5sp"
+                        android:fontFamily="sans-serif-bold" />
+
+                    <TextView
+                        android:id="@+id/tv_current_theme_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/settings_theme_shinkai_title"
+                        android:textColor="@color/text_frost_subtle"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="›"
+                    android:textColor="@color/text_frost_dim"
+                    android:textSize="18sp"
+                    android:fontFamily="sans-serif-bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/frost_border" />
+
+        <!-- ================= SECTION 2: BAHASA & SUBTITLE ================= -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_section_lang"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.06" />
+
+            <!-- App Language Selector Chips -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                android:weightSum="4">
+
+                <TextView
+                    android:id="@+id/btn_lang_id"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_chip_selected"
+                    android:gravity="center"
+                    android:text="@string/settings_lang_in"
+                    android:textColor="#080C14"
+                    android:textSize="11.5sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/btn_lang_en"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_chip_frost_inactive"
+                    android:gravity="center"
+                    android:text="@string/settings_lang_en"
+                    android:textColor="@color/text_frost_bright"
+                    android:textSize="11.5sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/btn_lang_ja"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_chip_frost_inactive"
+                    android:gravity="center"
+                    android:text="@string/settings_lang_ja"
+                    android:textColor="@color/text_frost_bright"
+                    android:textSize="11.5sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/btn_lang_es"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_chip_frost_inactive"
+                    android:gravity="center"
+                    android:text="@string/settings_lang_es"
+                    android:textColor="@color/text_frost_bright"
+                    android:textSize="11.5sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/settings_section_subtitle"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.06" />
+
+            <!-- Default Subtitle Language Option Card -->
+            <LinearLayout
+                android:id="@+id/card_setting_default_sub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_chip_frost_inactive"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="14dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💬"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_default_sub_lang_title"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="13.5sp"
+                        android:fontFamily="sans-serif-bold" />
+
+                    <TextView
+                        android:id="@+id/tv_current_default_sub_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/settings_sub_lang_id"
+                        android:textColor="@color/text_frost_subtle"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="›"
+                    android:textColor="@color/text_frost_dim"
+                    android:textSize="18sp"
+                    android:fontFamily="sans-serif-bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/frost_border" />
+
+        <!-- ================= SECTION 3: KEAMANAN & HAPTIC ================= -->
+        <LinearLayout
+            android:id="@+id/container_section_safety"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_section_safety"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.06" />
+
+            <!-- Safe Mode Shisen -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_chip_frost_inactive"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="14dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_safemode_title"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="13sp"
+                        android:fontFamily="sans-serif-bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/settings_safemode_desc"
+                        android:textColor="@color/text_frost_subtle"
+                        android:textSize="11sp"
+                        android:fontFamily="sans-serif" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_safe_mode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <!-- Haptic Vibration (Hidden on TV) -->
+            <LinearLayout
+                android:id="@+id/container_setting_haptic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_chip_frost_inactive"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="14dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_haptic_title"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="13sp"
+                        android:fontFamily="sans-serif-bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/settings_haptic_desc"
+                        android:textColor="@color/text_frost_subtle"
+                        android:textSize="11sp"
+                        android:fontFamily="sans-serif" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_haptic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:focusable="true" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/frost_border" />
+
+        <!-- ================= SECTION 4: AI SUBTITLE (BYOK) ================= -->
+        <LinearLayout
+            android:id="@+id/container_section_ai"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_section_ai"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.06" />
+
+            <TextView
+                android:id="@+id/tv_settings_ai_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/settings_ai_badge_none"
+                android:textColor="@color/text_frost_dim"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-medium" />
+
+            <!-- AI Provider Chips -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:scrollbars="none"
+                android:overScrollMode="never">
+
+                <LinearLayout
+                    android:id="@+id/layout_settings_ai_chips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <!-- API Key Input -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/settings_ai_key_label"
+                android:textColor="@color/text_frost_subtle"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold" />
+
+            <EditText
+                android:id="@+id/et_settings_ai_key"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="@string/settings_ai_key_hint"
+                android:textColorHint="@color/text_frost_dim"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="12sp"
+                android:paddingHorizontal="12dp"
+                android:inputType="textPassword"
+                android:singleLine="true" />
+
+            <!-- Model Input -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/settings_ai_model_label"
+                android:textColor="@color/text_frost_subtle"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold" />
+
+            <EditText
+                android:id="@+id/et_settings_ai_model"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="@string/settings_ai_model_hint"
+                android:textColorHint="@color/text_frost_dim"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="12sp"
+                android:paddingHorizontal="12dp"
+                android:singleLine="true" />
+
+            <!-- Prompt Input -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/settings_ai_prompt_label"
+                android:textColor="@color/text_frost_subtle"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold" />
+
+            <EditText
+                android:id="@+id/et_settings_ai_prompt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="68dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="@string/settings_ai_prompt_hint"
+                android:textColorHint="@color/text_frost_dim"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="11.5sp"
+                android:padding="10dp"
+                android:gravity="top|start"
+                android:inputType="textMultiLine" />
+
+            <!-- AI Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <TextView
+                    android:id="@+id/btn_settings_ai_reset_prompt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:paddingHorizontal="10dp"
+                    android:text="@string/action_reset_prompt"
+                    android:textColor="@color/text_frost_dim"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/btn_settings_ai_clear"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_badge_danger"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp"
+                    android:text="@string/action_clear_key"
+                    android:textColor="#EF4444"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/btn_settings_ai_save"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:background="@drawable/bg_chip_selected"
+                    android:gravity="center"
+                    android:paddingHorizontal="14dp"
+                    android:text="@string/action_save_ai"
+                    android:textColor="#080C14"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/frost_border" />
+
+        <!-- ================= SECTION 5: SISTEM & PEMBARUAN ================= -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_section_system"
+                android:textColor="@color/accent_glacial"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"
+                android:letterSpacing="0.06" />
+
+            <!-- Trakteer Supporter Button -->
+            <TextView
+                android:id="@+id/btn_settings_trakteer"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_chip_frost_inactive"
+                android:gravity="center"
+                android:text="@string/settings_support_trakteer"
+                android:textColor="#FF6B6B"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-bold"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- Cek Pembaruan -->
+            <TextView
+                android:id="@+id/btn_settings_check_update"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_chip_frost_inactive"
+                android:gravity="center"
+                android:text="@string/settings_check_update"
+                android:textColor="@color/text_frost_bright"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-bold"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- Bersihkan Cache -->
+            <TextView
+                android:id="@+id/btn_settings_clear_cache"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_chip_frost_inactive"
+                android:gravity="center"
+                android:text="@string/settings_clear_cache"
+                android:textColor="@color/text_frost_dim"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- System Info Telemetry -->
+            <TextView
+                android:id="@+id/tv_settings_system_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_input_field"
+                android:padding="12dp"
+                android:text="@string/settings_system_info"
+                android:textColor="@color/text_frost_dim"
+                android:textSize="10.5sp"
+                android:lineSpacingExtra="3dp"
+                android:fontFamily="monospace" />
+
+            <!-- App Version -->
+            <TextView
+                android:id="@+id/tv_settings_app_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@color/text_frost_dim"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

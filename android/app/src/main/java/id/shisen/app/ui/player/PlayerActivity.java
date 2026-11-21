@@ -110,6 +110,7 @@ import id.shisen.app.data.subtitle.SubtitleMergeEngine;
 import id.shisen.app.data.subtitle.SubtitleParser;
 import id.shisen.app.ui.adapter.EpisodeAdapter;
 import id.shisen.app.ui.dialog.SettingsDialog;
+import id.shisen.app.util.AppSettings;
 import id.shisen.app.util.HapticHelper;
 import id.shisen.app.util.LocaleHelper;
 import id.shisen.app.util.SystemUiHelper;
@@ -1919,9 +1920,7 @@ public class PlayerActivity extends AppCompatActivity {
                         subtitleHandler.removeCallbacks(pendingSubLoadRunnable);
                     }
                     pendingSubLoadRunnable = () -> {
-                        if (isActivityRunning && subtitleManager != null && subtitleManager.isSubEnabled()) {
-                            subtitleManager.loadFromTracks(source.subtitles, getSafeAnimeTitle(), ep.number, false);
-                        }
+                        loadDefaultSubtitle(source.subtitles, getSafeAnimeTitle(), ep.number);
                     };
                     subtitleHandler.postDelayed(pendingSubLoadRunnable, 400);
                 });
@@ -1940,6 +1939,28 @@ public class PlayerActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    private void loadDefaultSubtitle(List<SubtitleTrack> subtitles, String title, int episodeNumber) {
+        if (!isActivityRunning || subtitleManager == null) return;
+        String defaultLang = AppSettings.getDefaultSubtitleLang(this);
+        if (AppSettings.SUB_LANG_OFF.equals(defaultLang)) {
+            subtitleManager.setSubEnabled(false);
+            return;
+        }
+
+        subtitleManager.setSubEnabled(true);
+        if (AppSettings.SUB_LANG_EN.equals(defaultLang) && subtitles != null) {
+            SubtitleTrack enTrack = SubtitleTrack.findEnglishTrack(subtitles);
+            if (enTrack != null) {
+                subtitleManager.setMode("en", "raw");
+                subtitleManager.loadRawTrack(enTrack.url, "English (Original)", "en", enTrack.referer);
+                return;
+            }
+        }
+
+        subtitleManager.setMode("id", "smart_merge");
+        subtitleManager.loadFromTracks(subtitles, title, episodeNumber, false);
     }
 
     private void startExoPlayback(StreamSource source, Episode ep) {

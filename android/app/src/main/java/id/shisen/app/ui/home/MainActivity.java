@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public enum MainTab {
-        MUSIM, AIRING, JADWAL, RIWAYAT, FAVORIT, KATALOG, GENRE
+        MUSIM, AIRING, JADWAL, RIWAYAT, FAVORIT, KATALOG, GENRE, PENGATURAN
     }
 
     // Root Layout & Theme Support
@@ -121,7 +121,11 @@ public class MainActivity extends AppCompatActivity {
 
     // Menu Items in Folded Floating Menu / TV Left Rail
     public View menuItemMusim, menuItemAiring, menuItemJadwal, menuItemRiwayat, menuItemFavorit, menuItemKatalog, menuItemGenre, menuItemSettings;
-    public TextView tvMenuMusim, tvMenuAiring, tvMenuJadwal, tvMenuRiwayat, tvMenuFavorit, tvMenuKatalog, tvMenuGenre;
+    public TextView tvMenuMusim, tvMenuAiring, tvMenuJadwal, tvMenuRiwayat, tvMenuFavorit, tvMenuKatalog, tvMenuGenre, tvMenuSettings;
+
+    // Dedicated Settings View Container & Controller
+    private View scrollSettingsView;
+    private SettingsViewController settingsViewController;
 
     public MainTab getCurrentTab() {
         return currentTab;
@@ -149,6 +153,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public boolean focusFirstGridItem() {
+        if (currentTab == MainTab.PENGATURAN) {
+            if (settingsViewController != null) {
+                settingsViewController.focusFirstItem();
+                return true;
+            }
+            return false;
+        }
         if (rvGrid == null || rvGrid.getVisibility() != View.VISIBLE || rvGrid.getChildCount() <= 0) {
             return false;
         }
@@ -367,7 +378,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void applyCurrentTheme() {
+    /* package */ void applyCurrentTheme() {
         int accent = AnimeThemeManager.getPrimaryAccentColor(this);
         int surface = AnimeThemeManager.getSurfaceColor(this);
         boolean isTv = id.shisen.app.ui.player.PlayerKeys.isTv();
@@ -516,6 +527,9 @@ public class MainActivity extends AppCompatActivity {
         if (gridAdapter != null) {
             gridAdapter.notifyDataSetChanged();
         }
+        if (settingsViewController != null) {
+            settingsViewController.applyTheme();
+        }
     }
 
     private void initViews() {
@@ -572,6 +586,12 @@ public class MainActivity extends AppCompatActivity {
         tvMenuFavorit = findViewById(R.id.tv_menu_favorit);
         tvMenuKatalog = findViewById(R.id.tv_menu_katalog);
         tvMenuGenre = findViewById(R.id.tv_menu_genre);
+        tvMenuSettings = findViewById(R.id.tv_menu_settings);
+
+        scrollSettingsView = findViewById(R.id.scroll_settings_view);
+        if (scrollSettingsView != null) {
+            settingsViewController = new SettingsViewController(this, scrollSettingsView);
+        }
 
         layoutPagination = findViewById(R.id.layout_pagination);
         btnPrevPage = findViewById(R.id.btn_prev_page);
@@ -741,11 +761,7 @@ public class MainActivity extends AppCompatActivity {
         if (menuItemGenre != null) menuItemGenre.setOnClickListener(v -> selectMenuItem(MainTab.GENRE));
 
         if (menuItemSettings != null) {
-            menuItemSettings.setOnClickListener(v -> {
-                HapticHelper.performClick(v);
-                if (deviceNav != null) deviceNav.onTabChanged(currentTab);
-                openSettingsDialog(false);
-            });
+            menuItemSettings.setOnClickListener(v -> selectMenuItem(MainTab.PENGATURAN));
         }
 
         View.OnClickListener checkUpdateClick = v -> {
@@ -984,6 +1000,7 @@ public class MainActivity extends AppCompatActivity {
                 case FAVORIT: badge = getString(R.string.badge_favorites); break;
                 case KATALOG: badge = getString(R.string.badge_catalog); break;
                 case GENRE: badge = getString(R.string.badge_genre); break;
+                case PENGATURAN: badge = getString(R.string.menu_settings); break;
             }
             tvCurrentMenuBadge.setText(badge);
         }
@@ -1786,6 +1803,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadCurrentFeed() {
+        if (currentTab == MainTab.PENGATURAN) {
+            setLoading(false);
+            if (swipeRefresh != null) swipeRefresh.setVisibility(View.GONE);
+            if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+            if (scrollSubFilters != null) scrollSubFilters.setVisibility(View.GONE);
+            if (layoutContextualBar != null) layoutContextualBar.setVisibility(View.GONE);
+            if (scrollSettingsView != null) scrollSettingsView.setVisibility(View.VISIBLE);
+            if (settingsViewController != null) settingsViewController.refreshUI();
+            return;
+        }
+
+        if (scrollSettingsView != null) scrollSettingsView.setVisibility(View.GONE);
+        if (swipeRefresh != null) swipeRefresh.setVisibility(View.VISIBLE);
+
         String searchQuery = etSearch.getText().toString().trim();
         if (!searchQuery.isEmpty()) {
             performSearch(searchQuery, currentPage);
@@ -2306,27 +2337,14 @@ public class MainActivity extends AppCompatActivity {
         return super.dispatchKeyEvent(event);
     }
 
+    public void onSafeModeChanged(boolean isSafeMode) {
+        AniListClient.setSafeModeEnabled(isSafeMode);
+        swipeRefresh.setRefreshing(true);
+        loadCurrentFeed();
+    }
+
     /* package */ void openSettingsDialog(boolean focusTheme) {
-        SettingsDialog.show(this, focusTheme, new SettingsDialog.OnSettingsChangeListener() {
-            @Override
-            public void onThemeChanged() {
-                applyCurrentTheme();
-                if (gridAdapter != null) gridAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onSafeModeChanged(boolean isSafeMode) {
-                AniListClient.setSafeModeEnabled(isSafeMode);
-                // Paksa re-fetch dari API agar perubahan filter isAdult langsung terlihat
-                swipeRefresh.setRefreshing(true);
-                loadCurrentFeed();
-            }
-
-            @Override
-            public void onLanguageChanged() {
-                recreate();
-            }
-        });
+        selectMenuItem(MainTab.PENGATURAN);
     }
 
     @Override

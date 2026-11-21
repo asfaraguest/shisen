@@ -253,15 +253,18 @@ public final class DeviceNav {
         if (host == null) return;
         View[] items = {
                 host.menuItemMusim, host.menuItemAiring, host.menuItemJadwal,
-                host.menuItemRiwayat, host.menuItemFavorit, host.menuItemKatalog, host.menuItemGenre
+                host.menuItemRiwayat, host.menuItemFavorit, host.menuItemKatalog, host.menuItemGenre,
+                host.menuItemSettings
         };
         TextView[] titles = {
                 host.tvMenuMusim, host.tvMenuAiring, host.tvMenuJadwal,
-                host.tvMenuRiwayat, host.tvMenuFavorit, host.tvMenuKatalog, host.tvMenuGenre
+                host.tvMenuRiwayat, host.tvMenuFavorit, host.tvMenuKatalog, host.tvMenuGenre,
+                host.tvMenuSettings
         };
         MainActivity.MainTab[] tabEnums = {
                 MainActivity.MainTab.MUSIM, MainActivity.MainTab.AIRING, MainActivity.MainTab.JADWAL,
-                MainActivity.MainTab.RIWAYAT, MainActivity.MainTab.FAVORIT, MainActivity.MainTab.KATALOG, MainActivity.MainTab.GENRE
+                MainActivity.MainTab.RIWAYAT, MainActivity.MainTab.FAVORIT, MainActivity.MainTab.KATALOG, MainActivity.MainTab.GENRE,
+                MainActivity.MainTab.PENGATURAN
         };
 
         int activeColor = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);

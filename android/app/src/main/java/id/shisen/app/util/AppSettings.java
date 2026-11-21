@@ -17,6 +17,11 @@ public class AppSettings {
     private static final String PREFS_NAME = "menatap_app_settings";
     public static final String KEY_SAFE_MODE = "safe_mode_enabled";
     public static final String KEY_HAPTIC_ENABLED = "haptic_enabled";
+    public static final String KEY_DEFAULT_SUB_LANG = "pref_default_sub_lang";
+
+    public static final String SUB_LANG_ID = "id";
+    public static final String SUB_LANG_EN = "en";
+    public static final String SUB_LANG_OFF = "off";
 
     private static final Set<String> ADULT_TAGS = new HashSet<>(Arrays.asList(
             "ecchi", "erotica", "magical-sex-shift", "sexual-violence", "nudity"
@@ -49,6 +54,18 @@ public class AppSettings {
         SharedPreferences sp = getPrefs(context);
         if (sp != null) {
             sp.edit().putBoolean(KEY_SAFE_MODE, enabled).apply();
+        }
+    }
+
+    public static String getDefaultSubtitleLang(Context context) {
+        SharedPreferences sp = getPrefs(context);
+        return sp != null ? sp.getString(KEY_DEFAULT_SUB_LANG, SUB_LANG_ID) : SUB_LANG_ID;
+    }
+
+    public static void setDefaultSubtitleLang(Context context, String lang) {
+        SharedPreferences sp = getPrefs(context);
+        if (sp != null) {
+            sp.edit().putString(KEY_DEFAULT_SUB_LANG, lang != null ? lang : SUB_LANG_ID).apply();
         }
     }
 

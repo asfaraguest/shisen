@@ -2,6 +2,18 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.2-beta.1] - 2026-11-21
+
+### Ditingkatkan
+- **Dedicated Settings View (`MainActivity.java`, `SettingsViewController.java`, `layout_settings_view.xml`, `DeviceNav.java`)**:
+  - Mengubah antarmuka Pengaturan (Settings) dari modal dialog popup (`AlertDialog`) menjadi tab resmi `MainTab.PENGATURAN` yang terintegrasi penuh di dalam `MainActivity`.
+  - Pada Mobile: Menu folded FAB dock meng-highlight Pengaturan sebagai tab aktif, header badge menampilkan "PENGATURAN", dan tombol Back kembali ke Beranda (Musim Ini).
+  - Pada Android TV: Side rail meng-highlight Pengaturan, `DPAD_RIGHT` masuk ke baris pengaturan di panel kanan, dan `DPAD_LEFT` kembali ke menu sidebar remote TV secara mulus.
+- **Theme Option Selector Picker (`SettingsViewController.java`, `item_setting_option.xml`)**:
+  - Merombak pemilihan tema tampilan dari radio button kaku menjadi kartu baris opsi taktil dengan dialog pemilih bersih (*color swatches + checkmark*), tanpa radio button.
+- **Default Subtitle Language Option (`AppSettings.java`, `PlayerActivity.java`, `SettingsViewController.java`)**:
+  - Menambahkan opsi konfigurasi bahasa subtitle utama (`id` / `en` / `off`) yang otomatis diterapkan oleh pemutar video `PlayerActivity` saat memulai episode.
+
 ## [1.1.1] - 2026-11-20
 
 ### Ditingkatkan
