@@ -75,7 +75,7 @@ public class SettingsViewController {
     private TextView btnAiSave;
 
     // Section 5: Sistem & Pembaruan
-    private TextView btnTrakteer;
+    private View btnTrakteer;
     private TextView btnCheckUpdate;
     private TextView btnClearCache;
     private TextView tvSystemInfo;
