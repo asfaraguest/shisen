@@ -2047,6 +2047,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void performSearch(String query, int page) {
+        if (scrollSettingsView != null) scrollSettingsView.setVisibility(View.GONE);
+        if (swipeRefresh != null) swipeRefresh.setVisibility(View.VISIBLE);
+
         final String cacheKey = "feed_search_" + query.toLowerCase(Locale.US).trim() + "_p" + page
                 + "_safe" + (AppSettings.isSafeMode(this) ? 1 : 0);
         FeedCache.CachePayload cached = FeedCache.getInstance(this).getImmediate(cacheKey);

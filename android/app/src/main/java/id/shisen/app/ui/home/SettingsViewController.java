@@ -234,6 +234,21 @@ public class SettingsViewController {
 
         SystemUiHelper.setupCustomDialogBounds(dialog, host);
         dialog.show();
+
+        if (PlayerKeys.isTv() && container != null && container.getChildCount() > 0) {
+            View toFocus = null;
+            for (int i = 0; i < container.getChildCount(); i++) {
+                View child = container.getChildAt(i);
+                View check = child.findViewById(R.id.tv_option_check);
+                if (check != null && check.getVisibility() == View.VISIBLE) {
+                    toFocus = child;
+                    break;
+                }
+            }
+            if (toFocus == null) toFocus = container.getChildAt(0);
+            final View finalFocus = toFocus;
+            if (finalFocus != null) finalFocus.post(finalFocus::requestFocus);
+        }
     }
 
     // ==========================================
@@ -353,6 +368,21 @@ public class SettingsViewController {
 
         SystemUiHelper.setupCustomDialogBounds(dialog, host);
         dialog.show();
+
+        if (PlayerKeys.isTv() && container != null && container.getChildCount() > 0) {
+            View toFocus = null;
+            for (int i = 0; i < container.getChildCount(); i++) {
+                View child = container.getChildAt(i);
+                View check = child.findViewById(R.id.tv_option_check);
+                if (check != null && check.getVisibility() == View.VISIBLE) {
+                    toFocus = child;
+                    break;
+                }
+            }
+            if (toFocus == null) toFocus = container.getChildAt(0);
+            final View finalFocus = toFocus;
+            if (finalFocus != null) finalFocus.post(finalFocus::requestFocus);
+        }
     }
 
     // ==========================================
@@ -551,6 +581,13 @@ public class SettingsViewController {
                 btnTrakteer, btnCheckUpdate, btnClearCache
         };
 
+        for (View item : focusables) {
+            if (item != null) {
+                item.setFocusable(true);
+                TvFocusHelper.attachFocusScale(item, 1.04f);
+            }
+        }
+
         View.OnKeyListener backToRailListener = (v, keyCode, event) -> {
             if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 if (host != null && host.menuItemSettings != null) {
@@ -561,10 +598,19 @@ public class SettingsViewController {
             return false;
         };
 
-        for (View item : focusables) {
+        // Pasang listener kembali ke rail hanya pada view yang berada di sisi paling kiri
+        View[] leftEdgeItems = {
+                cardSettingTheme,
+                btnLangId,
+                cardSettingDefaultSub,
+                switchSafeMode,
+                etAiKey, etAiModel, etAiPrompt,
+                btnResetPrompt,
+                btnTrakteer, btnCheckUpdate, btnClearCache
+        };
+
+        for (View item : leftEdgeItems) {
             if (item != null) {
-                item.setFocusable(true);
-                TvFocusHelper.attachFocusScale(item, 1.04f);
                 item.setOnKeyListener(backToRailListener);
             }
         }
