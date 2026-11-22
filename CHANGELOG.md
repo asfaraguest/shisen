@@ -2,6 +2,14 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.2-beta.2] - 2026-11-22
+
+### Ditingkatkan
+- **Informasi Jadwal Rilis (`AnimeAdapter.java`, `DetailActivity.java`, `activity_detail.xml`)**:
+  - Menampilkan jadwal rilis episode berikutnya pada anime card Beranda Musim Ini (`Minggu, 23:00 WIB · TV`) dan Hero Banner atas (`Ep 7/12 · Minggu, 23:00 WIB`), menggantikan label musim statis yang berulang.
+  - Menambahkan baris informasi jadwal rilis kontekstual berwarna emas di halaman Detail Anime (`📅 Jadwal Rilis: Ep 8 tayang Minggu, 23:00 WIB`).
+  - Mendukung deteksi waktu cerdas (`Hari Ini, 23:00 WIB` / `Besok, 23:00 WIB`) dan terjemahan otomatis dalam 4 bahasa (Indonesia, English, Japanese, Spanish) dengan konversi waktu Asia/Jakarta (WIB).
+
 ## [1.1.2-beta.1] - 2026-11-21
 
 ### Ditingkatkan
