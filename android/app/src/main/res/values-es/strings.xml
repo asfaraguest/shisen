@@ -474,4 +474,10 @@
     <string name="empty_safemode_title">Modo Seguro Activo</string>
     <string name="empty_safemode_desc">La búsqueda de contenido para adultos está restringida por el Modo Seguro. Puedes ajustarlo en Configuración.</string>
     <string name="error_search_failed">Error en la búsqueda</string>
+
+    <!-- Airing Schedule Info -->
+    <string name="schedule_today_format">Hoy, %1$s</string>
+    <string name="schedule_tomorrow_format">Mañana, %1$s</string>
+    <string name="detail_airing_schedule_format">📅 Horario: Ep %1$d estreno %2$s</string>
+    <string name="detail_airing_schedule_no_ep_format">📅 Horario: Estreno %1$s</string>
 </resources>

@@ -68,6 +68,7 @@ public class DetailActivity extends AppCompatActivity {
     private TextView tvTitle;
     private TextView tvRomaji;
     private TextView tvMeta;
+    private TextView tvSchedule;
     private TextView tvGenres;
     private TextView tvSynopsis;
     private TextView tvSynopsisToggle;
@@ -179,6 +180,7 @@ public class DetailActivity extends AppCompatActivity {
         tvTitle = findViewById(R.id.tv_detail_title);
         tvRomaji = findViewById(R.id.tv_detail_romaji);
         tvMeta = findViewById(R.id.tv_detail_meta);
+        tvSchedule = findViewById(R.id.tv_detail_schedule);
         tvGenres = findViewById(R.id.tv_detail_genres);
         tvSynopsis = findViewById(R.id.tv_detail_synopsis);
         tvSynopsisToggle = findViewById(R.id.tv_synopsis_toggle);
@@ -556,6 +558,24 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         tvMeta.setText(meta.toString());
+
+        if (tvSchedule != null) {
+            if (anime.airingAt > 0L) {
+                String schedStr = AnimeAdapter.formatAiringSchedule(this, anime.airingAt);
+                if (!schedStr.isEmpty()) {
+                    if (anime.nextAiringEpisode > 0) {
+                        tvSchedule.setText(getString(R.string.detail_airing_schedule_format, anime.nextAiringEpisode, schedStr));
+                    } else {
+                        tvSchedule.setText(getString(R.string.detail_airing_schedule_no_ep_format, schedStr));
+                    }
+                    tvSchedule.setVisibility(View.VISIBLE);
+                } else {
+                    tvSchedule.setVisibility(View.GONE);
+                }
+            } else {
+                tvSchedule.setVisibility(View.GONE);
+            }
+        }
 
         if (anime.genres != null && !anime.genres.isEmpty()) {
             StringBuilder gb = new StringBuilder();

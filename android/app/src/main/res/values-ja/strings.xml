@@ -474,4 +474,10 @@
     <string name="empty_safemode_title">セーフモード有効</string>
     <string name="empty_safemode_desc">成人向け検索はセーフモードで制限されています。設定で変更できます。</string>
     <string name="error_search_failed">検索に失敗しました</string>
+
+    <!-- Airing Schedule Info -->
+    <string name="schedule_today_format">本日 %1$s</string>
+    <string name="schedule_tomorrow_format">明日 %1$s</string>
+    <string name="detail_airing_schedule_format">📅 放送予定: 第%1$d話 %2$s</string>
+    <string name="detail_airing_schedule_no_ep_format">📅 放送予定: %1$s</string>
 </resources>

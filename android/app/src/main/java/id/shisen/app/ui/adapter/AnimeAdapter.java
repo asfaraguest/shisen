@@ -13,8 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import id.shisen.app.R;
 import id.shisen.app.data.model.Anime;
@@ -203,6 +205,52 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return season;
     }
 
+    public static String formatAiringSchedule(Context context, long airingAt) {
+        if (airingAt <= 0L) return "";
+        try {
+            long airingMillis = airingAt * 1000L;
+            TimeZone wibZone = TimeZone.getTimeZone("Asia/Jakarta");
+
+            Calendar nowCal = Calendar.getInstance(wibZone);
+            Calendar airCal = Calendar.getInstance(wibZone);
+            airCal.setTimeInMillis(airingMillis);
+
+            boolean isSameDay = nowCal.get(Calendar.YEAR) == airCal.get(Calendar.YEAR) &&
+                    nowCal.get(Calendar.DAY_OF_YEAR) == airCal.get(Calendar.DAY_OF_YEAR);
+
+            boolean isTomorrow = false;
+            Calendar tomorrowCal = (Calendar) nowCal.clone();
+            tomorrowCal.add(Calendar.DAY_OF_YEAR, 1);
+            if (tomorrowCal.get(Calendar.YEAR) == airCal.get(Calendar.YEAR) &&
+                    tomorrowCal.get(Calendar.DAY_OF_YEAR) == airCal.get(Calendar.DAY_OF_YEAR)) {
+                isTomorrow = true;
+            }
+
+            java.text.SimpleDateFormat timeFmt = new java.text.SimpleDateFormat("HH:mm 'WIB'", Locale.US);
+            timeFmt.setTimeZone(wibZone);
+            String timeStr = timeFmt.format(new java.util.Date(airingMillis));
+
+            if (isSameDay) {
+                return context != null ? context.getString(R.string.schedule_today_format, timeStr) : ("Hari Ini, " + timeStr);
+            } else if (isTomorrow) {
+                return context != null ? context.getString(R.string.schedule_tomorrow_format, timeStr) : ("Besok, " + timeStr);
+            } else {
+                Locale userLocale = (context != null)
+                        ? context.getResources().getConfiguration().locale
+                        : Locale.getDefault();
+                java.text.SimpleDateFormat dayFmt = new java.text.SimpleDateFormat("EEEE", userLocale);
+                dayFmt.setTimeZone(wibZone);
+                String dayStr = dayFmt.format(new java.util.Date(airingMillis));
+                if (dayStr != null && !dayStr.isEmpty()) {
+                    dayStr = Character.toUpperCase(dayStr.charAt(0)) + dayStr.substring(1);
+                }
+                return dayStr + ", " + timeStr;
+            }
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
     private void bindHero(HeroViewHolder holder, Anime anime) {
         if (anime == null) return;
 
@@ -313,6 +361,12 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         String heroEps = getLocalizedHeroEps(context, anime);
         if (heroEps != null && !heroEps.isEmpty()) {
+            if (anime.airingAt > 0L) {
+                String sched = formatAiringSchedule(context, anime.airingAt);
+                if (!sched.isEmpty()) {
+                    heroEps = heroEps + " · " + sched;
+                }
+            }
             holder.tvHeroEps.setText(heroEps);
             holder.tvHeroEps.setVisibility(View.VISIBLE);
         } else {
@@ -374,6 +428,22 @@ public class AnimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             metaText = context.getString(R.string.card_last_played, anime.lastPlayedEp);
         } else if (anime.airingDay != null && !anime.airingDay.isEmpty()) {
             metaText = anime.airingDay + (anime.format != null ? " · " + anime.format : "");
+        } else if (anime.airingAt > 0L) {
+            String schedule = formatAiringSchedule(context, anime.airingAt);
+            if (!schedule.isEmpty()) {
+                metaText = schedule + (anime.format != null ? " · " + anime.format : "");
+            } else {
+                String seasonStr = (anime.season != null && !anime.season.isEmpty() && !"null".equalsIgnoreCase(anime.season))
+                        ? getLocalizedSeasonName(context, anime.season)
+                        : "";
+                if (!seasonStr.isEmpty() && anime.year > 0) {
+                    metaText = seasonStr + " " + anime.year + " · " + (anime.format != null ? anime.format : "TV");
+                } else if (anime.year > 0) {
+                    metaText = anime.year + " · " + (anime.format != null ? anime.format : "TV");
+                } else {
+                    metaText = (anime.format != null && !anime.format.isEmpty()) ? anime.format : "Anime";
+                }
+            }
         } else {
             String seasonStr = (anime.season != null && !anime.season.isEmpty() && !"null".equalsIgnoreCase(anime.season))
                     ? getLocalizedSeasonName(context, anime.season)

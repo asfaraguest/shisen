@@ -135,6 +135,19 @@
                             android:maxLines="2"
                             android:ellipsize="end" />
 
+                        <!-- Airing Schedule Row -->
+                        <TextView
+                            android:id="@+id/tv_detail_schedule"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:textColor="@color/star_gold"
+                            android:textSize="11.5sp"
+                            android:fontFamily="sans-serif-bold"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            android:visibility="gone" />
+
                         <!-- Genres Row -->
                         <TextView
                             android:id="@+id/tv_detail_genres"
