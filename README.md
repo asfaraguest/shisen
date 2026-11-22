@@ -16,6 +16,9 @@
     <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.1/shisen-release-v1.1.1.apk"><img src="https://img.shields.io/badge/Download-Shisen%20Mobile%20(Stable)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download Shisen Mobile Stable APK"></a>
     <br>
     <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.1/shisen-tv-release-v1.1.1.apk"><img src="https://img.shields.io/badge/Download-Shisen%20TV%20(Stable)-00B4D8?style=for-the-badge&logo=androidtv&logoColor=white" alt="Download Shisen TV Stable APK"></a>
+    <br>
+    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.2-beta.3/shisen-release-v1.1.2-beta.3.apk"><img src="https://img.shields.io/badge/Download-Mobile%20v1.1.2--beta.3%20(Pre--release)-F59E0B?style=flat-square&logo=android&logoColor=white" alt="Download Shisen Mobile Pre-release APK"></a>
+    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.2-beta.3/shisen-tv-release-v1.1.2-beta.3.apk"><img src="https://img.shields.io/badge/Download-TV%20v1.1.2--beta.3%20(Pre--release)-818CF8?style=flat-square&logo=androidtv&logoColor=white" alt="Download Shisen TV Pre-release APK"></a>
   </p>
 
   <p>
@@ -72,6 +75,8 @@ APK rilis resmi (signed, production keystore):
 - [GitHub Releases](https://github.com/asfaraguest/shisen/releases):
   - **Mobile (Stable `v1.1.1`):** [`shisen-release-v1.1.1.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.1/shisen-release-v1.1.1.apk)
   - **Android TV (Stable `v1.1.1`):** [`shisen-tv-release-v1.1.1.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.1/shisen-tv-release-v1.1.1.apk)
+  - **Mobile (Pre-release `v1.1.2-beta.3`):** [`shisen-release-v1.1.2-beta.3.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.2-beta.3/shisen-release-v1.1.2-beta.3.apk)
+  - **Android TV (Pre-release `v1.1.2-beta.3`):** [`shisen-tv-release-v1.1.2-beta.3.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.2-beta.3/shisen-tv-release-v1.1.2-beta.3.apk)
 
 > Asset rilis resmi: `shisen-release-*.apk` dan `shisen-tv-release-*.apk`.
 
