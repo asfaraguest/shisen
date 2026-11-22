@@ -717,6 +717,13 @@ public class DetailActivity extends AppCompatActivity {
             }
             btnPlayPrimary.setEnabled(false);
             btnPlayPrimary.setAlpha(0.5f);
+            if (btnPlayPrimary.hasFocus()) {
+                if (btnBookmark != null && btnBookmark.isFocusable()) {
+                    btnBookmark.requestFocus();
+                } else if (btnBack != null) {
+                    btnBack.requestFocus();
+                }
+            }
         } else {
             btnPlayPrimary.setEnabled(true);
             btnPlayPrimary.setAlpha(1.0f);

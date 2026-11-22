@@ -532,6 +532,11 @@ public class SettingsDialog {
             chip.setTextSize(11f);
             chip.setPadding(24, 12, 24, 12);
             chip.setTypeface(chip.getTypeface(), android.graphics.Typeface.BOLD);
+            chip.setFocusable(true);
+            chip.setClickable(true);
+            if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+                id.shisen.app.util.TvFocusHelper.attachFocusScale(chip, 1.05f);
+            }
 
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,

@@ -163,13 +163,16 @@ public class MainActivity extends AppCompatActivity {
         if (rvGrid == null || rvGrid.getVisibility() != View.VISIBLE || rvGrid.getChildCount() <= 0) {
             return false;
         }
-        View first = rvGrid.getChildAt(0);
-        if (first != null) {
-            View heroBtn = first.findViewById(R.id.btn_hero_play);
+        for (int i = 0; i < rvGrid.getChildCount(); i++) {
+            View child = rvGrid.getChildAt(i);
+            if (child == null) continue;
+            View heroBtn = child.findViewById(R.id.btn_hero_play);
             if (heroBtn != null && heroBtn.getVisibility() == View.VISIBLE && heroBtn.isFocusable()) {
                 return heroBtn.requestFocus();
             }
-            return first.requestFocus();
+            if (child.isFocusable() && child.requestFocus()) {
+                return true;
+            }
         }
         return false;
     }

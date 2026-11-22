@@ -10,6 +10,12 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
   - Menambahkan baris informasi jadwal rilis kontekstual berwarna emas di halaman Detail Anime (`📅 Jadwal Rilis: Ep 8 tayang Minggu, 23:00 WIB`).
   - Mendukung deteksi waktu cerdas (`Hari Ini, 23:00 WIB` / `Besok, 23:00 WIB`) dan terjemahan otomatis dalam 4 bahasa (Indonesia, English, Japanese, Spanish) dengan konversi waktu Asia/Jakarta (WIB).
 
+### Diperbaiki
+- **Navigasi D-Pad Android TV (`MainActivity.java`, `DetailActivity.java`, `SettingsDialog.java`)**:
+  - Memperbaiki fokus awal grid di `MainActivity.focusFirstGridItem()` agar melompati header seksi (`VIEW_TYPE_HEADER`) pada tab Sedang Tayang sehingga `DPAD_RIGHT` dari side rail langsung mendarat di kartu anime pertama.
+  - Menjadikan chip model AI Subtitle (`SettingsDialog.populateModelChips`) `focusable` dengan scale feedback D-Pad pada Android TV.
+  - Memindahkan fokus otomatis dari tombol Tonton yang dinonaktifkan ke tombol Favorit/Kembali pada halaman Detail anime yang belum tayang.
+
 ## [1.1.2-beta.1] - 2026-11-21
 
 ### Ditingkatkan
