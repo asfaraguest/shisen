@@ -1,27 +1,19 @@
 package id.shisen.app.util;
 
 import android.app.Activity;
-import androidx.appcompat.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageButton;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.core.content.FileProvider;
 
 import com.google.android.material.button.MaterialButton;
 
@@ -29,9 +21,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.Locale;
 
 import id.shisen.app.R;
 import id.shisen.app.data.service.HttpClientProvider;
@@ -40,14 +29,13 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Manajer In-App Update Seamless untuk Shisen (100% Pure Native Java).
+ * Manajer Pembaruan Shisen (100% Pure Native Java).
  * - Pemeriksaan rilis publik via GitHub Releases API.
- * - Mengunduh streaming APK resmi bertanda tangan dengan progress bar halus.
- * - Meluncurkan PackageInstaller resmi Android via FileProvider tanpa browser eksternal.
+ * - Membuka halaman rilis resmi GitHub / tautan unduhan APK di browser sistem tanpa
+ *   meminta izin REQUEST_INSTALL_PACKAGES agar aman dari pemblokiran Google Play Protect.
  */
 public class AppUpdateManager {
 
-    public static final int REQUEST_CODE_INSTALL_PERMISSION = 7129;
     public static final String GITHUB_OWNER = "asfaraguest";
     public static final String GITHUB_REPO = "shisen";
     public static final String GITHUB_RELEASES_URL = "https://github.com/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/releases";
@@ -80,11 +68,6 @@ public class AppUpdateManager {
     private static volatile AppUpdateManager instance;
 
     private volatile boolean isChecking = false;
-    private volatile boolean isDownloading = false;
-    private volatile boolean isDownloadCancelled = false;
-    private volatile okhttp3.Call activeDownloadCall = null;
-    private Thread activeDownloadThread = null;
-    private File pendingApkFile = null;
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -314,30 +297,17 @@ public class AppUpdateManager {
             btnNow.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
                 dialog.dismiss();
-                if (downloadUrl != null && !downloadUrl.trim().isEmpty()) {
-                    startStreamingDownload(activity, latestVer, downloadUrl);
-                } else {
-                    Toast.makeText(activity, "File APK belum tersedia untuk rilis ini, membuka browser...", Toast.LENGTH_SHORT).show();
-                    try {
-                        String target = htmlUrl != null ? htmlUrl : GITHUB_RELEASES_URL;
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(target));
-                        activity.startActivity(browserIntent);
-                    } catch (Exception e) {
-                        Toast.makeText(activity, "Tidak ada browser yang tersedia", Toast.LENGTH_SHORT).show();
-                    }
-                }
+                String target = (downloadUrl != null && !downloadUrl.trim().isEmpty())
+                        ? downloadUrl
+                        : (htmlUrl != null ? htmlUrl : GITHUB_RELEASES_URL);
+                openReleaseInBrowser(activity, target);
             });
         }
 
         if (tvFallbackBrowser != null) {
             tvFallbackBrowser.setOnClickListener(v -> {
-                try {
-                    String target = htmlUrl != null ? htmlUrl : (downloadUrl != null ? downloadUrl : GITHUB_RELEASES_URL);
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(target));
-                    activity.startActivity(browserIntent);
-                } catch (Exception e) {
-                    Toast.makeText(activity, "Tidak ada browser yang tersedia", Toast.LENGTH_SHORT).show();
-                }
+                String target = htmlUrl != null ? htmlUrl : (downloadUrl != null ? downloadUrl : GITHUB_RELEASES_URL);
+                openReleaseInBrowser(activity, target);
             });
         }
 
@@ -354,218 +324,12 @@ public class AppUpdateManager {
         dialog.show();
     }
 
-    private void startStreamingDownload(Activity activity, String latestVer, String downloadUrl) {
-        if (activity == null || activity.isFinishing()) return;
-
-        if (isDownloading) {
-            Toast.makeText(activity, R.string.update_toast_in_progress, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Dialog downloadDialog = new Dialog(activity);
-        downloadDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        downloadDialog.setContentView(R.layout.dialog_app_download);
-        downloadDialog.setCancelable(false);
-        SystemUiHelper.setupCustomDialogBounds(downloadDialog, activity);
-
-        TextView tvTarget = downloadDialog.findViewById(R.id.tv_download_target_version);
-        ProgressBar pbHorizontal = downloadDialog.findViewById(R.id.pb_download_horizontal);
-        TextView tvStatus = downloadDialog.findViewById(R.id.tv_download_status);
-        TextView tvPercent = downloadDialog.findViewById(R.id.tv_download_percent);
-        MaterialButton btnCancel = downloadDialog.findViewById(R.id.btn_cancel_download);
-
-        if (tvTarget != null) {
-            tvTarget.setText("Versi Target: v" + latestVer);
-        }
-        if (pbHorizontal != null) {
-            pbHorizontal.setMax(100);
-            pbHorizontal.setProgress(0);
-        }
-        if (tvStatus != null) {
-            tvStatus.setText("Menghubungkan ke GitHub...");
-        }
-
-        isDownloading = true;
-        isDownloadCancelled = false;
-
-        if (btnCancel != null) {
-            btnCancel.setOnClickListener(v -> {
-                isDownloadCancelled = true;
-                if (activeDownloadCall != null) {
-                    try {
-                        activeDownloadCall.cancel();
-                    } catch (Throwable ignored) {}
-                }
-                if (activeDownloadThread != null) {
-                    activeDownloadThread.interrupt();
-                }
-                downloadDialog.dismiss();
-                isDownloading = false;
-                Toast.makeText(activity, R.string.update_toast_cancelled, Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        downloadDialog.show();
-
-        activeDownloadThread = new Thread(() -> {
-            File outFile = null;
-            try {
-                OkHttpClient client = HttpClientProvider.getClient();
-                Request req = new Request.Builder()
-                        .url(downloadUrl)
-                        .header("User-Agent", "Shisen-Android")
-                        .build();
-
-                activeDownloadCall = client.newCall(req);
-                try (Response resp = activeDownloadCall.execute()) {
-                    if (!resp.isSuccessful() || resp.body() == null) {
-                        throw new Exception("HTTP " + resp.code());
-                    }
-
-                    long totalBytes = resp.body().contentLength();
-                    File cacheDir = activity.getExternalCacheDir() != null ? activity.getExternalCacheDir() : activity.getCacheDir();
-                    // Simpan di subfolder khusus updates/ (satu-satunya area yang dibagikan FileProvider)
-                    outFile = UpdateApkStore.apkFile(cacheDir, latestVer);
-                    if (outFile.exists()) {
-                        outFile.delete();
-                    }
-
-                    try (InputStream in = resp.body().byteStream();
-                         FileOutputStream fos = new FileOutputStream(outFile)) {
-
-                        byte[] buffer = new byte[16384];
-                        long downloadedBytes = 0;
-                        int bytesRead;
-                        long lastUpdateMs = 0;
-
-                        while ((bytesRead = in.read(buffer)) != -1) {
-                            if (isDownloadCancelled || Thread.currentThread().isInterrupted()) {
-                                if (outFile != null && outFile.exists()) outFile.delete();
-                                return;
-                            }
-
-                            fos.write(buffer, 0, bytesRead);
-                            downloadedBytes += bytesRead;
-
-                            long now = System.currentTimeMillis();
-                            if (now - lastUpdateMs > 120 || downloadedBytes == totalBytes) {
-                                lastUpdateMs = now;
-                                final long cur = downloadedBytes;
-                                final long tot = totalBytes;
-                                mainHandler.post(() -> {
-                                    if (downloadDialog.isShowing()) {
-                                        if (tot > 0) {
-                                            int pct = (int) ((cur * 100) / tot);
-                                            if (pbHorizontal != null) pbHorizontal.setProgress(pct);
-                                            if (tvPercent != null) tvPercent.setText(pct + "%");
-                                            double curMB = cur / (1024.0 * 1024.0);
-                                            double totMB = tot / (1024.0 * 1024.0);
-                                            if (tvStatus != null) {
-                                                tvStatus.setText(String.format(Locale.US, "%.1f MB / %.1f MB", curMB, totMB));
-                                            }
-                                        } else {
-                                            if (pbHorizontal != null) pbHorizontal.setIndeterminate(true);
-                                            double curMB = cur / (1024.0 * 1024.0);
-                                            if (tvStatus != null) {
-                                                tvStatus.setText(String.format(Locale.US, "Mengunduh %.1f MB...", curMB));
-                                            }
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                        fos.flush();
-                    } finally {
-                        activeDownloadCall = null;
-                    }
-
-                    if (isDownloadCancelled || Thread.currentThread().isInterrupted()) {
-                        if (outFile != null && outFile.exists()) {
-                            outFile.delete();
-                        }
-                        return;
-                    }
-
-                    final File finalApk = outFile;
-                    mainHandler.post(() -> {
-                        isDownloading = false;
-                        if (downloadDialog.isShowing()) {
-                            downloadDialog.dismiss();
-                        }
-                        if (!isDownloadCancelled && finalApk != null && finalApk.exists()) {
-                            installApk(activity, finalApk);
-                        }
-                    });
-                }
-            } catch (Exception e) {
-                activeDownloadCall = null;
-                if (outFile != null && outFile.exists()) {
-                    outFile.delete();
-                }
-                mainHandler.post(() -> {
-                    isDownloading = false;
-                    if (downloadDialog.isShowing()) {
-                        downloadDialog.dismiss();
-                    }
-                    if (!isDownloadCancelled) {
-                        Toast.makeText(activity, activity.getString(R.string.update_toast_failed, e.getMessage()), Toast.LENGTH_LONG).show();
-                    }
-                });
-            }
-        });
-        activeDownloadThread.start();
-    }
-
-    public void installApk(Activity activity, File apkFile) {
-        if (activity == null || activity.isFinishing() || apkFile == null || !apkFile.exists()) {
-            return;
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!activity.getPackageManager().canRequestPackageInstalls()) {
-                this.pendingApkFile = apkFile;
-                new AlertDialog.Builder(activity)
-                        .setTitle(R.string.update_permission_title)
-                        .setMessage(R.string.update_permission_desc)
-                        .setPositiveButton(R.string.update_open_settings, (d, w) -> {
-                            try {
-                                Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
-                                intent.setData(Uri.parse("package:" + activity.getPackageName()));
-                                activity.startActivityForResult(intent, REQUEST_CODE_INSTALL_PERMISSION);
-                            } catch (Exception e) {
-                                try {
-                                    Intent fallback = new Intent(Settings.ACTION_SECURITY_SETTINGS);
-                                    activity.startActivity(fallback);
-                                } catch (Exception ignored) {}
-                            }
-                        })
-                        .setNegativeButton(R.string.dialog_cancel, null)
-                        .show();
-                return;
-            }
-        }
-
+    private void openReleaseInBrowser(Activity activity, String url) {
         try {
-            Uri apkUri = FileProvider.getUriForFile(
-                    activity,
-                    activity.getPackageName() + ".fileprovider",
-                    apkFile
-            );
-
-            Intent installIntent = new Intent(Intent.ACTION_VIEW);
-            installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
-            installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            activity.startActivity(installIntent);
-
-            // Setelah instalasi dimulai, bersihkan APK pembaruan lain (APK yang dipasang dihapus oleh
-            // penginstal/system, atau saat aplikasi berikutnya start)
-            try {
-                File cacheDir = activity.getExternalCacheDir() != null ? activity.getExternalCacheDir() : activity.getCacheDir();
-                UpdateApkStore.deleteOldApks(cacheDir, apkFile);
-            } catch (Exception ignored) {}
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            activity.startActivity(browserIntent);
         } catch (Exception e) {
-            Toast.makeText(activity, "Gagal meluncurkan penginstal paket: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, "Buka GitHub Releases: " + GITHUB_RELEASES_URL, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -576,22 +340,6 @@ public class AppUpdateManager {
             File cacheDir = context.getExternalCacheDir() != null ? context.getExternalCacheDir() : context.getCacheDir();
             new Thread(() -> UpdateApkStore.deleteOldApks(cacheDir, null)).start();
         } catch (Exception ignored) {}
-    }
-
-    public void onInstallPermissionResult(Activity activity) {
-        if (activity == null || activity.isFinishing()) return;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (activity.getPackageManager().canRequestPackageInstalls()) {
-                if (pendingApkFile != null && pendingApkFile.exists()) {
-                    File toInstall = pendingApkFile;
-                    pendingApkFile = null;
-                    installApk(activity, toInstall);
-                }
-            } else {
-                Toast.makeText(activity, "Izin pemasangan aplikasi tidak diberikan", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     static boolean isNewerVersion(String remote, String installed) {

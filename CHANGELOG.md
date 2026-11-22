@@ -2,6 +2,14 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.2-beta.3] - 2026-11-22
+
+### Diperbaiki
+- **Kepatuhan Keamanan & Mitigasi Google Play Protect (`AndroidManifest.xml`, `src/tv/AndroidManifest.xml`, `AppUpdateManager.java`, `MainActivity.java`, `DesyncSocketWrapper.java`, `build.gradle`)**:
+  - Menghapus izin `REQUEST_INSTALL_PACKAGES` serta alur *in-app APK downloader & PackageInstaller* (`ACTION_MANAGE_UNKNOWN_APP_SOURCES` / `application/vnd.android.package-archive`) yang memicu heuristik *dropper* Play Protect pada APK sideloaded; tombol pembaruan kini mengarahkan ke halaman rilis GitHub / browser sistem.
+  - Menghapus izin `VIBRATE` pada varian Android TV (`src/tv/AndroidManifest.xml`).
+  - Menghapus reflection field internal `Socket.impl` pada `DesyncSocketWrapper` dan mengaktifkan APK Signature Scheme v3 (`enableV3Signing true`) di `build.gradle`.
+
 ## [1.1.2-beta.2] - 2026-11-22
 
 ### Ditingkatkan

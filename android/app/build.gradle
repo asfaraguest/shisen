@@ -47,6 +47,7 @@ android {
                 keyPassword "tatapsecret2026"
                 v1SigningEnabled true
                 v2SigningEnabled true
+                enableV3Signing true
             }
         }
     }

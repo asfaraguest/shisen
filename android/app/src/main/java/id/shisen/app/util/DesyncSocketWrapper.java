@@ -27,14 +27,6 @@ public class DesyncSocketWrapper extends Socket {
         this.delegate = delegate;
         this.host = host;
         this.desyncEnabled = desyncEnabled;
-        try {
-            java.lang.reflect.Field implField = Socket.class.getDeclaredField("impl");
-            implField.setAccessible(true);
-            Object impl = implField.get(delegate);
-            if (impl != null) {
-                implField.set(this, impl);
-            }
-        } catch (Throwable ignored) {}
     }
 
     @Override

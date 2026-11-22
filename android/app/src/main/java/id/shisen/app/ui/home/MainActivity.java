@@ -2352,12 +2352,4 @@ public class MainActivity extends AppCompatActivity {
     /* package */ void openSettingsDialog(boolean focusTheme) {
         selectMenuItem(MainTab.PENGATURAN);
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == AppUpdateManager.REQUEST_CODE_INSTALL_PERMISSION) {
-            AppUpdateManager.getInstance().onInstallPermissionResult(this);
-        }
-    }
 }

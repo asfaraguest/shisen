@@ -2,6 +2,10 @@ package id.shisen.app.util;
 
 import org.junit.Test;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
 import static org.junit.Assert.*;
 
 public class AppUpdateManagerTest {
@@ -100,5 +104,18 @@ public class AppUpdateManagerTest {
         AppUpdateManager.UpdateCandidate candidate = AppUpdateManager.findNewerRelease(jsonWithoutAssets, "1.1.0-beta.29", true);
         assertNotNull(candidate);
         assertEquals("https://github.com/asfaraguest/shisen/releases/download/v1.1.0-beta.30/shisen-tv-release-v1.1.0-beta.30.apk", candidate.downloadUrl);
+    }
+
+    @Test
+    public void testManifestDoesNotDeclareRequestInstallPackages() throws Exception {
+        File dir = new File(System.getProperty("user.dir")).getAbsoluteFile();
+        File manifest = new File(dir, "src/main/AndroidManifest.xml");
+        while (!manifest.exists() && dir.getParentFile() != null) {
+            dir = dir.getParentFile();
+            manifest = new File(dir, "android/app/src/main/AndroidManifest.xml");
+        }
+        assertTrue("AndroidManifest.xml harus ditemukan", manifest.exists());
+        String xml = new String(Files.readAllBytes(manifest.toPath()), StandardCharsets.UTF_8);
+        assertFalse("REQUEST_INSTALL_PACKAGES tidak boleh dideklarasikan", xml.contains("REQUEST_INSTALL_PACKAGES"));
     }
 }
