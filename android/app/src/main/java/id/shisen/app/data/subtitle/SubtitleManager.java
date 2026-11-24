@@ -602,10 +602,17 @@ public class SubtitleManager {
         String customPrompt = AiSubtitleService.getCustomPrompt(context);
 
         AiSubtitleService aiService = new AiSubtitleService();
+        if (keepDraftOnError && listener != null) {
+            listener.onSubtitleLoading("Menyempurnakan AI (0%)...");
+        }
         aiService.refineWithTlcAsync(context, sourceUrl, enCues, gtxDraftCues, customPrompt, model, apiKey, forceRefresh, () -> loadId != currentLoadId, new AiSubtitleService.TranslateCuesCallback() {
             @Override
             public void onProgress(int progress, int total) {
-                // Jangan timpa subtitle aktif dengan loading state jika GTX+ sudah tampil
+                if (loadId != currentLoadId) return;
+                int pct = total > 0 ? (progress * 100 / total) : 0;
+                if (listener != null) {
+                    listener.onSubtitleLoading("Menyempurnakan AI (" + pct + "%)...");
+                }
             }
 
             @Override
@@ -661,16 +668,22 @@ public class SubtitleManager {
     }
 
     private void loadMimicSubtitle(List<SubtitleCue> enCues, String sourceUrl, boolean forceRefresh, int loadId, boolean keepGtxOnError) {
-        if (!keepGtxOnError && listener != null) {
-            listener.onSubtitleLoading("Menerjemahkan AI Mimic (GPT-4.1)...");
+        if (listener != null) {
+            listener.onSubtitleLoading(keepGtxOnError
+                    ? "Menyempurnakan AI Mimic (0%)..."
+                    : "Menerjemahkan AI Mimic (GPT-4.1)...");
         }
 
         DeepTranslateClient.translateAsync(context, sourceUrl, enCues, forceRefresh, () -> loadId != currentLoadId, new DeepTranslateClient.Callback() {
             @Override
             public void onProgress(int progress, int total) {
-                if (loadId != currentLoadId || keepGtxOnError) return;
+                if (loadId != currentLoadId) return;
                 int pct = total > 0 ? (progress * 100 / total) : 0;
-                if (listener != null) listener.onSubtitleLoading("Menerjemahkan AI Mimic (" + pct + "%)...");
+                if (listener != null) {
+                    listener.onSubtitleLoading((keepGtxOnError
+                            ? "Menyempurnakan AI Mimic ("
+                            : "Menerjemahkan AI Mimic (") + pct + "%)...");
+                }
             }
 
             @Override
@@ -688,7 +701,15 @@ public class SubtitleManager {
 
             @Override
             public void onError(String error) {
-                if (loadId != currentLoadId || keepGtxOnError) return;
+                if (loadId != currentLoadId) return;
+                if (keepGtxOnError) {
+                    synchronized (SubtitleManager.this) {
+                        if (loadId != currentLoadId) return;
+                        activeLabel = "Bahasa Indonesia [Instant GTX+]";
+                        if (listener != null) listener.onSubtitleLoaded(activeLabel, activeCues.size());
+                    }
+                    return;
+                }
                 // Failover otomatis ke Google GTX bila AI Mimic gagal/error dan GTX belum aktif
                 if (listener != null) listener.onSubtitleLoading("AI Mimic terkendala, beralih ke Smart Translator...");
                 runGtxFallback(enCues, sourceUrl, loadId, forceRefresh);

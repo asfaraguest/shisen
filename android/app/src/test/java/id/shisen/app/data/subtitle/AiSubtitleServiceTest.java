@@ -488,10 +488,14 @@ public class AiSubtitleServiceTest {
         java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         final java.util.List<SubtitleCue>[] out = new java.util.List[1];
         final String[] errOut = new String[1];
+        final int[] lastProgress = new int[]{-1, -1};
 
         service.refineWithTlcAsync(null, "test-ep-1", en, draft, null, "gemini-3.8-flash", "AIzaSyTestKey", true, null,
                 new AiSubtitleService.TranslateCuesCallback() {
-                    @Override public void onProgress(int progress, int total) {}
+                    @Override public void onProgress(int progress, int total) {
+                        lastProgress[0] = progress;
+                        lastProgress[1] = total;
+                    }
                     @Override public void onSuccess(java.util.List<SubtitleCue> cues) {
                         out[0] = cues;
                         latch.countDown();
@@ -504,6 +508,8 @@ public class AiSubtitleServiceTest {
 
         assertTrue(latch.await(10, java.util.concurrent.TimeUnit.SECONDS));
         assertNull("Expected no error, got: " + errOut[0], errOut[0]);
+        assertEquals(3, lastProgress[0]);
+        assertEquals(3, lastProgress[1]);
         assertNotNull(out[0]);
         assertEquals(3, out[0].size());
         assertEquals("Yang Mulia, pasukan telah siap.", out[0].get(0).text);
