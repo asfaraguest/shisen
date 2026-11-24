@@ -405,48 +405,6 @@ public class AiSubtitleServiceTest {
     }
 
     @Test
-    public void testEmbeddedSmartScenePromptContainsAllSceneRules() {
-        String p = AiSubtitleService.EMBEDDED_SMART_SCENE_TLC_PROMPT_ID;
-        assertNotNull(p);
-        assertTrue(p.contains("Formal / Kerajaan"));
-        assertTrue(p.contains("Santai / Sekolah"));
-        assertTrue(p.contains("Kasar / Pertarungan"));
-        assertTrue(p.contains("ZERO kosakata Melayu"));
-        assertTrue(p.contains("0|OK"));
-        assertTrue(p.contains("N|teks_indonesia_final"));
-    }
-
-    @Test
-    public void testBuildInstantTlcPromptMergesShortCustomPrompt() {
-        assertEquals(AiSubtitleService.EMBEDDED_SMART_SCENE_TLC_PROMPT_ID,
-                AiSubtitleService.buildInstantTlcPrompt(null));
-        assertEquals(AiSubtitleService.EMBEDDED_SMART_SCENE_TLC_PROMPT_ID,
-                AiSubtitleService.buildInstantTlcPrompt(AiSubtitleService.DEFAULT_FANSUB_PROMPT_ID));
-
-        String merged = AiSubtitleService.buildInstantTlcPrompt("Gunakan gaya bahasa tsundere.");
-        assertTrue(merged.startsWith(AiSubtitleService.EMBEDDED_SMART_SCENE_TLC_PROMPT_ID));
-        assertTrue(merged.contains("Gunakan gaya bahasa tsundere."));
-    }
-
-    @Test
-    public void testParseIdLinesHandlesTlcEchoAndPrefixes() {
-        String tlcOutput = "1|How are you? || Kamu gimana?\n" +
-                "2|[ID] Baik.\n" +
-                "3|DRAFT: Ayo!\n" +
-                "4|-> Siap, Tuan!\n";
-        java.util.Map<Integer, String> parsed = AiSubtitleService.parseIdLines(tlcOutput, 5);
-        assertEquals(4, parsed.size());
-        assertEquals("Kamu gimana?", parsed.get(1));
-        assertEquals("Baik.", parsed.get(2));
-        assertEquals("Ayo!", parsed.get(3));
-        assertEquals("Siap, Tuan!", parsed.get(4));
-
-        assertTrue(AiSubtitleService.isTlcNoopOk("0|OK"));
-        assertTrue(AiSubtitleService.isTlcNoopOk("<think>all good</think>\n0|OK"));
-        assertFalse(AiSubtitleService.isTlcNoopOk("1|Halo"));
-    }
-
-    @Test
     public void testModelCooldownSkipsFailingModelOnNextCall() {
         AiSubtitleService.clearModelCooldowns();
         String primary = "gemini-3.8-flash";
@@ -465,14 +423,18 @@ public class AiSubtitleServiceTest {
     }
 
     @Test
-    public void testRefineWithTlcAsyncSelectiveReplacementAnd503Rotation() throws Exception {
+    public void testRefineWithTlcAsyncUsesTatapFullPromptRetriesMissingAndRotatesOn503() throws Exception {
         AiSubtitleService.clearModelCooldowns();
-        // Simulasikan model pertama gagal 503 lalu model cadangan sukses mengoreksi baris 1 saja
+        // Simulasikan model pertama gagal 503, model cadangan hanya balas baris 1 lalu retry balas baris 2
         server.enqueue(new MockResponse().setResponseCode(503).setBody("Service Unavailable"));
-        String okBody = "{\n" +
-                "  \"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"1|Yang Mulia, pasukan telah siap.\"}}]\n" +
+        String partialBody = "{\n" +
+                "  \"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"1|Yang Mulia, pasukan sudah bersiap.\"}}]\n" +
                 "}";
-        server.enqueue(new MockResponse().setResponseCode(200).setHeader("Content-Type", "application/json").setBody(okBody));
+        String retryBody = "{\n" +
+                "  \"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"2|Ayo kita berangkat!\"}}]\n" +
+                "}";
+        server.enqueue(new MockResponse().setResponseCode(200).setHeader("Content-Type", "application/json").setBody(partialBody));
+        server.enqueue(new MockResponse().setResponseCode(200).setHeader("Content-Type", "application/json").setBody(retryBody));
 
         java.util.List<SubtitleCue> en = java.util.Arrays.asList(
                 new SubtitleCue(0, 2000, "Your Majesty, the troops are ready."),
@@ -512,10 +474,17 @@ public class AiSubtitleServiceTest {
         assertEquals(3, lastProgress[1]);
         assertNotNull(out[0]);
         assertEquals(3, out[0].size());
-        assertEquals("Yang Mulia, pasukan telah siap.", out[0].get(0).text);
+        assertEquals("Yang Mulia, pasukan sudah bersiap.", out[0].get(0).text);
         assertEquals("...", out[0].get(1).text);
-        assertEquals("Ayo pergi!", out[0].get(2).text);
+        assertEquals("Ayo kita berangkat!", out[0].get(2).text);
         assertTrue(AiSubtitleService.isModelInCooldown("gemini-3.8-flash"));
+
+        // Pastikan request memakai DEFAULT_FANSUB_PROMPT_ID & format N|English murni (tanpa || draf_gtx)
+        RecordedRequest req1 = server.takeRequest();
+        String body1 = req1.getBody().readUtf8();
+        assertTrue(body1.contains("penerjemah fansub anime Indonesia berpengalaman"));
+        assertTrue(body1.contains("1|Your Majesty, the troops are ready."));
+        assertFalse(body1.contains("||"));
         AiSubtitleService.clearModelCooldowns();
     }
 }

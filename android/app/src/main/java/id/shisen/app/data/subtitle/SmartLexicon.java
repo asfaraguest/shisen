@@ -1287,7 +1287,9 @@ public class SmartLexicon {
         List<SubtitleCue> out = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             SubtitleCue c = cues.get(i);
-            String sanitized = sanitizeGtxPlusId(c.text, contextualFormal[i], directRage[i]);
+            String sanitized = "fansub".equalsIgnoreCase(mode)
+                    ? applyUniversalLexicon(c.text)
+                    : sanitizeGtxPlusId(c.text, contextualFormal[i], directRage[i]);
             out.add(new SubtitleCue(c.startMs, c.endMs, sanitized));
         }
         return out;

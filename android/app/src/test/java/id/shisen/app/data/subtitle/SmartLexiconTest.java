@@ -177,4 +177,14 @@ public class SmartLexiconTest {
         assertEquals("ada apa ini sebenarnya?", SmartLexicon.sanitizeGtxPlusId("apa yang sedang terjadi", false));
         assertEquals("nggak usah khawatirin aku", SmartLexicon.sanitizeGtxPlusId("jangan khawatir tentang saya", false));
     }
+
+    @Test
+    public void testFansubModePreservesAiPronounsWhileApplyingUniversalGlossary() {
+        List<SubtitleCue> cues = new ArrayList<>();
+        cues.add(new SubtitleCue(0, 2000, "Saya tidak mengerti mengapa dia masuk ke penjara bawah tanah."));
+        List<SubtitleCue> result = SmartLexicon.sanitizeCuesWithContext(cues, "fansub", 3, 15.0);
+        assertEquals(1, result.size());
+        assertTrue(result.get(0).text.startsWith("Saya tidak mengerti"));
+        assertTrue(result.get(0).text.contains("dungeon"));
+    }
 }
