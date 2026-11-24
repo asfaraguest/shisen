@@ -14,12 +14,18 @@ import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -434,6 +440,24 @@ Output:
 
     public static final String DEFAULT_CUSTOM_PROMPT = DEFAULT_FANSUB_PROMPT_ID;
 
+    public static final String TLC_REFINE_PROMPT_ID = """
+Kamu adalah editor TLC (Translation Checker) fansub anime Indonesia berpengalaman.
+Setiap baris input berformat: N|teks_sumber_bahasa Inggris || draf_gtx_indonesia
+Draf GTX+ sudah menerjemahkan dasar kalimat dan kamus anime. Tugasmu:
+1. Bandingkan teks sumber dengan draf GTX+, lalu KOREKSI HANYA baris yang kalimat, idiom, struktur, kata ganti, atau pilihan katanya terasa aneh, kaku, harfiah/calque, atau kurang pas dengan konteks adegan.
+2. Baris yang draf GTX+-nya sudah akurat, alami, dan sesuai nada adegan JANGAN ditulis ulang (lewati saja untuk hemat waktu). Jika semua baris sudah bagus, balas persis: 0|OK
+3. Koreksi wajib memakai Bahasa Indonesia lisan/fansub alami (ZERO kosakata Melayu seperti "awak", "kerana", "ialah", "sahaja", "tak", "tengok", "pula", "jangan risau", "pelik", "comel").
+4. Jaga konsistensi nada adegan:
+   - Adegan formal/kerajaan/militer: pertahankan bahasa baku & sopan ("saya/Anda", "Yang Mulia", "Paduka", "tidak", "sudah") tanpa partikel gaul.
+   - Adegan santai/sekolah/komedi: pakai dialog alami ("aku/kamu", "nggak", "udah", "aja", "banget", "kok", "sih").
+   - Adegan kasar/musuh: pakai nada tegas/kasar wajar ("aku/kau" atau "gue/lo").
+5. Pertahankan nama orang, honorifik (-san, -kun, -chan, -sama, Senpai, Sensei), gagap ("A-Apa?!"), istilah anime/game (dungeon, guild, party, skill, jutsu), dan token <br> persis pada posisinya.
+
+FORMAT KELUARAN (WAJIB):
+- Output HANYA baris yang dikoreksi dengan format: N|teks_indonesia_final (contoh: 1|Kamu nggak apa-apa?)
+- Jika semua baris sudah alami, output persis: 0|OK
+- DILARANG menyertakan teks sumber Inggris, tanda ||, atau penjelasan tambahan.""";
+
     private static final String OLD_SHORT_PROMPT_PREFIX = "Terjemahkan subtitle anime ini ke Bahasa Indonesia";
 
     private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
@@ -441,6 +465,9 @@ Output:
     private static final Pattern THINK_TAG_PATTERN = Pattern.compile("<think>.*?</think>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     private static final Pattern CODE_BLOCK_PATTERN = Pattern.compile("```[a-zA-Z]*");
     private static final Pattern ALPHABETIC_PATTERN = Pattern.compile("[A-Za-z\\u00C0-\\u024F\\u3040-\\u30FF\\u4E00-\\u9FFF]");
+    private static final Pattern TLC_PREFIX_PATTERN = Pattern.compile("^(?:\\[(?:ID|DRAFT|FINAL)\\]|(?:ID|DRAFT|FINAL)\\s*:|->|=>)\\s*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern TLC_NOOP_PATTERN = Pattern.compile("^(?:0\\s*[|｜]\\s*)?(?:OK|NONE|GOOD|ALL\\s+OK|TIDAK\\s+ADA)[.!]*$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern REASONING_LINE_PATTERN = Pattern.compile("^\\d+\\|", Pattern.MULTILINE);
     private static final ConcurrentHashMap<String, Long> MODEL_COOLDOWN = new ConcurrentHashMap<>();
 
     public enum Provider {
@@ -598,25 +625,37 @@ Output:
     private static final java.util.Set<String> DEPRECATED_MODELS = new java.util.HashSet<>(java.util.Arrays.asList(
             "mixtral-8x7b-32768", "llama-3.1-70b-versatile",
             "gemini-2.5-pro", "gemma4:31b", "gpt-oss:20b", "gpt-oss:120b", "llama3.2",
-            "qwen2.5:7b", "deepseek/deepseek-chat"
+            "qwen2.5:7b", "deepseek/deepseek-chat",
+            "gemini-3.8-flash", "gemini-4-argon"
     ));
 
+    private static final Map<String, String> LEGACY_MODEL_UPGRADE = new HashMap<>();
+    static {
+        LEGACY_MODEL_UPGRADE.put("gemini-2.0-flash", "gemini-3.1-flash-lite");
+        LEGACY_MODEL_UPGRADE.put("gemini-2.0-flash-lite", "gemini-3.1-flash-lite");
+        LEGACY_MODEL_UPGRADE.put("gemini-1.5-flash", "gemini-3.1-flash-lite");
+        LEGACY_MODEL_UPGRADE.put("gemini-1.5-flash-latest", "gemini-3.1-flash-lite");
+        LEGACY_MODEL_UPGRADE.put("gemini-2.5-flash", "gemini-3.5-flash");
+        LEGACY_MODEL_UPGRADE.put("gemini-2.5-flash-lite", "gemini-3.5-flash-lite");
+        LEGACY_MODEL_UPGRADE.put("gemini-flash-latest", "gemini-3.5-flash");
+    }
+
     public static String getDefaultModel(Provider provider) {
-        if (provider == null) return "gemini-3.8-flash";
+        if (provider == null) return "gemini-3.1-flash-lite";
         switch (provider) {
             case CEREBRAS:
                 return "llama3.3-70b";
             case GROQ:
-                return "openai/gpt-oss-120b";
+                return "llama-3.3-70b-versatile";
             case NVIDIA_NIM:
                 return "meta/llama-3.3-70b-instruct";
             case OPENAI:
                 return "gpt-4o-mini";
             case OPENROUTER:
-                return "google/gemma-4-31b-it:free";
+                return "google/gemini-2.0-flash-exp:free";
             case GEMINI:
             default:
-                return "gemini-3.8-flash";
+                return "gemini-3.1-flash-lite";
         }
     }
 
@@ -625,21 +664,17 @@ Output:
         if (provider == null) return list;
         switch (provider) {
             case GEMINI:
-                list.add("gemini-3.8-flash");
-                list.add("gemini-4-argon");
-                list.add("gemini-2.0-flash");
                 list.add("gemini-3.1-flash-lite");
-                list.add("gemini-3.5-flash");
                 list.add("gemini-3.5-flash-lite");
                 list.add("gemini-flash-lite-latest");
+                list.add("gemini-3.5-flash");
                 break;
             case GROQ:
-                list.add("openai/gpt-oss-120b");
-                list.add("openai/gpt-oss-20b");
-                list.add("qwen/qwen3.8-27b");
                 list.add("llama-3.3-70b-versatile");
                 list.add("llama-3.1-8b-instant");
                 list.add("gemma2-9b-it");
+                list.add("openai/gpt-oss-120b");
+                list.add("openai/gpt-oss-20b");
                 break;
             case CEREBRAS:
                 list.add("llama3.3-70b");
@@ -651,10 +686,6 @@ Output:
                 list.add("deepseek-ai/deepseek-r1");
                 break;
             case OPENROUTER:
-                list.add("google/gemma-4-31b-it:free");
-                list.add("google/gemma-4-26b-a4b-it:free");
-                list.add("nvidia/nemotron-3.5-lightning:free");
-                list.add("nvidia/nemotron-3-ultra-550b-a55b:free");
                 list.add("google/gemini-2.0-flash-exp:free");
                 list.add("meta-llama/llama-3.3-70b-instruct:free");
                 list.add("deepseek/deepseek-r1:free");
@@ -675,6 +706,16 @@ Output:
             String trimmed = customModel.trim();
             if (DEPRECATED_MODELS.contains(trimmed)) {
                 return getDefaultModel(provider);
+            }
+            if (provider == Provider.GEMINI) {
+                String clean = trimmed.startsWith("models/") ? trimmed.substring(7).trim() : trimmed;
+                if (clean.toLowerCase().contains("genma")) {
+                    clean = clean.replaceAll("(?i)genma", "gemma");
+                }
+                if (LEGACY_MODEL_UPGRADE.containsKey(clean)) {
+                    return LEGACY_MODEL_UPGRADE.get(clean);
+                }
+                return trimmed;
             }
             return trimmed;
         }
@@ -942,22 +983,47 @@ Output:
         if (isReasoning) {
             userPrompt = "JANGAN sertakan penalaran/thinking. Langsung keluarkan format N|terjemahan secara ringkas.\n\n" + userPrompt;
         }
-        int maxTokens = Math.min(8192, pendingIds.size() * 65 + 250);
-        try {
-            return executeChatCompletion(client, endpointUrl, provider, apiKey, model,
-                    systemPrompt, userPrompt, 0.3, maxTokens, isReasoning);
-        } catch (IOException e) {
-            if (isReasoning && e.getMessage() != null && e.getMessage().contains("HTTP 400")
-                    && (e.getMessage().contains("reasoning_effort") || e.getMessage().contains("reasoning_format"))) {
-                return executeChatCompletion(client, endpointUrl, provider, apiKey, model,
-                        systemPrompt, userPrompt, 0.3, maxTokens, false);
-            }
-            throw e;
+        int maxTokens = Math.min(8192, Math.max(1024, pendingIds.size() * 75 + 500));
+        return executeChatCompletion(client, endpointUrl, provider, apiKey, model,
+                systemPrompt, userPrompt, 0.3, maxTokens, isReasoning, false);
+    }
+
+    public static String buildTlcSystemPrompt(String customPrompt) {
+        if (customPrompt == null) return TLC_REFINE_PROMPT_ID;
+        String cp = customPrompt.trim();
+        if (cp.isEmpty()
+                || cp.equals(DEFAULT_FANSUB_PROMPT_ID.trim())
+                || cp.startsWith(OLD_SHORT_PROMPT_PREFIX)) {
+            return TLC_REFINE_PROMPT_ID;
         }
+        String upper = cp.toUpperCase();
+        if (cp.length() > 320 || upper.contains("PERAN") || upper.contains("PRINSIP")
+                || upper.contains("PANDUAN") || upper.contains("ATURAN")
+                || upper.contains("ROLE") || upper.contains("SYSTEM")) {
+            return cp
+                    + "\n\nTUGAS TAMBAHAN (TLC MODE): Input berformat N|teks_sumber || draf_gtx. "
+                    + "Gunakan draf GTX+ sebagai acuan awal dan perbaiki kalimat/kata yang terasa aneh sesuai instruksi di atas."
+                    + "\n\n==============================\n"
+                    + "FORMAT KELUARAN TLC (WAJIB):\n"
+                    + "1. Input berformat: N|teks_sumber || draf_gtx. Output HANYA baris yang dikoreksi: N|teks_final\n"
+                    + "2. Lewati baris yang sudah bagus; jika semua baris sudah bagus, balas persis: 0|OK\n"
+                    + "3. DILARANG mengulang teks sumber Inggris atau tanda || pada output.\n"
+                    + "4. Pertahankan token <br> persis pada posisinya untuk ganti baris.\n"
+                    + "==============================\n";
+        }
+        return TLC_REFINE_PROMPT_ID
+                + "\n\nINSTRUKSI KHUSUS & GAYA DARI PENGGUNA (PRIORITAS TINGGI):\n" + cp;
+    }
+
+    public static boolean isTlcNoopOk(String content) {
+        if (content == null) return false;
+        String cleaned = THINK_TAG_PATTERN.matcher(content).replaceAll("");
+        cleaned = CODE_BLOCK_PATTERN.matcher(cleaned).replaceAll("").trim();
+        return TLC_NOOP_PATTERN.matcher(cleaned).matches();
     }
 
     /**
-     * Mem-parsing respons N|teks terjemahan selaras Tatap.
+     * Mem-parsing respons N|teks terjemahan selaras Tatap (_parse_id_lines).
      */
     public static Map<Integer, String> parseIdLines(String content, int maxId) {
         Map<Integer, String> out = new HashMap<>();
@@ -979,12 +1045,15 @@ Output:
             }
 
             String t = m.group(2).trim();
-            if (t.contains("|") || t.contains("｜")) {
+            if (t.contains("||")) {
+                t = t.substring(t.lastIndexOf("||") + 2).trim();
+            } else if (t.contains("|") || t.contains("｜")) {
                 String[] parts = t.split("[|｜]");
                 if (parts.length >= 2) {
                     t = parts[parts.length - 1].trim();
                 }
             }
+            t = TLC_PREFIX_PATTERN.matcher(t).replaceFirst("").trim();
 
             // Pulihkan token <br> menjadi baris baru
             t = t.replaceAll("(?i)\\s*<br\\s*/?>\\s*", "\n").trim();
@@ -1047,21 +1116,33 @@ Output:
         if (context == null) return null;
         File cacheDir = new File(context.getCacheDir(), "sub_cache");
         if (!cacheDir.exists()) cacheDir.mkdirs();
-        String cacheKey = sha1(sourceIdentifier + "_" + effectiveModel + "_instant_ai_id_v2");
+        String cacheKey = sha1(sourceIdentifier + "_" + effectiveModel + "_instant_ai_id_v3");
         return new File(cacheDir, cacheKey + ".json");
     }
 
     private static boolean isReasoningModel(String model) {
         if (model == null) return false;
         String m = model.toLowerCase();
-        return m.contains("gpt-oss") || m.contains("deepseek-r1") || m.contains("nemotron") || m.contains("o3-mini");
+        return m.contains("gpt-oss") || m.contains("nemotron") || m.contains("deepseek-r1")
+                || m.contains("qwq") || m.contains("o1-") || m.contains("o3-")
+                || m.contains("reason") || m.contains("thinking");
+    }
+
+    private static int getProviderBatchSize(Provider provider) {
+        if (provider == Provider.GEMINI) return 80;
+        if (provider == Provider.OPENAI) return 60;
+        return 40;
+    }
+
+    private static int getProviderConcurrency(Provider provider) {
+        if (provider == Provider.OPENAI) return 3;
+        return 2;
     }
 
     /**
-     * Tahap 2 Instant AI Sub Indo (Paritas penuh Tatap call_openai_translate):
-     * Menerjemahkan 100% baris English memakai DEFAULT_FANSUB_PROMPT_ID + konteks 4 baris,
-     * retry ID yang hilang, rotasi model + cooldown, dan update live per batch ke layar
-     * sementara draf GTX+ menjadi fallback instan per-baris hingga/jika AI selesai.
+     * Tahap 2 Instant AI Sub Indo (Paritas penuh /home/b-ict/tatap TLC Refine):
+     * Draf GTX+ disandingkan dengan sumber English (N|EN || GTX+) agar AI bertindak sebagai
+     * editor TLC selektif untuk mengoreksi tatanan bahasa yang aneh/kaku secara paralel & cepat.
      */
     public void refineWithTlcAsync(Context context,
                                    String sourceIdentifier,
@@ -1074,7 +1155,7 @@ Output:
                                    java.util.function.BooleanSupplier isCancelled,
                                    TranslateCuesCallback callback) {
         if (enCues == null || enCues.isEmpty()) {
-            if (callback != null) callback.onError("Tidak ada cue subtitle untuk diterjemahkan");
+            if (callback != null) callback.onError("Tidak ada cue subtitle untuk disempurnakan");
             return;
         }
         if (draftCues == null || draftCues.size() != enCues.size()) {
@@ -1092,13 +1173,13 @@ Output:
 
         final Provider provider = Provider.detect(activeKey);
         final String effectiveModel = (model != null && !model.trim().isEmpty())
-                ? model.trim()
+                ? getEffectiveModel(provider, model.trim())
                 : (context != null ? getEffectiveModel(context, provider) : getDefaultModel(provider));
-        final String effectivePrompt = (customPrompt != null && !customPrompt.trim().isEmpty())
-                ? customPrompt.trim()
-                : (context != null ? getCustomPrompt(context) : DEFAULT_FANSUB_PROMPT_ID);
+        final String rawCustom = (customPrompt != null) ? customPrompt : (context != null ? getCustomPrompt(context) : "");
+        final String tlcPrompt = buildTlcSystemPrompt(rawCustom);
 
         new Thread(() -> {
+            ExecutorService pool = null;
             try {
                 if (isCancelled != null && isCancelled.getAsBoolean()) return;
 
@@ -1117,123 +1198,142 @@ Output:
                     } catch (Exception ignored) {}
                 }
 
-                OkHttpClient aiClient = httpClient.newBuilder()
-                        .readTimeout(35, TimeUnit.SECONDS)
+                final boolean targetReasoning = isReasoningModel(effectiveModel);
+                final int reqTimeoutSec = targetReasoning ? 120 : 15;
+                final OkHttpClient tlcClient = httpClient.newBuilder()
+                        .connectTimeout(10, TimeUnit.SECONDS)
+                        .readTimeout(reqTimeoutSec, TimeUnit.SECONDS)
                         .build();
-                String endpointUrl = getEndpointUrl(provider, activeKey);
-                List<String> modelChain = buildModelRotationChain(provider, effectiveModel);
+                final String endpointUrl = getEndpointUrl(provider, activeKey);
+                final List<String> modelChain = buildModelRotationChain(provider, effectiveModel);
                 if (modelChain.isEmpty()) modelChain.add(effectiveModel);
 
-                int totalCues = enCues.size();
-                List<SubtitleCue> workingCues = new ArrayList<>(totalCues);
+                final int totalCues = enCues.size();
+                final List<SubtitleCue> workingCues = Collections.synchronizedList(new ArrayList<>(totalCues));
                 for (SubtitleCue dc : draftCues) {
                     workingCues.add(new SubtitleCue(dc.startMs, dc.endMs, dc.text));
                 }
 
-                int aiTranslatedCount = 0;
-                int nonAlphabeticCount = 0;
-                String lastError = "Semua model AI gagal merespons";
-                int lo = 0;
-                int activeModelIdx = 0;
+                int batchSize = getProviderBatchSize(provider);
+                if (targetReasoning && batchSize > 25) batchSize = 20;
 
-                while (lo < totalCues) {
-                    if (isCancelled != null && isCancelled.getAsBoolean()) return;
-                    String curModel = modelChain.get(Math.min(activeModelIdx, modelChain.size() - 1));
-                    int batchSize = isReasoningModel(curModel) ? 20 : 40;
-                    int hi = Math.min(lo + batchSize, totalCues);
+                List<int[]> ranges = new ArrayList<>();
+                for (int lo = 0; lo < totalCues; lo += batchSize) {
+                    ranges.add(new int[]{lo, Math.min(totalCues, lo + batchSize)});
+                }
 
-                    List<Integer> targetIndices = new ArrayList<>();
-                    List<SubtitleCue> targetEn = new ArrayList<>();
-                    for (int idx = lo; idx < hi; idx++) {
-                        String enTxt = enCues.get(idx).text;
-                        if (enTxt != null && ALPHABETIC_PATTERN.matcher(enTxt).find()) {
-                            targetIndices.add(idx);
-                            targetEn.add(enCues.get(idx));
+                final int conc = targetReasoning ? 1 : Math.min(getProviderConcurrency(provider), Math.max(1, ranges.size()));
+                pool = Executors.newFixedThreadPool(conc);
+
+                final AtomicInteger completedCues = new AtomicInteger(0);
+                final AtomicInteger refinedCount = new AtomicInteger(0);
+                final AtomicInteger okOrNoopBatches = new AtomicInteger(0);
+                final AtomicInteger skippedTotal = new AtomicInteger(0);
+                final AtomicInteger activeModelIdx = new AtomicInteger(0);
+                final String[] lastError = new String[]{"Semua model AI gagal merespons"};
+
+                List<Callable<Void>> tasks = new ArrayList<>(ranges.size());
+                for (int[] range : ranges) {
+                    final int lo = range[0];
+                    final int hi = range[1];
+                    tasks.add(() -> {
+                        if (isCancelled != null && isCancelled.getAsBoolean()) return null;
+
+                        // Pertahankan ID relatif batch (1..hi-lo) sambil melewati cue non-alfabet persis Tatap
+                        List<Integer> pendingIds = new ArrayList<>();
+                        for (int idx = lo; idx < hi; idx++) {
+                            String enTxt = prepLine(enCues.get(idx).text);
+                            String draftTxt = prepLine(draftCues.get(idx).text);
+                            if (!draftTxt.isEmpty() && !ALPHABETIC_PATTERN.matcher(enTxt).find()) {
+                                skippedTotal.incrementAndGet();
+                            } else {
+                                pendingIds.add((idx - lo) + 1);
+                            }
+                        }
+
+                        if (pendingIds.isEmpty()) {
+                            okOrNoopBatches.incrementAndGet();
                         } else {
-                            nonAlphabeticCount++;
-                        }
-                    }
+                            List<String> contextLines = new ArrayList<>();
+                            int ctxStart = Math.max(0, lo - 4);
+                            for (int c = ctxStart; c < lo; c++) {
+                                contextLines.add(prepLine(enCues.get(c).text) + " -> " + prepLine(draftCues.get(c).text));
+                            }
 
-                    if (!targetEn.isEmpty()) {
-                        List<String> contextLines = new ArrayList<>();
-                        int ctxStart = Math.max(0, lo - 4);
-                        for (int c = ctxStart; c < lo; c++) {
-                            contextLines.add(prepLine(enCues.get(c).text));
-                        }
-
-                        List<Integer> pendingIds = new ArrayList<>(targetEn.size());
-                        for (int k = 1; k <= targetEn.size(); k++) {
-                            pendingIds.add(k);
-                        }
-
-                        Map<Integer, String> batchResults = new HashMap<>();
-                        int maxAttempts = Math.max(2, modelChain.size() + 1);
-                        for (int attempt = 0; attempt < maxAttempts && !pendingIds.isEmpty(); attempt++) {
-                            if (isCancelled != null && isCancelled.getAsBoolean()) return;
-                            int tryIdx = activeModelIdx % modelChain.size();
-                            String tryModel = modelChain.get(tryIdx);
-                            try {
-                                String respContent = callBatchCompletion(
-                                        aiClient, endpointUrl, provider, activeKey, tryModel,
-                                        effectivePrompt, contextLines, targetEn, pendingIds);
-                                Map<Integer, String> parsed = parseIdLines(respContent, targetEn.size());
-                                for (Map.Entry<Integer, String> entry : parsed.entrySet()) {
-                                    int id = entry.getKey();
-                                    if (!batchResults.containsKey(id)) {
-                                        batchResults.put(id, entry.getValue());
+                            int maxAttempts = Math.max(2, modelChain.size());
+                            for (int attempt = 0; attempt < maxAttempts; attempt++) {
+                                if (isCancelled != null && isCancelled.getAsBoolean()) return null;
+                                int tryIdx = activeModelIdx.get() % modelChain.size();
+                                String tryModel = modelChain.get(tryIdx);
+                                try {
+                                    String respContent = callTlcCompletion(
+                                            tlcClient, endpointUrl, provider, activeKey, tryModel,
+                                            tlcPrompt, contextLines, enCues, draftCues, lo, pendingIds);
+                                    Map<Integer, String> parsed = parseIdLines(respContent, hi - lo);
+                                    if (!parsed.isEmpty()) {
+                                        for (Map.Entry<Integer, String> entry : parsed.entrySet()) {
+                                            int globalIdx = lo + entry.getKey() - 1;
+                                            if (globalIdx >= lo && globalIdx < hi) {
+                                                SubtitleCue orig = workingCues.get(globalIdx);
+                                                workingCues.set(globalIdx, new SubtitleCue(orig.startMs, orig.endMs, entry.getValue()));
+                                                refinedCount.incrementAndGet();
+                                            }
+                                        }
+                                        okOrNoopBatches.incrementAndGet();
+                                        break;
+                                    } else if (isTlcNoopOk(respContent)) {
+                                        okOrNoopBatches.incrementAndGet();
+                                        break;
+                                    } else {
+                                        lastError[0] = tryModel + ": respon kosong / format tidak sesuai";
+                                        activeModelIdx.compareAndSet(tryIdx, (tryIdx + 1) % modelChain.size());
                                     }
+                                } catch (Exception e) {
+                                    String err = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+                                    lastError[0] = tryModel + ": " + err;
+                                    long cooldown = (err.contains("HTTP 402") || err.contains("HTTP 404")) ? 1_800_000L : 180_000L;
+                                    if (e instanceof SocketTimeoutException
+                                            || err.contains("HTTP 429") || err.contains("HTTP 500")
+                                            || err.contains("HTTP 502") || err.contains("HTTP 503")
+                                            || err.contains("HTTP 504") || err.contains("HTTP 402")
+                                            || err.contains("HTTP 404")) {
+                                        markModelCooldown(tryModel, cooldown);
+                                    }
+                                    activeModelIdx.compareAndSet(tryIdx, (tryIdx + 1) % modelChain.size());
                                 }
-                                List<Integer> nextPending = new ArrayList<>();
-                                for (int id : pendingIds) {
-                                    if (!batchResults.containsKey(id)) nextPending.add(id);
-                                }
-                                pendingIds = nextPending;
-                                if (parsed.isEmpty() && !pendingIds.isEmpty()) {
-                                    lastError = tryModel + ": respon kosong / format tidak sesuai";
-                                    activeModelIdx = (tryIdx + 1) % modelChain.size();
-                                }
-                            } catch (Exception e) {
-                                lastError = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
-                                long cooldown = (lastError.contains("HTTP 402") || lastError.contains("HTTP 404")) ? 1_800_000L : 180_000L;
-                                if (e instanceof SocketTimeoutException
-                                        || lastError.contains("HTTP 429") || lastError.contains("HTTP 500")
-                                        || lastError.contains("HTTP 502") || lastError.contains("HTTP 503")
-                                        || lastError.contains("HTTP 504") || lastError.contains("HTTP 402")
-                                        || lastError.contains("HTTP 404")) {
-                                    markModelCooldown(tryModel, cooldown);
-                                }
-                                activeModelIdx = (tryIdx + 1) % modelChain.size();
                             }
                         }
 
-                        for (Map.Entry<Integer, String> entry : batchResults.entrySet()) {
-                            int localIdx = entry.getKey() - 1;
-                            if (localIdx >= 0 && localIdx < targetIndices.size()) {
-                                int globalIdx = targetIndices.get(localIdx);
-                                SubtitleCue orig = workingCues.get(globalIdx);
-                                workingCues.set(globalIdx, new SubtitleCue(orig.startMs, orig.endMs, entry.getValue()));
-                                aiTranslatedCount++;
+                        int done = Math.min(totalCues, completedCues.addAndGet(hi - lo));
+                        if (callback != null && (isCancelled == null || !isCancelled.getAsBoolean())) {
+                            callback.onProgress(done, totalCues);
+                            if (okOrNoopBatches.get() > 0) {
+                                synchronized (workingCues) {
+                                    callback.onPartialSuccess(new ArrayList<>(workingCues), refinedCount.get());
+                                }
                             }
                         }
-                    }
+                        return null;
+                    });
+                }
 
-                    lo = hi;
-                    if (callback != null) {
-                        callback.onProgress(lo, totalCues);
-                        if (aiTranslatedCount > 0) {
-                            callback.onPartialSuccess(new ArrayList<>(workingCues), aiTranslatedCount);
-                        }
-                    }
+                List<Future<Void>> futures = pool.invokeAll(tasks);
+                for (Future<Void> f : futures) {
+                    f.get();
                 }
 
                 if (isCancelled != null && isCancelled.getAsBoolean()) return;
-                if (aiTranslatedCount == 0 && nonAlphabeticCount < totalCues) {
-                    if (callback != null) callback.onError(lastError);
+                if (okOrNoopBatches.get() == 0 && skippedTotal.get() < totalCues) {
+                    if (callback != null) callback.onError(lastError[0]);
                     return;
                 }
 
-                List<SubtitleCue> finalCues = SmartLexicon.sanitizeCuesWithContext(workingCues, "fansub", 3, 15.0);
-                if (cacheFile != null && aiTranslatedCount > 0 && !containsDominantArabicScript(finalCues)) {
+                List<SubtitleCue> snapshot;
+                synchronized (workingCues) {
+                    snapshot = new ArrayList<>(workingCues);
+                }
+                List<SubtitleCue> finalCues = SmartLexicon.sanitizeCuesWithContext(snapshot, "fansub", 3, 15.0);
+                if (cacheFile != null && okOrNoopBatches.get() > 0 && !containsDominantArabicScript(finalCues)) {
                     try {
                         writeFile(cacheFile, serializeCues(finalCues));
                     } catch (Exception ignored) {}
@@ -1243,10 +1343,56 @@ Output:
                 }
             } catch (Exception e) {
                 if (callback != null) {
-                    callback.onError(e.getMessage() != null ? e.getMessage() : "Kesalahan AI Subtitle");
+                    callback.onError(e.getMessage() != null ? e.getMessage() : "Kesalahan AI TLC");
                 }
+            } finally {
+                if (pool != null) pool.shutdownNow();
             }
         }).start();
+    }
+
+    private String callTlcCompletion(OkHttpClient client,
+                                     String endpointUrl,
+                                     Provider provider,
+                                     String apiKey,
+                                     String model,
+                                     String systemPrompt,
+                                     List<String> contextLines,
+                                     List<SubtitleCue> enCues,
+                                     List<SubtitleCue> draftCues,
+                                     int lo,
+                                     List<Integer> pendingIds) throws Exception {
+        StringBuilder userBody = new StringBuilder();
+        if (contextLines != null && !contextLines.isEmpty()) {
+            userBody.append("Konteks (baris sebelumnya, JANGAN diubah/dikeluarkan, hanya untuk pemahaman):\n");
+            for (String ctx : contextLines) {
+                userBody.append("- ").append(ctx).append("\n");
+            }
+            userBody.append("\n");
+        }
+        userBody.append("Periksa ").append(pendingIds.size()).append(" baris berikut (format N|teks_sumber || draf_gtx). ")
+                .append("Keluarkan HANYA N|teks_perbaikan untuk baris yang aneh/kaku (atau 0|OK bila semua sudah bagus):\n");
+        for (int id : pendingIds) {
+            int globalIdx = lo + id - 1;
+            userBody.append(id).append("|")
+                    .append(prepLine(enCues.get(globalIdx).text))
+                    .append(" || ")
+                    .append(prepLine(draftCues.get(globalIdx).text))
+                    .append("\n");
+        }
+
+        String userPrompt = userBody.toString().trim();
+        boolean reasoning = isReasoningModel(model);
+        int maxTokens;
+        if (reasoning) {
+            userPrompt = "JANGAN sertakan penalaran/thinking panjang. Langsung keluarkan format N|terjemahan secara ringkas.\n\n" + userPrompt;
+            maxTokens = Math.min(8192, Math.max(3072, pendingIds.size() * 90 + 2500));
+        } else {
+            maxTokens = Math.min(4096, Math.max(512, pendingIds.size() * 45 + 256));
+        }
+        boolean disableGeminiThinking = (provider == Provider.GEMINI && !reasoning && !isGemmaModel(model));
+        return executeChatCompletion(client, endpointUrl, provider, apiKey, model,
+                systemPrompt, userPrompt, 0.25, maxTokens, reasoning, disableGeminiThinking);
     }
 
     private String executeChatCompletion(OkHttpClient client,
@@ -1258,7 +1404,32 @@ Output:
                                          String userPrompt,
                                          double temperature,
                                          int maxTokens,
-                                         boolean isReasoning) throws Exception {
+                                         boolean isReasoning,
+                                         boolean disableGeminiThinking) throws Exception {
+        try {
+            return executeChatCompletionOnce(client, endpointUrl, provider, apiKey, model,
+                    systemPrompt, userPrompt, temperature, maxTokens, isReasoning, disableGeminiThinking);
+        } catch (IOException e) {
+            if ((isReasoning || disableGeminiThinking) && e.getMessage() != null && e.getMessage().contains("HTTP 400")
+                    && (e.getMessage().contains("reasoning_effort") || e.getMessage().contains("reasoning_format"))) {
+                return executeChatCompletionOnce(client, endpointUrl, provider, apiKey, model,
+                        systemPrompt, userPrompt, temperature, maxTokens, false, false);
+            }
+            throw e;
+        }
+    }
+
+    private String executeChatCompletionOnce(OkHttpClient client,
+                                             String endpointUrl,
+                                             Provider provider,
+                                             String apiKey,
+                                             String model,
+                                             String systemPrompt,
+                                             String userPrompt,
+                                             double temperature,
+                                             int maxTokens,
+                                             boolean isReasoning,
+                                             boolean disableGeminiThinking) throws Exception {
         JSONArray messages = new JSONArray();
         String finalUserPrompt = userPrompt;
         if (isGemmaModel(model)) {
@@ -1284,6 +1455,8 @@ Output:
         if (isReasoning) {
             payload.put("reasoning_effort", "low");
             if (provider == Provider.GROQ) payload.put("reasoning_format", "hidden");
+        } else if (disableGeminiThinking) {
+            payload.put("reasoning_effort", "none");
         }
 
         Request.Builder reqBuilder = new Request.Builder()
@@ -1307,7 +1480,16 @@ Output:
             JSONArray choices = json.optJSONArray("choices");
             if (choices != null && choices.length() > 0) {
                 JSONObject msg = choices.getJSONObject(0).optJSONObject("message");
-                if (msg != null) return msg.optString("content", "");
+                if (msg != null) {
+                    String content = msg.optString("content", "").trim();
+                    if (content.isEmpty()) {
+                        String r = msg.optString("reasoning", msg.optString("reasoning_content", "")).trim();
+                        if (!r.isEmpty() && REASONING_LINE_PATTERN.matcher(r).find()) {
+                            content = r;
+                        }
+                    }
+                    return content;
+                }
             }
             return "";
         }

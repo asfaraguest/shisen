@@ -173,7 +173,7 @@
     <string name="settings_ai_key_hint">AIzaSy... / gsk_... / nvapi-... / sk-or-... / sk-...</string>
     <string name="settings_ai_model_label">Model Selector</string>
     <string name="settings_ai_model_desc">Pilih model rekomendasi atau ketikkan nama model kustom:</string>
-    <string name="settings_ai_model_hint">Nama model (misal: gemini-3.8-flash)</string>
+    <string name="settings_ai_model_hint">Nama model (misal: gemini-3.1-flash-lite)</string>
     <string name="settings_ai_prompt_label">Prompt Fansub</string>
     <string name="settings_ai_prompt_hint">Prompt instruksi terjemahan fansub...</string>
     <string name="settings_ai_badge_none">Gemini / Groq / NVIDIA NIM / OpenRouter / OpenAI</string>

@@ -19,6 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,34 +96,74 @@ public class GtxTranslator {
                         .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
                         .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
                         .build();
-                List<SubtitleCue> translated = new ArrayList<>(cues.size());
-                int totalCues = cues.size();
-                int translatedTotalCount = 0;
-
+                final int totalCues = cues.size();
+                List<int[]> batchRanges = new ArrayList<>();
                 for (int startIdx = 0; startIdx < totalCues; startIdx += BATCH_SIZE) {
-                    int endIdx = Math.min(startIdx + BATCH_SIZE, totalCues);
-                    List<SubtitleCue> batch = cues.subList(startIdx, endIdx);
+                    batchRanges.add(new int[]{startIdx, Math.min(startIdx + BATCH_SIZE, totalCues)});
+                }
 
-                    List<String> translatedBatchTexts = translateBatch(client, batch);
-                    int batchTranslatedCount = 0;
-                    for (int j = 0; j < batch.size(); j++) {
-                        SubtitleCue orig = batch.get(j);
-                        String trText = (j < translatedBatchTexts.size() && !translatedBatchTexts.get(j).isEmpty())
-                                ? translatedBatchTexts.get(j)
-                                : orig.text;
-                        if (!trText.equalsIgnoreCase(orig.text)) {
-                            batchTranslatedCount++;
-                            translatedTotalCount++;
-                        }
-                        translated.add(new SubtitleCue(orig.startMs, orig.endMs, trText));
+                final int numBatches = batchRanges.size();
+                @SuppressWarnings("unchecked")
+                final List<SubtitleCue>[] batchResults = new List[numBatches];
+                final AtomicInteger completedCues = new AtomicInteger(0);
+                final AtomicInteger translatedTotalCount = new AtomicInteger(0);
+                final Object progressLock = new Object();
+
+                ExecutorService pool = Executors.newFixedThreadPool(Math.min(4, Math.max(1, numBatches)));
+                try {
+                    List<Callable<Void>> tasks = new ArrayList<>(numBatches);
+                    for (int bi = 0; bi < numBatches; bi++) {
+                        final int batchIdx = bi;
+                        final int sIdx = batchRanges.get(bi)[0];
+                        final int eIdx = batchRanges.get(bi)[1];
+                        tasks.add(() -> {
+                            List<SubtitleCue> batch = cues.subList(sIdx, eIdx);
+                            List<String> translatedBatchTexts = translateBatch(client, batch);
+                            List<SubtitleCue> outBatch = new ArrayList<>(batch.size());
+                            int batchTranslatedCount = 0;
+                            for (int j = 0; j < batch.size(); j++) {
+                                SubtitleCue orig = batch.get(j);
+                                String trText = (j < translatedBatchTexts.size() && !translatedBatchTexts.get(j).isEmpty())
+                                        ? translatedBatchTexts.get(j)
+                                        : orig.text;
+                                if (!trText.equalsIgnoreCase(orig.text)) {
+                                    batchTranslatedCount++;
+                                    translatedTotalCount.incrementAndGet();
+                                }
+                                outBatch.add(new SubtitleCue(orig.startMs, orig.endMs, trText));
+                            }
+                            synchronized (progressLock) {
+                                batchResults[batchIdx] = outBatch;
+                                int doneNow = completedCues.addAndGet(batch.size());
+                                if (callback != null) {
+                                    callback.onProgress(doneNow, totalCues);
+                                    if (batchTranslatedCount > 0
+                                            && (translatedTotalCount.get() * 100 / Math.max(1, doneNow)) > 25) {
+                                        List<SubtitleCue> contiguous = new ArrayList<>();
+                                        for (int k = 0; k < numBatches && batchResults[k] != null; k++) {
+                                            contiguous.addAll(batchResults[k]);
+                                        }
+                                        if (!contiguous.isEmpty()) {
+                                            callback.onPartialSuccess(contiguous);
+                                        }
+                                    }
+                                }
+                            }
+                            return null;
+                        });
                     }
+                    List<Future<Void>> futures = pool.invokeAll(tasks);
+                    for (Future<Void> f : futures) {
+                        f.get();
+                    }
+                } finally {
+                    pool.shutdownNow();
+                }
 
-                    if (callback != null) {
-                        callback.onProgress(translated.size(), totalCues);
-                        // Cegah premature English display saat batch gagal / fallback ke English mentah
-                        if (batchTranslatedCount > 0 && (translatedTotalCount * 100 / Math.max(1, translated.size())) > 25) {
-                            callback.onPartialSuccess(new ArrayList<>(translated));
-                        }
+                List<SubtitleCue> translated = new ArrayList<>(totalCues);
+                for (int bi = 0; bi < numBatches; bi++) {
+                    if (batchResults[bi] != null) {
+                        translated.addAll(batchResults[bi]);
                     }
                 }
 

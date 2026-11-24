@@ -173,7 +173,7 @@
     <string name="settings_ai_key_hint">AIzaSy... / gsk_... / nvapi-... / sk-or-... / sk-...</string>
     <string name="settings_ai_model_label">モデル選択</string>
     <string name="settings_ai_model_desc">推奨モデルを選ぶか、カスタムモデル名を入力してください:</string>
-    <string name="settings_ai_model_hint">モデル名 (例: gemini-3.8-flash)</string>
+    <string name="settings_ai_model_hint">モデル名 (例: gemini-3.1-flash-lite)</string>
     <string name="settings_ai_prompt_label">翻訳プロンプト</string>
     <string name="settings_ai_prompt_hint">翻訳指示プロンプトを入力...</string>
     <string name="settings_ai_badge_none">Gemini / Groq / NVIDIA NIM / OpenRouter / OpenAI</string>

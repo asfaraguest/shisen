@@ -121,7 +121,7 @@ public class AiSubtitleServiceTest {
         assertEquals("POST", req.getMethod());
         assertEquals("Bearer " + key, req.getHeader("Authorization"));
         String body = req.getBody().readUtf8();
-        assertTrue(body.contains("openai/gpt-oss-120b"));
+        assertTrue(body.contains("llama-3.3-70b-versatile"));
         assertTrue(body.contains("Zoltraak magic has been unleashed."));
     }
 
@@ -225,37 +225,39 @@ public class AiSubtitleServiceTest {
 
     @Test
     public void testModelSelectorDefaultsAndAvailableList() {
-        assertEquals("gemini-3.8-flash", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GEMINI));
-        assertEquals("openai/gpt-oss-120b", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GROQ));
+        assertEquals("gemini-3.1-flash-lite", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GEMINI));
+        assertEquals("llama-3.3-70b-versatile", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GROQ));
         assertEquals("gpt-4o-mini", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENAI));
-        assertEquals("google/gemma-4-31b-it:free", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENROUTER));
+        assertEquals("google/gemini-2.0-flash-exp:free", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.OPENROUTER));
         assertEquals("meta/llama-3.3-70b-instruct", AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.NVIDIA_NIM));
 
         java.util.List<String> geminiModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.GEMINI);
         assertTrue(geminiModels.size() >= 3);
-        assertEquals("gemini-3.8-flash", geminiModels.get(0));
-        assertTrue(geminiModels.contains("gemini-4-argon"));
+        assertEquals("gemini-3.1-flash-lite", geminiModels.get(0));
+        assertTrue(geminiModels.contains("gemini-3.5-flash"));
 
         java.util.List<String> groqModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.GROQ);
         assertTrue(groqModels.size() >= 3);
-        assertEquals("openai/gpt-oss-120b", groqModels.get(0));
-        assertTrue(groqModels.contains("openai/gpt-oss-20b"));
+        assertEquals("llama-3.3-70b-versatile", groqModels.get(0));
+        assertTrue(groqModels.contains("llama-3.1-8b-instant"));
 
         java.util.List<String> nvidiaModels = AiSubtitleService.getAvailableModels(AiSubtitleService.Provider.NVIDIA_NIM);
         assertEquals("meta/llama-3.3-70b-instruct", nvidiaModels.get(0));
         assertTrue(nvidiaModels.contains("deepseek-ai/deepseek-r1"));
 
         // Effective model fallback when custom model is null or empty
-        assertEquals("gemini-3.8-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, ""));
+        assertEquals("gemini-3.1-flash-lite", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, ""));
         assertEquals("custom-gemini-model", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "custom-gemini-model"));
 
         // Active models adapted from Tatap
         assertEquals("llama-3.3-70b-versatile", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GROQ, "llama-3.3-70b-versatile"));
         assertEquals("google/gemini-2.0-flash-exp:free", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.OPENROUTER, "google/gemini-2.0-flash-exp:free"));
 
-        // Deprecated model auto-migration
-        assertEquals("gemini-3.8-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "gemini-2.5-pro"));
-        assertEquals("openai/gpt-oss-120b", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GROQ, "mixtral-8x7b-32768"));
+        // Deprecated & legacy model auto-migration (Tatap _LEGACY_MODEL_UPGRADE)
+        assertEquals("gemini-3.1-flash-lite", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "gemini-2.5-pro"));
+        assertEquals("gemini-3.1-flash-lite", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "gemini-2.0-flash"));
+        assertEquals("gemini-3.5-flash", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GEMINI, "gemini-2.5-flash"));
+        assertEquals("llama-3.3-70b-versatile", AiSubtitleService.getEffectiveModel(AiSubtitleService.Provider.GROQ, "mixtral-8x7b-32768"));
     }
 
     @Test
@@ -407,7 +409,7 @@ public class AiSubtitleServiceTest {
     @Test
     public void testModelCooldownSkipsFailingModelOnNextCall() {
         AiSubtitleService.clearModelCooldowns();
-        String primary = "gemini-3.8-flash";
+        String primary = "gemini-3.1-flash-lite";
         java.util.List<String> initialChain = AiSubtitleService.buildModelRotationChain(
                 AiSubtitleService.Provider.GEMINI, primary);
         assertEquals(primary, initialChain.get(0));
@@ -423,18 +425,44 @@ public class AiSubtitleServiceTest {
     }
 
     @Test
-    public void testRefineWithTlcAsyncUsesTatapFullPromptRetriesMissingAndRotatesOn503() throws Exception {
+    public void testBuildTlcSystemPromptAndNoopParsing() {
+        assertEquals(AiSubtitleService.TLC_REFINE_PROMPT_ID,
+                AiSubtitleService.buildTlcSystemPrompt(null));
+        assertEquals(AiSubtitleService.TLC_REFINE_PROMPT_ID,
+                AiSubtitleService.buildTlcSystemPrompt(AiSubtitleService.DEFAULT_FANSUB_PROMPT_ID));
+
+        String shortCustom = AiSubtitleService.buildTlcSystemPrompt("Gunakan gaya bicara tsundere.");
+        assertTrue(shortCustom.startsWith(AiSubtitleService.TLC_REFINE_PROMPT_ID));
+        assertTrue(shortCustom.contains("Gunakan gaya bicara tsundere."));
+
+        String fullCustom = AiSubtitleService.buildTlcSystemPrompt("ATURAN UTAMA:\nGunakan bahasa baku kerajaan abad pertengahan.");
+        assertTrue(fullCustom.contains("TUGAS TAMBAHAN (TLC MODE)"));
+        assertTrue(fullCustom.contains("FORMAT KELUARAN TLC (WAJIB)"));
+
+        assertTrue(AiSubtitleService.isTlcNoopOk("0|OK"));
+        assertTrue(AiSubtitleService.isTlcNoopOk("<think>all good</think>\nALL OK."));
+        assertTrue(AiSubtitleService.isTlcNoopOk("TIDAK ADA"));
+        assertFalse(AiSubtitleService.isTlcNoopOk("1|Halo"));
+
+        String tlcOut = "1|How are you? || Kamu gimana?\n2|[FINAL] Baik.\n3|DRAFT: Ayo!\n4|-> Siap, Tuan!";
+        java.util.Map<Integer, String> parsed = AiSubtitleService.parseIdLines(tlcOut, 5);
+        assertEquals("Kamu gimana?", parsed.get(1));
+        assertEquals("Baik.", parsed.get(2));
+        assertEquals("Ayo!", parsed.get(3));
+        assertEquals("Siap, Tuan!", parsed.get(4));
+    }
+
+    @Test
+    public void testRefineWithTlcAsyncTatapFormat400RetryAnd503Rotation() throws Exception {
         AiSubtitleService.clearModelCooldowns();
-        // Simulasikan model pertama gagal 503, model cadangan hanya balas baris 1 lalu retry balas baris 2
+        // 1) Model pertama gagal 400 reasoning_effort -> retry tanpa reasoning_effort lalu 503 -> rotasi ke model ke-2
+        server.enqueue(new MockResponse().setResponseCode(400).setBody("Unknown field: reasoning_effort"));
         server.enqueue(new MockResponse().setResponseCode(503).setBody("Service Unavailable"));
-        String partialBody = "{\n" +
-                "  \"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"1|Yang Mulia, pasukan sudah bersiap.\"}}]\n" +
+        // 2) Model ke-2 mengoreksi baris 1 saja lewat field reasoning (baris 2 non-alfabet di-skip, baris 3 tetap draf GTX+)
+        String okBody = "{\n" +
+                "  \"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"\", \"reasoning\": \"1|Yang Mulia, pasukan sudah bersiap.\"}}]\n" +
                 "}";
-        String retryBody = "{\n" +
-                "  \"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"2|Ayo kita berangkat!\"}}]\n" +
-                "}";
-        server.enqueue(new MockResponse().setResponseCode(200).setHeader("Content-Type", "application/json").setBody(partialBody));
-        server.enqueue(new MockResponse().setResponseCode(200).setHeader("Content-Type", "application/json").setBody(retryBody));
+        server.enqueue(new MockResponse().setResponseCode(200).setHeader("Content-Type", "application/json").setBody(okBody));
 
         java.util.List<SubtitleCue> en = java.util.Arrays.asList(
                 new SubtitleCue(0, 2000, "Your Majesty, the troops are ready."),
@@ -452,7 +480,7 @@ public class AiSubtitleServiceTest {
         final String[] errOut = new String[1];
         final int[] lastProgress = new int[]{-1, -1};
 
-        service.refineWithTlcAsync(null, "test-ep-1", en, draft, null, "gemini-3.8-flash", "AIzaSyTestKey", true, null,
+        service.refineWithTlcAsync(null, "test-ep-1", en, draft, null, "gemini-3.1-flash-lite", "AIzaSyTestKey", true, null,
                 new AiSubtitleService.TranslateCuesCallback() {
                     @Override public void onProgress(int progress, int total) {
                         lastProgress[0] = progress;
@@ -476,15 +504,18 @@ public class AiSubtitleServiceTest {
         assertEquals(3, out[0].size());
         assertEquals("Yang Mulia, pasukan sudah bersiap.", out[0].get(0).text);
         assertEquals("...", out[0].get(1).text);
-        assertEquals("Ayo kita berangkat!", out[0].get(2).text);
-        assertTrue(AiSubtitleService.isModelInCooldown("gemini-3.8-flash"));
+        assertEquals("Ayo pergi!", out[0].get(2).text);
+        assertTrue(AiSubtitleService.isModelInCooldown("gemini-3.1-flash-lite"));
 
-        // Pastikan request memakai DEFAULT_FANSUB_PROMPT_ID & format N|English murni (tanpa || draf_gtx)
         RecordedRequest req1 = server.takeRequest();
         String body1 = req1.getBody().readUtf8();
-        assertTrue(body1.contains("penerjemah fansub anime Indonesia berpengalaman"));
-        assertTrue(body1.contains("1|Your Majesty, the troops are ready."));
-        assertFalse(body1.contains("||"));
+        assertTrue(body1.contains("\"reasoning_effort\":\"none\""));
+        assertTrue(body1.contains("1|Your Majesty, the troops are ready. || Yang Mulia, pasukan udah siap."));
+        assertTrue(body1.contains("3|Let's go! || Ayo pergi!"));
+        assertFalse("Non-alphabetic cue 2 must be skipped from TLC request", body1.contains("2|..."));
+
+        RecordedRequest req2 = server.takeRequest();
+        assertFalse(req2.getBody().readUtf8().contains("reasoning_effort"));
         AiSubtitleService.clearModelCooldowns();
     }
 }

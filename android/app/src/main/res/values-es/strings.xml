@@ -173,7 +173,7 @@
     <string name="settings_ai_key_hint">AIzaSy... / gsk_... / nvapi-... / sk-or-... / sk-...</string>
     <string name="settings_ai_model_label">Seleccionar Modelo</string>
     <string name="settings_ai_model_desc">Elige un modelo recomendado o ingresa un nombre personalizado:</string>
-    <string name="settings_ai_model_hint">Nombre del modelo (ej: gemini-3.8-flash)</string>
+    <string name="settings_ai_model_hint">Nombre del modelo (ej: gemini-3.1-flash-lite)</string>
     <string name="settings_ai_prompt_label">Prompt de Traducción</string>
     <string name="settings_ai_prompt_hint">Ingresa instrucciones para traducción...</string>
     <string name="settings_ai_badge_none">Gemini / Groq / NVIDIA NIM / OpenRouter / OpenAI</string>

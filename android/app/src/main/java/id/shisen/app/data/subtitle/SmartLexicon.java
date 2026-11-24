@@ -1219,6 +1219,18 @@ public class SmartLexicon {
         return result;
     }
 
+    public static String sanitizeFansubId(String text, boolean forceFormal) {
+        if (text == null || text.isEmpty()) return "";
+        String result = applyUniversalLexicon(text);
+        boolean isFormal = forceFormal || FORMAL_INDICATORS_RE.matcher(result).find();
+        if (!isFormal) {
+            for (Rule rule : CASUAL_RULES) {
+                result = applyRulePreservingCase(rule, result);
+            }
+        }
+        return result;
+    }
+
     public static String sanitizeGtxPlusId(String text, boolean forceFormal) {
         return sanitizeGtxPlusId(text, forceFormal, false);
     }
@@ -1288,7 +1300,7 @@ public class SmartLexicon {
         for (int i = 0; i < n; i++) {
             SubtitleCue c = cues.get(i);
             String sanitized = "fansub".equalsIgnoreCase(mode)
-                    ? applyUniversalLexicon(c.text)
+                    ? sanitizeFansubId(c.text, contextualFormal[i])
                     : sanitizeGtxPlusId(c.text, contextualFormal[i], directRage[i]);
             out.add(new SubtitleCue(c.startMs, c.endMs, sanitized));
         }

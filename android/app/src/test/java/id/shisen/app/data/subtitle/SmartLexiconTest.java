@@ -179,12 +179,14 @@ public class SmartLexiconTest {
     }
 
     @Test
-    public void testFansubModePreservesAiPronounsWhileApplyingUniversalGlossary() {
+    public void testFansubModePreservesAiPronounsWhileApplyingUniversalAndCasualGlossary() {
         List<SubtitleCue> cues = new ArrayList<>();
         cues.add(new SubtitleCue(0, 2000, "Saya tidak mengerti mengapa dia masuk ke penjara bawah tanah."));
         List<SubtitleCue> result = SmartLexicon.sanitizeCuesWithContext(cues, "fansub", 3, 15.0);
         assertEquals(1, result.size());
-        assertTrue(result.get(0).text.startsWith("Saya tidak mengerti"));
+        // Mode fansub Tatap menjaga "Saya" (tidak memaksa jadi "aku") sambil menerapkan universal + casual rules
+        assertTrue(result.get(0).text.startsWith("Saya "));
+        assertTrue(result.get(0).text.contains("kenapa"));
         assertTrue(result.get(0).text.contains("dungeon"));
     }
 }
