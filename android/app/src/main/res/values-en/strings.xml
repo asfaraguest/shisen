@@ -361,7 +361,10 @@
     <string name="ai_dialog_prompt_title">Custom Translation Prompt (Fansub)</string>
     <string name="ai_dialog_prompt_desc">Instruct style, tone, or fansub rules. Leave empty to use default fansub prompt.</string>
     <string name="ai_dialog_save">Save Settings</string>
-    <string name="player_sub_option_ai">[AI] Indonesian (AI Fansub LLM)</string>
+    <string name="player_sub_option_ai">[AI] Instant AI Sub (Indonesian)</string>
+    <string name="player_sub_toast_instant_ai_start">⚡ GTX+ active! AI is refining (Smart Scene)...</string>
+    <string name="player_sub_toast_instant_ai_done">✨ Instant AI Sub Indo refinement complete!</string>
+    <string name="player_sub_toast_instant_ai_fallback">⚠️ AI unavailable, keeping instant GTX+ result</string>
     <string name="player_sub_ai_not_configured">LLM API key not configured. Please configure it first.</string>
     <string name="player_sub_option_refresh_ai">[Refresh] Re-translate AI Subtitle (Bypass Cache)</string>
     <string name="player_sub_ai_loading">Translating with AI (%d%%)...</string>

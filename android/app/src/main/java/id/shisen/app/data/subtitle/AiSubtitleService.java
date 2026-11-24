@@ -10,12 +10,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -431,12 +434,33 @@ Output:
 
     public static final String DEFAULT_CUSTOM_PROMPT = DEFAULT_FANSUB_PROMPT_ID;
 
+    public static final String EMBEDDED_SMART_SCENE_TLC_PROMPT_ID = """
+Kamu adalah editor TLC (Translation Checker) fansub anime Indonesia dengan mode SMART SCENE ADAPTIF.
+Setiap baris input berformat: N|teks_sumber_english || draf_gtx_indonesia
+Draf GTX+ sudah menerjemahkan kata dasar dan kamus anime. Tugasmu:
+1. Bandingkan teks English dengan draf GTX+, lalu KOREKSI HANYA baris yang kalimat, idiom, struktur, kata ganti, atau diksinya terasa aneh, kaku, harfiah/calque, atau melenceng dari konteks adegan.
+2. Baris yang draf GTX+-nya sudah akurat, alami, dan pas dengan nada adegan JANGAN ditulis ulang (lewati saja). Jika semua baris sudah bagus, balas persis: 0|OK
+3. Deteksi adegan secara adaptif (Smart Scene):
+   - Adegan Formal / Kerajaan / Bangsawan / Militer / Pelayan ke Tuan: pertahankan bahasa baku, sopan, berwibawa ("saya/Anda", "Yang Mulia", "Paduka", "Hamba", "tidak", "sudah") — DILARANG menyelipkan kata gaul ("nggak", "udah", "kok", "sih", "gue/lo").
+   - Adegan Santai / Sekolah / Komedi / Sehari-hari: gunakan bahasa lisan fansub yang luwes ("aku/kamu", "nggak", "udah", "aja", "banget", "kok", "sih"). Di lingkungan sekolah antar teman WAJIB konsisten "aku/kamu" (jangan campur "saya/Anda").
+   - Adegan Kasar / Pertarungan / Preman / Musuh: gunakan nada tegas atau agresif wajar ("aku/kau" atau "gue/lo", umpatan wajar).
+4. Murni Bahasa Indonesia (ZERO kosakata Melayu seperti "awak", "kerana", "ialah", "sahaja", "tak", "tengok", "pula", "jangan risau", "pelik", "comel").
+5. Pertahankan nama orang, honorifik (-san, -kun, -chan, -sama, Senpai, Sensei), gagap ("A-Apa?!"), istilah anime/game (dungeon, guild, party, skill, jutsu), serta token <br> persis pada posisinya.
+
+FORMAT KELUARAN (WAJIB):
+- Keluarkan HANYA baris yang diperbaiki dengan format: N|teks_indonesia_final
+- Jika semua baris sudah bagus, balas persis: 0|OK
+- DILARANG mengulang teks English sumber, tanda ||, atau memberi penjelasan tambahan.""";
+
     private static final String OLD_SHORT_PROMPT_PREFIX = "Terjemahkan subtitle anime ini ke Bahasa Indonesia";
 
     private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
     private static final Pattern ID_LINE_PATTERN = Pattern.compile("^\\s*(?:\\*\\*)?(\\d{1,4})(?:\\*\\*)?\\s*[|｜]\\s?(.*)$");
     private static final Pattern THINK_TAG_PATTERN = Pattern.compile("<think>.*?</think>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     private static final Pattern CODE_BLOCK_PATTERN = Pattern.compile("```[a-zA-Z]*");
+    private static final Pattern ALPHABETIC_PATTERN = Pattern.compile("[A-Za-z\\u00C0-\\u024F\\u3040-\\u30FF\\u4E00-\\u9FFF]");
+    private static final Pattern TLC_PREFIX_PATTERN = Pattern.compile("^(?:\\[ID\\]|DRAFT:|->)\\s*", Pattern.CASE_INSENSITIVE);
+    private static final ConcurrentHashMap<String, Long> MODEL_COOLDOWN = new ConcurrentHashMap<>();
 
     public enum Provider {
         GEMINI("Google Gemini", "AIzaSy... / AQ..."),
@@ -479,6 +503,7 @@ Output:
         void onProgress(int progress, int total);
         void onSuccess(List<SubtitleCue> cues);
         void onError(String error);
+        default void onPartialSuccess(List<SubtitleCue> partialCues, int refinedCount) {}
     }
 
     private final OkHttpClient httpClient;
@@ -917,67 +942,8 @@ Output:
         if (isReasoning) {
             userPrompt = "JANGAN sertakan penalaran/thinking. Langsung keluarkan format N|terjemahan secara ringkas.\n\n" + userPrompt;
         }
-
-        JSONArray messages = new JSONArray();
-        boolean gemma = isGemmaModel(model);
-        if (gemma) {
-            // Model Gemma secara arsitektural menolak role: "system" pada API chat format OpenAI
-            userPrompt = systemPrompt + "\n\n" + userPrompt;
-        } else {
-            JSONObject sysMsg = new JSONObject();
-            sysMsg.put("role", "system");
-            sysMsg.put("content", systemPrompt);
-            messages.put(sysMsg);
-        }
-
-        JSONObject userMsg = new JSONObject();
-        userMsg.put("role", "user");
-        userMsg.put("content", userPrompt);
-        messages.put(userMsg);
-
-        JSONObject payload = new JSONObject();
-        payload.put("model", model);
-        payload.put("messages", messages);
-        payload.put("temperature", 0.3);
-        if (isReasoning) {
-            payload.put("reasoning_effort", "low");
-            if (provider == Provider.GROQ) {
-                payload.put("reasoning_format", "hidden");
-            }
-        }
-
-        Request.Builder reqBuilder = new Request.Builder()
-                .url(endpointUrl)
-                .post(RequestBody.create(payload.toString(), JSON_MEDIA_TYPE))
-                .header("Content-Type", "application/json");
-
-        if (apiKey != null && !apiKey.isEmpty()) {
-            reqBuilder.header("Authorization", "Bearer " + apiKey);
-        }
-        if (provider == Provider.GEMINI) {
-            reqBuilder.header("x-goog-api-key", apiKey);
-        }
-        if (provider == Provider.OPENROUTER) {
-            reqBuilder.header("HTTP-Referer", "https://shisen.app");
-            reqBuilder.header("X-Title", "Shisen");
-        }
-
-        try (Response resp = httpClient.newCall(reqBuilder.build()).execute()) {
-            if (!resp.isSuccessful()) {
-                String errBody = resp.body() != null ? resp.body().string() : "";
-                throw new IOException("HTTP " + resp.code() + ": " + errBody);
-            }
-            String respBody = resp.body() != null ? resp.body().string() : "";
-            JSONObject json = new JSONObject(respBody);
-            JSONArray choices = json.optJSONArray("choices");
-            if (choices != null && choices.length() > 0) {
-                JSONObject msg = choices.getJSONObject(0).optJSONObject("message");
-                if (msg != null) {
-                    return msg.optString("content", "");
-                }
-            }
-            return "";
-        }
+        return executeChatCompletion(httpClient, endpointUrl, provider, apiKey, model,
+                systemPrompt, userPrompt, 0.3, isReasoning, false);
     }
 
     /**
@@ -1009,6 +975,7 @@ Output:
                     t = parts[parts.length - 1].trim();
                 }
             }
+            t = TLC_PREFIX_PATTERN.matcher(t).replaceFirst("").trim();
 
             // Pulihkan token <br> menjadi baris baru
             t = t.replaceAll("(?i)\\s*<br\\s*/?>\\s*", "\n").trim();
@@ -1018,6 +985,371 @@ Output:
             }
         }
         return out;
+    }
+
+    public static String buildInstantTlcPrompt(String userCustomPrompt) {
+        if (userCustomPrompt == null) return EMBEDDED_SMART_SCENE_TLC_PROMPT_ID;
+        String trimmed = userCustomPrompt.trim();
+        if (trimmed.isEmpty()
+                || trimmed.equals(DEFAULT_FANSUB_PROMPT_ID.trim())
+                || trimmed.startsWith(OLD_SHORT_PROMPT_PREFIX)
+                || trimmed.length() > 320) {
+            return EMBEDDED_SMART_SCENE_TLC_PROMPT_ID;
+        }
+        return EMBEDDED_SMART_SCENE_TLC_PROMPT_ID
+                + "\n\nINSTRUKSI TAMBAHAN PENGGUNA (PRIORITAS TINGGI):\n" + trimmed;
+    }
+
+    public static boolean isTlcNoopOk(String content) {
+        if (content == null) return false;
+        String cleaned = THINK_TAG_PATTERN.matcher(content).replaceAll("");
+        cleaned = CODE_BLOCK_PATTERN.matcher(cleaned).replaceAll("").trim();
+        return "0|OK".equalsIgnoreCase(cleaned)
+                || "OK".equalsIgnoreCase(cleaned)
+                || "NONE".equalsIgnoreCase(cleaned);
+    }
+
+    public static void markModelCooldown(String model, long durationMs) {
+        if (model == null || model.trim().isEmpty()) return;
+        MODEL_COOLDOWN.put(model.trim(), System.currentTimeMillis() + Math.max(1000L, durationMs));
+    }
+
+    public static boolean isModelInCooldown(String model) {
+        if (model == null || model.trim().isEmpty()) return false;
+        Long until = MODEL_COOLDOWN.get(model.trim());
+        if (until == null) return false;
+        if (System.currentTimeMillis() >= until) {
+            MODEL_COOLDOWN.remove(model.trim());
+            return false;
+        }
+        return true;
+    }
+
+    public static void clearModelCooldowns() {
+        MODEL_COOLDOWN.clear();
+    }
+
+    public static List<String> buildModelRotationChain(Provider provider, String primaryModel) {
+        LinkedHashSet<String> healthy = new LinkedHashSet<>();
+        LinkedHashSet<String> cooled = new LinkedHashSet<>();
+        List<String> candidates = new ArrayList<>();
+        if (primaryModel != null && !primaryModel.trim().isEmpty()) {
+            candidates.add(primaryModel.trim());
+        }
+        candidates.addAll(getAvailableModels(provider));
+        for (String m : candidates) {
+            if (isModelInCooldown(m)) cooled.add(m);
+            else healthy.add(m);
+        }
+        List<String> chain = new ArrayList<>(healthy);
+        chain.addAll(cooled);
+        return chain;
+    }
+
+    public static boolean hasInstantAiCache(Context context, String sourceIdentifier, String model) {
+        if (context == null || sourceIdentifier == null) return false;
+        Provider provider = getActiveProvider(context);
+        String effectiveModel = (model != null && !model.trim().isEmpty())
+                ? model.trim()
+                : getEffectiveModel(context, provider);
+        File cacheFile = getInstantAiCacheFile(context, sourceIdentifier, effectiveModel);
+        return cacheFile != null && cacheFile.exists() && cacheFile.length() > 0;
+    }
+
+    private static File getInstantAiCacheFile(Context context, String sourceIdentifier, String effectiveModel) {
+        if (context == null) return null;
+        File cacheDir = new File(context.getCacheDir(), "sub_cache");
+        if (!cacheDir.exists()) cacheDir.mkdirs();
+        String cacheKey = sha1(sourceIdentifier + "_" + effectiveModel + "_instant_ai_id_v1");
+        return new File(cacheDir, cacheKey + ".json");
+    }
+
+    private static boolean isReasoningModel(String model) {
+        if (model == null) return false;
+        String m = model.toLowerCase();
+        return m.contains("gpt-oss") || m.contains("deepseek-r1") || m.contains("nemotron") || m.contains("o3-mini");
+    }
+
+    public void refineWithTlcAsync(Context context,
+                                   String sourceIdentifier,
+                                   List<SubtitleCue> enCues,
+                                   List<SubtitleCue> draftCues,
+                                   String customPrompt,
+                                   String model,
+                                   String apiKey,
+                                   boolean forceRefresh,
+                                   java.util.function.BooleanSupplier isCancelled,
+                                   TranslateCuesCallback callback) {
+        if (enCues == null || enCues.isEmpty()) {
+            if (callback != null) callback.onError("Tidak ada cue subtitle untuk disempurnakan");
+            return;
+        }
+        if (draftCues == null || draftCues.size() != enCues.size()) {
+            translateCuesAsync(context, sourceIdentifier, enCues, customPrompt, model, apiKey, forceRefresh, isCancelled, callback);
+            return;
+        }
+
+        final String activeKey = (apiKey != null && !apiKey.trim().isEmpty())
+                ? apiKey.trim()
+                : (context != null ? getKey(context) : "");
+        if (activeKey.isEmpty()) {
+            if (callback != null) callback.onError("Kunci API LLM belum dikonfigurasi");
+            return;
+        }
+
+        final Provider provider = Provider.detect(activeKey);
+        final String effectiveModel = (model != null && !model.trim().isEmpty())
+                ? model.trim()
+                : (context != null ? getEffectiveModel(context, provider) : getDefaultModel(provider));
+        final String tlcPrompt = buildInstantTlcPrompt(customPrompt != null ? customPrompt : (context != null ? getCustomPrompt(context) : null));
+
+        new Thread(() -> {
+            try {
+                if (isCancelled != null && isCancelled.getAsBoolean()) return;
+
+                File cacheFile = getInstantAiCacheFile(context, sourceIdentifier, effectiveModel);
+                if (!forceRefresh && cacheFile != null && cacheFile.exists() && cacheFile.length() > 0) {
+                    try {
+                        List<SubtitleCue> cached = deserializeCues(readFile(cacheFile));
+                        if (cached.size() == enCues.size() && !containsDominantArabicScript(cached)) {
+                            if (callback != null && (isCancelled == null || !isCancelled.getAsBoolean())) {
+                                callback.onSuccess(cached);
+                            }
+                            return;
+                        } else if (containsDominantArabicScript(cached)) {
+                            cacheFile.delete();
+                        }
+                    } catch (Exception ignored) {}
+                }
+
+                OkHttpClient tlcClient = httpClient.newBuilder()
+                        .readTimeout(15, TimeUnit.SECONDS)
+                        .build();
+                String endpointUrl = getEndpointUrl(provider, activeKey);
+                List<String> modelChain = buildModelRotationChain(provider, effectiveModel);
+                if (modelChain.isEmpty()) modelChain.add(effectiveModel);
+
+                int totalCues = enCues.size();
+                List<SubtitleCue> workingCues = new ArrayList<>(totalCues);
+                for (SubtitleCue dc : draftCues) {
+                    workingCues.add(new SubtitleCue(dc.startMs, dc.endMs, dc.text));
+                }
+
+                int succeededBatches = 0;
+                int refinedCount = 0;
+                String lastError = "Semua model AI gagal merespons";
+                int lo = 0;
+                int activeModelIdx = 0;
+
+                while (lo < totalCues) {
+                    if (isCancelled != null && isCancelled.getAsBoolean()) return;
+                    String curModel = modelChain.get(Math.min(activeModelIdx, modelChain.size() - 1));
+                    int batchSize = isReasoningModel(curModel) ? 20 : 60;
+                    int hi = Math.min(lo + batchSize, totalCues);
+
+                    List<Integer> targetIndices = new ArrayList<>();
+                    List<SubtitleCue> targetEn = new ArrayList<>();
+                    List<SubtitleCue> targetDraft = new ArrayList<>();
+                    for (int idx = lo; idx < hi; idx++) {
+                        String enTxt = enCues.get(idx).text;
+                        if (enTxt != null && ALPHABETIC_PATTERN.matcher(enTxt).find()) {
+                            targetIndices.add(idx);
+                            targetEn.add(enCues.get(idx));
+                            targetDraft.add(workingCues.get(idx));
+                        }
+                    }
+
+                    if (!targetEn.isEmpty()) {
+                        List<String> contextLines = new ArrayList<>();
+                        int ctxStart = Math.max(0, lo - 4);
+                        for (int c = ctxStart; c < lo; c++) {
+                            contextLines.add(prepLine(enCues.get(c).text) + " -> " + prepLine(workingCues.get(c).text));
+                        }
+
+                        boolean batchDone = false;
+                        int attempts = modelChain.size();
+                        for (int attempt = 0; attempt < attempts; attempt++) {
+                            if (isCancelled != null && isCancelled.getAsBoolean()) return;
+                            int tryIdx = (activeModelIdx + attempt) % modelChain.size();
+                            String tryModel = modelChain.get(tryIdx);
+                            try {
+                                String respContent = callTlcCompletion(
+                                        tlcClient, endpointUrl, provider, activeKey, tryModel,
+                                        tlcPrompt, contextLines, targetEn, targetDraft);
+                                if (!isTlcNoopOk(respContent)) {
+                                    Map<Integer, String> corrections = parseIdLines(respContent, targetEn.size());
+                                    for (Map.Entry<Integer, String> entry : corrections.entrySet()) {
+                                        int localIdx = entry.getKey() - 1;
+                                        if (localIdx >= 0 && localIdx < targetIndices.size()) {
+                                            int globalIdx = targetIndices.get(localIdx);
+                                            SubtitleCue orig = workingCues.get(globalIdx);
+                                            workingCues.set(globalIdx, new SubtitleCue(orig.startMs, orig.endMs, entry.getValue()));
+                                            refinedCount++;
+                                        }
+                                    }
+                                }
+                                activeModelIdx = tryIdx;
+                                succeededBatches++;
+                                batchDone = true;
+                                break;
+                            } catch (Exception e) {
+                                lastError = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+                                long cooldown = (lastError.contains("HTTP 402") || lastError.contains("HTTP 404")) ? 1_800_000L : 180_000L;
+                                if (e instanceof SocketTimeoutException
+                                        || lastError.contains("HTTP 429") || lastError.contains("HTTP 500")
+                                        || lastError.contains("HTTP 502") || lastError.contains("HTTP 503")
+                                        || lastError.contains("HTTP 504") || lastError.contains("HTTP 402")
+                                        || lastError.contains("HTTP 404")) {
+                                    markModelCooldown(tryModel, cooldown);
+                                }
+                            }
+                        }
+                        if (!batchDone) {
+                            // Pertahankan draf GTX+ untuk batch ini jika model gagal sementara
+                        }
+                    } else {
+                        succeededBatches++;
+                    }
+
+                    lo = hi;
+                    if (callback != null) {
+                        callback.onProgress(lo, totalCues);
+                        if (succeededBatches > 0) {
+                            callback.onPartialSuccess(new ArrayList<>(workingCues), refinedCount);
+                        }
+                    }
+                }
+
+                if (isCancelled != null && isCancelled.getAsBoolean()) return;
+                if (succeededBatches == 0) {
+                    if (callback != null) callback.onError(lastError);
+                    return;
+                }
+
+                List<SubtitleCue> finalCues = SmartLexicon.sanitizeCuesWithContext(workingCues, "fansub", 3, 15.0);
+                if (cacheFile != null && !containsDominantArabicScript(finalCues)) {
+                    try {
+                        writeFile(cacheFile, serializeCues(finalCues));
+                    } catch (Exception ignored) {}
+                }
+                if (callback != null) {
+                    callback.onSuccess(finalCues);
+                }
+            } catch (Exception e) {
+                if (callback != null) {
+                    callback.onError(e.getMessage() != null ? e.getMessage() : "Kesalahan TLC");
+                }
+            }
+        }).start();
+    }
+
+    private String callTlcCompletion(OkHttpClient client,
+                                     String endpointUrl,
+                                     Provider provider,
+                                     String apiKey,
+                                     String model,
+                                     String systemPrompt,
+                                     List<String> contextLines,
+                                     List<SubtitleCue> targetEn,
+                                     List<SubtitleCue> targetDraft) throws Exception {
+        StringBuilder userBody = new StringBuilder();
+        if (contextLines != null && !contextLines.isEmpty()) {
+            userBody.append("Konteks (baris sebelumnya, JANGAN ditulis ulang):\n");
+            for (String ctx : contextLines) {
+                userBody.append("- ").append(ctx).append("\n");
+            }
+            userBody.append("\n");
+        }
+        userBody.append("Periksa ").append(targetEn.size()).append(" baris berikut:\n");
+        for (int i = 0; i < targetEn.size(); i++) {
+            userBody.append(i + 1).append("|")
+                    .append(prepLine(targetEn.get(i).text))
+                    .append(" || ")
+                    .append(prepLine(targetDraft.get(i).text))
+                    .append("\n");
+        }
+
+        String userPrompt = userBody.toString().trim();
+        boolean reasoning = isReasoningModel(model);
+        if (reasoning) {
+            userPrompt = "JANGAN sertakan penalaran/thinking. Keluarkan HANYA baris koreksi N|teks atau 0|OK.\n\n" + userPrompt;
+        }
+
+        boolean sendReasoningNone = (provider == Provider.GEMINI
+                && customBaseUrl == null
+                && !isGemmaModel(model)
+                && !reasoning);
+        try {
+            return executeChatCompletion(client, endpointUrl, provider, apiKey, model, systemPrompt, userPrompt, 0.25, reasoning, sendReasoningNone);
+        } catch (IOException e) {
+            if (sendReasoningNone && e.getMessage() != null && e.getMessage().contains("HTTP 400") && e.getMessage().contains("reasoning_effort")) {
+                return executeChatCompletion(client, endpointUrl, provider, apiKey, model, systemPrompt, userPrompt, 0.25, reasoning, false);
+            }
+            throw e;
+        }
+    }
+
+    private String executeChatCompletion(OkHttpClient client,
+                                         String endpointUrl,
+                                         Provider provider,
+                                         String apiKey,
+                                         String model,
+                                         String systemPrompt,
+                                         String userPrompt,
+                                         double temperature,
+                                         boolean isReasoning,
+                                         boolean disableGeminiThinking) throws Exception {
+        JSONArray messages = new JSONArray();
+        String finalUserPrompt = userPrompt;
+        if (isGemmaModel(model)) {
+            finalUserPrompt = systemPrompt + "\n\n" + userPrompt;
+        } else {
+            JSONObject sysMsg = new JSONObject();
+            sysMsg.put("role", "system");
+            sysMsg.put("content", systemPrompt);
+            messages.put(sysMsg);
+        }
+        JSONObject userMsg = new JSONObject();
+        userMsg.put("role", "user");
+        userMsg.put("content", finalUserPrompt);
+        messages.put(userMsg);
+
+        JSONObject payload = new JSONObject();
+        payload.put("model", model);
+        payload.put("messages", messages);
+        payload.put("temperature", temperature);
+        if (isReasoning) {
+            payload.put("reasoning_effort", "low");
+            if (provider == Provider.GROQ) payload.put("reasoning_format", "hidden");
+        } else if (disableGeminiThinking) {
+            payload.put("reasoning_effort", "none");
+        }
+
+        Request.Builder reqBuilder = new Request.Builder()
+                .url(endpointUrl)
+                .post(RequestBody.create(payload.toString(), JSON_MEDIA_TYPE))
+                .header("Content-Type", "application/json");
+        if (apiKey != null && !apiKey.isEmpty()) reqBuilder.header("Authorization", "Bearer " + apiKey);
+        if (provider == Provider.GEMINI) reqBuilder.header("x-goog-api-key", apiKey);
+        if (provider == Provider.OPENROUTER) {
+            reqBuilder.header("HTTP-Referer", "https://shisen.app");
+            reqBuilder.header("X-Title", "Shisen");
+        }
+
+        try (Response resp = client.newCall(reqBuilder.build()).execute()) {
+            if (!resp.isSuccessful()) {
+                String errBody = resp.body() != null ? resp.body().string() : "";
+                throw new IOException("HTTP " + resp.code() + ": " + errBody);
+            }
+            String respBody = resp.body() != null ? resp.body().string() : "";
+            JSONObject json = new JSONObject(respBody);
+            JSONArray choices = json.optJSONArray("choices");
+            if (choices != null && choices.length() > 0) {
+                JSONObject msg = choices.getJSONObject(0).optJSONObject("message");
+                if (msg != null) return msg.optString("content", "");
+            }
+            return "";
+        }
     }
 
     public static boolean containsDominantArabicScript(List<SubtitleCue> cues) {

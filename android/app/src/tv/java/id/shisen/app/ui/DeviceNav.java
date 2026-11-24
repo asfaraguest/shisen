@@ -322,6 +322,7 @@ public final class DeviceNav {
             case FAVORIT: return host.menuItemFavorit;
             case KATALOG: return host.menuItemKatalog;
             case GENRE: return host.menuItemGenre;
+            case PENGATURAN: return host.menuItemSettings;
             case MUSIM:
             default:
                 return host.menuItemMusim;

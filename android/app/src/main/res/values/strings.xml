@@ -361,7 +361,10 @@
     <string name="ai_dialog_prompt_title">Prompt Terjemahan Kustom (Fansub)</string>
     <string name="ai_dialog_prompt_desc">Instruksikan gaya bahasa, persona terjemahan, atau aturan penulisan fansub. Kosongkan untuk menggunakan prompt default fansub.</string>
     <string name="ai_dialog_save">Simpan Pengaturan</string>
-    <string name="player_sub_option_ai">[AI] Bahasa Indonesia (AI Fansub LLM)</string>
+    <string name="player_sub_option_ai">[AI] Instant AI Sub Indo</string>
+    <string name="player_sub_toast_instant_ai_start">⚡ GTX+ aktif! AI mulai menyempurnakan (Smart Scene)...</string>
+    <string name="player_sub_toast_instant_ai_done">✨ Instant AI Sub Indo selesai disempurnakan!</string>
+    <string name="player_sub_toast_instant_ai_fallback">⚠️ AI terkendala, menampilkan hasil instan GTX+</string>
     <string name="player_sub_ai_not_configured">Kunci API LLM belum dikonfigurasi. Silakan atur terlebih dahulu.</string>
     <string name="player_sub_option_refresh_ai">[Refresh] Terjemahkan Ulang Subtitle AI (Hapus Cache)</string>
     <string name="player_sub_ai_loading">Menerjemahkan dengan AI (%d%%)...</string>

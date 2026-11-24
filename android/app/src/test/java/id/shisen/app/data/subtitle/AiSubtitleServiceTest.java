@@ -403,4 +403,113 @@ public class AiSubtitleServiceTest {
         assertEquals("Incaranmu tinggi juga ya?\nNibutani, kan?", parsed.get(2));
         assertEquals("Halo Dunia!", parsed.get(3));
     }
+
+    @Test
+    public void testEmbeddedSmartScenePromptContainsAllSceneRules() {
+        String p = AiSubtitleService.EMBEDDED_SMART_SCENE_TLC_PROMPT_ID;
+        assertNotNull(p);
+        assertTrue(p.contains("Formal / Kerajaan"));
+        assertTrue(p.contains("Santai / Sekolah"));
+        assertTrue(p.contains("Kasar / Pertarungan"));
+        assertTrue(p.contains("ZERO kosakata Melayu"));
+        assertTrue(p.contains("0|OK"));
+        assertTrue(p.contains("N|teks_indonesia_final"));
+    }
+
+    @Test
+    public void testBuildInstantTlcPromptMergesShortCustomPrompt() {
+        assertEquals(AiSubtitleService.EMBEDDED_SMART_SCENE_TLC_PROMPT_ID,
+                AiSubtitleService.buildInstantTlcPrompt(null));
+        assertEquals(AiSubtitleService.EMBEDDED_SMART_SCENE_TLC_PROMPT_ID,
+                AiSubtitleService.buildInstantTlcPrompt(AiSubtitleService.DEFAULT_FANSUB_PROMPT_ID));
+
+        String merged = AiSubtitleService.buildInstantTlcPrompt("Gunakan gaya bahasa tsundere.");
+        assertTrue(merged.startsWith(AiSubtitleService.EMBEDDED_SMART_SCENE_TLC_PROMPT_ID));
+        assertTrue(merged.contains("Gunakan gaya bahasa tsundere."));
+    }
+
+    @Test
+    public void testParseIdLinesHandlesTlcEchoAndPrefixes() {
+        String tlcOutput = "1|How are you? || Kamu gimana?\n" +
+                "2|[ID] Baik.\n" +
+                "3|DRAFT: Ayo!\n" +
+                "4|-> Siap, Tuan!\n";
+        java.util.Map<Integer, String> parsed = AiSubtitleService.parseIdLines(tlcOutput, 5);
+        assertEquals(4, parsed.size());
+        assertEquals("Kamu gimana?", parsed.get(1));
+        assertEquals("Baik.", parsed.get(2));
+        assertEquals("Ayo!", parsed.get(3));
+        assertEquals("Siap, Tuan!", parsed.get(4));
+
+        assertTrue(AiSubtitleService.isTlcNoopOk("0|OK"));
+        assertTrue(AiSubtitleService.isTlcNoopOk("<think>all good</think>\n0|OK"));
+        assertFalse(AiSubtitleService.isTlcNoopOk("1|Halo"));
+    }
+
+    @Test
+    public void testModelCooldownSkipsFailingModelOnNextCall() {
+        AiSubtitleService.clearModelCooldowns();
+        String primary = "gemini-3.8-flash";
+        java.util.List<String> initialChain = AiSubtitleService.buildModelRotationChain(
+                AiSubtitleService.Provider.GEMINI, primary);
+        assertEquals(primary, initialChain.get(0));
+
+        AiSubtitleService.markModelCooldown(primary, 60_000L);
+        assertTrue(AiSubtitleService.isModelInCooldown(primary));
+
+        java.util.List<String> rotatedChain = AiSubtitleService.buildModelRotationChain(
+                AiSubtitleService.Provider.GEMINI, primary);
+        assertNotEquals(primary, rotatedChain.get(0));
+        assertEquals(primary, rotatedChain.get(rotatedChain.size() - 1));
+        AiSubtitleService.clearModelCooldowns();
+    }
+
+    @Test
+    public void testRefineWithTlcAsyncSelectiveReplacementAnd503Rotation() throws Exception {
+        AiSubtitleService.clearModelCooldowns();
+        // Simulasikan model pertama gagal 503 lalu model cadangan sukses mengoreksi baris 1 saja
+        server.enqueue(new MockResponse().setResponseCode(503).setBody("Service Unavailable"));
+        String okBody = "{\n" +
+                "  \"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"1|Yang Mulia, pasukan telah siap.\"}}]\n" +
+                "}";
+        server.enqueue(new MockResponse().setResponseCode(200).setHeader("Content-Type", "application/json").setBody(okBody));
+
+        java.util.List<SubtitleCue> en = java.util.Arrays.asList(
+                new SubtitleCue(0, 2000, "Your Majesty, the troops are ready."),
+                new SubtitleCue(2000, 4000, "..."),
+                new SubtitleCue(4000, 6000, "Let's go!")
+        );
+        java.util.List<SubtitleCue> draft = java.util.Arrays.asList(
+                new SubtitleCue(0, 2000, "Yang Mulia, pasukan udah siap."),
+                new SubtitleCue(2000, 4000, "..."),
+                new SubtitleCue(4000, 6000, "Ayo pergi!")
+        );
+
+        java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        final java.util.List<SubtitleCue>[] out = new java.util.List[1];
+        final String[] errOut = new String[1];
+
+        service.refineWithTlcAsync(null, "test-ep-1", en, draft, null, "gemini-3.8-flash", "AIzaSyTestKey", true, null,
+                new AiSubtitleService.TranslateCuesCallback() {
+                    @Override public void onProgress(int progress, int total) {}
+                    @Override public void onSuccess(java.util.List<SubtitleCue> cues) {
+                        out[0] = cues;
+                        latch.countDown();
+                    }
+                    @Override public void onError(String error) {
+                        errOut[0] = error;
+                        latch.countDown();
+                    }
+                });
+
+        assertTrue(latch.await(10, java.util.concurrent.TimeUnit.SECONDS));
+        assertNull("Expected no error, got: " + errOut[0], errOut[0]);
+        assertNotNull(out[0]);
+        assertEquals(3, out[0].size());
+        assertEquals("Yang Mulia, pasukan telah siap.", out[0].get(0).text);
+        assertEquals("...", out[0].get(1).text);
+        assertEquals("Ayo pergi!", out[0].get(2).text);
+        assertTrue(AiSubtitleService.isModelInCooldown("gemini-3.8-flash"));
+        AiSubtitleService.clearModelCooldowns();
+    }
 }

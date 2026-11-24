@@ -226,6 +226,7 @@ public class PlayerActivity extends AppCompatActivity {
     private final List<Episode> episodeList = new ArrayList<>();
     private int currentIndex = 0;
     private int streamRetryAttempts = 0;
+    private int streamLoadSeq = 0;
     private EpisodeAdapter episodeAdapter;
     private static final ExecutorService dbExecutor = Executors.newSingleThreadExecutor();
     private long lastHistorySaveTime = 0;
@@ -662,6 +663,14 @@ public class PlayerActivity extends AppCompatActivity {
                     enforceExoSubButtonReady();
                 });
             }
+
+            @Override
+            public void onSubtitleStatusToast(String message) {
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed() || message == null || message.isEmpty()) return;
+                    Toast.makeText(PlayerActivity.this, message, Toast.LENGTH_SHORT).show();
+                });
+            }
         });
     }
 
@@ -990,7 +999,10 @@ public class PlayerActivity extends AppCompatActivity {
                 Throwable cause = error.getCause();
                 String msg = cause != null ? cause.getMessage() : error.getMessage();
 
-                boolean isConnectionOrSslError = msg != null && (
+                boolean isConnectionOrSslError = error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
+                        || error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
+                        || error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT
+                        || (msg != null && (
                         msg.contains("Connection reset")
                         || msg.contains("SSLHandshakeException")
                         || msg.contains("SSL handshake aborted")
@@ -999,7 +1011,7 @@ public class PlayerActivity extends AppCompatActivity {
                         || msg.contains("Socket closed")
                         || msg.contains("Software caused connection abort")
                         || msg.contains("Broken pipe")
-                );
+                ));
 
                 if (player != null && !isFinishing() && isConnectionOrSslError && streamRetryAttempts < 3) {
                     streamRetryAttempts++;
@@ -1890,10 +1902,12 @@ public class PlayerActivity extends AppCompatActivity {
             tvSubtitles.setVisibility(View.GONE);
         }
 
+        final int reqSeq = ++streamLoadSeq;
         StreamResolver.resolveWithServer(anime, ep, preferredServer, new StreamResolver.Callback() {
             @Override
             public void onSuccess(StreamSource source) {
                 runOnUiThread(() -> {
+                    if (reqSeq != streamLoadSeq || isFinishing() || isDestroyed()) return;
                     currentStreamSource = source;
                     tvPortraitCurrentEp.setText("Episode " + ep.number + " · " + source.server);
                     tvSubStatus.setText("Server: " + source.server + (source.subtitles.isEmpty() ? " (Hardsub)" : " (Multi-Sub)"));
@@ -1929,6 +1943,7 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onError(Throwable t) {
                 runOnUiThread(() -> {
+                    if (reqSeq != streamLoadSeq || isFinishing() || isDestroyed()) return;
                     if (layoutBuffering != null) layoutBuffering.setVisibility(View.GONE);
                     String raw = t.getMessage() != null ? t.getMessage() : "";
                     if (raw.contains("CLEARTEXT")) {

@@ -361,7 +361,10 @@
     <string name="ai_dialog_prompt_title">カスタム翻訳プロンプト (ファンサブ)</string>
     <string name="ai_dialog_prompt_desc">文体、ペルソナ、ファンサブ規則を指示します。空欄の場合はデフォルトのファンサブプロンプトが使用されます。</string>
     <string name="ai_dialog_save">設定を保存</string>
-    <string name="player_sub_option_ai">[AI] インドネシア語 (AI Fansub LLM)</string>
+    <string name="player_sub_option_ai">[AI] Instant AI インドネシア語字幕</string>
+    <string name="player_sub_toast_instant_ai_start">⚡ GTX+有効！AIがスマートシーン補正を開始しました...</string>
+    <string name="player_sub_toast_instant_ai_done">✨ Instant AI 字幕の補正が完了しました！</string>
+    <string name="player_sub_toast_instant_ai_fallback">⚠️ AI接続エラーのため、GTX+字幕を維持します</string>
     <string name="player_sub_ai_not_configured">LLM APIキーが設定されていません。先に設定してください。</string>
     <string name="player_sub_option_refresh_ai">[Refresh] AI字幕を再翻訳 (キャッシュ消去)</string>
     <string name="player_sub_ai_loading">AIで翻訳中 (%d%%)...</string>

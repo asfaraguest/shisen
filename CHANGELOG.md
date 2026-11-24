@@ -2,6 +2,19 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.1.2-beta.4] - 2026-11-24
+
+### Ditingkatkan
+- **Instant AI Sub Indo 2-Tahap (`AiSubtitleService.java`, `SubtitleManager.java`, `PlayerActivity.java`, `strings.xml`)**:
+  - Mengupgrade jalur subtitle `[AI]` menjadi pipeline 2-tahap: **Tahap 1 (Instant GTX+ Draft)** menampilkan terjemahan Indonesia instan (`< 1-4 detik`), lalu **Tahap 2 (AI TLC Smart Scene Refiner)** menyempurnakan baris yang kaku/aneh secara selektif (`N|teks` / `0|OK`) dengan update *live* per batch dan sanitasi `SmartLexicon` (`fansub`).
+  - Menambahkan rotasi model otomatis + `MODEL_COOLDOWN` pada HTTP `429/500/502/503/504/402/404` & `SocketTimeoutException`, cache terpisah `_instant_ai_id_v1`, serta notifikasi toast non-intrusif dan fallback aman ke draf GTX+ jika AI terkendala.
+
+### Diperbaiki
+- **Stabilitas Stream & Navigasi TV (`PlayerActivity.java`, `src/tv/.../DeviceNav.java`)**:
+  - Menambahkan `streamLoadSeq` di `PlayerActivity.playEpisodeWithServer` untuk mencegah *race condition* callback stream/subtitle lama saat berpindah episode/server dengan cepat.
+  - Memperluas auto-failover `onPlayerError` untuk status HTTP/koneksi/timeout (`ERROR_CODE_IO_BAD_HTTP_STATUS`, `ERROR_CODE_IO_NETWORK_CONNECTION_FAILED`, `ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT`).
+  - Memperbaiki `DeviceNav.getActiveRailItem()` (Android TV) agar tombol Back dari tab Pengaturan memfokuskan kembali item Pengaturan di *side rail*, bukan beranda Musim Ini.
+
 ## [1.1.2-beta.3] - 2026-11-22
 
 ### Diperbaiki

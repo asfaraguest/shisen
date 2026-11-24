@@ -361,7 +361,10 @@
     <string name="ai_dialog_prompt_title">Prompt de traducción personalizado (Fansub)</string>
     <string name="ai_dialog_prompt_desc">Instruye el estilo, tono o reglas de fansub. Deja en blanco para usar el prompt por defecto.</string>
     <string name="ai_dialog_save">Guardar Ajustes</string>
-    <string name="player_sub_option_ai">[AI] Indonesio (AI Fansub LLM)</string>
+    <string name="player_sub_option_ai">[AI] Instant AI Sub (Indonesio)</string>
+    <string name="player_sub_toast_instant_ai_start">⚡ ¡GTX+ activo! La IA está refinando (Smart Scene)...</string>
+    <string name="player_sub_toast_instant_ai_done">✨ ¡Subtítulo Instant AI refinado por completo!</string>
+    <string name="player_sub_toast_instant_ai_fallback">⚠️ IA no disponible, manteniendo resultado GTX+ instantáneo</string>
     <string name="player_sub_ai_not_configured">Clave API de LLM no configurada. Por favor configúrela primero.</string>
     <string name="player_sub_option_refresh_ai">[Refresh] Retraducir subtítulo IA (Borrar caché)</string>
     <string name="player_sub_ai_loading">Traduciendo con IA (%d%%)...</string>
