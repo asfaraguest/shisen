@@ -51,17 +51,30 @@ public class GtxTranslator {
                                       List<SubtitleCue> cues,
                                       boolean forceRefresh,
                                       TranslateCallback callback) {
+        translateAsync(context, sourceIdentifier, cues, null, forceRefresh, callback);
+    }
+
+    public static void translateAsync(Context context,
+                                      String sourceIdentifier,
+                                      List<SubtitleCue> cues,
+                                      List<String> protectedTerms,
+                                      boolean forceRefresh,
+                                      TranslateCallback callback) {
         if (cues == null || cues.isEmpty()) {
             if (callback != null) callback.onError("Tidak ada cue subtitle untuk diterjemahkan");
             return;
         }
 
+        final Map<String, String> canonicalLookup = new HashMap<>();
+        final Pattern maskPattern = SmartLexicon.compileMaskPattern(protectedTerms, canonicalLookup);
+        final String glossarySignature = Integer.toHexString(canonicalLookup.keySet().hashCode());
+
         new Thread(() -> {
             try {
-                // 1. Cek Cache Lokal di Disk (v2 dengan leksikon luwes)
+                // 1. Cek Cache Lokal di Disk (v3 dengan masking istilah terlindungi + leksikon)
                 File cacheFile = null;
                 if (context != null) {
-                    String cacheKey = sha1(sourceIdentifier + "_gtx_id_v2");
+                    String cacheKey = sha1(sourceIdentifier + "|" + glossarySignature + "_gtx_id_v3");
                     File cacheDir = new File(context.getCacheDir(), "sub_cache");
                     if (!cacheDir.exists()) cacheDir.mkdirs();
                     cacheFile = new File(cacheDir, cacheKey + ".json");
@@ -118,7 +131,7 @@ public class GtxTranslator {
                         final int eIdx = batchRanges.get(bi)[1];
                         tasks.add(() -> {
                             List<SubtitleCue> batch = cues.subList(sIdx, eIdx);
-                            List<String> translatedBatchTexts = translateBatch(client, batch);
+                            List<String> translatedBatchTexts = translateBatch(client, batch, maskPattern, canonicalLookup);
                             List<SubtitleCue> outBatch = new ArrayList<>(batch.size());
                             int batchTranslatedCount = 0;
                             for (int j = 0; j < batch.size(); j++) {
@@ -220,10 +233,22 @@ public class GtxTranslator {
     }
 
     private static List<String> translateBatch(OkHttpClient client, List<SubtitleCue> batch) {
+        Map<String, String> canonicalLookup = new HashMap<>();
+        Pattern maskPattern = SmartLexicon.compileMaskPattern(null, canonicalLookup);
+        return translateBatch(client, batch, maskPattern, canonicalLookup);
+    }
+
+    private static List<String> translateBatch(OkHttpClient client,
+                                               List<SubtitleCue> batch,
+                                               Pattern maskPattern,
+                                               Map<String, String> canonicalLookup) {
+        Map<String, Integer> termIndexMap = new HashMap<>();
+        List<String> slotList = new ArrayList<>();
         StringBuilder joined = new StringBuilder();
         for (int i = 0; i < batch.size(); i++) {
-            String text = SmartLexicon.preprocessEnglishForGtx(batch.get(i).text);
-            String escaped = text.replace("&", "&amp;")
+            String pre = SmartLexicon.preprocessEnglishForGtx(batch.get(i).text);
+            String masked = SmartLexicon.maskProtectedTerms(pre, maskPattern, canonicalLookup, termIndexMap, slotList);
+            String escaped = masked.replace("&", "&amp;")
                     .replace("<", "&lt;")
                     .replace(">", "&gt;")
                     .replace("\n", "<br>");
@@ -267,7 +292,7 @@ public class GtxTranslator {
                                             .replace("&lt;", "<")
                                             .replace("&gt;", ">");
                                 }
-                                map.put(id, val.trim());
+                                map.put(id, SmartLexicon.unmaskProtectedTerms(val.trim(), slotList));
                             } catch (Exception ignored) {}
                         }
 

@@ -3093,7 +3093,8 @@ public class PlayerActivity extends AppCompatActivity {
         if (btnResetPrompt != null && etCustomPrompt != null) {
             btnResetPrompt.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
-                etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+                etCustomPrompt.setText("");
+                AiSubtitleService.clearCustomPrompt(this);
                 Toast.makeText(this, R.string.settings_toast_prompt_reset, Toast.LENGTH_SHORT).show();
             });
         }
@@ -3126,10 +3127,7 @@ public class PlayerActivity extends AppCompatActivity {
                 }
             }
             if (etCustomPrompt != null) {
-                String promptText = etCustomPrompt.getText().toString().trim();
-                if (!promptText.isEmpty()) {
-                    AiSubtitleService.saveCustomPrompt(PlayerActivity.this, promptText);
-                }
+                AiSubtitleService.saveCustomPrompt(PlayerActivity.this, etCustomPrompt.getText().toString().trim());
             }
             if (etModel != null) {
                 String modelText = etModel.getText().toString().trim();
@@ -3161,7 +3159,7 @@ public class PlayerActivity extends AppCompatActivity {
             }
             SettingsDialog.populateModelChips(layoutChips, this, AiSubtitleService.Provider.GEMINI, etModel);
             if (etCustomPrompt != null) {
-                etCustomPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+                etCustomPrompt.setText("");
             }
             tvBadge.setText(R.string.settings_ai_badge_none);
             Toast.makeText(this, R.string.settings_toast_ai_cleared, Toast.LENGTH_SHORT).show();

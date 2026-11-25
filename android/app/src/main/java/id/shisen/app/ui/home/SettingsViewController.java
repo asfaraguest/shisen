@@ -481,8 +481,8 @@ public class SettingsViewController {
         if (btnResetPrompt != null) {
             btnResetPrompt.setOnClickListener(v -> {
                 HapticHelper.performClick(v);
-                etAiPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
-                AiSubtitleService.saveCustomPrompt(host, AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+                etAiPrompt.setText("");
+                AiSubtitleService.clearCustomPrompt(host);
                 Toast.makeText(host, host.getString(R.string.settings_toast_prompt_reset), Toast.LENGTH_SHORT).show();
             });
         }
@@ -499,11 +499,11 @@ public class SettingsViewController {
                 HapticHelper.performClick(v);
                 AiSubtitleService.clearKey(host);
                 AiSubtitleService.saveModel(host, "");
-                AiSubtitleService.saveCustomPrompt(host, AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+                AiSubtitleService.clearCustomPrompt(host);
 
                 etAiKey.setText("");
                 etAiModel.setText(AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GEMINI));
-                etAiPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+                etAiPrompt.setText("");
                 if (tvAiStatus != null) tvAiStatus.setText(host.getString(R.string.settings_ai_badge_none));
                 SettingsDialog.populateModelChips(layoutAiChips, host, AiSubtitleService.Provider.GEMINI, etAiModel);
 
@@ -547,9 +547,7 @@ public class SettingsViewController {
         if (!inputModel.isEmpty()) {
             AiSubtitleService.saveModel(host, inputModel);
         }
-        if (!inputPrompt.isEmpty()) {
-            AiSubtitleService.saveCustomPrompt(host, inputPrompt);
-        }
+        AiSubtitleService.saveCustomPrompt(host, inputPrompt);
 
         AiSubtitleService.Provider p = AiSubtitleService.Provider.detect(inputKey);
         if (tvAiStatus != null) {

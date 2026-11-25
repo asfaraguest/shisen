@@ -189,4 +189,43 @@ public class SmartLexiconTest {
         assertTrue(result.get(0).text.contains("kenapa"));
         assertTrue(result.get(0).text.contains("dungeon"));
     }
+
+    @Test
+    public void testPreAndPostGtxTermMaskingPreservesSkillAndStun() {
+        List<SubtitleCue> cues = java.util.Arrays.asList(
+                new SubtitleCue(0, 2000, "Skill: Stun activated!"),
+                new SubtitleCue(2000, 4000, "Pagma's Swordsmanship unlocked [Blacksmith's Rage]."),
+                new SubtitleCue(4000, 6000, "Pagma's Swordsmanship is a Passive Skill in Satisfy.")
+        );
+        List<String> candidates = SmartLexicon.extractCandidateTerms(cues, 20);
+        assertTrue(candidates.contains("Blacksmith's Rage") || candidates.contains("Pagma's Swordsmanship"));
+
+        java.util.Map<String, String> canonical = new java.util.HashMap<>();
+        java.util.regex.Pattern pattern = SmartLexicon.compileMaskPattern(candidates, canonical);
+        java.util.Map<String, Integer> termIdx = new java.util.HashMap<>();
+        List<String> slots = new ArrayList<>();
+
+        String masked = SmartLexicon.maskProtectedTerms(
+                "Activate Skill: Stun and Pagma's Swordsmanship!", pattern, canonical, termIdx, slots);
+        assertFalse(masked.contains("Skill"));
+        assertFalse(masked.contains("Stun"));
+        assertFalse(masked.contains("Pagma's Swordsmanship"));
+
+        // Simulasikan terjemahan mesin yang menyisipkan spasi di token XZ
+        String gtxSimulated = masked.replace("XZ0ZX", "XZ 0 ZX");
+        String restored = SmartLexicon.unmaskProtectedTerms(gtxSimulated, slots);
+        assertTrue(restored.contains("Skill"));
+        assertTrue(restored.contains("Stun"));
+        assertTrue(restored.contains("Pagma's Swordsmanship"));
+    }
+
+    @Test
+    public void testOvergearedSkillStunAntiCalqueRules() {
+        assertEquals("Skill: Stun aktif!",
+                SmartLexicon.applyUniversalLexicon("Keahlian: Setrum aktif!"));
+        assertEquals("Skill pasif dalam Overgeared",
+                SmartLexicon.applyUniversalLexicon("Keterampilan pasif dalam kelebihan perlengkapan"));
+        assertEquals("Musuh terkena Stun!",
+                SmartLexicon.applyUniversalLexicon("Musuh terkena setrum!"));
+    }
 }

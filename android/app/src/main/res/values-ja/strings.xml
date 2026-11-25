@@ -174,8 +174,8 @@
     <string name="settings_ai_model_label">モデル選択</string>
     <string name="settings_ai_model_desc">推奨モデルを選ぶか、カスタムモデル名を入力してください:</string>
     <string name="settings_ai_model_hint">モデル名 (例: gemini-3.1-flash-lite)</string>
-    <string name="settings_ai_prompt_label">翻訳プロンプト</string>
-    <string name="settings_ai_prompt_hint">翻訳指示プロンプトを入力...</string>
+    <string name="settings_ai_prompt_label">追加カスタムプロンプト（任意）</string>
+    <string name="settings_ai_prompt_hint">例：RPGスキル名をそのまま残し、親しみやすい口調で翻訳…</string>
     <string name="settings_ai_badge_none">Gemini / Groq / NVIDIA NIM / OpenRouter / OpenAI</string>
     <string name="settings_ai_badge_active">有効: %s</string>
     <string name="settings_ai_badge_detected">検出: %s</string>
@@ -186,7 +186,7 @@
     <string name="settings_toast_safe_mode_off">セーフモード OFF</string>
     <string name="settings_toast_haptic_on">触覚フィードバック ON</string>
     <string name="settings_toast_haptic_off">触覚フィードバック OFF</string>
-    <string name="settings_toast_prompt_reset">プロンプトを既定の設定に戻しました</string>
+    <string name="settings_toast_prompt_reset">追加プロンプトをクリアしました（標準プロンプト適用中）</string>
     <string name="settings_toast_key_required">APIキーを入力してください</string>
     <string name="settings_toast_ai_saved">AI設定を保存しました (%s)</string>
     <string name="settings_toast_ai_cleared">APIキーとモデルを削除しました</string>
@@ -358,8 +358,8 @@
     <!-- AI Subtitle Dialog -->
     <string name="ai_dialog_title">AI字幕 (BYOK)</string>
     <string name="ai_dialog_keystore_notice">APIキーは Android Hardware Keystore (AES-256-GCM) に安全に保管され、送信または共有されることはありません。</string>
-    <string name="ai_dialog_prompt_title">カスタム翻訳プロンプト (ファンサブ)</string>
-    <string name="ai_dialog_prompt_desc">文体、ペルソナ、ファンサブ規則を指示します。空欄の場合はデフォルトのファンサブプロンプトが使用されます。</string>
+    <string name="ai_dialog_prompt_title">追加カスタムAI指示（任意）</string>
+    <string name="ai_dialog_prompt_desc">組み込みマスタープロンプト（スキル/用語保護と自然な口調）は全モデルで常時有効です。さらに細かく調整したい場合のみ追加指示を入力してください。</string>
     <string name="ai_dialog_save">設定を保存</string>
     <string name="player_sub_option_ai">[AI] Instant AI インドネシア語字幕</string>
     <string name="player_sub_toast_instant_ai_start">⚡ GTX+有効！AIがスマートシーン補正を開始しました...</string>

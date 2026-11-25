@@ -1,7 +1,14 @@
 package id.shisen.app.data.subtitle;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -150,6 +157,15 @@ public class SmartLexicon {
         UNIVERSAL_RULES.add(new Rule("\\bpenyelam penuh\\b", "Full Diver"));
         UNIVERSAL_RULES.add(new Rule("\\bskala ordinal\\b", "Ordinal Scale"));
         UNIVERSAL_RULES.add(new Rule("\\bproyek alisisasi\\b", "Project Alicization"));
+
+        // --- Proteksi Anti-Calque Skill/Status Game (Overgeared, SAO, Solo Leveling, dll.) ---
+        UNIVERSAL_RULES.add(new Rule("(?i)\\b(?:keahlian|keterampilan|kemampuan)\\s*:\\s*", "Skill: "));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\b(?:keahlian|keterampilan)\\s+(pasif|aktif|rahasia|legendaris|unik|epos|mitos|stun|buff|debuff|heal)\\b", m -> "Skill " + m.group(1)));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\b(pasif|aktif)\\s+(?:keahlian|keterampilan)\\b", m -> m.group(1) + " Skill"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\b(terkena|kena|efek|status|serangan)\\s+(?:setrum|kesetrum|memukau|tercengang)\\b", m -> m.group(1) + " Stun"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\b(skill|sihir|jurus)(\\s*:\\s*|\\s+)(?:setrum|memukau|pingsan)\\b", m -> m.group(1) + m.group(2) + "Stun"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bpendinginan\\s+(skill|jurus|sihir|kemampuan)\\b", m -> "cooldown " + m.group(1)));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\bkelebihan\\s+perlengkapan\\b", "Overgeared"));
     }
 
     private static void initUniversalBatch1() {
@@ -1385,6 +1401,167 @@ public class SmartLexicon {
             out.add(new SubtitleCue(c.startMs, c.endMs, newTxt));
         }
         return out;
+    }
+
+    /** Istilah RPG/Anime inti yang tidak boleh diterjemahkan harfiah saat pra-proses GTX+. */
+    public static final List<String> CORE_PROTECTED_TERMS = Collections.unmodifiableList(Arrays.asList(
+            "Passive Skill", "Active Skill", "Ultimate Skill",
+            "Critical Damage", "Critical Hit", "Status Window",
+            "Level Up", "Drop Item", "Raid Boss", "Ryoiki Tenkai",
+            "Overgeared", "Satisfy", "Cooldown", "Inventory",
+            "Legendary", "Dungeon", "Healer", "Skills", "Skill",
+            "Debuff", "Buff", "Aggro", "Quest", "Guild", "Party",
+            "Chakra", "Jutsu", "Senpai", "Sensei", "Hokage",
+            "Stun", "Crit", "Mana", "DPS", "NPC", "EXP", "HP", "MP"
+    ));
+
+    private static final Pattern BRACKET_TERM_RE = Pattern.compile("\\[([^\\[\\]]{2,40})\\]|<([^<>]{2,40})>");
+    private static final Pattern EXPLICIT_GAME_TERM_RE = Pattern.compile(
+            "(?i)\\b(?:skill|magic|spell|class|job|quest|title|passive|active|item|jutsu)\\s*[:\\-]\\s*([A-Za-z0-9'\\- ]{2,36})"
+    );
+    private static final Pattern CAP_PHRASE_RE = Pattern.compile(
+            "\\b([A-Z][A-Za-z0-9']+(?:\\s+(?:of|the|no|ga|wa|to|[A-Z][A-Za-z0-9']+)){0,3})\\b"
+    );
+    private static final Pattern UNMASK_TOKEN_RE = Pattern.compile("(?i)\\bX\\s*Z\\s*(\\d+)\\s*Z\\s*X\\b");
+    private static final List<String> STOP_CAP_WORDS = Arrays.asList(
+            "The", "This", "That", "These", "Those", "What", "When", "Where", "Why", "How", "Who",
+            "Yes", "No", "Wait", "Hey", "Well", "Look", "Come", "Stop", "Dont", "Don't", "Can't",
+            "You", "Your", "You're", "I'm", "It's", "We're", "They", "There", "Here", "Now",
+            "Just", "Only", "Even", "Still", "Also", "Really", "Actually", "Please", "Sorry",
+            "Thank", "Thanks", "Good", "Great", "Nice", "Fine", "Right", "Okay", "All", "But", "And"
+    );
+
+    /** Ekstrak kandidat istilah unik (kurung, skill/class, frasa kapital) untuk dianalisis 1x oleh AI sebelum GTX+. */
+    public static List<String> extractCandidateTerms(List<SubtitleCue> enCues, int maxTerms) {
+        if (enCues == null || enCues.isEmpty() || maxTerms <= 0) return new ArrayList<>();
+        LinkedHashMap<String, Integer> scores = new LinkedHashMap<>();
+        LinkedHashMap<String, String> displayForm = new LinkedHashMap<>();
+
+        for (SubtitleCue cue : enCues) {
+            if (cue == null || cue.text == null || cue.text.trim().isEmpty()) continue;
+            String txt = cue.text;
+
+            Matcher bm = BRACKET_TERM_RE.matcher(txt);
+            while (bm.find()) {
+                String raw = bm.group(1) != null ? bm.group(1) : bm.group(2);
+                addCandidateScore(scores, displayForm, raw, 5);
+            }
+            Matcher em = EXPLICIT_GAME_TERM_RE.matcher(txt);
+            while (em.find()) {
+                addCandidateScore(scores, displayForm, em.group(1), 6);
+            }
+            Matcher cm = CAP_PHRASE_RE.matcher(txt);
+            while (cm.find()) {
+                String phrase = cm.group(1).trim();
+                if (STOP_CAP_WORDS.contains(phrase)) continue;
+                int weight = phrase.contains(" ") ? 3 : 1;
+                addCandidateScore(scores, displayForm, phrase, weight);
+            }
+        }
+
+        List<String> keys = new ArrayList<>();
+        for (Map.Entry<String, Integer> e : scores.entrySet()) {
+            // Frasa tunggal kapital hanya diajukan jika muncul berulang (>=2) atau skor tinggi
+            if (e.getValue() >= 2) {
+                keys.add(e.getKey());
+            }
+        }
+        keys.sort((a, b) -> Integer.compare(scores.get(b), scores.get(a)));
+
+        List<String> out = new ArrayList<>();
+        for (String k : keys) {
+            out.add(displayForm.get(k));
+            if (out.size() >= maxTerms) break;
+        }
+        return out;
+    }
+
+    private static void addCandidateScore(Map<String, Integer> scores,
+                                          Map<String, String> displayForm,
+                                          String raw,
+                                          int weight) {
+        if (raw == null) return;
+        String cleaned = raw.trim().replaceAll("^[,.:;!?\"']+|[,.:;!?\"']+$", "").trim();
+        if (cleaned.length() < 2 || cleaned.length() > 40) return;
+        if (!cleaned.matches(".*[A-Za-z].*")) return;
+        String lower = cleaned.toLowerCase(Locale.US);
+        if (STOP_CAP_WORDS.contains(cleaned)) return;
+        displayForm.putIfAbsent(lower, cleaned);
+        scores.put(lower, scores.getOrDefault(lower, 0) + weight);
+    }
+
+    /** Bangun pola gabungan satu-lintasan terurut terpanjang -> terpendek untuk mask istilah sebelum GTX+. */
+    public static Pattern compileMaskPattern(List<String> terms, Map<String, String> canonicalOut) {
+        LinkedHashSet<String> merged = new LinkedHashSet<>(CORE_PROTECTED_TERMS);
+        if (terms != null) {
+            for (String t : terms) {
+                if (t != null && t.trim().length() >= 2) {
+                    merged.add(t.trim());
+                }
+            }
+        }
+        List<String> sorted = new ArrayList<>(merged);
+        sorted.sort(Comparator.comparingInt(String::length).reversed());
+        if (sorted.isEmpty()) return null;
+
+        StringBuilder alt = new StringBuilder();
+        for (String t : sorted) {
+            if (canonicalOut != null) {
+                canonicalOut.putIfAbsent(t.toLowerCase(Locale.US), t);
+            }
+            if (alt.length() > 0) alt.append("|");
+            alt.append(Pattern.quote(t));
+        }
+        return Pattern.compile("(?i)(?<![A-Za-z0-9_])(" + alt + ")(?![A-Za-z0-9_])");
+    }
+
+    public static String maskProtectedTerms(String text,
+                                            Pattern maskPattern,
+                                            Map<String, String> canonicalLookup,
+                                            Map<String, Integer> termIndexMap,
+                                            List<String> slotList) {
+        if (text == null || text.isEmpty() || maskPattern == null) return text != null ? text : "";
+        Matcher m = maskPattern.matcher(text);
+        if (!m.find()) return text;
+
+        StringBuffer sb = new StringBuffer(text.length() + 16);
+        do {
+            String matched = m.group(1);
+            String canonical = (canonicalLookup != null)
+                    ? canonicalLookup.getOrDefault(matched.toLowerCase(Locale.US), matched)
+                    : matched;
+            Integer slot = termIndexMap.get(canonical);
+            if (slot == null) {
+                slot = slotList.size();
+                termIndexMap.put(canonical, slot);
+                slotList.add(canonical);
+            }
+            m.appendReplacement(sb, "XZ" + slot + "ZX");
+        } while (m.find());
+        m.appendTail(sb);
+        return sb.toString();
+    }
+
+    public static String unmaskProtectedTerms(String text, List<String> slotList) {
+        if (text == null || text.isEmpty() || slotList == null || slotList.isEmpty()) {
+            return text != null ? text : "";
+        }
+        Matcher m = UNMASK_TOKEN_RE.matcher(text);
+        if (!m.find()) return text;
+
+        StringBuffer sb = new StringBuffer(text.length() + 16);
+        do {
+            String replacement = m.group(0);
+            try {
+                int idx = Integer.parseInt(m.group(1));
+                if (idx >= 0 && idx < slotList.size()) {
+                    replacement = slotList.get(idx);
+                }
+            } catch (Exception ignored) {}
+            m.appendReplacement(sb, Matcher.quoteReplacement(replacement));
+        } while (m.find());
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     private static String applyRulePreservingCase(Rule rule, String input) {

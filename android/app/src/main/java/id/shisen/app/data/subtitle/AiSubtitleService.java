@@ -438,25 +438,39 @@ Output:
 2|Cewek-cewek cakepnya mantap, kan? Incaranmu tinggi juga ya? Nibutani, kan?
 3|Kalau menurutku sih cakep banget. Nggak usah ditanya lagi, itu memalukan banget!""";
 
-    public static final String DEFAULT_CUSTOM_PROMPT = DEFAULT_FANSUB_PROMPT_ID;
+    public static final String DEFAULT_CUSTOM_PROMPT = "";
 
-    public static final String TLC_REFINE_PROMPT_ID = """
-Kamu adalah editor TLC (Translation Checker) fansub anime Indonesia berpengalaman.
-Setiap baris input berformat: N|teks_sumber_bahasa Inggris || draf_gtx_indonesia
-Draf GTX+ sudah menerjemahkan dasar kalimat dan kamus anime. Tugasmu:
-1. Bandingkan teks sumber dengan draf GTX+, lalu KOREKSI HANYA baris yang kalimat, idiom, struktur, kata ganti, atau pilihan katanya terasa aneh, kaku, harfiah/calque, atau kurang pas dengan konteks adegan.
-2. Baris yang draf GTX+-nya sudah akurat, alami, dan sesuai nada adegan JANGAN ditulis ulang (lewati saja untuk hemat waktu). Jika semua baris sudah bagus, balas persis: 0|OK
-3. Koreksi wajib memakai Bahasa Indonesia lisan/fansub alami (ZERO kosakata Melayu seperti "awak", "kerana", "ialah", "sahaja", "tak", "tengok", "pula", "jangan risau", "pelik", "comel").
-4. Jaga konsistensi nada adegan:
-   - Adegan formal/kerajaan/militer: pertahankan bahasa baku & sopan ("saya/Anda", "Yang Mulia", "Paduka", "tidak", "sudah") tanpa partikel gaul.
-   - Adegan santai/sekolah/komedi: pakai dialog alami ("aku/kamu", "nggak", "udah", "aja", "banget", "kok", "sih").
-   - Adegan kasar/musuh: pakai nada tegas/kasar wajar ("aku/kau" atau "gue/lo").
-5. Pertahankan nama orang, honorifik (-san, -kun, -chan, -sama, Senpai, Sensei), gagap ("A-Apa?!"), istilah anime/game (dungeon, guild, party, skill, jutsu), dan token <br> persis pada posisinya.
+    public static final String EMBEDDED_INSTANT_AI_PROMPT_ID = """
+[ROLE]
+Kamu adalah Editor TLC (Translation Checker) subtitle fansub anime Indonesia profesional.
+Setiap input berformat: N|teks_english || draf_gtx_indonesia
 
-FORMAT KELUARAN (WAJIB):
-- Output HANYA baris yang dikoreksi dengan format: N|teks_indonesia_final (contoh: 1|Kamu nggak apa-apa?)
-- Jika semua baris sudah alami, output persis: 0|OK
-- DILARANG menyertakan teks sumber Inggris, tanda ||, atau penjelasan tambahan.""";
+[TERMINOLOGY LOCK — DILARANG TERJEMAH HARFIAH]
+- JANGAN menerjemahkan istilah game/RPG/anime/skill secara harfiah: Skill, Passive Skill, Active Skill, Stun, Buff, Debuff, Cooldown, Crit, DPS, Tank, Healer, Party, Guild, Dungeon, Quest, Boss, HP, MP, EXP, Level Up, Craft, Enchant, Satisfy, Overgeared, Chakra, Jutsu, Ryoiki Tenkai.
+- Contoh WAJIB: "Skill: Stun" TETAP "Skill: Stun" (BUKAN "Keahlian: Setrum/Memukau"). "Satisfy" TETAP "Satisfy" (BUKAN "Memuaskan/Puaskan").
+- Pertahankan nama karakter, honorifik (-san, -kun, -chan, -sama, Senpai, Sensei), gagap ("A-Apa?!"), dan token <br>.
+
+[SCENE TONE & NATURAL INDONESIAN]
+- Formal / Kerajaan / Militer: baku & berwibawa ("Saya/Anda", "Yang Mulia", "Paduka", "tidak", "sudah") tanpa partikel gaul.
+- Santai / Sekolah / Komedi: dialog lisan fansub alami ("aku/kamu", "nggak", "udah", "aja", "banget", "kok", "sih", "deh").
+- Pertarungan / Kasar / Musuh: tegas ("aku/kau" atau "gue/lo").
+- DILARANG memakai kosakata Melayu ("awak", "kerana", "ialah", "sahaja", "tak", "tengok", "pula", "jangan risau", "pelik", "comel").
+
+[EXAMPLES]
+1|Activate Skill: Stun! || Aktifkan Keahlian: Setrum!
+-> 1|Aktifkan Skill: Stun!
+2|Welcome to Satisfy, the greatest VRMMO! || Selamat datang di Memuaskan, VRMMO terhebat!
+-> 2|Selamat datang di Satisfy, VRMMO terhebat!
+3|I am not letting you run away! || Saya tidak akan membiarkan Anda melarikan diri!
+-> 3|Nggak bakal kubiarkan kau kabur!
+
+[OUTPUT FORMAT]
+- Bandingkan sumber English dan draf GTX+. Lewati baris yang sudah akurat & natural.
+- Keluarkan HANYA baris yang perlu diperbaiki dengan format: N|teks_indonesia_final
+- Jika semua baris sudah bagus dan natural, balas persis: 0|OK
+- DILARANG menulis ulang teks sumber English, tanda ||, penomoran ganda, atau komentar tambahan.""";
+
+    public static final String TLC_REFINE_PROMPT_ID = EMBEDDED_INSTANT_AI_PROMPT_ID;
 
     private static final String OLD_SHORT_PROMPT_PREFIX = "Terjemahkan subtitle anime ini ke Bahasa Indonesia";
 
@@ -569,15 +583,19 @@ FORMAT KELUARAN (WAJIB):
     }
 
     public static String getCustomPrompt(Context context) {
-        if (context == null) return DEFAULT_FANSUB_PROMPT_ID;
+        if (context == null) return "";
         SharedPreferences sp = getAiPrefs(context);
         String prompt = (sp != null && sp.contains(KEY_PREF_CUSTOM_PROMPT))
                 ? sp.getString(KEY_PREF_CUSTOM_PROMPT, "")
                 : SecureStore.getInstance(context).getString(KEY_PREF_CUSTOM_PROMPT, "");
-        if (prompt == null || prompt.trim().isEmpty() || prompt.trim().startsWith(OLD_SHORT_PROMPT_PREFIX)) {
-            return DEFAULT_FANSUB_PROMPT_ID;
+        if (prompt == null) return "";
+        String trimmed = prompt.trim();
+        if (trimmed.isEmpty()
+                || trimmed.equals(DEFAULT_FANSUB_PROMPT_ID.trim())
+                || trimmed.startsWith(OLD_SHORT_PROMPT_PREFIX)) {
+            return "";
         }
-        return prompt.trim();
+        return trimmed;
     }
 
     public static boolean clearCustomPrompt(Context context) {
@@ -989,30 +1007,30 @@ FORMAT KELUARAN (WAJIB):
     }
 
     public static String buildTlcSystemPrompt(String customPrompt) {
-        if (customPrompt == null) return TLC_REFINE_PROMPT_ID;
-        String cp = customPrompt.trim();
-        if (cp.isEmpty()
-                || cp.equals(DEFAULT_FANSUB_PROMPT_ID.trim())
-                || cp.startsWith(OLD_SHORT_PROMPT_PREFIX)) {
-            return TLC_REFINE_PROMPT_ID;
+        return buildTlcSystemPrompt(customPrompt, null);
+    }
+
+    public static String buildTlcSystemPrompt(String customPrompt, List<String> episodeGlossary) {
+        StringBuilder sb = new StringBuilder(EMBEDDED_INSTANT_AI_PROMPT_ID);
+        if (episodeGlossary != null && !episodeGlossary.isEmpty()) {
+            sb.append("\n\n[EPISODE PROTECTED TERMS (NEVER TRANSLATE LITERALLY)]:\n");
+            int limit = Math.min(60, episodeGlossary.size());
+            for (int i = 0; i < limit; i++) {
+                if (i > 0) sb.append(", ");
+                sb.append(episodeGlossary.get(i));
+            }
         }
-        String upper = cp.toUpperCase();
-        if (cp.length() > 320 || upper.contains("PERAN") || upper.contains("PRINSIP")
-                || upper.contains("PANDUAN") || upper.contains("ATURAN")
-                || upper.contains("ROLE") || upper.contains("SYSTEM")) {
-            return cp
-                    + "\n\nTUGAS TAMBAHAN (TLC MODE): Input berformat N|teks_sumber || draf_gtx. "
-                    + "Gunakan draf GTX+ sebagai acuan awal dan perbaiki kalimat/kata yang terasa aneh sesuai instruksi di atas."
-                    + "\n\n==============================\n"
-                    + "FORMAT KELUARAN TLC (WAJIB):\n"
-                    + "1. Input berformat: N|teks_sumber || draf_gtx. Output HANYA baris yang dikoreksi: N|teks_final\n"
-                    + "2. Lewati baris yang sudah bagus; jika semua baris sudah bagus, balas persis: 0|OK\n"
-                    + "3. DILARANG mengulang teks sumber Inggris atau tanda || pada output.\n"
-                    + "4. Pertahankan token <br> persis pada posisinya untuk ganti baris.\n"
-                    + "==============================\n";
+        if (customPrompt != null) {
+            String cp = customPrompt.trim();
+            if (!cp.isEmpty()
+                    && !cp.equals(DEFAULT_FANSUB_PROMPT_ID.trim())
+                    && !cp.startsWith(OLD_SHORT_PROMPT_PREFIX)) {
+                sb.append("\n\n[USER CUSTOM INSTRUCTIONS (HIGH PRIORITY ADD-ON)]:\n")
+                        .append(cp)
+                        .append("\nIkuti instruksi tambahan di atas tanpa melanggar [OUTPUT FORMAT] (N|teks_final dan 0|OK).");
+            }
         }
-        return TLC_REFINE_PROMPT_ID
-                + "\n\nINSTRUKSI KHUSUS & GAYA DARI PENGGUNA (PRIORITAS TINGGI):\n" + cp;
+        return sb.toString();
     }
 
     public static boolean isTlcNoopOk(String content) {
@@ -1103,21 +1121,136 @@ FORMAT KELUARAN (WAJIB):
     }
 
     public static boolean hasInstantAiCache(Context context, String sourceIdentifier, String model) {
+        return hasInstantAiCache(context, sourceIdentifier, model, null);
+    }
+
+    public static boolean hasInstantAiCache(Context context, String sourceIdentifier, String model, String customPrompt) {
         if (context == null || sourceIdentifier == null) return false;
         Provider provider = getActiveProvider(context);
         String effectiveModel = (model != null && !model.trim().isEmpty())
                 ? model.trim()
                 : getEffectiveModel(context, provider);
-        File cacheFile = getInstantAiCacheFile(context, sourceIdentifier, effectiveModel);
+        String activePrompt = (customPrompt != null) ? customPrompt : getCustomPrompt(context);
+        File cacheFile = getInstantAiCacheFile(context, sourceIdentifier, effectiveModel, activePrompt);
         return cacheFile != null && cacheFile.exists() && cacheFile.length() > 0;
     }
 
-    private static File getInstantAiCacheFile(Context context, String sourceIdentifier, String effectiveModel) {
+    private static File getInstantAiCacheFile(Context context, String sourceIdentifier, String effectiveModel, String customPrompt) {
         if (context == null) return null;
         File cacheDir = new File(context.getCacheDir(), "sub_cache");
         if (!cacheDir.exists()) cacheDir.mkdirs();
-        String cacheKey = sha1(sourceIdentifier + "_" + effectiveModel + "_instant_ai_id_v3");
+        String promptHash = sha1(customPrompt != null ? customPrompt.trim() : "");
+        String cacheKey = sha1(sourceIdentifier + "|" + effectiveModel + "|" + promptHash + "_instant_ai_id_v4");
         return new File(cacheDir, cacheKey + ".json");
+    }
+
+    /**
+     * Stage 0: 1x scan AI cepat sebelum GTX+ untuk mengekstrak istilah khusus episode
+     * (nama skill, status efek seperti Stun, class, guild, judul game) yang wajib dijaga.
+     */
+    public List<String> extractProtectedGlossarySync(Context context,
+                                                     String sourceIdentifier,
+                                                     String animeTitle,
+                                                     List<SubtitleCue> enCues,
+                                                     String model,
+                                                     String apiKey,
+                                                     boolean forceRefresh,
+                                                     java.util.function.BooleanSupplier isCancelled) {
+        LinkedHashSet<String> merged = new LinkedHashSet<>(SmartLexicon.CORE_PROTECTED_TERMS);
+        if (enCues == null || enCues.isEmpty()) {
+            return new ArrayList<>(merged);
+        }
+        if (isCancelled != null && isCancelled.getAsBoolean()) {
+            return new ArrayList<>(merged);
+        }
+
+        File glossaryCache = null;
+        if (context != null && sourceIdentifier != null) {
+            File cacheDir = new File(context.getCacheDir(), "sub_cache");
+            if (!cacheDir.exists()) cacheDir.mkdirs();
+            glossaryCache = new File(cacheDir, sha1(sourceIdentifier + "_glossary_v1") + ".json");
+            if (!forceRefresh && glossaryCache.exists() && glossaryCache.length() > 0) {
+                try {
+                    JSONArray arr = new JSONArray(readFile(glossaryCache));
+                    for (int i = 0; i < arr.length(); i++) {
+                        String term = arr.optString(i, "").trim();
+                        if (term.length() >= 2) merged.add(term);
+                    }
+                    return new ArrayList<>(merged);
+                } catch (Exception ignored) {}
+            }
+        }
+
+        List<String> candidates = SmartLexicon.extractCandidateTerms(enCues, 80);
+        if (candidates.isEmpty()) {
+            return new ArrayList<>(merged);
+        }
+
+        String activeKey = (apiKey != null && !apiKey.trim().isEmpty())
+                ? apiKey.trim()
+                : (context != null ? getKey(context) : "");
+        if (activeKey.isEmpty()) {
+            return new ArrayList<>(merged);
+        }
+
+        Provider provider = Provider.detect(activeKey);
+        String effectiveModel = (model != null && !model.trim().isEmpty())
+                ? getEffectiveModel(provider, model.trim())
+                : (context != null ? getEffectiveModel(context, provider) : getDefaultModel(provider));
+        boolean reasoning = isReasoningModel(effectiveModel);
+        boolean disableThinking = (provider == Provider.GEMINI && !reasoning && !isGemmaModel(effectiveModel));
+
+        try {
+            OkHttpClient quickClient = httpClient.newBuilder()
+                    .connectTimeout(6, TimeUnit.SECONDS)
+                    .readTimeout(10, TimeUnit.SECONDS)
+                    .build();
+            String endpointUrl = getEndpointUrl(provider, activeKey);
+
+            String sysPrompt = "Kamu ekstraktor glosarium subtitle anime.\n"
+                    + "Dari daftar kandidat istilah di bawah, pilih HANYA istilah yang TIDAK BOLEH diterjemahkan harfiah oleh mesin penerjemah "
+                    + "(nama skill/jurus, status efek game seperti Stun/Buff/Debuff/Cooldown, class/job RPG, judul game/dunia, nama organisasi/guild, dan nama karakter/honorifik).\n"
+                    + "Output HANYA satu istilah per baris tanpa nomor, tanpa bullet, tanpa penjelasan.\n"
+                    + "Jika tidak ada yang perlu dijaga, balas: NONE";
+
+            StringBuilder userBody = new StringBuilder();
+            if (animeTitle != null && !animeTitle.trim().isEmpty()) {
+                userBody.append("Anime: ").append(animeTitle.trim()).append("\n");
+            }
+            userBody.append("Kandidat istilah:\n");
+            for (String c : candidates) {
+                userBody.append("- ").append(c).append("\n");
+            }
+
+            String resp = executeChatCompletion(
+                    quickClient, endpointUrl, provider, activeKey, effectiveModel,
+                    sysPrompt, userBody.toString().trim(), 0.1, 512, reasoning, disableThinking);
+            if (resp != null && !resp.trim().isEmpty() && !"NONE".equalsIgnoreCase(resp.trim())) {
+                String cleaned = THINK_TAG_PATTERN.matcher(resp).replaceAll("");
+                cleaned = CODE_BLOCK_PATTERN.matcher(cleaned).replaceAll("");
+                List<String> extracted = new ArrayList<>();
+                for (String rawLine : cleaned.split("\n")) {
+                    String line = rawLine.trim()
+                            .replaceAll("^[-*•\\d.)|\\s]+", "")
+                            .replaceAll("^[`\"']+|[`\"']+$", "")
+                            .trim();
+                    if (line.length() < 2 || line.length() > 40) continue;
+                    String low = line.toLowerCase();
+                    if (low.equals("none") || low.equals("ok") || low.contains(":")) continue;
+                    if (!line.matches(".*[A-Za-z].*")) continue;
+                    merged.add(line);
+                    extracted.add(line);
+                }
+                if (glossaryCache != null && !extracted.isEmpty()) {
+                    try {
+                        writeFile(glossaryCache, new JSONArray(extracted).toString());
+                    } catch (Exception ignored) {}
+                }
+            }
+        } catch (Exception ignored) {
+            // Gagal Stage 0 tidak boleh memblokir GTX+; tetap aman dengan CORE_PROTECTED_TERMS
+        }
+        return new ArrayList<>(merged);
     }
 
     private static boolean isReasoningModel(String model) {
@@ -1154,6 +1287,21 @@ FORMAT KELUARAN (WAJIB):
                                    boolean forceRefresh,
                                    java.util.function.BooleanSupplier isCancelled,
                                    TranslateCuesCallback callback) {
+        refineWithTlcAsync(context, sourceIdentifier, enCues, draftCues, null,
+                customPrompt, model, apiKey, forceRefresh, isCancelled, callback);
+    }
+
+    public void refineWithTlcAsync(Context context,
+                                   String sourceIdentifier,
+                                   List<SubtitleCue> enCues,
+                                   List<SubtitleCue> draftCues,
+                                   List<String> episodeGlossary,
+                                   String customPrompt,
+                                   String model,
+                                   String apiKey,
+                                   boolean forceRefresh,
+                                   java.util.function.BooleanSupplier isCancelled,
+                                   TranslateCuesCallback callback) {
         if (enCues == null || enCues.isEmpty()) {
             if (callback != null) callback.onError("Tidak ada cue subtitle untuk disempurnakan");
             return;
@@ -1176,14 +1324,14 @@ FORMAT KELUARAN (WAJIB):
                 ? getEffectiveModel(provider, model.trim())
                 : (context != null ? getEffectiveModel(context, provider) : getDefaultModel(provider));
         final String rawCustom = (customPrompt != null) ? customPrompt : (context != null ? getCustomPrompt(context) : "");
-        final String tlcPrompt = buildTlcSystemPrompt(rawCustom);
+        final String tlcPrompt = buildTlcSystemPrompt(rawCustom, episodeGlossary);
 
         new Thread(() -> {
             ExecutorService pool = null;
             try {
                 if (isCancelled != null && isCancelled.getAsBoolean()) return;
 
-                File cacheFile = getInstantAiCacheFile(context, sourceIdentifier, effectiveModel);
+                File cacheFile = getInstantAiCacheFile(context, sourceIdentifier, effectiveModel, rawCustom);
                 if (!forceRefresh && cacheFile != null && cacheFile.exists() && cacheFile.length() > 0) {
                     try {
                         List<SubtitleCue> cached = deserializeCues(readFile(cacheFile));

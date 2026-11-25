@@ -281,7 +281,7 @@ public final class DeviceNav {
         int activeColor = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
         int inactiveColor = ContextCompat.getColor(host, R.color.text_frost_bright);
 
-        boolean collapsedSidebar = (layoutSideRail != null);
+        boolean collapsedSidebar = (layoutSideRail != null && scrollSidebarMenu != null);
         float d = host.getResources().getDisplayMetrics().density;
         int scrollH = scrollSidebarMenu != null ? scrollSidebarMenu.getHeight() : 0;
         int pageH = scrollH > 0 ? scrollH : Math.round(180f * d);
@@ -391,7 +391,7 @@ public final class DeviceNav {
             if (open) {
                 targetMenu.setAlpha(0f);
                 targetMenu.setVisibility(View.VISIBLE);
-                targetMenu.post(() -> {
+                Runnable startEnterAnim = () -> {
                     if (!isFoldedMenuOpen) return;
                     targetMenu.setPivotX(targetMenu.getWidth());
                     targetMenu.setPivotY(targetMenu.getHeight());
@@ -406,7 +406,21 @@ public final class DeviceNav {
                             .setDuration(280)
                             .setInterpolator(FLUID_ENTER)
                             .start();
-                });
+                };
+                if (targetMenu.getWidth() > 0 && targetMenu.getHeight() > 0) {
+                    startEnterAnim.run();
+                } else {
+                    targetMenu.getViewTreeObserver().addOnPreDrawListener(new android.view.ViewTreeObserver.OnPreDrawListener() {
+                        @Override
+                        public boolean onPreDraw() {
+                            if (targetMenu.getViewTreeObserver().isAlive()) {
+                                targetMenu.getViewTreeObserver().removeOnPreDrawListener(this);
+                            }
+                            startEnterAnim.run();
+                            return true;
+                        }
+                    });
+                }
             } else {
                 targetMenu.animate()
                         .alpha(0f)

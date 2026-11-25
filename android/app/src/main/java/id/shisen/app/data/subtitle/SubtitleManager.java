@@ -509,6 +509,7 @@ public class SubtitleManager {
 
         final String apiKey = AiSubtitleService.getKey(context);
         final boolean hasByokKey = apiKey != null && !apiKey.trim().isEmpty();
+        final String activeCustomPrompt = AiSubtitleService.getCustomPrompt(context);
         if (listener != null) listener.onSubtitleLoading("Menyiapkan sumber subtitle English...");
 
         new Thread(() -> {
@@ -520,15 +521,25 @@ public class SubtitleManager {
                     return;
                 }
 
-                // Cek cache Instant AI TLC terlebih dahulu agar 0 detik tanpa GTX ulang
-                if (hasByokKey && !forceRefresh && AiSubtitleService.hasInstantAiCache(context, sourceEn.url, null)) {
-                    runInstantAiTlc(enCues, null, sourceEn.url, forceRefresh, loadId, false);
+                // Cek cache Instant AI TLC v4 terlebih dahulu agar 0 detik tanpa GTX ulang
+                if (hasByokKey && !forceRefresh && AiSubtitleService.hasInstantAiCache(context, sourceEn.url, null, activeCustomPrompt)) {
+                    runInstantAiTlc(enCues, null, null, sourceEn.url, forceRefresh, loadId, false);
                     return;
                 }
 
-                // Tahap 1: Instant GTX+ Draft (<1-4 detik) agar tidak ada layar kosong/English prematur
+                // Stage 0: Scan cepat istilah episode (Skill, Stun, class, dll.) sebelum GTX+ agar tidak diterjemahkan harfiah
+                List<String> extractedGlossary = null;
+                if (hasByokKey) {
+                    if (listener != null) listener.onSubtitleLoading("Menganalisis istilah AI...");
+                    extractedGlossary = new AiSubtitleService().extractProtectedGlossarySync(
+                            context, sourceEn.url, title, enCues, null, apiKey, forceRefresh, () -> loadId != currentLoadId);
+                    if (loadId != currentLoadId) return;
+                }
+                final List<String> episodeGlossary = extractedGlossary;
+
+                // Tahap 1: Instant GTX+ Draft dengan proteksi mask istilah sebelum & sesudah GTX+
                 if (listener != null) listener.onSubtitleLoading("Instant AI (GTX+ 0%)...");
-                GtxTranslator.translateAsync(context, sourceEn.url, enCues, forceRefresh, new GtxTranslator.TranslateCallback() {
+                GtxTranslator.translateAsync(context, sourceEn.url, enCues, episodeGlossary, forceRefresh, new GtxTranslator.TranslateCallback() {
                     @Override
                     public void onProgress(int progress, int total) {
                         if (loadId != currentLoadId) return;
@@ -563,7 +574,7 @@ public class SubtitleManager {
                             if (listener != null && context != null) {
                                 listener.onSubtitleStatusToast(context.getString(R.string.player_sub_toast_instant_ai_start));
                             }
-                            runInstantAiTlc(enCues, gtxCues, sourceEn.url, forceRefresh, loadId, true);
+                            runInstantAiTlc(enCues, gtxCues, episodeGlossary, sourceEn.url, forceRefresh, loadId, true);
                         } else {
                             // Tanpa BYOK key: pertahankan GTX+ di layar dan sempurnakan via AI Mimic di latar
                             loadMimicSubtitle(enCues, sourceEn.url, forceRefresh, loadId, true);
@@ -590,6 +601,7 @@ public class SubtitleManager {
 
     private void runInstantAiTlc(List<SubtitleCue> enCues,
                                  List<SubtitleCue> gtxDraftCues,
+                                 List<String> episodeGlossary,
                                  String sourceUrl,
                                  boolean forceRefresh,
                                  int loadId,
@@ -605,7 +617,7 @@ public class SubtitleManager {
         if (keepDraftOnError && listener != null) {
             listener.onSubtitleLoading("Menyempurnakan AI (0%)...");
         }
-        aiService.refineWithTlcAsync(context, sourceUrl, enCues, gtxDraftCues, customPrompt, model, apiKey, forceRefresh, () -> loadId != currentLoadId, new AiSubtitleService.TranslateCuesCallback() {
+        aiService.refineWithTlcAsync(context, sourceUrl, enCues, gtxDraftCues, episodeGlossary, customPrompt, model, apiKey, forceRefresh, () -> loadId != currentLoadId, new AiSubtitleService.TranslateCuesCallback() {
             @Override
             public void onProgress(int progress, int total) {
                 if (loadId != currentLoadId) return;

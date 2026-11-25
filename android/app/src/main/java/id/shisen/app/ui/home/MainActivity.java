@@ -739,6 +739,8 @@ public class MainActivity extends AppCompatActivity {
         boolean wasEmpty = layoutEmpty != null && layoutEmpty.getVisibility() == View.VISIBLE;
 
         lastBoundOrientation = newOrientation;
+        // Putus referensi DeviceNav orientasi sebelumnya sebelum initViews() agar tema/layout lama tidak menimpa view baru
+        deviceNav = null;
         setContentView(R.layout.activity_main);
         SystemUiHelper.applySystemBarsTheme(this);
 

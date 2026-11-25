@@ -174,8 +174,8 @@
     <string name="settings_ai_model_label">Model Selector</string>
     <string name="settings_ai_model_desc">Pick a recommended model or type a custom model name:</string>
     <string name="settings_ai_model_hint">Model name (e.g. gemini-3.1-flash-lite)</string>
-    <string name="settings_ai_prompt_label">Fansub Prompt</string>
-    <string name="settings_ai_prompt_hint">Fansub translation instruction prompt...</string>
+    <string name="settings_ai_prompt_label">Optional Custom Prompt</string>
+    <string name="settings_ai_prompt_hint">Example: Keep RPG skills untranslated, use casual school dialogue...</string>
     <string name="settings_ai_badge_none">Gemini / Groq / NVIDIA NIM / OpenRouter / OpenAI</string>
     <string name="settings_ai_badge_active">Active: %s</string>
     <string name="settings_ai_badge_detected">Detected: %s</string>
@@ -186,7 +186,7 @@
     <string name="settings_toast_safe_mode_off">Safe Mode Off</string>
     <string name="settings_toast_haptic_on">Haptic Feedback On</string>
     <string name="settings_toast_haptic_off">Haptic Feedback Off</string>
-    <string name="settings_toast_prompt_reset">Prompt reset to the default anime fansub prompt</string>
+    <string name="settings_toast_prompt_reset">Custom instructions cleared (using embedded prompt)</string>
     <string name="settings_toast_key_required">Enter an API Key</string>
     <string name="settings_toast_ai_saved">AI settings saved (%s)</string>
     <string name="settings_toast_ai_cleared">API key &amp; model cleared</string>
@@ -358,8 +358,8 @@
     <!-- AI Subtitle Dialog -->
     <string name="ai_dialog_title">AI Subtitle (BYOK)</string>
     <string name="ai_dialog_keystore_notice">Your API keys are stored securely in Android Hardware Keystore (AES-256-GCM) and are never logged or shared.</string>
-    <string name="ai_dialog_prompt_title">Custom Translation Prompt (Fansub)</string>
-    <string name="ai_dialog_prompt_desc">Instruct style, tone, or fansub rules. Leave empty to use default fansub prompt.</string>
+    <string name="ai_dialog_prompt_title">Optional Custom AI Instructions</string>
+    <string name="ai_dialog_prompt_desc">The built-in master prompt (Skill/RPG glossary lock &amp; fansub tone) is already active for all models. Add extra rules here to tailor output further.</string>
     <string name="ai_dialog_save">Save Settings</string>
     <string name="player_sub_option_ai">[AI] Instant AI Sub (Indonesian)</string>
     <string name="player_sub_toast_instant_ai_start">⚡ GTX+ active! AI is refining (Smart Scene)...</string>

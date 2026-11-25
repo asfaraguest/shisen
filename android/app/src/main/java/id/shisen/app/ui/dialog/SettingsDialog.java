@@ -456,8 +456,8 @@ public class SettingsDialog {
 
         btnResetPrompt.setOnClickListener(v -> {
             HapticHelper.performClick(v);
-            etPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
-            AiSubtitleService.saveCustomPrompt(activity, AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+            etPrompt.setText("");
+            AiSubtitleService.clearCustomPrompt(activity);
             Toast.makeText(activity, activity.getString(R.string.settings_toast_prompt_reset), Toast.LENGTH_SHORT).show();
         });
 
@@ -475,9 +475,7 @@ public class SettingsDialog {
             if (!inputModel.isEmpty()) {
                 AiSubtitleService.saveModel(activity, inputModel);
             }
-            if (!inputPrompt.isEmpty()) {
-                AiSubtitleService.saveCustomPrompt(activity, inputPrompt);
-            }
+            AiSubtitleService.saveCustomPrompt(activity, inputPrompt);
         };
 
         if (dialog != null) {
@@ -508,7 +506,7 @@ public class SettingsDialog {
 
             etKey.setText("");
             etModel.setText(AiSubtitleService.getDefaultModel(AiSubtitleService.Provider.GEMINI));
-            etPrompt.setText(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+            etPrompt.setText("");
             tvBadge.setText(activity.getString(R.string.settings_ai_badge_none));
             populateModelChips(layoutChips, activity, AiSubtitleService.Provider.GEMINI, etModel);
 

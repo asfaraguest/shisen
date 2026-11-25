@@ -174,8 +174,8 @@
     <string name="settings_ai_model_label">Seleccionar Modelo</string>
     <string name="settings_ai_model_desc">Elige un modelo recomendado o ingresa un nombre personalizado:</string>
     <string name="settings_ai_model_hint">Nombre del modelo (ej: gemini-3.1-flash-lite)</string>
-    <string name="settings_ai_prompt_label">Prompt de Traducción</string>
-    <string name="settings_ai_prompt_hint">Ingresa instrucciones para traducción...</string>
+    <string name="settings_ai_prompt_label">Prompt Adicional (Opcional)</string>
+    <string name="settings_ai_prompt_hint">Ej.: Mantener habilidades RPG en inglés, usar tono juvenil...</string>
     <string name="settings_ai_badge_none">Gemini / Groq / NVIDIA NIM / OpenRouter / OpenAI</string>
     <string name="settings_ai_badge_active">Activo: %s</string>
     <string name="settings_ai_badge_detected">Detectado: %s</string>
@@ -186,7 +186,7 @@
     <string name="settings_toast_safe_mode_off">Modo Seguro DESACTIVADO</string>
     <string name="settings_toast_haptic_on">Vibración Táctil ACTIVADA</string>
     <string name="settings_toast_haptic_off">Vibración Táctil DESACTIVADA</string>
-    <string name="settings_toast_prompt_reset">Prompt restaurado a valor por defecto</string>
+    <string name="settings_toast_prompt_reset">Instrucciones adicionales borradas (prompt base activo)</string>
     <string name="settings_toast_key_required">Ingresa API Key</string>
     <string name="settings_toast_ai_saved">Ajustes IA guardados (%s)</string>
     <string name="settings_toast_ai_cleared">API Key y modelo eliminados</string>
@@ -358,8 +358,8 @@
     <!-- AI Subtitle Dialog -->
     <string name="ai_dialog_title">Subtítulo IA (BYOK)</string>
     <string name="ai_dialog_keystore_notice">Tu clave API se almacena de forma segura en Android Hardware Keystore (AES-256-GCM) y nunca se comparte.</string>
-    <string name="ai_dialog_prompt_title">Prompt de traducción personalizado (Fansub)</string>
-    <string name="ai_dialog_prompt_desc">Instruye el estilo, tono o reglas de fansub. Deja en blanco para usar el prompt por defecto.</string>
+    <string name="ai_dialog_prompt_title">Instrucciones AI Adicionales (Opcional)</string>
+    <string name="ai_dialog_prompt_desc">El prompt maestro integrado (protección Skill/RPG y tono fansub) ya está activo para todos los modelos. Agrega reglas aquí si deseas personalizarlo aún más.</string>
     <string name="ai_dialog_save">Guardar Ajustes</string>
     <string name="player_sub_option_ai">[AI] Instant AI Sub (Indonesio)</string>
     <string name="player_sub_toast_instant_ai_start">⚡ ¡GTX+ activo! La IA está refinando (Smart Scene)...</string>

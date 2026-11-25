@@ -217,10 +217,12 @@ public class AiSubtitleServiceTest {
 
     @Test
     public void testDefaultCustomPromptConstant() {
-        assertNotNull(AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
-        assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.toLowerCase().contains("bahasa indonesia"));
-        assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("fansub"));
-        assertTrue(AiSubtitleService.DEFAULT_CUSTOM_PROMPT.contains("honorifik"));
+        assertEquals("", AiSubtitleService.DEFAULT_CUSTOM_PROMPT);
+        assertNotNull(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID);
+        assertTrue(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID.toLowerCase().contains("indonesia"));
+        assertTrue(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID.contains("fansub"));
+        assertTrue(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID.contains("honorifik"));
+        assertTrue(AiSubtitleService.DEFAULT_FANSUB_PROMPT_ID.toLowerCase().contains("bahasa indonesia"));
     }
 
     @Test
@@ -426,18 +428,30 @@ public class AiSubtitleServiceTest {
 
     @Test
     public void testBuildTlcSystemPromptAndNoopParsing() {
-        assertEquals(AiSubtitleService.TLC_REFINE_PROMPT_ID,
+        assertEquals(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID,
                 AiSubtitleService.buildTlcSystemPrompt(null));
-        assertEquals(AiSubtitleService.TLC_REFINE_PROMPT_ID,
+        assertEquals(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID,
                 AiSubtitleService.buildTlcSystemPrompt(AiSubtitleService.DEFAULT_FANSUB_PROMPT_ID));
 
         String shortCustom = AiSubtitleService.buildTlcSystemPrompt("Gunakan gaya bicara tsundere.");
-        assertTrue(shortCustom.startsWith(AiSubtitleService.TLC_REFINE_PROMPT_ID));
+        assertTrue(shortCustom.startsWith(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID));
+        assertTrue(shortCustom.contains("[USER CUSTOM INSTRUCTIONS (HIGH PRIORITY ADD-ON)]"));
         assertTrue(shortCustom.contains("Gunakan gaya bicara tsundere."));
 
-        String fullCustom = AiSubtitleService.buildTlcSystemPrompt("ATURAN UTAMA:\nGunakan bahasa baku kerajaan abad pertengahan.");
-        assertTrue(fullCustom.contains("TUGAS TAMBAHAN (TLC MODE)"));
-        assertTrue(fullCustom.contains("FORMAT KELUARAN TLC (WAJIB)"));
+        // Custom prompt panjang tetap bersifat aditif: tidak menimpa Embedded Master Prompt maupun [OUTPUT FORMAT]
+        String fullCustom = AiSubtitleService.buildTlcSystemPrompt(
+                "ATURAN UTAMA:\nGunakan bahasa baku kerajaan abad pertengahan dan pertahankan semua nama teknik jurus.");
+        assertTrue(fullCustom.startsWith(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID));
+        assertTrue(fullCustom.contains("[OUTPUT FORMAT]"));
+        assertTrue(fullCustom.contains("[USER CUSTOM INSTRUCTIONS (HIGH PRIORITY ADD-ON)]"));
+        assertTrue(fullCustom.contains("ATURAN UTAMA:"));
+
+        String withGlossary = AiSubtitleService.buildTlcSystemPrompt(
+                "Pakai 'aku/kamu'",
+                java.util.Arrays.asList("Pagma's Swordsmanship", "Stun"));
+        assertTrue(withGlossary.contains("[EPISODE PROTECTED TERMS (NEVER TRANSLATE LITERALLY)]"));
+        assertTrue(withGlossary.contains("Pagma's Swordsmanship, Stun"));
+        assertTrue(withGlossary.contains("Pakai 'aku/kamu'"));
 
         assertTrue(AiSubtitleService.isTlcNoopOk("0|OK"));
         assertTrue(AiSubtitleService.isTlcNoopOk("<think>all good</think>\nALL OK."));
@@ -517,5 +531,33 @@ public class AiSubtitleServiceTest {
         RecordedRequest req2 = server.takeRequest();
         assertFalse(req2.getBody().readUtf8().contains("reasoning_effort"));
         AiSubtitleService.clearModelCooldowns();
+    }
+
+    @Test
+    public void testExtractProtectedGlossarySyncWithMockWebServer() throws Exception {
+        String mockBody = "{\n" +
+                "  \"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"1. Pagma's Swordsmanship\\n- Blacksmith's Rage\\nSatisfy\"}}]\n" +
+                "}";
+        server.enqueue(new MockResponse().setResponseCode(200).setHeader("Content-Type", "application/json").setBody(mockBody));
+
+        java.util.List<SubtitleCue> cues = java.util.Arrays.asList(
+                new SubtitleCue(0, 2000, "Activate [Blacksmith's Rage] in Satisfy!"),
+                new SubtitleCue(2000, 4000, "Skill: Pagma's Swordsmanship triggered Stun!"),
+                new SubtitleCue(4000, 6000, "Pagma's Swordsmanship dealt huge damage!")
+        );
+
+        java.util.List<String> glossary = service.extractProtectedGlossarySync(
+                null, "ep-overgeared-1", "Overgeared", cues, "llama-3.3-70b-versatile", "gsk_test_key", true, null);
+
+        assertTrue(glossary.contains("Skill"));
+        assertTrue(glossary.contains("Stun"));
+        assertTrue(glossary.contains("Pagma's Swordsmanship"));
+        assertTrue(glossary.contains("Blacksmith's Rage"));
+        assertTrue(glossary.contains("Satisfy"));
+
+        RecordedRequest req = server.takeRequest();
+        String reqBody = req.getBody().readUtf8();
+        assertTrue(reqBody.contains("Overgeared"));
+        assertTrue(reqBody.contains("Blacksmith's Rage"));
     }
 }
