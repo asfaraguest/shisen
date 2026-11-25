@@ -6,7 +6,7 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 
 ### Ditingkatkan
 - **Mobile Landscape TV-Layout Parity (`src/mobile/res/layout-land/activity_main.xml`, `src/mobile/.../DeviceNav.java`, `VerticalTextView.java`, `VerticalPagerScrollView.java`, `MainActivity.java`, `DetailActivity.java`, `PlayerActivity.java`, `AnimeThemeManager.java`, `layout-land/activity_detail.xml`, `dimens.xml`)**:
-  - Menghadirkan *sidebar* kiri *collapsed* (`60dp`) di mode landscape Mobile (logo ikon + search ikon → pager vertikal satu-menu-penuh per halaman → divider → ikon Pengaturan) dengan tiap halaman menu mengisi penuh tinggi *viewport* dan teks miring vertikal `-90°` (`VerticalTextView` + `VerticalPagerScrollView`), serta area kanan ala Shisen-TV (pagination inline di header, tanpa floating FAB/folded menu), tetap bergaya visual Shisen Mobile SAO dan tanpa menyentuh Android TV.
+  - Menghadirkan *sidebar* kiri *collapsed* (`60dp`) di mode landscape Mobile (logo ikon + search ikon → pager vertikal satu-menu-penuh per halaman **tanpa ikon** berteks miring vertikal `-90°` → divider → ikon Pengaturan), serta area kanan ala Shisen-TV (pagination inline di header, tanpa floating FAB/folded menu), tetap bergaya visual Shisen Mobile SAO dan tanpa menyentuh Android TV.
   - Menampilkan cover anime penuh di panel kiri atas (`~55%` tinggi, lebar `280dp`) dengan blok metadata/tombol/sinopsis *compact* di bawahnya tanpa overlap gambar, serta backdrop & scrim horizontal (`LEFT_RIGHT`) identik dengan Shisen-TV + info jadwal rilis (`tv_detail_schedule`).
   - Mengunci `PlayerActivity` saat dibuka dari orientasi landscape (`startedInLandscape`) agar tidak memunculkan Portrait Video Player Mode dan tombol Back langsung kembali ke Detail landscape.
 - **Instant AI Sub Indo 2-Tahap — Paritas Penuh Tatap (`AiSubtitleService.java`, `SubtitleManager.java`, `SmartLexicon.java`, `GtxTranslator.java`, `PlayerActivity.java`, `strings.xml`)**:
@@ -15,7 +15,7 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 
 ### Diperbaiki
 - **Floating Menu Portrait Mobile (`layout/activity_main.xml`, `src/mobile/.../DeviceNav.java`)**:
-  - Mengubah lebar `scroll_folded_menu`, `layout_folded_menu`, dan item menu ke `wrap_content` rata kanan sehingga tiap pill pas mengikuti panjang teks, menyinkronkan `applyTheme()` pada `DeviceNav.init()`, serta merapikan animasi buka (`pivotX`/`pivotY` diset setelah layout terukur).
+  - Menyamakan ukuran kontainer dan tiap pill item floating menu Portrait dengan rilis stabil `v1.1.1` (`230dp` / `match_parent`), menyinkronkan `applyTheme()` pada `DeviceNav.init()`, serta merapikan animasi buka (`pivotX`/`pivotY` diset setelah layout terukur).
 - **Stabilitas Stream & Navigasi TV (`PlayerActivity.java`, `src/tv/.../DeviceNav.java`)**:
   - Menambahkan `streamLoadSeq` di `PlayerActivity.playEpisodeWithServer` untuk mencegah *race condition* callback stream/subtitle lama saat berpindah episode/server dengan cepat.
   - Memperluas auto-failover `onPlayerError` untuk status HTTP/koneksi/timeout (`ERROR_CODE_IO_BAD_HTTP_STATUS`, `ERROR_CODE_IO_NETWORK_CONNECTION_FAILED`, `ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT`).

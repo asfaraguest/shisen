@@ -105,17 +105,10 @@
                     android:clickable="true"
                     android:focusable="true">
 
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:src="@drawable/ic_tab_season"
-                        app:tint="@color/accent_glacial" />
-
                     <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_musim"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:text="@string/menu_this_season"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="11.5sp"
@@ -139,17 +132,10 @@
                     android:clickable="true"
                     android:focusable="true">
 
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:src="@drawable/ic_tab_airing"
-                        app:tint="@color/accent_glacial" />
-
                     <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_airing"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:text="@string/menu_airing"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="11.5sp"
@@ -173,17 +159,10 @@
                     android:clickable="true"
                     android:focusable="true">
 
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:src="@drawable/ic_tab_schedule"
-                        app:tint="@color/accent_glacial" />
-
                     <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_jadwal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:text="@string/menu_schedule"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="11.5sp"
@@ -207,17 +186,10 @@
                     android:clickable="true"
                     android:focusable="true">
 
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:src="@drawable/ic_tab_history"
-                        app:tint="@color/accent_glacial" />
-
                     <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_riwayat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:text="@string/menu_history"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="11.5sp"
@@ -241,17 +213,10 @@
                     android:clickable="true"
                     android:focusable="true">
 
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:src="@drawable/ic_tab_favorite"
-                        app:tint="@color/accent_glacial" />
-
                     <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_favorit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:text="@string/menu_favorites"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="11.5sp"
@@ -275,17 +240,10 @@
                     android:clickable="true"
                     android:focusable="true">
 
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:src="@drawable/ic_tab_catalog"
-                        app:tint="@color/accent_glacial" />
-
                     <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_katalog"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:text="@string/menu_catalog"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="11.5sp"
@@ -309,17 +267,10 @@
                     android:clickable="true"
                     android:focusable="true">
 
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:src="@drawable/ic_tab_genre"
-                        app:tint="@color/accent_glacial" />
-
                     <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_genre"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:text="@string/menu_genre"
                         android:textColor="@color/text_frost_bright"
                         android:textSize="11.5sp"

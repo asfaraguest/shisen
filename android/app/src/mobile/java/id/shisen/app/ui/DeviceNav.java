@@ -308,7 +308,7 @@ public final class DeviceNav {
                     if (titles[i] instanceof VerticalTextView) {
                         ((VerticalTextView) titles[i]).setVerticalText(true);
                     }
-                    titles[i].setMaxHeight(Math.max(Math.round(60f * d), pageH - Math.round(52f * d)));
+                    titles[i].setMaxHeight(Math.max(Math.round(60f * d), pageH - Math.round(24f * d)));
                     if (isActive) {
                         activePageIndex = i;
                         lastFeedPageIndex = i;
@@ -321,7 +321,9 @@ public final class DeviceNav {
             id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
                     items[i],
                     id.shisen.app.util.AnimeThemeManager.createMenuPillDrawable(host, isActive));
-            tintMenuIcon(items[i], activeColor, isActive);
+            if (!collapsedSidebar || items[i] == host.menuItemSettings) {
+                tintMenuIcon(items[i], activeColor, isActive);
+            }
             titles[i].setTextColor(isActive ? activeColor : inactiveColor);
             titles[i].setTypeface(null, isActive ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
         }
