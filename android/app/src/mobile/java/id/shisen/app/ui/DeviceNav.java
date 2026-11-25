@@ -33,21 +33,30 @@ public final class DeviceNav {
     private ImageView ivFabIcon;
     private boolean isFoldedMenuOpen = false;
 
+    private View layoutSideRail;
+    private View railDividerSettings;
     private LinearLayout layoutPagination;
 
     public DeviceNav(MainActivity host) {
         this.host = host;
     }
 
+    public boolean hasSidebar() {
+        return layoutSideRail != null;
+    }
+
     public void init(View root) {
         if (root == null) return;
 
+        layoutSideRail = root.findViewById(R.id.layout_tv_side_rail);
+        railDividerSettings = root.findViewById(R.id.rail_divider_settings);
         scrimFoldedMenu = root.findViewById(R.id.scrim_folded_menu);
         scrollFoldedMenu = root.findViewById(R.id.scroll_folded_menu);
         layoutFoldedMenu = root.findViewById(R.id.layout_folded_menu);
         fabMenuTrigger = root.findViewById(R.id.fab_menu_trigger);
         ivFabIcon = root.findViewById(R.id.iv_fab_icon);
         layoutPagination = root.findViewById(R.id.layout_pagination);
+        isFoldedMenuOpen = false;
 
         if (fabMenuTrigger != null) {
             fabMenuTrigger.setOnClickListener(v -> {
@@ -70,6 +79,22 @@ public final class DeviceNav {
     }
 
     public void applyInsets(int topInset, int bottomInset, int leftInset, int rightInset, float density) {
+        if (layoutSideRail != null) {
+            int padH = Math.round(10 * density);
+            int padTop = Math.round(12 * density) + topInset;
+            int padBottom = Math.round(10 * density) + bottomInset;
+            layoutSideRail.setPadding(padH + leftInset, padTop, padH, padBottom);
+            ViewGroup.LayoutParams lp = layoutSideRail.getLayoutParams();
+            if (lp != null) {
+                int targetW = Math.round(172 * density) + leftInset;
+                if (lp.width != targetW) {
+                    lp.width = targetW;
+                    layoutSideRail.setLayoutParams(lp);
+                }
+            }
+            return;
+        }
+
         int baseBottomMargin = (int) (18 * density) + bottomInset;
         int baseEndMargin = (int) (16 * density) + rightInset;
 
@@ -116,13 +141,23 @@ public final class DeviceNav {
     }
 
     public void onTabChanged(MainActivity.MainTab tab) {
-        setFoldedMenuOpen(false);
+        if (layoutSideRail == null) {
+            setFoldedMenuOpen(false);
+        }
         updateFoldedMenuHighlight(tab);
     }
 
     public void applyTheme() {
         if (host == null) return;
         int accent = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
+        if (layoutSideRail != null) {
+            id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
+                    layoutSideRail,
+                    id.shisen.app.util.AnimeThemeManager.createSaoSideRailDrawable(host));
+        }
+        if (railDividerSettings != null) {
+            railDividerSettings.setBackgroundColor(id.shisen.app.util.AnimeThemeManager.getSaoHairlineColor());
+        }
         if (scrimFoldedMenu != null && id.shisen.app.util.AnimeThemeManager.isMobileSaoEnabled()) {
             scrimFoldedMenu.setBackgroundColor(0xC40E1014);
         }
@@ -220,9 +255,15 @@ public final class DeviceNav {
     }
 
     public int getGridSpan(int widthDp) {
-        if (widthDp >= 920) return 5;
-        if (widthDp >= 640) return 4;
-        if (widthDp >= 480) return 3;
+        int effectiveWidth = (layoutSideRail != null) ? Math.max(320, widthDp - 172) : widthDp;
+        if (layoutSideRail != null) {
+            if (effectiveWidth >= 720) return 5;
+            if (effectiveWidth >= 500) return 4;
+            return 3;
+        }
+        if (effectiveWidth >= 920) return 5;
+        if (effectiveWidth >= 640) return 4;
+        if (effectiveWidth >= 480) return 3;
         return 2;
     }
 

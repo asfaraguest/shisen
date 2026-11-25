@@ -285,19 +285,22 @@ public class DetailActivity extends AppCompatActivity {
 
     private void applyDetailTheme() {
         boolean sao = AnimeThemeManager.isMobileSaoEnabled();
-        if (layoutDetailRoot != null) {
-            if (sao) {
-                layoutDetailRoot.setBackground(AnimeThemeManager.createSaoCanvasDrawable(this));
-            } else {
-                layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
-            }
-        }
         int accent = AnimeThemeManager.getPrimaryAccentColor(this);
         int surface = AnimeThemeManager.getSurfaceColor(this);
         int border = AnimeThemeManager.getBorderColor(this);
         float d = getResources().getDisplayMetrics().density;
 
         View scrim = findViewById(R.id.view_detail_gradient_scrim);
+        if (layoutDetailRoot != null) {
+            if (scrim == null) {
+                // Mode landscape 2-panel pakai kanvas gelap #060912 agar backdrop & scrim horizontal persis Shisen-TV
+                layoutDetailRoot.setBackgroundColor(0xFF060912);
+            } else if (sao) {
+                layoutDetailRoot.setBackground(AnimeThemeManager.createSaoCanvasDrawable(this));
+            } else {
+                layoutDetailRoot.setBackgroundResource(AnimeThemeManager.getCanvasBackgroundResId(this));
+            }
+        }
         if (scrim != null) {
             scrim.setBackground(AnimeThemeManager.createDetailHeroScrimDrawable(this));
             if (sao) {
@@ -1298,6 +1301,9 @@ public class DetailActivity extends AppCompatActivity {
             intent.putExtra("slug", anime.slug);
         }
         intent.putExtra("selectedIndex", targetIndex);
+        intent.putExtra("startedInLandscape",
+                !id.shisen.app.ui.player.PlayerKeys.isTv()
+                        && getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE);
         startActivity(intent);
     }
 

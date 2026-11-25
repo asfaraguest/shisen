@@ -144,6 +144,16 @@
                             android:textColor="@color/accent_glacial"
                             android:textSize="10.5sp"
                             android:fontFamily="sans-serif-bold" />
+
+                        <TextView
+                            android:id="@+id/tv_detail_schedule"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="@color/star_gold"
+                            android:textSize="10.5sp"
+                            android:fontFamily="sans-serif-bold"
+                            android:visibility="gone" />
                     </LinearLayout>
                 </LinearLayout>
 

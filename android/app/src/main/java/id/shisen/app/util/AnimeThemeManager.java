@@ -990,14 +990,32 @@ public class AnimeThemeManager {
                 getSaoVoidColor());
     }
 
+    /** Latar sidebar kiri landscape Mobile bergaya SAO Night-Clean (permukaan gelap + hairline kanan). */
+    public static Drawable createSaoSideRailDrawable(Context context) {
+        float d = density(context);
+        GradientDrawable fill = new GradientDrawable();
+        fill.setShape(GradientDrawable.RECTANGLE);
+        fill.setColor(withAlpha(getSaoSurfaceColor(), 0xFA));
+        GradientDrawable hairline = new GradientDrawable();
+        hairline.setShape(GradientDrawable.RECTANGLE);
+        hairline.setColor(getSaoHairlineColor());
+        android.graphics.drawable.LayerDrawable ld = new android.graphics.drawable.LayerDrawable(new Drawable[]{fill, hairline});
+        int borderPx = Math.max(1, Math.round(d));
+        ld.setLayerInset(1, 0, 0, 0, 0);
+        // Right border only: place hairline at right edge via gravity
+        ld.setLayerGravity(1, android.view.Gravity.END | android.view.Gravity.FILL_VERTICAL);
+        ld.setLayerWidth(1, borderPx);
+        return ld;
+    }
+
     public static Drawable createDetailLandscapeScrimDrawable(Context context) {
-        int accent = getPrimaryAccentColor(context);
+        // Gradasi horizontal (kiri gelap ke kanan transparan) menyamai bg_tv_backdrop_scrim di Shisen-TV
         return new GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
+                GradientDrawable.Orientation.LEFT_RIGHT,
                 new int[]{
-                        withAlpha(getSaoDetailHeroTintColor(accent), 0xE6),
-                        withAlpha(getSaoDetailMidTintColor(accent), 0xB8),
-                        withAlpha(getSaoVoidColor(), 0x66)
+                        0xFA060912,
+                        0xC0070B16,
+                        0x38070A14
                 }
         );
     }

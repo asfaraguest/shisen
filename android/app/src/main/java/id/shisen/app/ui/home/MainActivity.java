@@ -143,6 +143,11 @@ public class MainActivity extends AppCompatActivity {
     private int currentPage = 1;
     private boolean isPaginationFolded = false;
     private final Runnable expandPaginationRunnable = () -> setPaginationFolded(false);
+    private int lastPaginationCount = 0;
+    private int lastPaginationPageSize = 35;
+    private boolean lastPaginationHasNext = false;
+    private boolean lastPaginationVisible = false;
+    private int lastBoundOrientation = -1;
 
     private MainTab currentTab = MainTab.MUSIM;
     private boolean isSearchExpanded = false;
@@ -310,6 +315,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        lastBoundOrientation = getResources().getConfiguration().orientation;
         setContentView(R.layout.activity_main);
         SystemUiHelper.applySystemBarsTheme(this);
 
@@ -617,15 +623,18 @@ public class MainActivity extends AppCompatActivity {
             int rightInset = Math.max(navBars.right, displayCutout.right);
             float density = getResources().getDisplayMetrics().density;
 
+            boolean hasSidebar = !id.shisen.app.ui.player.PlayerKeys.isTv()
+                    && findViewById(R.id.layout_tv_side_rail) != null;
+
             if (layoutAuroraTop != null) {
                 currentHeaderTopInset = topInset;
-                int baseHeight = (int) (54 * density);
+                int baseHeight = (int) ((hasSidebar ? 48 : 54) * density);
                 ViewGroup.LayoutParams lp = layoutAuroraTop.getLayoutParams();
                 if (lp != null) {
                     lp.height = baseHeight + topInset;
                     layoutAuroraTop.setLayoutParams(lp);
                 }
-                layoutAuroraTop.setPadding(leftInset, topInset, rightInset, 0);
+                layoutAuroraTop.setPadding(hasSidebar ? 0 : leftInset, topInset, rightInset, 0);
                 if (!id.shisen.app.ui.player.PlayerKeys.isTv()) {
                     AnimeThemeManager.applyBackgroundPreservingPadding(
                             layoutAuroraTop, AnimeThemeManager.createAuroraHeaderDrawable(this, currentHeaderTopInset));
@@ -637,9 +646,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (rvGrid != null) {
-                int basePaddingBottom = (int) (80 * density);
+                int basePaddingBottom = (int) ((hasSidebar ? 18 : 80) * density);
                 int basePaddingH = (int) (2 * density);
-                rvGrid.setPadding(leftInset + basePaddingH, rvGrid.getPaddingTop(), rightInset + basePaddingH, basePaddingBottom + bottomInset);
+                rvGrid.setPadding((hasSidebar ? 0 : leftInset) + basePaddingH, rvGrid.getPaddingTop(), rightInset + basePaddingH, basePaddingBottom + bottomInset);
             }
 
             return windowInsets;
@@ -647,7 +656,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        gridAdapter = new AnimeAdapter(this);
+        if (gridAdapter == null) {
+            gridAdapter = new AnimeAdapter(this);
+        }
         int gridSpan = calculateGridSpan();
         GridLayoutManager glm = new GridLayoutManager(this, gridSpan);
         glm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -707,10 +718,79 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(@NonNull android.content.res.Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        if (!id.shisen.app.ui.player.PlayerKeys.isTv() && newConfig.orientation != lastBoundOrientation) {
+            rebindOrientationLayout(newConfig.orientation);
+            return;
+        }
         if (rvGrid != null && rvGrid.getLayoutManager() instanceof GridLayoutManager) {
             ((GridLayoutManager) rvGrid.getLayoutManager()).setSpanCount(calculateGridSpan());
-            gridAdapter.notifyDataSetChanged();
+            if (gridAdapter != null) {
+                gridAdapter.notifyDataSetChanged();
+            }
         }
+        if (layoutMainRoot != null) {
+            layoutMainRoot.requestApplyInsets();
+        }
+    }
+
+    private void rebindOrientationLayout(int newOrientation) {
+        String savedSearch = etSearch != null ? etSearch.getText().toString() : "";
+        boolean wasSearchExpanded = isSearchExpanded;
+        boolean wasEmpty = layoutEmpty != null && layoutEmpty.getVisibility() == View.VISIBLE;
+
+        lastBoundOrientation = newOrientation;
+        setContentView(R.layout.activity_main);
+        SystemUiHelper.applySystemBarsTheme(this);
+
+        initViews();
+        deviceNav = new id.shisen.app.ui.DeviceNav(this);
+        deviceNav.init(getWindow().getDecorView());
+        setupWindowInsets();
+        setupRecyclerView();
+
+        // Pulihkan query sebelum setupListeners() agar TextWatcher tidak memicu fetch ulang
+        if (etSearch != null && !savedSearch.isEmpty()) {
+            etSearch.setText(savedSearch);
+            etSearch.setSelection(savedSearch.length());
+        }
+        if (btnClearSearch != null) {
+            btnClearSearch.setVisibility(savedSearch.trim().isEmpty() ? View.GONE : View.VISIBLE);
+        }
+
+        setupListeners();
+
+        if (wasSearchExpanded) {
+            isSearchExpanded = true;
+            if (layoutTopNormal != null) layoutTopNormal.setVisibility(View.GONE);
+            if (layoutTopSearchFluid != null) {
+                layoutTopSearchFluid.setVisibility(View.VISIBLE);
+                layoutTopSearchFluid.setAlpha(1.0f);
+            }
+        }
+
+        updateTabsUI();
+        updateSubFilterUI();
+
+        if (currentTab == MainTab.PENGATURAN) {
+            if (swipeRefresh != null) swipeRefresh.setVisibility(View.GONE);
+            if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+            if (scrollSubFilters != null) scrollSubFilters.setVisibility(View.GONE);
+            if (layoutContextualBar != null) layoutContextualBar.setVisibility(View.GONE);
+            if (scrollSettingsView != null) scrollSettingsView.setVisibility(View.VISIBLE);
+            if (settingsViewController != null) settingsViewController.refreshUI();
+        } else {
+            if (scrollSettingsView != null) scrollSettingsView.setVisibility(View.GONE);
+            if (swipeRefresh != null) swipeRefresh.setVisibility(View.VISIBLE);
+            if (wasEmpty) {
+                if (layoutEmpty != null) layoutEmpty.setVisibility(View.VISIBLE);
+                if (tvEmptyTitle != null) tvEmptyTitle.setText(R.string.empty_no_data_title);
+                if (tvEmptyDesc != null) tvEmptyDesc.setText(R.string.empty_no_data_desc);
+                if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+            } else if (lastPaginationVisible) {
+                updatePaginationUI(lastPaginationCount, lastPaginationPageSize, lastPaginationHasNext);
+            }
+        }
+
         if (layoutMainRoot != null) {
             layoutMainRoot.requestApplyInsets();
         }
@@ -1680,7 +1760,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setPaginationFolded(boolean folded) {
-        if (id.shisen.app.ui.player.PlayerKeys.isTv()) {
+        if (id.shisen.app.ui.player.PlayerKeys.isTv() || findViewById(R.id.layout_tv_side_rail) != null) {
             return;
         }
         if (isPaginationFolded == folded || layoutPagination == null || layoutPagination.getVisibility() != View.VISIBLE) {
@@ -1728,6 +1808,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updatePaginationUI(int currentCount, int pageSize, boolean hasNextPage) {
+        lastPaginationCount = currentCount;
+        lastPaginationPageSize = pageSize;
+        lastPaginationHasNext = hasNextPage;
+        lastPaginationVisible = true;
         if (layoutPagination == null) return;
         mainHandler.removeCallbacks(expandPaginationRunnable);
         isPaginationFolded = false;
@@ -1792,10 +1876,12 @@ public class MainActivity extends AppCompatActivity {
             if (currentTab != MainTab.JADWAL) {
                 updatePaginationUI(result.size(), pageSize, hasNextPage);
             } else {
+                lastPaginationVisible = false;
                 if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
             }
             applyPendingTvFocus(true);
         } else {
+            lastPaginationVisible = false;
             gridAdapter.updateFeed(null, new ArrayList<>());
             layoutEmpty.setVisibility(View.VISIBLE);
             tvEmptyTitle.setText(R.string.empty_no_data_title);

@@ -2,9 +2,13 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
-## [1.1.2-beta.4] - 2026-11-24
+## [1.1.2-beta.4] - 2026-11-25
 
 ### Ditingkatkan
+- **Mobile Landscape TV-Layout Parity (`src/mobile/res/layout-land/activity_main.xml`, `src/mobile/.../DeviceNav.java`, `MainActivity.java`, `DetailActivity.java`, `PlayerActivity.java`, `AnimeThemeManager.java`, `layout-land/activity_detail.xml`)**:
+  - Menghadirkan *sidebar* kiri (`172dp`) di mode landscape Mobile (logo + search trigger → menu vertical scrolling → divider → tombol Pengaturan) dengan area kanan ala Shisen-TV (pagination inline di header, tanpa floating FAB/folded menu), tetap memakai gaya visual Shisen Mobile SAO dan tanpa menyentuh perilaku Android TV.
+  - Menyamakan backdrop & scrim horizontal (`LEFT_RIGHT`) halaman Detail anime landscape dengan Shisen-TV serta menambahkan info jadwal rilis (`tv_detail_schedule`), sambil menjaga gaya card/tombol Shisen Mobile.
+  - Mengunci `PlayerActivity` saat dibuka dari orientasi landscape (`startedInLandscape`) agar tidak memunculkan Portrait Video Player Mode dan tombol Back langsung kembali ke Detail landscape.
 - **Instant AI Sub Indo 2-Tahap — Paritas Penuh Tatap (`AiSubtitleService.java`, `SubtitleManager.java`, `SmartLexicon.java`, `GtxTranslator.java`, `PlayerActivity.java`, `strings.xml`)**:
   - **Tahap 1 (Instant GTX+ Parallel Draft):** `GtxTranslator` kini memakai pool paralel 4 worker untuk menampilkan terjemahan Indonesia instan dengan cepat.
   - **Tahap 2 (AI TLC Refine Paritas Tatap):** Memakai `TLC_REFINE_PROMPT_ID` + format `N|EN || GTX+`, batch paralel per provider (`80`/`40`/`60`/`20`), `reasoning_effort="none"` (Google) dengan retry HTTP 400 & fallback field `reasoning`, parser `"||"` + prefiks `[FINAL]`/`DRAFT:`, katalog model aktif Tatap (`gemini-3.1-flash-lite`, `llama-3.3-70b-versatile`) + migrasi model legacy, sanitasi `SmartLexicon.sanitizeFansubId` yang menjaga kata ganti AI, progress live (`Menyempurnakan AI (XX%)...`), dan cache `_instant_ai_id_v3`.

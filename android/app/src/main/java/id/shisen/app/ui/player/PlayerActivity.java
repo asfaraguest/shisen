@@ -249,6 +249,7 @@ public class PlayerActivity extends AppCompatActivity {
     private int currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
     private String preferredServer = "hianime";
     private boolean isActivityRunning = false;
+    private boolean startedInLandscape = false;
 
     private StreamSource currentStreamSource = null;
     private AudioManager audioManager;
@@ -342,8 +343,11 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         long initialResumePos = -1;
+        startedInLandscape = getIntent().getBooleanExtra("startedInLandscape", false)
+                || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
         if (savedInstanceState != null) {
             initialResumePos = savedInstanceState.getLong("saved_position", -1);
+            startedInLandscape = savedInstanceState.getBoolean("saved_started_in_landscape", startedInLandscape);
         } else if (PlaybackDataHolder.getPositionMs() > 0) {
             initialResumePos = PlaybackDataHolder.getPositionMs();
         }
@@ -686,7 +690,7 @@ public class PlayerActivity extends AppCompatActivity {
                 return;
             }
             int orient = getResources().getConfiguration().orientation;
-            if (orient == Configuration.ORIENTATION_LANDSCAPE) {
+            if (orient == Configuration.ORIENTATION_LANDSCAPE && !startedInLandscape) {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             } else {
                 finish();
@@ -1320,7 +1324,7 @@ public class PlayerActivity extends AppCompatActivity {
                 btnExoFullscreen.setOnClickListener(v -> {
                     HapticHelper.performClick(v);
                     int orient = getResources().getConfiguration().orientation;
-                    if (PlayerKeys.isTv() || orient == Configuration.ORIENTATION_LANDSCAPE) {
+                    if (PlayerKeys.isTv() || orient == Configuration.ORIENTATION_LANDSCAPE || startedInLandscape) {
                         cycleAspectRatio();
                     } else {
                         toggleFullscreen();
@@ -1328,7 +1332,7 @@ public class PlayerActivity extends AppCompatActivity {
                 });
                 btnExoFullscreen.setOnLongClickListener(v -> {
                     HapticHelper.performClick(v);
-                    if (PlayerKeys.isTv()) {
+                    if (PlayerKeys.isTv() || startedInLandscape) {
                         cycleAspectRatio();
                     } else {
                         toggleFullscreen();
@@ -3415,7 +3419,7 @@ public class PlayerActivity extends AppCompatActivity {
                 if (PlayerKeys.handleBack(PlayerActivity.this)) {
                     return;
                 }
-                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && !startedInLandscape) {
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                     return;
                 }
@@ -3496,11 +3500,13 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void updateOrientationLayout(int orientation) {
+        boolean useLandscapeLayout = orientation == Configuration.ORIENTATION_LANDSCAPE
+                || (startedInLandscape && !PlayerKeys.isTv());
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
-            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (useLandscapeLayout) {
                 lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
             } else {
                 lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
@@ -3508,7 +3514,7 @@ public class PlayerActivity extends AppCompatActivity {
             getWindow().setAttributes(lp);
         }
 
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        if (useLandscapeLayout) {
             layoutPortraitBottom.setVisibility(View.GONE);
             boolean isInPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode();
             if (!isScreenLocked && !isInPip) {
@@ -3678,6 +3684,7 @@ public class PlayerActivity extends AppCompatActivity {
             outState.putString("saved_title", anime.title);
         }
         outState.putInt("saved_index", currentIndex);
+        outState.putBoolean("saved_started_in_landscape", startedInLandscape);
         if (player != null) {
             long pos = player.getCurrentPosition();
             outState.putLong("saved_position", pos);
@@ -3689,6 +3696,9 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        startedInLandscape = (intent != null && intent.getBooleanExtra("startedInLandscape", false))
+                || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+        updateOrientationLayout(getResources().getConfiguration().orientation);
         if (PlaybackDataHolder.hasData()) {
             anime = PlaybackDataHolder.getAnime();
             episodeList.clear();
