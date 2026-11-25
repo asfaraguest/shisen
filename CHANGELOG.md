@@ -2,11 +2,11 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
-## [1.1.2-beta.4] - 2026-11-25
+## [1.1.2-beta.4] - 2026-11-26
 
 ### Ditingkatkan
-- **Mobile Landscape TV-Layout Parity (`src/mobile/res/layout-land/activity_main.xml`, `src/mobile/.../DeviceNav.java`, `VerticalTextView.java`, `MainActivity.java`, `DetailActivity.java`, `PlayerActivity.java`, `AnimeThemeManager.java`, `layout-land/activity_detail.xml`, `dimens.xml`)**:
-  - Menghadirkan *sidebar* kiri *collapsed* (`60dp`) di mode landscape Mobile (logo ikon + search ikon → `ScrollView` menu tengah → divider → ikon Pengaturan) dengan menu aktif mengisi penuh tinggi *viewport* `ScrollView` berteks miring vertikal `-90°` (`VerticalTextView`), serta area kanan ala Shisen-TV (pagination inline di header, tanpa floating FAB/folded menu), tetap bergaya visual Shisen Mobile SAO dan tanpa menyentuh Android TV.
+- **Mobile Landscape TV-Layout Parity (`src/mobile/res/layout-land/activity_main.xml`, `src/mobile/.../DeviceNav.java`, `VerticalTextView.java`, `VerticalPagerScrollView.java`, `MainActivity.java`, `DetailActivity.java`, `PlayerActivity.java`, `AnimeThemeManager.java`, `layout-land/activity_detail.xml`, `dimens.xml`)**:
+  - Menghadirkan *sidebar* kiri *collapsed* (`60dp`) di mode landscape Mobile (logo ikon + search ikon → pager vertikal satu-menu-penuh per halaman → divider → ikon Pengaturan) dengan tiap halaman menu mengisi penuh tinggi *viewport* dan teks miring vertikal `-90°` (`VerticalTextView` + `VerticalPagerScrollView`), serta area kanan ala Shisen-TV (pagination inline di header, tanpa floating FAB/folded menu), tetap bergaya visual Shisen Mobile SAO dan tanpa menyentuh Android TV.
   - Menampilkan cover anime penuh di panel kiri atas (`~55%` tinggi, lebar `280dp`) dengan blok metadata/tombol/sinopsis *compact* di bawahnya tanpa overlap gambar, serta backdrop & scrim horizontal (`LEFT_RIGHT`) identik dengan Shisen-TV + info jadwal rilis (`tv_detail_schedule`).
   - Mengunci `PlayerActivity` saat dibuka dari orientasi landscape (`startedInLandscape`) agar tidak memunculkan Portrait Video Player Mode dan tombol Back langsung kembali ke Detail landscape.
 - **Instant AI Sub Indo 2-Tahap — Paritas Penuh Tatap (`AiSubtitleService.java`, `SubtitleManager.java`, `SmartLexicon.java`, `GtxTranslator.java`, `PlayerActivity.java`, `strings.xml`)**:

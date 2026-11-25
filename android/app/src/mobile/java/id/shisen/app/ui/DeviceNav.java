@@ -35,8 +35,9 @@ public final class DeviceNav {
 
     private View layoutSideRail;
     private View railDividerSettings;
-    private ScrollView scrollSidebarMenu;
+    private VerticalPagerScrollView scrollSidebarMenu;
     private int lastSidebarViewportHeight = -1;
+    private int lastFeedPageIndex = 0;
     private LinearLayout layoutPagination;
 
     public DeviceNav(MainActivity host) {
@@ -52,7 +53,9 @@ public final class DeviceNav {
 
         layoutSideRail = root.findViewById(R.id.layout_tv_side_rail);
         railDividerSettings = root.findViewById(R.id.rail_divider_settings);
-        scrollSidebarMenu = root.findViewById(R.id.scroll_sidebar_menu);
+        View rawScrollSidebar = root.findViewById(R.id.scroll_sidebar_menu);
+        scrollSidebarMenu = (rawScrollSidebar instanceof VerticalPagerScrollView)
+                ? (VerticalPagerScrollView) rawScrollSidebar : null;
         lastSidebarViewportHeight = -1;
         if (layoutSideRail != null) {
             View tvLogo = root.findViewById(R.id.tv_app_logo);
@@ -61,11 +64,26 @@ public final class DeviceNav {
             if (tvKanji != null) tvKanji.setVisibility(View.GONE);
         }
         if (scrollSidebarMenu != null) {
+            scrollSidebarMenu.setPageCount(7);
+            scrollSidebarMenu.setOnPageSnapListener(pageIndex -> {
+                MainActivity.MainTab[] tabs = {
+                        MainActivity.MainTab.MUSIM, MainActivity.MainTab.AIRING, MainActivity.MainTab.JADWAL,
+                        MainActivity.MainTab.RIWAYAT, MainActivity.MainTab.FAVORIT, MainActivity.MainTab.KATALOG,
+                        MainActivity.MainTab.GENRE
+                };
+                if (host != null && pageIndex >= 0 && pageIndex < tabs.length) {
+                    MainActivity.MainTab targetTab = tabs[pageIndex];
+                    if (targetTab != host.getCurrentTab()) {
+                        HapticHelper.performTick();
+                        host.selectMenuItem(targetTab);
+                    }
+                }
+            });
             scrollSidebarMenu.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
                 int h = bottom - top;
                 if (h > 0 && h != lastSidebarViewportHeight && host != null) {
                     lastSidebarViewportHeight = h;
-                    updateFoldedMenuHighlight(host.getCurrentTab());
+                    updateFoldedMenuHighlight(host.getCurrentTab(), true);
                 }
             });
         }
@@ -237,6 +255,10 @@ public final class DeviceNav {
     }
 
     private void updateFoldedMenuHighlight(MainActivity.MainTab currentTab) {
+        updateFoldedMenuHighlight(currentTab, false);
+    }
+
+    private void updateFoldedMenuHighlight(MainActivity.MainTab currentTab, boolean forceAlign) {
         if (host == null) return;
         View[] items = {
                 host.menuItemMusim, host.menuItemAiring, host.menuItemJadwal,
@@ -259,13 +281,11 @@ public final class DeviceNav {
 
         boolean collapsedSidebar = (layoutSideRail != null);
         float d = host.getResources().getDisplayMetrics().density;
-        int compactH = Math.round(40f * d);
         int scrollH = scrollSidebarMenu != null ? scrollSidebarMenu.getHeight() : 0;
-        int activeH = Math.max(Math.round(120f * d), scrollH);
-        int marginBottom = Math.round(4f * d);
+        int pageH = scrollH > 0 ? scrollH : Math.round(180f * d);
         int padH = Math.round(4f * d);
         int padV = Math.round(8f * d);
-        View activeScrollItem = null;
+        int activePageIndex = -1;
 
         for (int i = 0; i < items.length; i++) {
             if (items[i] == null || titles[i] == null) continue;
@@ -274,21 +294,22 @@ public final class DeviceNav {
             if (collapsedSidebar) {
                 boolean isScrollItem = (items[i] != host.menuItemSettings);
                 if (isScrollItem) {
-                    int targetH = isActive ? activeH : compactH;
+                    // Setiap halaman menu dalam pager vertikal berukuran 1 penuh tinggi viewport ScrollView
                     ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) items[i].getLayoutParams();
-                    if (lp != null && (lp.height != targetH || lp.bottomMargin != marginBottom)) {
-                        lp.height = targetH;
-                        lp.bottomMargin = marginBottom;
+                    if (lp != null && (lp.height != pageH || lp.bottomMargin != 0)) {
+                        lp.height = pageH;
+                        lp.bottomMargin = 0;
                         items[i].setLayoutParams(lp);
                     }
-                    items[i].setPadding(padH, isActive ? padV : 0, padH, isActive ? padV : 0);
-                    titles[i].setVisibility(isActive ? View.VISIBLE : View.GONE);
+                    items[i].setPadding(padH, padV, padH, padV);
+                    titles[i].setVisibility(View.VISIBLE);
                     if (titles[i] instanceof VerticalTextView) {
                         ((VerticalTextView) titles[i]).setVerticalText(true);
                     }
+                    titles[i].setMaxHeight(Math.max(Math.round(60f * d), pageH - Math.round(52f * d)));
                     if (isActive) {
-                        titles[i].setMaxHeight(Math.max(Math.round(60f * d), activeH - Math.round(52f * d)));
-                        activeScrollItem = items[i];
+                        activePageIndex = i;
+                        lastFeedPageIndex = i;
                     }
                 } else {
                     titles[i].setVisibility(View.GONE);
@@ -303,9 +324,11 @@ public final class DeviceNav {
             titles[i].setTypeface(null, isActive ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
         }
 
-        if (collapsedSidebar && scrollSidebarMenu != null && activeScrollItem != null) {
-            final View target = activeScrollItem;
-            scrollSidebarMenu.post(() -> scrollSidebarMenu.smoothScrollTo(0, target.getTop()));
+        if (collapsedSidebar && scrollSidebarMenu != null && scrollH > 0) {
+            final int targetPage = activePageIndex >= 0 ? activePageIndex : lastFeedPageIndex;
+            if (forceAlign || scrollSidebarMenu.getCurrentPage() != targetPage) {
+                scrollSidebarMenu.post(() -> scrollSidebarMenu.snapToPage(targetPage, !forceAlign, false));
+            }
         }
     }
 

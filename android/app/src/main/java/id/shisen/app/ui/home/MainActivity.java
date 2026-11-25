@@ -1046,7 +1046,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /* package */ void selectMenuItem(MainTab tab) {
+    public void selectMenuItem(MainTab tab) {
         if (tab == MainTab.GENRE) {
             showGenreSelectorDialog();
             return;
