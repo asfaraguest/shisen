@@ -35,6 +35,8 @@ public final class DeviceNav {
 
     private View layoutSideRail;
     private View railDividerSettings;
+    private ScrollView scrollSidebarMenu;
+    private int lastSidebarViewportHeight = -1;
     private LinearLayout layoutPagination;
 
     public DeviceNav(MainActivity host) {
@@ -50,6 +52,23 @@ public final class DeviceNav {
 
         layoutSideRail = root.findViewById(R.id.layout_tv_side_rail);
         railDividerSettings = root.findViewById(R.id.rail_divider_settings);
+        scrollSidebarMenu = root.findViewById(R.id.scroll_sidebar_menu);
+        lastSidebarViewportHeight = -1;
+        if (layoutSideRail != null) {
+            View tvLogo = root.findViewById(R.id.tv_app_logo);
+            View tvKanji = root.findViewById(R.id.tv_app_logo_kanji);
+            if (tvLogo != null) tvLogo.setVisibility(View.GONE);
+            if (tvKanji != null) tvKanji.setVisibility(View.GONE);
+        }
+        if (scrollSidebarMenu != null) {
+            scrollSidebarMenu.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                int h = bottom - top;
+                if (h > 0 && h != lastSidebarViewportHeight && host != null) {
+                    lastSidebarViewportHeight = h;
+                    updateFoldedMenuHighlight(host.getCurrentTab());
+                }
+            });
+        }
         scrimFoldedMenu = root.findViewById(R.id.scrim_folded_menu);
         scrollFoldedMenu = root.findViewById(R.id.scroll_folded_menu);
         layoutFoldedMenu = root.findViewById(R.id.layout_folded_menu);
@@ -80,13 +99,13 @@ public final class DeviceNav {
 
     public void applyInsets(int topInset, int bottomInset, int leftInset, int rightInset, float density) {
         if (layoutSideRail != null) {
-            int padH = Math.round(10 * density);
-            int padTop = Math.round(12 * density) + topInset;
+            int padH = Math.round(6 * density);
+            int padTop = Math.round(10 * density) + topInset;
             int padBottom = Math.round(10 * density) + bottomInset;
             layoutSideRail.setPadding(padH + leftInset, padTop, padH, padBottom);
             ViewGroup.LayoutParams lp = layoutSideRail.getLayoutParams();
             if (lp != null) {
-                int targetW = Math.round(172 * density) + leftInset;
+                int targetW = Math.round(60 * density) + leftInset;
                 if (lp.width != targetW) {
                     lp.width = targetW;
                     layoutSideRail.setLayoutParams(lp);
@@ -154,6 +173,10 @@ public final class DeviceNav {
             id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
                     layoutSideRail,
                     id.shisen.app.util.AnimeThemeManager.createSaoSideRailDrawable(host));
+            View tvLogo = host.findViewById(R.id.tv_app_logo);
+            View tvKanji = host.findViewById(R.id.tv_app_logo_kanji);
+            if (tvLogo != null) tvLogo.setVisibility(View.GONE);
+            if (tvKanji != null) tvKanji.setVisibility(View.GONE);
         }
         if (railDividerSettings != null) {
             railDividerSettings.setBackgroundColor(id.shisen.app.util.AnimeThemeManager.getSaoHairlineColor());
@@ -234,15 +257,55 @@ public final class DeviceNav {
         int activeColor = id.shisen.app.util.AnimeThemeManager.getPrimaryAccentColor(host);
         int inactiveColor = ContextCompat.getColor(host, R.color.text_frost_bright);
 
+        boolean collapsedSidebar = (layoutSideRail != null);
+        float d = host.getResources().getDisplayMetrics().density;
+        int compactH = Math.round(40f * d);
+        int scrollH = scrollSidebarMenu != null ? scrollSidebarMenu.getHeight() : 0;
+        int activeH = Math.max(Math.round(120f * d), scrollH);
+        int marginBottom = Math.round(4f * d);
+        int padH = Math.round(4f * d);
+        int padV = Math.round(8f * d);
+        View activeScrollItem = null;
+
         for (int i = 0; i < items.length; i++) {
             if (items[i] == null || titles[i] == null) continue;
             boolean isActive = (tabEnums[i] == currentTab);
+
+            if (collapsedSidebar) {
+                boolean isScrollItem = (items[i] != host.menuItemSettings);
+                if (isScrollItem) {
+                    int targetH = isActive ? activeH : compactH;
+                    ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) items[i].getLayoutParams();
+                    if (lp != null && (lp.height != targetH || lp.bottomMargin != marginBottom)) {
+                        lp.height = targetH;
+                        lp.bottomMargin = marginBottom;
+                        items[i].setLayoutParams(lp);
+                    }
+                    items[i].setPadding(padH, isActive ? padV : 0, padH, isActive ? padV : 0);
+                    titles[i].setVisibility(isActive ? View.VISIBLE : View.GONE);
+                    if (titles[i] instanceof VerticalTextView) {
+                        ((VerticalTextView) titles[i]).setVerticalText(true);
+                    }
+                    if (isActive) {
+                        titles[i].setMaxHeight(Math.max(Math.round(60f * d), activeH - Math.round(52f * d)));
+                        activeScrollItem = items[i];
+                    }
+                } else {
+                    titles[i].setVisibility(View.GONE);
+                }
+            }
+
             id.shisen.app.util.AnimeThemeManager.applyBackgroundPreservingPadding(
                     items[i],
                     id.shisen.app.util.AnimeThemeManager.createMenuPillDrawable(host, isActive));
             tintMenuIcon(items[i], activeColor, isActive);
             titles[i].setTextColor(isActive ? activeColor : inactiveColor);
             titles[i].setTypeface(null, isActive ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+        }
+
+        if (collapsedSidebar && scrollSidebarMenu != null && activeScrollItem != null) {
+            final View target = activeScrollItem;
+            scrollSidebarMenu.post(() -> scrollSidebarMenu.smoothScrollTo(0, target.getTop()));
         }
     }
 
@@ -255,7 +318,7 @@ public final class DeviceNav {
     }
 
     public int getGridSpan(int widthDp) {
-        int effectiveWidth = (layoutSideRail != null) ? Math.max(320, widthDp - 172) : widthDp;
+        int effectiveWidth = (layoutSideRail != null) ? Math.max(320, widthDp - 60) : widthDp;
         if (layoutSideRail != null) {
             if (effectiveWidth >= 720) return 5;
             if (effectiveWidth >= 500) return 4;

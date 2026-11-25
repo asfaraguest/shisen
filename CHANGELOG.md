@@ -5,9 +5,9 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 ## [1.1.2-beta.4] - 2026-11-25
 
 ### Ditingkatkan
-- **Mobile Landscape TV-Layout Parity (`src/mobile/res/layout-land/activity_main.xml`, `src/mobile/.../DeviceNav.java`, `MainActivity.java`, `DetailActivity.java`, `PlayerActivity.java`, `AnimeThemeManager.java`, `layout-land/activity_detail.xml`)**:
-  - Menghadirkan *sidebar* kiri (`172dp`) di mode landscape Mobile (logo + search trigger → menu vertical scrolling → divider → tombol Pengaturan) dengan area kanan ala Shisen-TV (pagination inline di header, tanpa floating FAB/folded menu), tetap memakai gaya visual Shisen Mobile SAO dan tanpa menyentuh perilaku Android TV.
-  - Menyamakan backdrop & scrim horizontal (`LEFT_RIGHT`) halaman Detail anime landscape dengan Shisen-TV serta menambahkan info jadwal rilis (`tv_detail_schedule`), sambil menjaga gaya card/tombol Shisen Mobile.
+- **Mobile Landscape TV-Layout Parity (`src/mobile/res/layout-land/activity_main.xml`, `src/mobile/.../DeviceNav.java`, `VerticalTextView.java`, `MainActivity.java`, `DetailActivity.java`, `PlayerActivity.java`, `AnimeThemeManager.java`, `layout-land/activity_detail.xml`, `dimens.xml`)**:
+  - Menghadirkan *sidebar* kiri *collapsed* (`60dp`) di mode landscape Mobile (logo ikon + search ikon → `ScrollView` menu tengah → divider → ikon Pengaturan) dengan menu aktif mengisi penuh tinggi *viewport* `ScrollView` berteks miring vertikal `-90°` (`VerticalTextView`), serta area kanan ala Shisen-TV (pagination inline di header, tanpa floating FAB/folded menu), tetap bergaya visual Shisen Mobile SAO dan tanpa menyentuh Android TV.
+  - Menampilkan cover anime penuh di panel kiri atas (`~55%` tinggi, lebar `280dp`) dengan blok metadata/tombol/sinopsis *compact* di bawahnya tanpa overlap gambar, serta backdrop & scrim horizontal (`LEFT_RIGHT`) identik dengan Shisen-TV + info jadwal rilis (`tv_detail_schedule`).
   - Mengunci `PlayerActivity` saat dibuka dari orientasi landscape (`startedInLandscape`) agar tidak memunculkan Portrait Video Player Mode dan tombol Back langsung kembali ke Detail landscape.
 - **Instant AI Sub Indo 2-Tahap — Paritas Penuh Tatap (`AiSubtitleService.java`, `SubtitleManager.java`, `SmartLexicon.java`, `GtxTranslator.java`, `PlayerActivity.java`, `strings.xml`)**:
   - **Tahap 1 (Instant GTX+ Parallel Draft):** `GtxTranslator` kini memakai pool paralel 4 worker untuk menampilkan terjemahan Indonesia instan dengan cepat.

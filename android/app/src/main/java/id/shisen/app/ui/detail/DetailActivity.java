@@ -362,12 +362,19 @@ public class DetailActivity extends AppCompatActivity {
 
         com.google.android.material.card.MaterialCardView cardPoster = findViewById(R.id.card_detail_poster);
         if (cardPoster != null) {
+            boolean fullBleedCover = findViewById(R.id.fl_detail_left_cover) != null;
             cardPoster.setCardBackgroundColor(surface);
-            cardPoster.setStrokeColor(AnimeThemeManager.withAlpha(accent, sao ? 0x80 : 0x99));
-            if (sao) {
+            if (fullBleedCover) {
                 cardPoster.setRadius(0f);
                 cardPoster.setCardElevation(0f);
-                cardPoster.setStrokeWidth(Math.max(1, Math.round(d)));
+                cardPoster.setStrokeWidth(0);
+            } else {
+                cardPoster.setStrokeColor(AnimeThemeManager.withAlpha(accent, sao ? 0x80 : 0x99));
+                if (sao) {
+                    cardPoster.setRadius(0f);
+                    cardPoster.setCardElevation(0f);
+                    cardPoster.setStrokeWidth(Math.max(1, Math.round(d)));
+                }
             }
         }
         com.google.android.material.card.MaterialCardView cardSynopsis = findViewById(R.id.card_detail_synopsis);
@@ -438,8 +445,24 @@ public class DetailActivity extends AppCompatActivity {
             }
 
             if (isLand) {
+                View leftCover = findViewById(R.id.fl_detail_left_cover);
                 View scrollLeft = findViewById(R.id.scroll_detail_left);
-                if (scrollLeft != null) {
+                if (leftCover != null) {
+                    if (btnBack != null && btnBack.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) btnBack.getLayoutParams();
+                        lp.topMargin = (int) (8 * density) + topInset;
+                        lp.leftMargin = (int) (8 * density) + leftInset;
+                        btnBack.setLayoutParams(lp);
+                    }
+                    if (scrollLeft != null) {
+                        scrollLeft.setPadding(
+                                (int) (10 * density) + leftInset,
+                                (int) (8 * density),
+                                (int) (10 * density),
+                                (int) (12 * density) + bottomInset
+                        );
+                    }
+                } else if (scrollLeft != null) {
                     scrollLeft.setPadding(
                             (int) (14 * density) + leftInset,
                             (int) (12 * density) + topInset,
@@ -643,7 +666,7 @@ public class DetailActivity extends AppCompatActivity {
         if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
             float safeDensity = Math.max(1.0f, getResources().getDisplayMetrics().density);
             int widthDp = (int) (getResources().getDisplayMetrics().widthPixels / safeDensity);
-            int rightPanelDp = Math.max(300, widthDp - 360);
+            int rightPanelDp = Math.max(300, widthDp - 280);
             if (rightPanelDp >= 640) return 6;
             if (rightPanelDp >= 440) return 5;
             return 4;

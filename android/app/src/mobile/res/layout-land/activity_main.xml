@@ -7,31 +7,29 @@
     android:orientation="horizontal"
     android:background="@drawable/bg_anime_canvas_shinkai">
 
-    <!-- 1. SIDEBAR MENU KIRI (Logo -> Vertical Scrolling Menu -> Option/Settings) -->
+    <!-- 1. SIDEBAR MENU KIRI COLLAPSED (Logo -> Vertical Scrolling Menu -> Option/Settings) -->
     <LinearLayout
         android:id="@+id/layout_tv_side_rail"
-        android:layout_width="172dp"
+        android:layout_width="60dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingTop="12dp"
+        android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        android:paddingHorizontal="10dp">
+        android:paddingHorizontal="6dp">
 
-        <!-- Shisen Brand Header (Logo) -->
+        <!-- Shisen Brand Header (Icon Only) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="36dp"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="4dp"
+            android:gravity="center"
             android:layout_marginBottom="8dp">
 
             <ImageView
                 android:id="@+id/iv_header_emblem"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="7dp"
-                android:padding="4dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:padding="5dp"
                 android:src="@drawable/ic_sword_cross"
                 app:tint="@color/accent_glacial"
                 android:clickable="true"
@@ -43,40 +41,31 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="SHISEN"
-                android:textColor="@color/accent_glacial"
-                android:textSize="16sp"
-                android:fontFamily="sans-serif-black"
-                android:letterSpacing="0.08"
-                android:singleLine="true" />
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/tv_app_logo_kanji"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
                 android:text="@string/app_logo_kanji"
-                android:textColor="@color/anime_iris_violet"
-                android:textSize="11sp"
-                android:fontFamily="sans-serif-bold"
-                android:singleLine="true" />
+                android:visibility="gone" />
         </LinearLayout>
 
-        <!-- Search Trigger in Left Sidebar -->
+        <!-- Search Trigger in Left Sidebar (Collapsed Icon) -->
         <LinearLayout
             android:id="@+id/btn_search_trigger"
             android:layout_width="match_parent"
-            android:layout_height="36dp"
+            android:layout_height="40dp"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_search_capsule"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="10dp"
+            android:gravity="center"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
-                android:layout_width="15dp"
-                android:layout_height="15dp"
+                android:layout_width="17dp"
+                android:layout_height="17dp"
                 android:src="@drawable/ic_search"
                 app:tint="@color/accent_glacial"
                 android:contentDescription="Cari" />
@@ -85,17 +74,13 @@
                 android:id="@+id/tv_menu_search"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:text="@string/menu_search"
-                android:textColor="@color/text_frost_subtle"
-                android:textSize="12sp"
-                android:fontFamily="sans-serif-medium"
-                android:singleLine="true"
-                android:ellipsize="end" />
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- Vertical Sidebar Scrolling Menu -->
         <ScrollView
+            android:id="@+id/scroll_sidebar_menu"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -111,12 +96,12 @@
                 <LinearLayout
                     android:id="@+id/menu_item_musim"
                     android:layout_width="match_parent"
-                    android:layout_height="38dp"
+                    android:layout_height="40dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_folded_menu_pill"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="8dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -126,29 +111,31 @@
                         android:src="@drawable/ic_tab_season"
                         app:tint="@color/accent_glacial" />
 
-                    <TextView
+                    <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_musim"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="8dp"
                         android:text="@string/menu_this_season"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:letterSpacing="0.06"
                         android:singleLine="true"
-                        android:ellipsize="end" />
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 2. Sedang Tayang (Airing) -->
                 <LinearLayout
                     android:id="@+id/menu_item_airing"
                     android:layout_width="match_parent"
-                    android:layout_height="38dp"
+                    android:layout_height="40dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_folded_menu_pill"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="8dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -158,29 +145,31 @@
                         android:src="@drawable/ic_tab_airing"
                         app:tint="@color/accent_glacial" />
 
-                    <TextView
+                    <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_airing"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="8dp"
                         android:text="@string/menu_airing"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:letterSpacing="0.06"
                         android:singleLine="true"
-                        android:ellipsize="end" />
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 3. Jadwal Rilis -->
                 <LinearLayout
                     android:id="@+id/menu_item_jadwal"
                     android:layout_width="match_parent"
-                    android:layout_height="38dp"
+                    android:layout_height="40dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_folded_menu_pill"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="8dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -190,29 +179,31 @@
                         android:src="@drawable/ic_tab_schedule"
                         app:tint="@color/accent_glacial" />
 
-                    <TextView
+                    <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_jadwal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="8dp"
                         android:text="@string/menu_schedule"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:letterSpacing="0.06"
                         android:singleLine="true"
-                        android:ellipsize="end" />
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 4. Riwayat Tonton -->
                 <LinearLayout
                     android:id="@+id/menu_item_riwayat"
                     android:layout_width="match_parent"
-                    android:layout_height="38dp"
+                    android:layout_height="40dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_folded_menu_pill"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="8dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -222,29 +213,31 @@
                         android:src="@drawable/ic_tab_history"
                         app:tint="@color/accent_glacial" />
 
-                    <TextView
+                    <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_riwayat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="8dp"
                         android:text="@string/menu_history"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:letterSpacing="0.06"
                         android:singleLine="true"
-                        android:ellipsize="end" />
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 5. Favorit -->
                 <LinearLayout
                     android:id="@+id/menu_item_favorit"
                     android:layout_width="match_parent"
-                    android:layout_height="38dp"
+                    android:layout_height="40dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_folded_menu_pill"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="8dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -254,29 +247,31 @@
                         android:src="@drawable/ic_tab_favorite"
                         app:tint="@color/accent_glacial" />
 
-                    <TextView
+                    <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_favorit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="8dp"
                         android:text="@string/menu_favorites"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:letterSpacing="0.06"
                         android:singleLine="true"
-                        android:ellipsize="end" />
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 6. Katalog -->
                 <LinearLayout
                     android:id="@+id/menu_item_katalog"
                     android:layout_width="match_parent"
-                    android:layout_height="38dp"
+                    android:layout_height="40dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_folded_menu_pill"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="8dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -286,29 +281,31 @@
                         android:src="@drawable/ic_tab_catalog"
                         app:tint="@color/accent_glacial" />
 
-                    <TextView
+                    <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_katalog"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="8dp"
                         android:text="@string/menu_catalog"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:letterSpacing="0.06"
                         android:singleLine="true"
-                        android:ellipsize="end" />
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!-- 7. Genre -->
                 <LinearLayout
                     android:id="@+id/menu_item_genre"
                     android:layout_width="match_parent"
-                    android:layout_height="38dp"
+                    android:layout_height="40dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/bg_folded_menu_pill"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="8dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -318,17 +315,19 @@
                         android:src="@drawable/ic_tab_genre"
                         app:tint="@color/accent_glacial" />
 
-                    <TextView
+                    <id.shisen.app.ui.VerticalTextView
                         android:id="@+id/tv_menu_genre"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="8dp"
                         android:text="@string/menu_genre"
                         android:textColor="@color/text_frost_bright"
-                        android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-medium"
+                        android:textSize="11.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:letterSpacing="0.06"
                         android:singleLine="true"
-                        android:ellipsize="end" />
+                        android:ellipsize="end"
+                        android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
@@ -339,18 +338,17 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginVertical="6dp"
-            android:layout_marginHorizontal="4dp"
+            android:layout_marginHorizontal="2dp"
             android:background="#262B36" />
 
-        <!-- Option / Setting Button -->
+        <!-- Option / Setting Button (Collapsed Icon) -->
         <LinearLayout
             android:id="@+id/menu_item_settings"
             android:layout_width="match_parent"
-            android:layout_height="38dp"
+            android:layout_height="40dp"
             android:background="@drawable/bg_folded_menu_pill"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="8dp"
+            android:gravity="center"
             android:clickable="true"
             android:focusable="true">
 
@@ -364,13 +362,8 @@
                 android:id="@+id/tv_menu_settings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
                 android:text="@string/menu_settings"
-                android:textColor="@color/text_frost_bright"
-                android:textSize="12.5sp"
-                android:fontFamily="sans-serif-medium"
-                android:singleLine="true"
-                android:ellipsize="end" />
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
 

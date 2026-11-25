@@ -33,234 +33,224 @@
         android:layout_height="match_parent"
         android:orientation="horizontal">
 
-        <!-- ================= PANEL KIRI: HERO INFO, POSTER & ACTIONS ================= -->
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/scroll_detail_left"
+        <!-- ================= PANEL KIRI: COVER PENUH ATAS (~55%) + METADATA COMPACT BAWAH (~45%) ================= -->
+        <LinearLayout
+            android:id="@+id/layout_detail_left_panel"
             android:layout_width="@dimen/detail_land_left_panel_width"
             android:layout_height="match_parent"
-            android:fillViewport="true"
-            android:overScrollMode="never"
-            android:scrollbars="none"
-            android:paddingHorizontal="14dp"
-            android:paddingBottom="20dp">
+            android:orientation="vertical">
 
-            <LinearLayout
+            <!-- Cover Anime Full-Width di Sisi Kiri Atas (tanpa overlap teks) -->
+            <FrameLayout
+                android:id="@+id/fl_detail_left_cover"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_height="0dp"
+                android:layout_weight="55">
 
-                <!-- Top Row: Back Button -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:paddingTop="12dp"
-                    android:paddingBottom="8dp">
-
-                    <ImageButton
-                        android:id="@+id/btn_detail_back"
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:background="@drawable/bg_badge_frost"
-                        android:src="@drawable/ic_arrow_back"
-                        app:tint="@color/text_frost_bright"
-                        android:contentDescription="Kembali" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:text="@string/detail_header_info"
-                        android:textColor="@color/text_frost_dim"
-                        android:textSize="11sp"
-                        android:fontFamily="sans-serif-bold"
-                        android:letterSpacing="0.08"
-                        android:textAllCaps="true" />
-                </LinearLayout>
-
-                <!-- Poster + Key Info Side by Side -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="bottom"
-                    android:layout_marginTop="6dp">
-
-                    <!-- Character Poster Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_detail_poster"
-                        android:layout_width="@dimen/detail_land_poster_width"
-                        android:layout_height="@dimen/detail_land_poster_height"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="6dp"
-                        app:cardBackgroundColor="@color/frost_surface"
-                        app:strokeColor="@color/anime_border_glow"
-                        app:strokeWidth="1.5dp">
-
-                        <ImageView
-                            android:id="@+id/iv_detail_poster"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:scaleType="centerCrop"
-                            android:contentDescription="Cover Karakter Anime" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Title & Meta -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:orientation="vertical"
-                        android:paddingBottom="2dp">
-
-                        <TextView
-                            android:id="@+id/tv_detail_title"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/text_frost_bright"
-                            android:textSize="15sp"
-                            android:fontFamily="sans-serif-black"
-                            android:maxLines="3"
-                            android:ellipsize="end"
-                            android:lineSpacingExtra="2dp" />
-
-                        <TextView
-                            android:id="@+id/tv_detail_romaji"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:textColor="@color/text_frost_dim"
-                            android:textSize="10.5sp"
-                            android:fontFamily="sans-serif-medium"
-                            android:maxLines="1"
-                            android:ellipsize="end" />
-
-                        <TextView
-                            android:id="@+id/tv_detail_meta"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:textColor="@color/accent_glacial"
-                            android:textSize="10.5sp"
-                            android:fontFamily="sans-serif-bold" />
-
-                        <TextView
-                            android:id="@+id/tv_detail_schedule"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:textColor="@color/star_gold"
-                            android:textSize="10.5sp"
-                            android:fontFamily="sans-serif-bold"
-                            android:visibility="gone" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Genres -->
-                <TextView
-                    android:id="@+id/tv_detail_genres"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:textColor="@color/text_frost_subtle"
-                    android:textSize="11sp"
-                    android:fontFamily="sans-serif-medium" />
-
-                <!-- Action Buttons: Tonton Sekarang + Favorit -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="12dp">
-
-                    <Button
-                        android:id="@+id/btn_play_primary"
-                        android:layout_width="0dp"
-                        android:layout_height="40dp"
-                        android:layout_weight="1"
-                        android:text="@string/detail_play_ep1"
-                        android:textColor="@color/text_frost_bright"
-                        app:backgroundTint="@null"
-                        app:strokeWidth="0dp"
-                        android:paddingHorizontal="16dp"
-                        android:textSize="12.5sp"
-                        android:fontFamily="sans-serif-bold"
-                        app:cornerRadius="20dp"
-                        android:stateListAnimator="@null" />
-
-                    <Button
-                        android:id="@+id/btn_toggle_bookmark"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:layout_marginStart="8dp"
-                        android:text="@string/detail_favorite"
-                        android:textColor="@color/text_frost_bright"
-                        app:backgroundTint="@null"
-                        android:textSize="12sp"
-                        android:fontFamily="sans-serif-medium"
-                        app:strokeColor="@color/frost_border"
-                        app:strokeWidth="0dp"
-                        app:cornerRadius="20dp"
-                        android:paddingHorizontal="14dp"
-                        android:stateListAnimator="@null" />
-                </LinearLayout>
-
-                <!-- Synopsis Card -->
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_detail_synopsis"
+                    android:id="@+id/card_detail_poster"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:cardCornerRadius="10dp"
+                    android:layout_height="match_parent"
+                    app:cardCornerRadius="0dp"
                     app:cardElevation="0dp"
                     app:cardBackgroundColor="@color/frost_surface"
-                    app:strokeColor="@color/frost_border"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="0dp">
 
+                    <ImageView
+                        android:id="@+id/iv_detail_poster"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="Cover Karakter Anime" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <ImageButton
+                    android:id="@+id/btn_detail_back"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_gravity="top|start"
+                    android:layout_margin="10dp"
+                    android:background="@drawable/bg_badge_frost"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/text_frost_bright"
+                    android:contentDescription="Kembali" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="bottom"
+                    android:background="@color/frost_border" />
+            </FrameLayout>
+
+            <!-- Area Metadata Compact & Actions di Bawah Cover -->
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/scroll_detail_left"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="45"
+                android:fillViewport="true"
+                android:overScrollMode="never"
+                android:scrollbars="none"
+                android:paddingHorizontal="10dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_detail_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_frost_bright"
+                        android:textSize="13sp"
+                        android:fontFamily="sans-serif-black"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:lineSpacingExtra="0dp" />
+
+                    <TextView
+                        android:id="@+id/tv_detail_romaji"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        android:textColor="@color/text_frost_dim"
+                        android:textSize="9.5sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+
+                    <TextView
+                        android:id="@+id/tv_detail_meta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:textColor="@color/accent_glacial"
+                        android:textSize="9.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+
+                    <TextView
+                        android:id="@+id/tv_detail_schedule"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/star_gold"
+                        android:textSize="9.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tv_detail_genres"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/text_frost_subtle"
+                        android:textSize="9.5sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+
+                    <!-- Action Buttons Compact: Tonton Sekarang + Favorit -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="12dp">
+                        android:orientation="horizontal"
+                        android:layout_marginTop="6dp">
 
-                        <TextView
-                            android:id="@+id/tv_synopsis_header"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/detail_synopsis_title"
-                            android:textColor="@color/accent_glacial"
-                            android:textSize="10.5sp"
+                        <Button
+                            android:id="@+id/btn_play_primary"
+                            android:layout_width="0dp"
+                            android:layout_height="32dp"
+                            android:layout_weight="1"
+                            android:text="@string/detail_play_ep1"
+                            android:textColor="@color/text_frost_bright"
+                            app:backgroundTint="@null"
+                            app:strokeWidth="0dp"
+                            android:paddingHorizontal="10dp"
+                            android:textSize="11sp"
                             android:fontFamily="sans-serif-bold"
-                            android:letterSpacing="0.06" />
+                            app:cornerRadius="16dp"
+                            android:stateListAnimator="@null" />
 
-                        <TextView
-                            android:id="@+id/tv_detail_synopsis"
+                        <Button
+                            android:id="@+id/btn_toggle_bookmark"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:layout_marginStart="6dp"
+                            android:text="@string/detail_favorite"
+                            android:textColor="@color/text_frost_bright"
+                            app:backgroundTint="@null"
+                            android:textSize="10.5sp"
+                            android:fontFamily="sans-serif-medium"
+                            app:strokeColor="@color/frost_border"
+                            app:strokeWidth="0dp"
+                            app:cornerRadius="16dp"
+                            android:paddingHorizontal="10dp"
+                            android:stateListAnimator="@null" />
+                    </LinearLayout>
+
+                    <!-- Synopsis Card Compact -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_detail_synopsis"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/frost_surface"
+                        app:strokeColor="@color/frost_border"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:textColor="@color/text_frost_subtle"
-                            android:textSize="11.5sp"
-                            android:lineSpacingExtra="3dp"
-                            android:fontFamily="sans-serif"
-                            android:maxLines="3"
-                            android:ellipsize="end"
-                            android:text="@string/detail_loading_synopsis" />
+                            android:orientation="vertical"
+                            android:padding="8dp">
 
-                        <TextView
-                            android:id="@+id/tv_synopsis_toggle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="@string/detail_read_more"
-                            android:textColor="@color/accent_glacial"
-                            android:textSize="10.5sp"
-                            android:fontFamily="sans-serif-bold"
-                            android:paddingVertical="2dp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-            </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
+                            <TextView
+                                android:id="@+id/tv_synopsis_header"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/detail_synopsis_title"
+                                android:textColor="@color/accent_glacial"
+                                android:textSize="9sp"
+                                android:fontFamily="sans-serif-bold"
+                                android:letterSpacing="0.06" />
+
+                            <TextView
+                                android:id="@+id/tv_detail_synopsis"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="@color/text_frost_subtle"
+                                android:textSize="10sp"
+                                android:lineSpacingExtra="2dp"
+                                android:fontFamily="sans-serif"
+                                android:maxLines="2"
+                                android:ellipsize="end"
+                                android:text="@string/detail_loading_synopsis" />
+
+                            <TextView
+                                android:id="@+id/tv_synopsis_toggle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/detail_read_more"
+                                android:textColor="@color/accent_glacial"
+                                android:textSize="9.5sp"
+                                android:fontFamily="sans-serif-bold"
+                                android:paddingVertical="1dp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </LinearLayout>
 
         <!-- Vertical Divider -->
         <View
