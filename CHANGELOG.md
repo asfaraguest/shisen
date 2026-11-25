@@ -14,6 +14,8 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
   - **Tahap 2 (AI TLC Refine Paritas Tatap):** Memakai `TLC_REFINE_PROMPT_ID` + format `N|EN || GTX+`, batch paralel per provider (`80`/`40`/`60`/`20`), `reasoning_effort="none"` (Google) dengan retry HTTP 400 & fallback field `reasoning`, parser `"||"` + prefiks `[FINAL]`/`DRAFT:`, katalog model aktif Tatap (`gemini-3.1-flash-lite`, `llama-3.3-70b-versatile`) + migrasi model legacy, sanitasi `SmartLexicon.sanitizeFansubId` yang menjaga kata ganti AI, progress live (`Menyempurnakan AI (XX%)...`), dan cache `_instant_ai_id_v3`.
 
 ### Diperbaiki
+- **Floating Menu Portrait Mobile (`layout/activity_main.xml`, `src/mobile/.../DeviceNav.java`)**:
+  - Mengubah lebar `scroll_folded_menu`, `layout_folded_menu`, dan item menu ke `wrap_content` rata kanan sehingga tiap pill pas mengikuti panjang teks, menyinkronkan `applyTheme()` pada `DeviceNav.init()`, serta merapikan animasi buka (`pivotX`/`pivotY` diset setelah layout terukur).
 - **Stabilitas Stream & Navigasi TV (`PlayerActivity.java`, `src/tv/.../DeviceNav.java`)**:
   - Menambahkan `streamLoadSeq` di `PlayerActivity.playEpisodeWithServer` untuk mencegah *race condition* callback stream/subtitle lama saat berpindah episode/server dengan cepat.
   - Memperluas auto-failover `onPlayerError` untuk status HTTP/koneksi/timeout (`ERROR_CODE_IO_BAD_HTTP_STATUS`, `ERROR_CODE_IO_NETWORK_CONNECTION_FAILED`, `ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT`).

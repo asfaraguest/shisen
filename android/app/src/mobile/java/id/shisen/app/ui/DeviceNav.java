@@ -109,6 +109,8 @@ public final class DeviceNav {
                 }
             });
         }
+
+        applyTheme();
     }
 
     public void applyInsets(int topInset, int bottomInset, float density) {
@@ -383,24 +385,26 @@ public final class DeviceNav {
 
         View targetMenu = scrollFoldedMenu != null ? scrollFoldedMenu : layoutFoldedMenu;
         if (targetMenu != null) {
+            targetMenu.animate().cancel();
             if (open) {
+                targetMenu.setAlpha(0f);
                 targetMenu.setVisibility(View.VISIBLE);
                 targetMenu.post(() -> {
+                    if (!isFoldedMenuOpen) return;
                     targetMenu.setPivotX(targetMenu.getWidth());
                     targetMenu.setPivotY(targetMenu.getHeight());
+                    targetMenu.setScaleX(0.85f);
+                    targetMenu.setScaleY(0.85f);
+                    targetMenu.setTranslationY(40f);
+                    targetMenu.animate()
+                            .alpha(1.0f)
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .translationY(0f)
+                            .setDuration(280)
+                            .setInterpolator(FLUID_ENTER)
+                            .start();
                 });
-                targetMenu.setAlpha(0f);
-                targetMenu.setScaleX(0.85f);
-                targetMenu.setScaleY(0.85f);
-                targetMenu.setTranslationY(40f);
-                targetMenu.animate()
-                        .alpha(1.0f)
-                        .scaleX(1.0f)
-                        .scaleY(1.0f)
-                        .translationY(0f)
-                        .setDuration(280)
-                        .setInterpolator(FLUID_ENTER)
-                        .start();
             } else {
                 targetMenu.animate()
                         .alpha(0f)

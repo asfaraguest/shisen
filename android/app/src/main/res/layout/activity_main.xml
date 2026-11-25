@@ -328,7 +328,7 @@
     <!-- FOLDED FLOATING MENU (Unfolds UPWARDS from bottom-right trigger) -->
     <ScrollView
         android:id="@+id/scroll_folded_menu"
-        android:layout_width="230dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
@@ -341,7 +341,7 @@
 
         <LinearLayout
             android:id="@+id/layout_folded_menu"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="end">
@@ -349,7 +349,7 @@
         <!-- 1. Musim Ini / Beranda -->
         <LinearLayout
             android:id="@+id/menu_item_musim"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -378,7 +378,7 @@
         <!-- 2. Masih Tayang (Airing) -->
         <LinearLayout
             android:id="@+id/menu_item_airing"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -407,7 +407,7 @@
         <!-- 3. Jadwal Rilis 7 Hari WIB -->
         <LinearLayout
             android:id="@+id/menu_item_jadwal"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -436,7 +436,7 @@
         <!-- 4. Riwayat Tontonan -->
         <LinearLayout
             android:id="@+id/menu_item_riwayat"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -465,7 +465,7 @@
         <!-- 5. Favorit Saya -->
         <LinearLayout
             android:id="@+id/menu_item_favorit"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -494,7 +494,7 @@
         <!-- 6. Katalog Lengkap -->
         <LinearLayout
             android:id="@+id/menu_item_katalog"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -523,7 +523,7 @@
         <!-- 7. Kategori Genre -->
         <LinearLayout
             android:id="@+id/menu_item_genre"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_folded_menu_pill"
@@ -552,7 +552,7 @@
         <!-- 8. Pengaturan Terpadu (Settings) -->
         <LinearLayout
             android:id="@+id/menu_item_settings"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_folded_menu_pill"
             android:orientation="horizontal"
