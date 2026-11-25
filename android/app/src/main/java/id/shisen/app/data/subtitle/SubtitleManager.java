@@ -527,15 +527,8 @@ public class SubtitleManager {
                     return;
                 }
 
-                // Stage 0: Scan cepat istilah episode (Skill, Stun, class, dll.) sebelum GTX+ agar tidak diterjemahkan harfiah
-                List<String> extractedGlossary = null;
-                if (hasByokKey) {
-                    if (listener != null) listener.onSubtitleLoading("Menganalisis istilah AI...");
-                    extractedGlossary = new AiSubtitleService().extractProtectedGlossarySync(
-                            context, sourceEn.url, title, enCues, null, apiKey, forceRefresh, () -> loadId != currentLoadId);
-                    if (loadId != currentLoadId) return;
-                }
-                final List<String> episodeGlossary = extractedGlossary;
+                // Ekstrak kandidat istilah unik secara lokal (<2ms, tanpa blokir jaringan) untuk hint AI Stage 2 & masking aman GTX+
+                final List<String> episodeGlossary = SmartLexicon.extractCandidateTerms(enCues, 40);
 
                 // Tahap 1: Instant GTX+ Draft dengan proteksi mask istilah sebelum & sesudah GTX+
                 if (listener != null) listener.onSubtitleLoading("Instant AI (GTX+ 0%)...");

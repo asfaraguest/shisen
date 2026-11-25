@@ -228,4 +228,40 @@ public class SmartLexiconTest {
         assertEquals("Musuh terkena Stun!",
                 SmartLexicon.applyUniversalLexicon("Musuh terkena setrum!"));
     }
+
+    @Test
+    public void testSamplingRegressionFixesNoSentenceCorruption() {
+        // 1. "aku melihat" / "kulihat" dan "bertahanlah" tidak boleh ditimpa menjadi "begitu rupanya" / "tunggu sebentar"
+        String saw = SmartLexicon.sanitizeGtxPlusId("Baru saja, kupikir aku melihat seseorang berdiri di belakangmu.", false);
+        assertTrue("Expected seeing verb preserved, got: " + saw, saw.contains("aku melihat"));
+        assertFalse(saw.contains("begitu rupanya"));
+
+        String hang = SmartLexicon.sanitizeGtxPlusId("Bertahanlah! Seseorang akan segera datang menyelamatkan kita!", false);
+        assertTrue("Expected Bertahanlah preserved, got: " + hang, hang.startsWith("Bertahanlah!"));
+
+        // 2. "Anda" di tengah kalimat harus menjadi "kamu" huruf kecil, bukan "Kamu" kapital
+        String midAnda = SmartLexicon.sanitizeGtxPlusId("Apakah menurut Anda saya akan bergabung dengan Party Anda?", false);
+        assertFalse("Mid-sentence Kamu must not be capitalized: " + midAnda, midAnda.contains("menurut Kamu"));
+        assertTrue(midAnda.contains("menurut kamu"));
+        assertTrue(midAnda.contains("Party-mu"));
+
+        // 3. Pre-GTX harus 100% berbahasa Inggris murni (tanpa kata Indonesia nyasar)
+        String pre = SmartLexicon.preprocessEnglishForGtx("Wait, what are you doing here? I see what you mean, it can't be helped.");
+        assertFalse(pre.toLowerCase().contains("ngapain"));
+        assertFalse(pre.toLowerCase().contains("begitu rupanya"));
+        assertFalse(pre.toLowerCase().contains("mau bagaimana"));
+
+        // 4. Safe GTX masking tidak boleh me-mask kata umum seperti "Legendary" atau "Party" secara individual
+        java.util.Map<String, String> canon = new java.util.HashMap<>();
+        java.util.regex.Pattern safePat = SmartLexicon.compileSafeGtxMaskPattern(
+                java.util.Arrays.asList("Legendary", "Party", "Stun", "Pagma's Swordsmanship"), canon);
+        java.util.Map<String, Integer> idxMap = new java.util.HashMap<>();
+        java.util.List<String> slots = new java.util.ArrayList<>();
+        String masked = SmartLexicon.maskProtectedTerms(
+                "He is a Legendary Blacksmith in Satisfy using Pagma's Swordsmanship.",
+                safePat, canon, idxMap, slots);
+        assertTrue("Generic 'Legendary' must remain unmasked for GTX grammar", masked.contains("Legendary"));
+        assertFalse("Game title 'Satisfy' must be masked", masked.contains("Satisfy"));
+        assertFalse("Multi-word skill must be masked", masked.contains("Pagma's Swordsmanship"));
+    }
 }

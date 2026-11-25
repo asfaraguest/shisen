@@ -166,6 +166,8 @@ public class SmartLexicon {
         UNIVERSAL_RULES.add(new Rule("(?i)\\b(skill|sihir|jurus)(\\s*:\\s*|\\s+)(?:setrum|memukau|pingsan)\\b", m -> m.group(1) + m.group(2) + "Stun"));
         UNIVERSAL_RULES.add(new Rule("(?i)\\bpendinginan\\s+(skill|jurus|sihir|kemampuan)\\b", m -> "cooldown " + m.group(1)));
         UNIVERSAL_RULES.add(new Rule("(?i)\\bkelebihan\\s+perlengkapan\\b", "Overgeared"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\b(ke|di|dari|anggota|ketua|masuk|gabung|kembali ke|keluar dari)\\s+(?:persekutuan|serikat)\\b", m -> m.group(1) + " Guild"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\b(ke|di|dengan|anggota|gabung|bergabung dengan|masuk)\\s+(?:partai|pesta)(-(?:ku|mu|nya)|ku|mu|nya)?\\b", m -> m.group(1) + " party" + (m.group(2) != null ? m.group(2) : "")));
     }
 
     private static void initUniversalBatch1() {
@@ -426,9 +428,9 @@ public class SmartLexicon {
         UNIVERSAL_RULES.add(new Rule("\\baku akan merawat ini\\b", "biar aku yang urus ini"));
         UNIVERSAL_RULES.add(new Rule("\\baku akan merawatnya\\b", "biar aku yang urus"));
         UNIVERSAL_RULES.add(new Rule("\\bmerawat ini\\b", "mengurus ini"));
-        UNIVERSAL_RULES.add(new Rule("\\bjangan biarkan penjagamu turun\\b", "jangan lengah"));
-        UNIVERSAL_RULES.add(new Rule("\\bmenurunkan penjagamu\\b", "lengah"));
-        UNIVERSAL_RULES.add(new Rule("\\bmenurunkan penjaga\\b", "lengah"));
+        UNIVERSAL_RULES.add(new Rule("\\bjangan biarkan penjagaan?(?:mu|\\s+anda) turun\\b", "jangan lengah"));
+        UNIVERSAL_RULES.add(new Rule("\\bmenurunkan penjagaan?(?:mu|\\s+anda)?\\b", "lengah"));
+        UNIVERSAL_RULES.add(new Rule("(?i)\\b(mengapa|kenapa)\\s+demikian\\b", "$1"));
         UNIVERSAL_RULES.add(new Rule("\\bperhatikan punggungmu\\b", "waspadalah di belakangmu"));
     }
 
@@ -737,7 +739,7 @@ public class SmartLexicon {
         UNIVERSAL_RULES.add(new Rule("\\bpagma'?s (?:rare book|tome)\\b", "Kitab Langka Pagma"));
         UNIVERSAL_RULES.add(new Rule("\\bbuku langka pagma\\b", "Kitab Langka Pagma"));
         UNIVERSAL_RULES.add(new Rule("\\blegendary craftsman'?s tome\\b", "Kitab Pengrajin Legendaris"));
-        UNIVERSAL_RULES.add(new Rule("\\blegendary blacksmith\\b", "Pandai Besi Legendaris"));
+        UNIVERSAL_RULES.add(new Rule("\\blegendary blacksmith\\b(?!'?s\\b)", "Pandai Besi Legendaris"));
         UNIVERSAL_RULES.add(new Rule("\\bblacksmith master creation\\b", "Kreasi Master Pandai Besi"));
         UNIVERSAL_RULES.add(new Rule("\\bbreath of the legendary blacksmith\\b", "Napas Pandai Besi Legendaris"));
         UNIVERSAL_RULES.add(new Rule("\\bblue orichalcum\\b", "Orichalcum Biru"));
@@ -837,9 +839,6 @@ public class SmartLexicon {
         CASUAL_RULES.add(new Rule("\\bkalau dengerin saya\\b", "kalau menurutku sih"));
         CASUAL_RULES.add(new Rule("\\bkalau dengerin aku\\b", "kalau menurutku sih"));
         CASUAL_RULES.add(new Rule("\\bgak usah dikira\\b", "nggak usah ditanya lagi"));
-        CASUAL_RULES.add(new Rule("\\bbertahanlah\\b", "tunggu sebentar"));
-        CASUAL_RULES.add(new Rule("\\baku melihat\\b", "begitu rupanya"));
-        CASUAL_RULES.add(new Rule("\\bkulihat\\b", "begitu rupanya"));
         CASUAL_RULES.add(new Rule("\\btidak apa-apa\\b", "nggak apa-apa"));
         CASUAL_RULES.add(new Rule("\\btak apa-apa\\b", "nggak apa-apa"));
         CASUAL_RULES.add(new Rule("\\btak apa\\b", "nggak apa-apa"));
@@ -867,9 +866,6 @@ public class SmartLexicon {
         CASUAL_RULES.add(new Rule("\\btak ada\\b", "nggak ada"));
         CASUAL_RULES.add(new Rule("\\b(?:emang\\s+)?(?:sudah|udah)\\s+kuduga\\b", "emang udah kuduga"));
         CASUAL_RULES.add(new Rule("\\bhanya saja\\b", "cuma"));
-        CASUAL_RULES.add(new Rule("\\bsudah\\b", "udah"));
-        CASUAL_RULES.add(new Rule("\\bsaja\\b", "aja"));
-        CASUAL_RULES.add(new Rule("\\bhanya\\b", "cuma"));
         CASUAL_RULES.add(new Rule("\\bmengapa kamu\\b", "kenapa kamu"));
         CASUAL_RULES.add(new Rule("\\bmengapa kau\\b", "kenapa kamu"));
         CASUAL_RULES.add(new Rule("\\bmengapa dia\\b", "kenapa dia"));
@@ -891,8 +887,7 @@ public class SmartLexicon {
         CASUAL_RULES.add(new Rule("\\bterima kasih banyak\\b", "makasih banyak"));
         CASUAL_RULES.add(new Rule("\\bterima kasih\\b", "makasih"));
         CASUAL_RULES.add(new Rule("\\bdengarkan aku\\b", "dengerin aku"));
-        CASUAL_RULES.add(new Rule("\\bdengarkan\\b", "dengerin"));
-        CASUAL_RULES.add(new Rule("\\bsangat banyak\\b", "banget"));
+        CASUAL_RULES.add(new Rule("\\bsangat memalukan\\b", "memalukan banget"));
         CASUAL_RULES.add(new Rule("\\bbodoh sekali\\b", "bodoh banget"));
         CASUAL_RULES.add(new Rule("\\bbagus sekali\\b", "hebat banget"));
         CASUAL_RULES.add(new Rule("\\bdi sini untuk mengambil\\b", "mau mengambil"));
@@ -992,8 +987,6 @@ public class SmartLexicon {
     }
 
     private static void initAigtxSmooth() {
-        AIGTX_SMOOTH_RULES.add(new Rule("\\baku melihat\\b", "begitu rupanya"));
-        AIGTX_SMOOTH_RULES.add(new Rule("\\bkulihat\\b", "begitu rupanya"));
         AIGTX_SMOOTH_RULES.add(new Rule("\\btidak ada jalan\\b", "tidak mungkin"));
         AIGTX_SMOOTH_RULES.add(new Rule("\\btak ada jalan\\b", "tidak mungkin"));
         AIGTX_SMOOTH_RULES.add(new Rule("\\btersesatlah\\b", "pergi sana"));
@@ -1067,7 +1060,8 @@ public class SmartLexicon {
         CASUAL_PRONOUN_RULES.add(new Rule("\\bsaya pikir\\b", m -> Character.isLowerCase(m.group(0).charAt(0)) ? "kupikir" : "Kupikir"));
         CASUAL_PRONOUN_RULES.add(new Rule("\\bberi saya\\b", m -> Character.isLowerCase(m.group(0).charAt(0)) ? "beri aku" : "Beri aku"));
         CASUAL_PRONOUN_RULES.add(new Rule("\\bsaya\\b", m -> Character.isUpperCase(m.group(0).charAt(0)) ? "Aku" : "aku"));
-        CASUAL_PRONOUN_RULES.add(new Rule("\\banda\\b", m -> Character.isUpperCase(m.group(0).charAt(0)) ? "Kamu" : "kamu"));
+        CASUAL_PRONOUN_RULES.add(new Rule("(?:^|(?<=[.!?\\n\"'\\-]\\s{0,2}))\\bAnda\\b", m -> "Kamu"));
+        CASUAL_PRONOUN_RULES.add(new Rule("\\banda\\b", m -> "kamu"));
     }
 
     private static void initCliticRules() {
@@ -1084,8 +1078,15 @@ public class SmartLexicon {
         CLITIC_RULES.add(new Rule("(?i)\\b(?:saya|aku) akan memberitahu (?:kamu|anda)\\b", "akan kuberi tahu kamu"));
         CLITIC_RULES.add(new Rule("(?i)\\b(?:akan )?(?:saya|aku) (?:beritahu|beri tahu)\\b", "akan kuberi tahu"));
 
-        // Klitik kepemilikan kata benda: <noun> saya/aku -> <noun>ku, <noun> anda/kamu -> <noun>mu
-        String nounList = "kelas|teman|kawan|sahabat|pacar|kekasih|nama|rumah|kamar|sekolah|kakak|adik|saudara|saudari|abang|ayah|ibu|mama|papa|keluarga|tubuh|badan|tangan|kaki|mata|kepala|wajah|muka|punggung|suara|hati|perasaan|pikiran|nyawa|hidup|kekuatan|sihir|pedang|senjata|jurus|kemampuan|keahlian|skill|perisai|tongkat|busur|panah|baju|pakaian|sepatu|topi|misi|quest|tim|kelompok|party|guild|tempat|posisi|arah|salah|kesalahan|urusan|impian|cita-cita|tujuan|giliran|pilihan|keputusan|kata-kata|ucapan|perkataan|janji|rahasia|dosa";
+        // Klitik kepemilikan kata serapan/game memakai tanda hubung (-ku/-mu) agar tidak menempel aneh (Partymu -> Party-mu)
+        String loanNounList = "skill|cooldown|party|guild|quest|buff|debuff|dungeon|inventory|boss|item|hp|mp|exp";
+        CLITIC_RULES.add(new Rule("(?i)\\b(" + loanNounList + ")\\s+(?:saya|aku)\\b", "$1-ku"));
+        CLITIC_RULES.add(new Rule("(?i)\\b(" + loanNounList + ")\\s+(?:anda|kamu)\\b", "$1-mu"));
+        CLITIC_RULES.add(new Rule("(?i)\\b(" + loanNounList + ")ku\\b", "$1-ku"));
+        CLITIC_RULES.add(new Rule("(?i)\\b(" + loanNounList + ")mu\\b", "$1-mu"));
+
+        // Klitik kepemilikan kata benda umum: <noun> saya/aku -> <noun>ku, <noun> anda/kamu -> <noun>mu
+        String nounList = "kelas|teman|kawan|sahabat|pacar|kekasih|nama|rumah|kamar|sekolah|kakak|adik|saudara|saudari|abang|ayah|ibu|mama|papa|keluarga|tubuh|badan|tangan|kaki|mata|kepala|wajah|muka|punggung|suara|hati|perasaan|pikiran|nyawa|hidup|kekuatan|sihir|pedang|senjata|jurus|kemampuan|keahlian|perisai|tongkat|busur|panah|baju|pakaian|sepatu|topi|misi|tim|kelompok|tempat|posisi|arah|salah|kesalahan|urusan|impian|cita-cita|tujuan|giliran|pilihan|keputusan|kata-kata|ucapan|perkataan|janji|rahasia|dosa";
         CLITIC_RULES.add(new Rule("(?i)\\b(" + nounList + ")\\s+(?:saya|aku)\\b", "$1ku"));
         CLITIC_RULES.add(new Rule("(?i)\\b(" + nounList + ")\\s+(?:anda|kamu)\\b", "$1mu"));
 
@@ -1125,57 +1126,30 @@ public class SmartLexicon {
     }
 
     private static void initEnPreprocessRules() {
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bcome to think of it\\b", "kalau dipikir-pikir"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bit can'?t be helped\\b", "mau bagaimana lagi"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bthere'?s no helping it\\b", "mau bagaimana lagi"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bcan'?t be helped\\b", "mau bagaimana lagi"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bi see\\b(?=[.!?\\s]|$)", "begitu rupanya"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwhat a drag\\b", "merepotkan sekali"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwhat a pain\\b", "merepotkan sekali"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bgive me a break\\b", "yang benar saja"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bserves you right\\b", "rasakan itu"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bdon'?t get (?:me wrong|the wrong idea)\\b", "jangan salah paham"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bleave it to me\\b", "serahkan padaku"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bi'?m counting on you\\b", "aku mengandalkanmu"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhold up\\b", "tunggu sebentar"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwait up\\b", "tunggu sebentar"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bcut it out\\b", "hentikan itu"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bknock it off\\b", "hentikan itu"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bget carried away\\b", "terbawa suasana"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bout of the question\\b", "jelas tidak mungkin"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bmake a scene\\b", "membuat keributan"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bin the nick of time\\b", "tepat pada waktunya"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bkeep an eye on\\b", "mengawasi"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bplay it by ear\\b", "lihat situasi nanti"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bjump the gun\\b", "bertindak gegabah"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bmy bad\\b", "salahku"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bnever mind\\b", "lupakan saja"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bfor real\\?", "beneran?"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bno way in hell\\b", "mana mungkin"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bget a grip\\b", "sadarlah"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhang in there\\b", "bertahanlah"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bon the house\\b", "gratis dari kedai"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bpiece of cake\\b", "gampang banget"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bunder the weather\\b", "kurang enak badan"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bover my dead body\\b", "langkahi dulu mayatku"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bnone of your business\\b", "bukan urusanmu"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\btake your time\\b", "santai saja"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\btake it easy\\b", "santai saja"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bas if!\\b", "mana sudi!"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\blike hell\\b", "mana sudi"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bare you kidding\\b", "kamu bercanda ya"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bare you serious\\b", "kamu serius"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\byou gotta be kidding\\b", "kamu pasti bercanda"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bto be honest\\b", "jujur saja"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bby the way\\b", "ngomong-ngomong"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhow dare you\\b", "berani-beraninya kamu"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bpull yourself together\\b", "kuatkan dirimu"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bi have no idea\\b", "aku sama sekali tidak tahu"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwhat are you talking about\\b", "ngomong apa sih kamu"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwhat are you doing\\b", "kamu lagi ngapain"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwhere are you going\\b", "kamu mau ke mana"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwhat a drag\\b", "how very troublesome"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bwhat a pain\\b", "how very annoying"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bserves you right\\b", "you deserved that"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bdon'?t get (?:me wrong|the wrong idea)\\b", "do not misunderstand"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bi'?m counting on you\\b", "I am relying on you"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bget carried away\\b", "get too excited"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bout of the question\\b", "completely impossible"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bmake a scene\\b", "cause a commotion"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bin the nick of time\\b", "just in time"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bplay it by ear\\b", "decide as things go"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bjump the gun\\b", "act too prematurely"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bno way in hell\\b", "absolutely impossible"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bget a grip\\b", "pull yourself together"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bon the house\\b", "free from the shop"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bpiece of cake\\b", "very easy task"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bunder the weather\\b", "feeling unwell"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bover my dead body\\b", "never as long as I live"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bnone of your business\\b", "not your concern"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bas if!\\b", "impossible!"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\blike hell\\b", "no way"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bare you kidding\\b", "are you joking"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\byou gotta be kidding\\b", "you must be joking"));
 
-        // --- Aturan Pre-processing Gemma4:31b Fansub Mimic (Anti-Stiffness) ---
+        // --- Aturan Pre-processing Gemma4:31b Fansub Mimic (Anti-Stiffness, 100% English) ---
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\ball units,? sortie\\b", "all units, deploy now"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bsortie immediately\\b", "deploy immediately"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\btake evasive action\\b", "dodge now"));
@@ -1191,7 +1165,7 @@ public class SmartLexicon {
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhotties\\b", "pretty girls"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bcuties\\b", "cute girls"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bit goes without saying\\b", "obviously"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bmiddle of nowhere\\b", "remote place"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bmiddle of nowhere\\b", "a remote place"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bbig baby\\b", "crybaby"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bsee\\? told ya!?\\b", "see? I told you"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhow suspicious\\b", "so suspicious"));
@@ -1207,7 +1181,7 @@ public class SmartLexicon {
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bget lost\\b", "go away"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bleave me alone\\b", "don't bother me"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bcouncil president\\b", "student council president"));
-        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhypothetically speaking\\b", "misalkan saja"));
+        EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhypothetically speaking\\b", "suppose for a moment"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\brevert to your original form\\b", "return to your true form"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhidden leaf village\\b", "Konoha village"));
         EN_PREPROCESS_RULES.add(new Rule("(?i)\\bhidden leaf\\b", "Konoha"));
@@ -1390,8 +1364,8 @@ public class SmartLexicon {
                     newTxt = Pattern.compile("\\bAnda\\b", Pattern.CASE_INSENSITIVE).matcher(newTxt)
                             .replaceAll(matchResult -> Character.isUpperCase(matchResult.group().charAt(0)) ? "Kau" : "kau");
                 } else {
-                    newTxt = Pattern.compile("\\bAnda\\b", Pattern.CASE_INSENSITIVE).matcher(newTxt)
-                            .replaceAll(matchResult -> Character.isUpperCase(matchResult.group().charAt(0)) ? "Kamu" : "kamu");
+                    newTxt = Pattern.compile("(?:^|(?<=[.!?\\n\"'\\-]\\s{0,2}))\\bAnda\\b").matcher(newTxt).replaceAll("Kamu");
+                    newTxt = Pattern.compile("\\banda\\b", Pattern.CASE_INSENSITIVE).matcher(newTxt).replaceAll("kamu");
                 }
             } else {
                 for (Rule r : CLITIC_RULES) {
@@ -1417,7 +1391,7 @@ public class SmartLexicon {
 
     private static final Pattern BRACKET_TERM_RE = Pattern.compile("\\[([^\\[\\]]{2,40})\\]|<([^<>]{2,40})>");
     private static final Pattern EXPLICIT_GAME_TERM_RE = Pattern.compile(
-            "(?i)\\b(?:skill|magic|spell|class|job|quest|title|passive|active|item|jutsu)\\s*[:\\-]\\s*([A-Za-z0-9'\\- ]{2,36})"
+            "(?i)\\b(?:skill|magic|spell|class|job|quest|title|passive|active|item|jutsu)\\s*[:\\-]\\s*([A-Za-z0-9'\\- ]{2,36}?)(?=\\s+(?:has|have|had|is|was|are|were|will|would|can|could|did|do|does|triggered|activated|dealt)\\b|[,.;!?\\n]|$)"
     );
     private static final Pattern CAP_PHRASE_RE = Pattern.compile(
             "\\b([A-Z][A-Za-z0-9']+(?:\\s+(?:of|the|no|ga|wa|to|[A-Z][A-Za-z0-9']+)){0,3})\\b"
@@ -1425,9 +1399,12 @@ public class SmartLexicon {
     private static final Pattern UNMASK_TOKEN_RE = Pattern.compile("(?i)\\bX\\s*Z\\s*(\\d+)\\s*Z\\s*X\\b");
     private static final List<String> STOP_CAP_WORDS = Arrays.asList(
             "The", "This", "That", "These", "Those", "What", "When", "Where", "Why", "How", "Who",
-            "Yes", "No", "Wait", "Hey", "Well", "Look", "Come", "Stop", "Dont", "Don't", "Can't",
-            "You", "Your", "You're", "I'm", "It's", "We're", "They", "There", "Here", "Now",
-            "Just", "Only", "Even", "Still", "Also", "Really", "Actually", "Please", "Sorry",
+            "Yes", "No", "Wait", "Hey", "Well", "Look", "Come", "Come to", "Stop", "Dont", "Don't", "Can't",
+            "You", "Your", "You're", "I'm", "It's", "We're", "They", "There", "Here", "Now", "If", "So",
+            "Then", "He", "She", "His", "Her", "My", "Our", "Their", "We", "Do", "Did", "Does", "Are", "Is",
+            "Was", "Were", "Will", "Would", "Can", "Could", "Should", "Have", "Has", "Let", "Let's",
+            "Just", "Only", "Even", "Still", "Also", "Really", "Actually", "Please", "Sorry", "Maybe",
+            "Because", "While", "After", "Before", "Give", "Leave", "Hold", "Hang", "What the",
             "Thank", "Thanks", "Good", "Great", "Nice", "Fine", "Right", "Okay", "All", "But", "And"
     );
 
@@ -1490,6 +1467,32 @@ public class SmartLexicon {
         scores.put(lower, scores.getOrDefault(lower, 0) + weight);
     }
 
+    /** Istilah sistem/UI spesifik yang aman dimask sebelum GTX+ tanpa merusak tata bahasa Inggris. */
+    private static final List<String> SAFE_GTX_MASK_TERMS = Arrays.asList(
+            "Passive Skill", "Active Skill", "Ultimate Skill",
+            "Status Window", "Ryoiki Tenkai", "Overgeared", "Satisfy"
+    );
+
+    /** Bangun pola masking konservatif untuk GTX+: hanya judul game/UI eksak + istilah terkurung `[...]`/`<...>`. */
+    public static Pattern compileSafeGtxMaskPattern(List<String> episodeTerms, Map<String, String> canonicalOut) {
+        LinkedHashSet<String> merged = new LinkedHashSet<>(SAFE_GTX_MASK_TERMS);
+        if (episodeTerms != null) {
+            for (String t : episodeTerms) {
+                if (t == null) continue;
+                String trimmed = t.trim();
+                // Hanya terima istilah eksplisit Skill/Nama Unik berapostrof 2-3 kata (mis. Pagma's Swordsmanship, Blacksmith's Patience); hindari frasa kalimat atau "Boss's ..."
+                if (trimmed.length() >= 5
+                        && trimmed.contains(" ")
+                        && trimmed.contains("'")
+                        && !trimmed.toLowerCase(Locale.US).startsWith("boss")
+                        && trimmed.split("\\s+").length <= 3) {
+                    merged.add(trimmed);
+                }
+            }
+        }
+        return buildMaskRegexFromSet(merged, canonicalOut, false);
+    }
+
     /** Bangun pola gabungan satu-lintasan terurut terpanjang -> terpendek untuk mask istilah sebelum GTX+. */
     public static Pattern compileMaskPattern(List<String> terms, Map<String, String> canonicalOut) {
         LinkedHashSet<String> merged = new LinkedHashSet<>(CORE_PROTECTED_TERMS);
@@ -1500,6 +1503,12 @@ public class SmartLexicon {
                 }
             }
         }
+        return buildMaskRegexFromSet(merged, canonicalOut, true);
+    }
+
+    private static Pattern buildMaskRegexFromSet(LinkedHashSet<String> merged,
+                                                 Map<String, String> canonicalOut,
+                                                 boolean caseInsensitive) {
         List<String> sorted = new ArrayList<>(merged);
         sorted.sort(Comparator.comparingInt(String::length).reversed());
         if (sorted.isEmpty()) return null;
@@ -1512,7 +1521,8 @@ public class SmartLexicon {
             if (alt.length() > 0) alt.append("|");
             alt.append(Pattern.quote(t));
         }
-        return Pattern.compile("(?i)(?<![A-Za-z0-9_])(" + alt + ")(?![A-Za-z0-9_])");
+        String flags = caseInsensitive ? "(?i)" : "";
+        return Pattern.compile(flags + "(?<![A-Za-z0-9_])(" + alt + ")(?![A-Za-z0-9_])");
     }
 
     public static String maskProtectedTerms(String text,

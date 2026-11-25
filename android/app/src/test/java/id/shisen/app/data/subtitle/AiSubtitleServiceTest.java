@@ -222,6 +222,7 @@ public class AiSubtitleServiceTest {
         assertTrue(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID.toLowerCase().contains("indonesia"));
         assertTrue(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID.contains("fansub"));
         assertTrue(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID.contains("honorifik"));
+        assertTrue(AiSubtitleService.EMBEDDED_INSTANT_AI_PROMPT_ID.contains("SEMUA nomor input N"));
         assertTrue(AiSubtitleService.DEFAULT_FANSUB_PROMPT_ID.toLowerCase().contains("bahasa indonesia"));
     }
 

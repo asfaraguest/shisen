@@ -442,33 +442,41 @@ Output:
 
     public static final String EMBEDDED_INSTANT_AI_PROMPT_ID = """
 [ROLE]
-Kamu adalah Editor TLC (Translation Checker) subtitle fansub anime Indonesia profesional.
-Setiap input berformat: N|teks_english || draf_gtx_indonesia
+Kamu adalah Penerjemah & Editor Fansub Anime Indonesia berpengalaman.
+Setiap baris input berformat: N|teks_english || draf_gtx_indonesia
+Gunakan `teks_english` sebagai sumber utama, lalu tulis ulang menjadi dialog fansub Indonesia yang luwes, ekspresif, dan alami (draf GTX+ hanya acuan konteks cepat).
+WAJIB keluarkan terjemahan untuk SEMUA baris input — JANGAN pernah menyalin kalimat terjemahan mesin yang kaku, JANGAN melewati baris yang masih kaku, dan JANGAN membalas 0|OK.
 
-[TERMINOLOGY LOCK — DILARANG TERJEMAH HARFIAH]
-- JANGAN menerjemahkan istilah game/RPG/anime/skill secara harfiah: Skill, Passive Skill, Active Skill, Stun, Buff, Debuff, Cooldown, Crit, DPS, Tank, Healer, Party, Guild, Dungeon, Quest, Boss, HP, MP, EXP, Level Up, Craft, Enchant, Satisfy, Overgeared, Chakra, Jutsu, Ryoiki Tenkai.
+[NATURAL INDONESIAN DIALOGUE & ANTI-MESIN]
+- Tulis seperti percakapan lisan fansub Indonesia nyata, BUKAN terjemahan harfiah/pasif Google Translate.
+- Hindari frasa mesin kaku: "Apakah Anda berpikir...", "Apakah menurut kamu...", "Ini adalah...", "telah diaktifkan", "seseorang akan segera datang menyelamatkan kita", "di luar jangkauannya". Ubah menjadi dialog alami: "Kau pikir aku mau...", "Skill X aktif!", "Bentar lagi pasti ada yang nyelamatin kita!", "Dia bukan tandingan kita".
+- Nada adegan (Scene Tone):
+  * Formal / Kerajaan / Militer: baku & berwibawa ("Saya/Anda", "Yang Mulia", "Paduka", "tidak", "sudah") tanpa partikel gaul.
+  * Santai / Sekolah / Komedi / Sehari-hari: dialog lisan fansub alami ("aku/kamu", "nggak", "udah", "aja", "banget", "kok", "sih", "deh", "nih", "lho") — JANGAN menulis "Kamu" kapital di tengah kalimat.
+  * Pertarungan / Kasar / Musuh: tegas ("aku/kau" atau "gue/lo").
+- Gunakan tanda hubung alami pada kata ganti untuk istilah asing ("cooldown-ku", "party-mu", "guild-ku", "HP-ku", BUKAN "Cooldown aku" atau "Partymu").
+- DILARANG memakai kosakata Melayu ("awak", "kerana", "ialah", "sahaja", "tak", "tengok", "pula", "jangan risau", "pelik", "comel").
+
+[ANIME & RPG TERMINOLOGY]
+- Pertahankan istilah game/RPG/anime yang ikonik namun rangkai luwes dalam tata bahasa Indonesia: Skill, Passive Skill, Active Skill, Ultimate Skill, Stun, Buff, Debuff, Cooldown, Crit, DPS, Tank, Healer, Party, Guild, Dungeon, Quest, Boss, HP, MP, EXP, Level Up, Craft, Enchant, Satisfy, Overgeared, Chakra, Jutsu, Ryoiki Tenkai.
 - Contoh WAJIB: "Skill: Stun" TETAP "Skill: Stun" (BUKAN "Keahlian: Setrum/Memukau"). "Satisfy" TETAP "Satisfy" (BUKAN "Memuaskan/Puaskan").
 - Pertahankan nama karakter, honorifik (-san, -kun, -chan, -sama, Senpai, Sensei), gagap ("A-Apa?!"), dan token <br>.
 
-[SCENE TONE & NATURAL INDONESIAN]
-- Formal / Kerajaan / Militer: baku & berwibawa ("Saya/Anda", "Yang Mulia", "Paduka", "tidak", "sudah") tanpa partikel gaul.
-- Santai / Sekolah / Komedi: dialog lisan fansub alami ("aku/kamu", "nggak", "udah", "aja", "banget", "kok", "sih", "deh").
-- Pertarungan / Kasar / Musuh: tegas ("aku/kau" atau "gue/lo").
-- DILARANG memakai kosakata Melayu ("awak", "kerana", "ialah", "sahaja", "tak", "tengok", "pula", "jangan risau", "pelik", "comel").
-
 [EXAMPLES]
+Input:
 1|Activate Skill: Stun! || Aktifkan Keahlian: Setrum!
--> 1|Aktifkan Skill: Stun!
-2|Welcome to Satisfy, the greatest VRMMO! || Selamat datang di Memuaskan, VRMMO terhebat!
--> 2|Selamat datang di Satisfy, VRMMO terhebat!
-3|I am not letting you run away! || Saya tidak akan membiarkan Anda melarikan diri!
--> 3|Nggak bakal kubiarkan kau kabur!
+2|Passive Skill: Legendary Blacksmith's Patience has been activated. || Passive Skill: Kesabaran Pandai Besi Legendaris telah diaktifkan.
+3|Give me a break! Do you think I would join your Party? || Yang benar saja! Apakah menurut kamu saya akan bergabung dengan Partai Anda?
+4|Your Majesty, the vanguard knights are ready. || Yang Mulia, para ksatria garda depan sudah siap.
+Output:
+1|Aktifkan Skill: Stun!
+2|Passive Skill: Legendary Blacksmith's Patience aktif!
+3|Yang bener aja! Memangnya aku bakal gabung ke party-mu?
+4|Yang Mulia, pasukan ksatria garda depan sudah bersiap.
 
 [OUTPUT FORMAT]
-- Bandingkan sumber English dan draf GTX+. Lewati baris yang sudah akurat & natural.
-- Keluarkan HANYA baris yang perlu diperbaiki dengan format: N|teks_indonesia_final
-- Jika semua baris sudah bagus dan natural, balas persis: 0|OK
-- DILARANG menulis ulang teks sumber English, tanda ||, penomoran ganda, atau komentar tambahan.""";
+- Keluarkan SATU baris per input persis berformat: N|teks_indonesia_final untuk SEMUA nomor input N.
+- DILARANG mengulang teks English sumber, tanda ||, penomoran ganda, markdown, atau komentar tambahan.""";
 
     public static final String TLC_REFINE_PROMPT_ID = EMBEDDED_INSTANT_AI_PROMPT_ID;
 
@@ -1027,7 +1035,7 @@ Setiap input berformat: N|teks_english || draf_gtx_indonesia
                     && !cp.startsWith(OLD_SHORT_PROMPT_PREFIX)) {
                 sb.append("\n\n[USER CUSTOM INSTRUCTIONS (HIGH PRIORITY ADD-ON)]:\n")
                         .append(cp)
-                        .append("\nIkuti instruksi tambahan di atas tanpa melanggar [OUTPUT FORMAT] (N|teks_final dan 0|OK).");
+                        .append("\nIkuti instruksi tambahan di atas tanpa melanggar [OUTPUT FORMAT] (N|teks_final untuk semua baris).");
             }
         }
         return sb.toString();
@@ -1140,7 +1148,7 @@ Setiap input berformat: N|teks_english || draf_gtx_indonesia
         File cacheDir = new File(context.getCacheDir(), "sub_cache");
         if (!cacheDir.exists()) cacheDir.mkdirs();
         String promptHash = sha1(customPrompt != null ? customPrompt.trim() : "");
-        String cacheKey = sha1(sourceIdentifier + "|" + effectiveModel + "|" + promptHash + "_instant_ai_id_v4");
+        String cacheKey = sha1(sourceIdentifier + "|" + effectiveModel + "|" + promptHash + "_instant_ai_id_v5");
         return new File(cacheDir, cacheKey + ".json");
     }
 
@@ -1262,13 +1270,12 @@ Setiap input berformat: N|teks_english || draf_gtx_indonesia
     }
 
     private static int getProviderBatchSize(Provider provider) {
-        if (provider == Provider.GEMINI) return 80;
-        if (provider == Provider.OPENAI) return 60;
+        if (provider == Provider.OPENAI) return 50;
         return 40;
     }
 
     private static int getProviderConcurrency(Provider provider) {
-        if (provider == Provider.OPENAI) return 3;
+        if (provider == Provider.GEMINI || provider == Provider.OPENAI) return 3;
         return 2;
     }
 
@@ -1347,7 +1354,7 @@ Setiap input berformat: N|teks_english || draf_gtx_indonesia
                 }
 
                 final boolean targetReasoning = isReasoningModel(effectiveModel);
-                final int reqTimeoutSec = targetReasoning ? 120 : 15;
+                final int reqTimeoutSec = targetReasoning ? 120 : 25;
                 final OkHttpClient tlcClient = httpClient.newBuilder()
                         .connectTimeout(10, TimeUnit.SECONDS)
                         .readTimeout(reqTimeoutSec, TimeUnit.SECONDS)
@@ -1518,8 +1525,8 @@ Setiap input berformat: N|teks_english || draf_gtx_indonesia
             }
             userBody.append("\n");
         }
-        userBody.append("Periksa ").append(pendingIds.size()).append(" baris berikut (format N|teks_sumber || draf_gtx). ")
-                .append("Keluarkan HANYA N|teks_perbaikan untuk baris yang aneh/kaku (atau 0|OK bila semua sudah bagus):\n");
+        userBody.append("Terjemahkan & haluskan ").append(pendingIds.size()).append(" baris berikut ke dialog fansub Indonesia alami (format input N|teks_sumber || draf_gtx). ")
+                .append("WAJIB keluarkan semua baris N|teks_final sesuai makna English, JANGAN ikuti kalimat kaku draf GTX:\n");
         for (int id : pendingIds) {
             int globalIdx = lo + id - 1;
             userBody.append(id).append("|")
@@ -1536,7 +1543,7 @@ Setiap input berformat: N|teks_english || draf_gtx_indonesia
             userPrompt = "JANGAN sertakan penalaran/thinking panjang. Langsung keluarkan format N|terjemahan secara ringkas.\n\n" + userPrompt;
             maxTokens = Math.min(8192, Math.max(3072, pendingIds.size() * 90 + 2500));
         } else {
-            maxTokens = Math.min(4096, Math.max(512, pendingIds.size() * 45 + 256));
+            maxTokens = Math.min(8192, Math.max(1024, pendingIds.size() * 70 + 400));
         }
         boolean disableGeminiThinking = (provider == Provider.GEMINI && !reasoning && !isGemmaModel(model));
         return executeChatCompletion(client, endpointUrl, provider, apiKey, model,

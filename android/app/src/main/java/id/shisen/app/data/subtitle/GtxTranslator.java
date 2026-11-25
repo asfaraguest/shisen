@@ -66,15 +66,15 @@ public class GtxTranslator {
         }
 
         final Map<String, String> canonicalLookup = new HashMap<>();
-        final Pattern maskPattern = SmartLexicon.compileMaskPattern(protectedTerms, canonicalLookup);
+        final Pattern maskPattern = SmartLexicon.compileSafeGtxMaskPattern(protectedTerms, canonicalLookup);
         final String glossarySignature = Integer.toHexString(canonicalLookup.keySet().hashCode());
 
         new Thread(() -> {
             try {
-                // 1. Cek Cache Lokal di Disk (v3 dengan masking istilah terlindungi + leksikon)
+                // 1. Cek Cache Lokal di Disk (v4 dengan masking aman konservatif + leksikon bersih)
                 File cacheFile = null;
                 if (context != null) {
-                    String cacheKey = sha1(sourceIdentifier + "|" + glossarySignature + "_gtx_id_v3");
+                    String cacheKey = sha1(sourceIdentifier + "|" + glossarySignature + "_gtx_id_v4");
                     File cacheDir = new File(context.getCacheDir(), "sub_cache");
                     if (!cacheDir.exists()) cacheDir.mkdirs();
                     cacheFile = new File(cacheDir, cacheKey + ".json");
@@ -234,7 +234,7 @@ public class GtxTranslator {
 
     private static List<String> translateBatch(OkHttpClient client, List<SubtitleCue> batch) {
         Map<String, String> canonicalLookup = new HashMap<>();
-        Pattern maskPattern = SmartLexicon.compileMaskPattern(null, canonicalLookup);
+        Pattern maskPattern = SmartLexicon.compileSafeGtxMaskPattern(null, canonicalLookup);
         return translateBatch(client, batch, maskPattern, canonicalLookup);
     }
 
