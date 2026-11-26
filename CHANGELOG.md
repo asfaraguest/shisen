@@ -17,7 +17,6 @@ Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Se
 - **Floating Menu Portrait Mobile (`MainActivity.java`, `layout/activity_main.xml`, `src/mobile/.../DeviceNav.java`)**:
   - Memutus referensi `deviceNav = null` sebelum `initViews()` pada `rebindOrientationLayout()` agar objek `DeviceNav` Landscape lama tidak merusak view floating menu Portrait baru saat beralih orientasi Landscape → Portrait (`scrollSidebarMenu != null` guard).
   - Menyamakan ukuran kontainer dan tiap pill item floating menu Portrait dengan rilis stabil `v1.1.1` (`230dp` / `match_parent`), menyinkronkan `applyTheme()` pada `DeviceNav.init()`, serta memakai `OnPreDrawListener` agar `pivotX`/`pivotY` diset setelah layout terukur.
-  - Guard layar smartphone ringkas (`DeviceNav.applyInsets`, `MainActivity.setupWindowInsets`, `dialog_genre_selector.xml`): menggeser pagination portrait agar tidak bertabrakan dengan FAB pada lebar `< 440dp`, meringkas teks tombol Cari di topbar `< 360dp`, dan menjadikan grid dialog genre elastis (`0dp` + `layout_weight="1"`) untuk landscape pendek.
 - **Stabilitas Stream & Navigasi TV (`PlayerActivity.java`, `src/tv/.../DeviceNav.java`)**:
   - Menambahkan `streamLoadSeq` di `PlayerActivity.playEpisodeWithServer` untuk mencegah *race condition* callback stream/subtitle lama saat berpindah episode/server dengan cepat.
   - Memperluas auto-failover `onPlayerError` untuk status HTTP/koneksi/timeout (`ERROR_CODE_IO_BAD_HTTP_STATUS`, `ERROR_CODE_IO_NETWORK_CONNECTION_FAILED`, `ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT`).

@@ -651,13 +651,6 @@ public class MainActivity extends AppCompatActivity {
                 rvGrid.setPadding((hasSidebar ? 0 : leftInset) + basePaddingH, rvGrid.getPaddingTop(), rightInset + basePaddingH, basePaddingBottom + bottomInset);
             }
 
-            // Pada HP portrait sangat sempit (<360dp), ringkas teks tombol Cari agar header tidak overflow
-            if (!hasSidebar && btnSearchTrigger instanceof ViewGroup && ((ViewGroup) btnSearchTrigger).getChildCount() > 1) {
-                int availWidthDp = Math.round((getResources().getDisplayMetrics().widthPixels - leftInset - rightInset) / Math.max(1f, density));
-                View searchLabel = ((ViewGroup) btnSearchTrigger).getChildAt(1);
-                searchLabel.setVisibility(availWidthDp < 360 ? View.GONE : View.VISIBLE);
-            }
-
             return windowInsets;
         });
     }
