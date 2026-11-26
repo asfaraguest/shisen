@@ -447,15 +447,19 @@ Setiap baris input berformat: N|teks_english || draf_gtx_indonesia
 Gunakan `teks_english` sebagai sumber utama, lalu tulis ulang menjadi dialog fansub Indonesia yang luwes, ekspresif, dan alami (draf GTX+ hanya acuan konteks cepat).
 WAJIB keluarkan terjemahan untuk SEMUA baris input — JANGAN pernah menyalin kalimat terjemahan mesin yang kaku, JANGAN melewati baris yang masih kaku, dan JANGAN membalas 0|OK.
 
-[NATURAL INDONESIAN DIALOGUE & ANTI-MESIN]
+[NATURAL INDONESIAN DIALOGUE & SMART SCENE DETECTOR]
+- Analisis alur konteks antar-baris (baris sebelum & sesudah dalam batch) untuk menentukan siapa berbicara kepada siapa dan suasana adegannya secara konsisten:
+  1. Kerajaan / Bangsawan / Militer / Kuil: baku & berwibawa ("Saya/Anda", "Yang Mulia", "Paduka", "Hamba", "Tuan/Nona", "tidak", "sudah", "mohon") — nol partikel gaul.
+  2. Asimetris (Murid-Guru / Kouhai-Senpai / Bawahan-Atasan): pihak lebih muda/bawahan sopan ("Saya/Anda/Senpai/Sensei"), pihak senior/guru akrab ("aku/kamu").
+  3. Santai / Sekolah / Teman / Keluarga / Komedi / Romansa: dialog lisan fansub alami & konsisten ("aku/kamu", "nggak", "udah", "aja", "banget", "kok", "sih", "deh", "nih", "lho") — JANGAN melompat ke "saya/Anda" atau menulis "Kamu" kapital di tengah kalimat.
+  4. Pertarungan / Duel / Musuh / Preman / Emosi Tinggi: singkat, tajam, bertenaga ("aku/kau" atau "gue/lo").
+  5. Monolog Batin / Narasi / Flashback: mengalir reflektif ("aku", "rupanya...", tanpa partikel obrolan berlebihan).
+  6. Notifikasi Game / UI ([...] / Skill / Quest / Sign / Lirik ♪): ringkas bergaya antarmuka RPG ("aktif!", "diperoleh!", "target terkena Stun") atau puitis untuk lirik.
 - Tulis seperti percakapan lisan fansub Indonesia nyata, BUKAN terjemahan harfiah/pasif Google Translate.
 - Hindari frasa mesin kaku: "Apakah Anda berpikir...", "Apakah menurut kamu...", "Ini adalah...", "telah diaktifkan", "seseorang akan segera datang menyelamatkan kita", "di luar jangkauannya". Ubah menjadi dialog alami: "Kau pikir aku mau...", "Skill X aktif!", "Bentar lagi pasti ada yang nyelamatin kita!", "Dia bukan tandingan kita".
-- Nada adegan (Scene Tone):
-  * Formal / Kerajaan / Militer: baku & berwibawa ("Saya/Anda", "Yang Mulia", "Paduka", "tidak", "sudah") tanpa partikel gaul.
-  * Santai / Sekolah / Komedi / Sehari-hari: dialog lisan fansub alami ("aku/kamu", "nggak", "udah", "aja", "banget", "kok", "sih", "deh", "nih", "lho") — JANGAN menulis "Kamu" kapital di tengah kalimat.
-  * Pertarungan / Kasar / Musuh: tegas ("aku/kau" atau "gue/lo").
 - Gunakan tanda hubung alami pada kata ganti untuk istilah asing ("cooldown-ku", "party-mu", "guild-ku", "HP-ku", BUKAN "Cooldown aku" atau "Partymu").
 - DILARANG memakai kosakata Melayu ("awak", "kerana", "ialah", "sahaja", "tak", "tengok", "pula", "jangan risau", "pelik", "comel").
+- Jangan pernah menulis label analisis adegan ke output.
 
 [ANIME & RPG TERMINOLOGY]
 - Pertahankan istilah game/RPG/anime yang ikonik namun rangkai luwes dalam tata bahasa Indonesia: Skill, Passive Skill, Active Skill, Ultimate Skill, Stun, Buff, Debuff, Cooldown, Crit, DPS, Tank, Healer, Party, Guild, Dungeon, Quest, Boss, HP, MP, EXP, Level Up, Craft, Enchant, Satisfy, Overgeared, Chakra, Jutsu, Ryoiki Tenkai.
@@ -1148,7 +1152,7 @@ Output:
         File cacheDir = new File(context.getCacheDir(), "sub_cache");
         if (!cacheDir.exists()) cacheDir.mkdirs();
         String promptHash = sha1(customPrompt != null ? customPrompt.trim() : "");
-        String cacheKey = sha1(sourceIdentifier + "|" + effectiveModel + "|" + promptHash + "_instant_ai_id_v5");
+        String cacheKey = sha1(sourceIdentifier + "|" + effectiveModel + "|" + promptHash + "_instant_ai_id_v6");
         return new File(cacheDir, cacheKey + ".json");
     }
 

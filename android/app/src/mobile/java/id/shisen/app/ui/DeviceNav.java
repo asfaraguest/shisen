@@ -145,12 +145,22 @@ public final class DeviceNav {
                 fabMenuTrigger.setLayoutParams(lp);
             }
         }
-        if (layoutPagination != null) {
-            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) layoutPagination.getLayoutParams();
-            if (lp != null) {
-                lp.bottomMargin = baseBottomMargin;
-                layoutPagination.setLayoutParams(lp);
+        if (layoutPagination != null && layoutPagination.getLayoutParams() instanceof FrameLayout.LayoutParams) {
+            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) layoutPagination.getLayoutParams();
+            int screenWidthDp = host != null
+                    ? Math.round(host.getResources().getDisplayMetrics().widthPixels / Math.max(1f, density))
+                    : 480;
+            lp.bottomMargin = baseBottomMargin;
+            if (screenWidthDp < 440) {
+                lp.gravity = android.view.Gravity.BOTTOM | android.view.Gravity.START;
+                lp.setMarginStart((int) (12 * density) + leftInset);
+                lp.setMarginEnd(0);
+            } else {
+                lp.gravity = android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL;
+                lp.setMarginStart(0);
+                lp.setMarginEnd(0);
             }
+            layoutPagination.setLayoutParams(lp);
         }
 
         int menuBottomMargin = baseBottomMargin + (int) (48 * density) + (int) (10 * density);
