@@ -2,6 +2,19 @@
 
 Semua perubahan pada Menatap didokumentasikan di berkas ini mengikuti kaidah [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [1.2.0] - 2026-11-26
+
+Rilis **Stable `v1.2.0`** (konsolidasi siklus `v1.1.2-beta.1` – `v1.1.2-beta.4`).
+
+### Ditingkatkan
+- **Mobile Landscape TV-Layout Parity:** Sidebar kiri *collapsed* (`60dp`) dengan pager vertikal tanpa ikon pada mode landscape Mobile, detail panel dua-kolom dengan cover kiri penuh atas + backdrop horizontal ala Shisen-TV, serta penguncian orientasi `PlayerActivity` (`startedInLandscape`).
+- **Instant AI Sub Indo 2-Tahap & SmartScene Detector (`_gtx_id_v4` / `_instant_ai_id_v6`):** Ekstraksi istilah aman pre-GTX, pembersihan gaya mesin kaku, tanda hubung klitik serapan (`Party-mu`, `Cooldown-ku`), dan prompt terintegrasi `EMBEDDED_INSTANT_AI_PROMPT_ID` dengan 6 register konteks adegan otomatis + Custom Prompt aditif opsional.
+- **Informasi Jadwal Rilis & Pengaturan Terpadu:** Tab resmi `MainTab.PENGATURAN`, pemilih tema kartu opsi modern, default bahasa subtitle (`id`/`en`/`off`), dan jadwal tayang WIB multi-bahasa di beranda & detail anime.
+
+### Diperbaiki
+- **Floating Menu Portrait Mobile:** Isolasi `deviceNav` saat rotasi Landscape → Portrait, penyamaan dimensi pill menu portrait dengan `v1.1.1`, dan pivot animasi `OnPreDrawListener`.
+- **Stabilitas Stream, Navigasi TV & Kepatuhan Play Protect:** Pencegahan *race condition* `streamLoadSeq`, perluasan failover HTTP/koneksi/timeout di `onPlayerError`, fokus Back Android TV di tab Pengaturan/jadwal/detail, penghapusan `REQUEST_INSTALL_PACKAGES`/`VIBRATE` TV/reflection `Socket.impl`, serta APK Signature Scheme v3.
+
 ## [1.1.2-beta.4] - 2026-11-26
 
 ### Ditingkatkan

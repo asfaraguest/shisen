@@ -13,12 +13,9 @@
   </p>
 
   <p>
-    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.1/shisen-release-v1.1.1.apk"><img src="https://img.shields.io/badge/Download-Shisen%20Mobile%20(Stable)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download Shisen Mobile Stable APK"></a>
+    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.2.0/shisen-release-v1.2.0.apk"><img src="https://img.shields.io/badge/Download-Shisen%20Mobile%20(Stable)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download Shisen Mobile Stable APK"></a>
     <br>
-    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.1/shisen-tv-release-v1.1.1.apk"><img src="https://img.shields.io/badge/Download-Shisen%20TV%20(Stable)-00B4D8?style=for-the-badge&logo=androidtv&logoColor=white" alt="Download Shisen TV Stable APK"></a>
-    <br>
-    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.2-beta.4/shisen-release-v1.1.2-beta.4.apk"><img src="https://img.shields.io/badge/Download-Mobile%20v1.1.2--beta.4%20(Pre--release)-F59E0B?style=flat-square&logo=android&logoColor=white" alt="Download Shisen Mobile Pre-release APK"></a>
-    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.1.2-beta.4/shisen-tv-release-v1.1.2-beta.4.apk"><img src="https://img.shields.io/badge/Download-TV%20v1.1.2--beta.4%20(Pre--release)-818CF8?style=flat-square&logo=androidtv&logoColor=white" alt="Download Shisen TV Pre-release APK"></a>
+    <a href="https://github.com/asfaraguest/shisen/releases/download/v1.2.0/shisen-tv-release-v1.2.0.apk"><img src="https://img.shields.io/badge/Download-Shisen%20TV%20(Stable)-00B4D8?style=for-the-badge&logo=androidtv&logoColor=white" alt="Download Shisen TV Stable APK"></a>
   </p>
 
   <p>
@@ -73,10 +70,8 @@ Integrasi backend mengikuti paritas menu dari [Tatap](https://github.com/asfarag
 APK rilis resmi (signed, production keystore):
 
 - [GitHub Releases](https://github.com/asfaraguest/shisen/releases):
-  - **Mobile (Stable `v1.1.1`):** [`shisen-release-v1.1.1.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.1/shisen-release-v1.1.1.apk)
-  - **Android TV (Stable `v1.1.1`):** [`shisen-tv-release-v1.1.1.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.1/shisen-tv-release-v1.1.1.apk)
-  - **Mobile (Pre-release `v1.1.2-beta.4`):** [`shisen-release-v1.1.2-beta.4.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.2-beta.4/shisen-release-v1.1.2-beta.4.apk)
-  - **Android TV (Pre-release `v1.1.2-beta.4`):** [`shisen-tv-release-v1.1.2-beta.4.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.2-beta.4/shisen-tv-release-v1.1.2-beta.4.apk)
+  - **Mobile (Stable `v1.2.0`):** [`shisen-release-v1.2.0.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.2.0/shisen-release-v1.2.0.apk)
+  - **Android TV (Stable `v1.2.0`):** [`shisen-tv-release-v1.2.0.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.2.0/shisen-tv-release-v1.2.0.apk)
 
 > Asset rilis resmi: `shisen-release-*.apk` dan `shisen-tv-release-*.apk`.
 
@@ -100,7 +95,7 @@ Secara bawaan, Android TV membatasi pemasangan aplikasi dari luar Google Play St
 Metode ini direkomendasikan jika Anda memiliki smartphone Android atau laptop yang terhubung ke jaringan Wi-Fi yang sama dengan TV.
 
 #### 1. Persiapan di Smartphone / Komputer:
-- Unduh berkas APK khusus TV: [`shisen-tv-release-v1.1.1.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.1/shisen-tv-release-v1.1.1.apk).
+- Unduh berkas APK khusus TV: [`shisen-tv-release-v1.2.0.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.2.0/shisen-tv-release-v1.2.0.apk).
 - Pasang aplikasi **Send Files to TV (SFTV)** dari Google Play Store di smartphone Anda.
 
 #### 2. Persiapan di Android TV:
@@ -111,11 +106,11 @@ Metode ini direkomendasikan jika Anda memiliki smartphone Android atau laptop ya
 #### 3. Proses Pengiriman & Pemasangan:
 1. Pastikan smartphone dan Android TV terhubung ke **jaringan Wi-Fi yang sama**.
 2. Buka aplikasi *Send Files to TV* di TV, lalu pilih opsi **RECEIVE** (layar TV akan menunggu kiriman berkas).
-3. Buka aplikasi *Send Files to TV* di smartphone, pilih opsi **SEND**, lalu navigasikan ke folder unduhan dan pilih berkas `shisen-tv-release-v1.1.1.apk`.
+3. Buka aplikasi *Send Files to TV* di smartphone, pilih opsi **SEND**, lalu navigasikan ke folder unduhan dan pilih berkas `shisen-tv-release-v1.2.0.apk`.
 4. Pilih nama Android TV Anda dari daftar perangkat yang muncul di layar HP.
 5. Tunggu proses transfer selesai (biasanya hanya memakan waktu 5–10 detik).
 6. Buka aplikasi **File Manager** di TV Anda, masuk ke memori internal > folder **Download**.
-7. Klik pada berkas `shisen-tv-release-v1.1.1.apk`, lalu tekan tombol **Instal (Install)**.
+7. Klik pada berkas `shisen-tv-release-v1.2.0.apk`, lalu tekan tombol **Instal (Install)**.
 8. Setelah selesai, pilih **Buka (Open)** untuk langsung menikmati Shisen TV.
 
 ---
@@ -130,7 +125,7 @@ Metode ini cocok jika Anda tidak ingin menggunakan smartphone atau flashdisk dan
    ```text
    https://github.com/asfaraguest/shisen/releases
    ```
-5. Navigasikan kursor ke bagian rilis terbaru (`v1.1.0`), lalu klik pada tautan berkas **`shisen-tv-release-v1.1.1.apk`**.
+5. Navigasikan kursor ke bagian rilis terbaru (`v1.2.0`), lalu klik pada tautan berkas **`shisen-tv-release-v1.2.0.apk`**.
 6. Aplikasi Downloader akan mulai mengunduh file APK.
 7. Setelah unduhan 100% selesai, jendela konfirmasi instalasi akan otomatis muncul di layar TV.
 8. Pilih tombol **Install**. Jika muncul permintaan izin sumber tidak dikenal, klik *Settings* lalu izinkan Downloader untuk menginstal aplikasi, kemudian tekan tombol kembali di remote dan klik **Install** sekali lagi.
@@ -141,13 +136,13 @@ Metode ini cocok jika Anda tidak ingin menggunakan smartphone atau flashdisk dan
 ### Metode C: Menggunakan Flashdisk USB (Tanpa Jaringan Internet Eksternal)
 Metode ini praktis jika Anda lebih nyaman mengunduh lewat PC/laptop atau koneksi Wi-Fi TV lambat.
 
-1. Unduh berkas [`shisen-tv-release-v1.1.1.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.1.1/shisen-tv-release-v1.1.1.apk) di komputer atau laptop Anda.
+1. Unduh berkas [`shisen-tv-release-v1.2.0.apk`](https://github.com/asfaraguest/shisen/releases/download/v1.2.0/shisen-tv-release-v1.2.0.apk) di komputer atau laptop Anda.
 2. Format flashdisk Anda ke sistem berkas **FAT32** atau **exFAT** (format standar agar terbaca oleh Android TV).
 3. Salin (*copy-paste*) file APK tersebut ke dalam flashdisk (sebaiknya letakkan di folder luar/root flashdisk agar mudah dicari).
 4. Cabut flashdisk dengan aman dari komputer, lalu colokkan ke port USB di Android TV atau Android Box Anda.
 5. Pada Android TV, pasang aplikasi **File Manager** (seperti *File Commander* atau *AnExplorer*) dari Play Store jika belum tersedia.
 6. Buka File Manager, pilih drive penyimpanan USB Anda.
-7. Cari dan klik berkas `shisen-tv-release-v1.1.1.apk`.
+7. Cari dan klik berkas `shisen-tv-release-v1.2.0.apk`.
 8. Tekan tombol **Instal** dan tunggu hingga proses pemasangan selesai.
 
 ---
@@ -162,7 +157,7 @@ Jika Anda terbiasa dengan terminal/ADB:
 4. Buka terminal di PC/laptop Anda (pastikan berada di jaringan Wi-Fi yang sama) dan jalankan:
    ```bash
    adb connect 192.168.1.50:5555
-   adb install -r shisen-tv-release-v1.1.1.apk
+   adb install -r shisen-tv-release-v1.2.0.apk
    ```
 5. Aplikasi Shisen TV akan langsung terpasang dan muncul di layar utama TV Anda.
 
@@ -192,8 +187,8 @@ cd android
 ```
 
 Output akan tersedia di:
-- `android/app/build/outputs/apk/mobile/release/shisen-release-v1.1.1.apk`
-- `android/app/build/outputs/apk/tv/release/shisen-tv-release-v1.1.1.apk`
+- `android/app/build/outputs/apk/mobile/release/shisen-release-v1.2.0.apk`
+- `android/app/build/outputs/apk/tv/release/shisen-tv-release-v1.2.0.apk`
 
 ---
 
